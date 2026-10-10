@@ -2,6 +2,8 @@
 
 **Status:** Narrow sample-only MVP approved in conversation and implemented. Broader anomaly/upload workflows remain a draft for feasibility review; this document does not authorize them.
 
+**City-level direction under research:** See [NWA_CITY_RESEARCH.md](NWA_CITY_RESEARCH.md) for the proposed BWD customer-city demand explorer, source checks, compact wireframe and release gates. This is a proposed pivot, not an implemented feature or authorization to replace the existing apps. The household MVP requirements below still describe the checkpointed implementation.
+
 **Research update — October 9, 2026:** See [RESEARCH_REPORT.md](RESEARCH_REPORT.md) for completed public-source checks, the full site032 audit, current CAC rules, and unresolved external evidence. The evidence supports the implemented **sample-only recorded-usage chart and quality summary**, without uploads, overnight scoring, ML, or leak classifications. Conditional future features below are not requirements for completing this MVP. Both existing applications remain unchanged.
 
 **Implementation update:** The user approved this narrower scope in conversation. `sample_app.py` now implements the independent sample-only chart, day selector, whole-sample totals, coverage table, provenance and guidance links. `sample_data.py` verifies the bundled source subset and performs gap-preserving source-clock grouping. Approval does not extend to the broader upload/rule/ML workflows below. The notice finder and legacy prototype remain untouched. See `README.md` for independent run instructions.
