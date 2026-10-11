@@ -4,3 +4,5 @@ skill-observations/
 *.pyc
 .env
 .DS_Store
+memory/
+fieldbook-data/
