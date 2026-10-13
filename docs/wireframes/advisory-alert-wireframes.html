@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Water Alert — wireframes (static design)</title>
+<style>
+  :root{
+    --bg:#e9edee; --panel:#ffffff; --line:#dbe2e3; --ink:#0f1f1d; --muted:#5c6c6a;
+    --official:#0e6b63;      /* a real agency record */
+    --active:#a8450a;        /* an active advisory / notice */
+    --none:#5f6f6d;          /* sources checked, nothing active found (NOT safety) */
+    --unk:#6b5b95;           /* source unavailable / cannot confirm */
+    --sample:#8a6d1f;        /* clearly-labelled demo data */
+    --chip:#f1f4f4;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);padding:34px}
+  h1{font-size:26px;margin:0 0 4px}
+  h2{font-size:15px;margin:44px 0 2px;letter-spacing:.02em}
+  .sub{font-size:14px;color:var(--muted);margin:0 0 20px;max-width:940px;line-height:1.55}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+  .lg{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .sw{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.08)}
+  .sw.act{background:var(--active)} .sw.non{background:var(--none)} .sw.un{background:var(--unk)} .sw.sam{background:var(--sample)} .sw.off{background:var(--official)}
+  .flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 30px;font-size:12.5px;color:var(--muted)}
+  .flow b{color:var(--ink);font-weight:600}
+  .flow .arw{color:#98a6a5}
+  .rule{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--official);border-radius:12px;padding:12px 15px;font-size:13px;color:var(--muted);line-height:1.5;max-width:940px;margin-bottom:6px}
+  .rule b{color:var(--ink)}
+  .row{display:flex;gap:38px;flex-wrap:wrap;align-items:flex-start;margin:16px 0 46px}
+  .col{display:flex;flex-direction:column;gap:9px}
+  .cap{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .device{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 12px 34px rgba(15,31,29,.07)}
+  .mobile{width:342px}
+  .laptop{width:826px;border-radius:14px}
+  .bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);background:#fafbfb}
+  .dot{width:9px;height:9px;border-radius:50%;background:#cfd7d8}
+  .url{margin-left:10px;font-size:11px;color:var(--muted);background:#eef1f1;border-radius:6px;padding:3px 10px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .screen{padding:16px;display:flex;flex-direction:column;gap:12px}
+  .screen.wide{padding:20px}
+  .appbar{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+  .brand{font-size:17px;font-weight:700}
+  .tag{font-size:11px;color:var(--muted)}
+  .checked{font-size:11px;color:var(--muted);text-align:right;line-height:1.4}
+  .card{border:1px solid var(--line);border-radius:14px;padding:13px;display:flex;flex-direction:column;gap:9px}
+  .card.status{border-left:5px solid var(--line)}
+  .s-act{border-left-color:var(--active)} .s-non{border-left-color:var(--none)} .s-un{border-left-color:var(--unk);border-style:dashed}
+  .s-sam{border-left-color:var(--sample)}
+  .rowhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .body{font-size:14px;font-weight:700}
+  .reason{font-size:12px;color:var(--muted);line-height:1.45}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+  .b-act{background:#f6e3d8;color:var(--active)}
+  .b-non{background:#eceff0;color:#5f6f6d}
+  .b-un{background:#eae6f2;color:var(--unk)}
+  .b-sam{background:#f4eeda;color:var(--sample)}
+  .b-off{background:#e2f0ee;color:var(--official)}
+  .state{font-size:15px;font-weight:700}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:600;text-align:center;color:var(--ink)}
+  .btn.pri{background:var(--official);border-color:var(--official);color:#fff}
+  .btn.act{background:var(--active);border-color:var(--active);color:#fff}
+  .btn.row2{display:flex;gap:9px}
+  .btn.row2 .btn{flex:1}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .note{font-size:11px;color:var(--muted);line-height:1.5}
+  .listitem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+  .listitem:first-child{border-top:0}
+  .li-l{display:flex;flex-direction:column;gap:2px}
+  .sect{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .sect.mt{margin-top:4px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted)}
+  .chip.on{background:#e2f0ee;border-color:#bfe0da;color:var(--official)}
+  .search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted);background:#fafcfc}
+  .opt{border:1px solid var(--line);border-radius:12px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .opt .t{font-size:13px;font-weight:600}
+  .opt .d{font-size:11px;color:var(--muted);margin-top:2px}
+  .map{position:relative;border-radius:12px;border:1px solid var(--line);overflow:hidden;background:linear-gradient(135deg,#eef4f2,#e3eee9)}
+  .map.m{height:230px} .map.l{height:300px}
+  .lake{position:absolute;inset:22% 30% 30% 26%;background:#cfe6e2;border:1px dashed #9dc6bf;border-radius:46% 54% 40% 60%/50% 45% 55% 50%}
+  .pin{position:absolute;width:13px;height:13px;border-radius:4px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+  .pin.act{background:var(--active)} .pin.non{background:var(--none)} .pin.un{background:var(--unk)}
+  .callout{position:absolute;background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 9px;font-size:10.5px;box-shadow:0 6px 16px rgba(0,0,0,.1);line-height:1.35}
+  .samplebar{display:flex;align-items:center;gap:9px;background:#f4eeda;border:1px solid #e3d5a8;color:#6b5412;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:600}
+  .samplebar .tag2{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#8a6d1f;color:#fff;border-radius:5px;padding:2px 6px}
+  .steps{counter-reset:s;display:flex;flex-direction:column;gap:9px}
+  .step{display:flex;gap:10px;font-size:12.5px;line-height:1.45}
+  .step .n{flex:none;width:20px;height:20px;border-radius:50%;background:#e2f0ee;color:var(--official);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .quote{font-size:12px;color:var(--ink);background:#f7fafa;border-left:3px solid #cfe0dd;border-radius:0 8px 8px 0;padding:9px 11px;line-height:1.5}
+  .foot{border-top:1px solid var(--line);padding:11px 16px;font-size:10.5px;color:var(--muted);background:#fafbfb}
+  a{color:var(--official);text-decoration:none}
+  .tl{font-size:11px;color:var(--muted)}
+  .micro{font-size:10.5px;color:var(--muted);line-height:1.4}
+
+  /* iPhone lock screen + notification */
+  .phone{width:326px;height:640px;border-radius:44px;background:#0a0f16;padding:9px;box-shadow:0 16px 40px rgba(10,15,22,.28)}
+  .glass{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;
+    background:radial-gradient(120% 80% at 50% 0%,#33526e 0%,#1b2a41 42%,#0b1220 100%);color:#fff;
+    display:flex;flex-direction:column;padding:22px 15px 16px}
+  .glass .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:104px;height:24px;background:#0a0f16;border-radius:14px}
+  .clock{text-align:center;margin-top:34px}
+  .clock .t{font-size:60px;font-weight:600;letter-spacing:-1px;line-height:1}
+  .clock .d{font-size:13px;color:#cdd9e2;margin-top:4px}
+  .notifs{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+  .notif{background:rgba(140,165,190,.26);border:1px solid rgba(255,255,255,.20);border-radius:19px;padding:11px 13px;display:flex;gap:11px;backdrop-filter:blur(10px)}
+  .notif .ic{flex:none;width:34px;height:34px;border-radius:9px;background:var(--official);display:flex;align-items:center;justify-content:center;font-size:16px}
+  .notif .ic.act{background:var(--active)}
+  .notif .mid{flex:1;min-width:0}
+  .notif .ttl{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between;gap:8px}
+  .notif .ttl .when{font-size:10px;font-weight:500;color:#b9c6d1}
+  .notif .msg{font-size:12px;color:#e6edf3;line-height:1.4;margin-top:2px}
+  .lockfoot{margin-top:14px;display:flex;justify-content:space-between;align-items:center;color:#cdd8e2;font-size:11px;padding:0 6px}
+  .lockfoot .cam{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16)}
+  .banner{position:absolute;top:12px;left:12px;right:12px;background:rgba(248,250,251,.97);color:var(--ink);border-radius:18px;padding:11px 13px;display:flex;gap:11px;box-shadow:0 10px 26px rgba(0,0,0,.28)}
+  .banner .ic{flex:none;width:32px;height:32px;border-radius:9px;background:var(--active);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .banner .ttl{font-size:12px;font-weight:700;display:flex;justify-content:space-between}
+  .banner .msg{font-size:12px;color:var(--muted);line-height:1.4;margin-top:1px}
+  .lang{font-size:10px;font-weight:700;letter-spacing:.05em;background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+  <h1>Water Alert — wireframes</h1>
+  <p class="sub">
+    Static synthetic design for a <b>resident water-advisory alert</b> app (working name TBD).
+    Not a shipped UI. Every screen exists to protect one rule: the app only ever mirrors what an
+    official agency published, and it never converts the <i>absence</i> of a notice into a claim of safety.
+    <br>Sources: ADH boil-water notices + ADEQ harmful-algal-bloom advisories. Coverage: statewide, NWA-first.
+  </p>
+
+  <div class="legend">
+    <span class="lg"><span class="sw act"></span> Active advisory / notice</span>
+    <span class="lg"><span class="sw non"></span> No active advisory found <i>(not proof of safety)</i></span>
+    <span class="lg"><span class="sw un"></span> Data unavailable</span>
+    <span class="lg"><span class="sw sam"></span> Sample (demo) data</span>
+    <span class="lg"><span class="sw off"></span> Official source record</span>
+  </div>
+
+  <div class="flow">
+    <span>Flow:</span>
+    <span><b>Set your water</b></span><span class="arw">→</span>
+    <span><b>Home / status</b></span><span class="arw">→</span>
+    <span>(a change is detected)</span><span class="arw">→</span>
+    <span><b>Push notification</b></span><span class="arw">→</span>
+    <span><b>Advisory detail + next steps</b></span><span class="arw">→</span>
+    <span>share / track-lift</span><span class="arw">→</span>
+    <span><b>History</b></span>
+  </div>
+
+  <div class="rule">
+    <b>Three honest states, always.</b> Active &middot; No active advisory found &middot; Data unavailable.
+    A blank "date lifted" means the notice is still active. Vague or partial-area notices are shown as published,
+    never narrowed to an address. If a source fails, the app says so and shows agency contacts &mdash; it never
+    silently shows "all clear."
+  </div>
+
+  <!-- ===================== 0. NOTIFICATIONS ===================== -->
+  <h2>0 · Notifications — what the alert actually looks like</h2>
+  <p class="sub">Real Web Push notifications. On iPhone the resident must first add the app to the Home Screen (iOS 16.4+); Android/desktop just need permission. The server does the checking, so the app need not be open.</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="cap">0a · Lock screen — "a notice just went active"</div>
+      <div class="phone">
+        <div class="glass">
+          <div class="banner">
+            <div class="ic">!</div>
+            <div style="flex:1">
+              <div class="ttl"><span>Water Alert</span><span class="micro">now</span></div>
+              <div class="msg">BOIL WATER NOTICE — Riverside Resort at Kings River, Carroll County. Tap for the official notice and next steps.</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:64px">
+            <div style="font-size:64px;font-weight:600;letter-spacing:-1px">9:41</div>
+            <div style="font-size:13px;color:#cdd8e2;margin-top:4px">Tuesday, October 13</div>
+          </div>
+          <div style="flex:1"></div>
+          <div class="notif">
+            <div class="ic act">!</div>
+            <div class="mid">
+              <div class="ttl"><span>Water Alert</span><span class="when">now</span></div>
+              <div class="msg">BOIL WATER NOTICE — Riverside Resort at Kings River, Carroll County. Issued Oct 1. Tap for the official notice and next steps.</div>
+            </div>
+          </div>
+          <div class="lockfoot"><span>Alerting: 1 place</span><span class="cam"></span><span>Open</span></div>
+        </div>
+      </div>
+      <div class="micro" style="max-width:326px">Lock-screen text names the place and the action only. No personal data. Copy is generated from the agency's own record.</div>
+    </div>
+
+    <div class="col">
+      <div class="cap">0b · Lock screen — "it's been lifted"</div>
+      <div class="phone">
+        <div class="glass">
+          <div style="text-align:center;margin-top:52px">
+            <div style="font-size:64px;font-weight:600;letter-spacing:-1px">4:12</div>
+            <div style="font-size:13px;color:#cdd8e2;margin-top:4px">Friday, October 17</div>
+          </div>
+          <div style="flex:1"></div>
+          <div class="notif">
+            <div class="ic">✓</div>
+            <div class="mid">
+              <div class="ttl"><span>Water Alert</span><span class="when">now</span></div>
+              <div class="msg">LIFTED — Riverside Resort at Kings River. ADH shows the notice lifted Oct 16. Tap for details.</div>
+            </div>
+          </div>
+          <div class="lockfoot"><span>Alerting: 1 place</span><span class="cam"></span><span>Open</span></div>
+        </div>
+      </div>
+      <div class="micro" style="max-width:326px">A second push fires on lift, so "on" never lingers after the agency clears it.</div>
+    </div>
+
+    <div class="col">
+      <div class="cap">0c · In-app banner + alerts permission</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/alerts</span></div>
+        <div class="screen">
+          <div class="card">
+            <div class="body">Get alerts for your water</div>
+            <div class="reason">We check the official sources for you and only speak when something changes.</div>
+            <div class="note"><b>On iPhone:</b> tap Share &rarr; <b>Add to Home Screen</b>, open it there, then allow notifications. This is the step that turns pushes on.</div>
+            <div class="btn row2"><div class="btn">Use email instead</div><div class="btn pri">Allow notifications</div></div>
+            <div class="btn">Check when I open (no push)</div>
+          </div>
+          <div class="note">If push is declined or unsupported, the app falls back to email, then to "new since your last check." It never pretends an alert was delivered.</div>
+        </div>
+        <div class="foot">Notification delivery depends on your device settings. This is not a monitored emergency service.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 1. SET YOUR WATER ===================== -->
+  <h2>1 · Set your water (onboarding)</h2>
+  <p class="sub">Takes ~30 seconds, once. Resolves a town to the correct water <b>system</b> (not an address), or to a lake. Ambiguity is offered as a choice — the app never silently guesses.</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="cap">1a · Search your town</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/setup</span></div>
+        <div class="screen">
+          <div class="appbar"><div><div class="brand">Which water is yours?</div><div class="tag">Step 1 of 2</div></div><div class="checked">Skip<br>for now</div></div>
+          <div class="search">⌕ Search your town, water system, or lake</div>
+          <div class="sect">Nearby</div>
+          <div class="opt"><div><div class="t">Bentonville</div><div class="d">Benton County · served by Bentonville Water Utilities</div></div><span class="badge b-off">System</span></div>
+          <div class="opt"><div><div class="t">Eureka Springs</div><div class="d">Carroll County · city system</div></div><span class="badge b-off">System</span></div>
+          <div class="opt"><div><div class="t">Beaver Lake</div><div class="d">Benton / Carroll / Madison · lake</div></div><span class="badge b-off">Lake</span></div>
+          <div class="note">Not sure? <a href="#">Browse all Arkansas systems</a></div>
+        </div>
+        <div class="foot">Statewide, NWA-first. Records are published per water <i>system</i>, sometimes per area — never per home.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">1b · Confirm (ambiguous → choose)</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/setup</span></div>
+        <div class="screen">
+          <div class="tl">← Back</div>
+          <div class="body">"Kings River" matches more than one place</div>
+          <div class="reason">Pick exactly what you use so we only alert you about the right records.</div>
+          <div class="opt"><div><div class="t">Riverside Resort at Kings River</div><div class="d">Carroll County · small public water system</div></div><span class="badge b-off">Pick</span></div>
+          <div class="opt"><div><div class="t">Kings River (waterbody)</div><div class="d">Madison / Carroll · river segment</div></div><span class="badge b-off">Pick</span></div>
+          <div class="opt"><div><div class="t">My town isn't listed</div><div class="d">Search all Arkansas systems, or mark it as a private well</div></div><span class="badge b-non">Other</span></div>
+          <div class="note">We never widen a partial-area notice to cover you unless the published wording does.</div>
+        </div>
+        <div class="foot">Every choice maps to a named official record — no guessing on your behalf.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">1c · Private well path</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/setup</span></div>
+        <div class="screen">
+          <div class="brand">I'm on a private well</div>
+          <div class="card">
+            <div class="reason">Private wells aren't covered by public boil-water notices. For a well, the closest official signal is a <b>harmful-algal-bloom advisory</b> on a nearby lake or stream, plus county-level notices.</div>
+          </div>
+          <div class="sect">What we can still watch</div>
+          <label class="opt"><div class="t">Lake / stream near me</div><span class="badge b-off">Add</span></label>
+          <label class="opt"><div class="t">County-wide notices</div><span class="badge b-off">Add</span></label>
+          <div class="note">We'll be explicit that these are context, not a test of your well water.</div>
+          <div class="btn pri">Continue</div>
+        </div>
+        <div class="foot">No claim is ever made about private well-water quality.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 2. HOME / STATUS ===================== -->
+  <h2>2 · Home / status — the glanceable screen, in all three states</h2>
+  <p class="sub">One line answers "is anything happening with my water?" Color is never the only signal — each state has its own word and shape.</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="cap">2a · State: active</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app</span></div>
+        <div class="screen">
+          <div class="appbar"><div><div class="brand">Water Alert</div><div class="tag">Watching: Riverside Resort (Kings River)</div></div><div class="checked">Checked<br>9:14 AM</div></div>
+          <div class="card status s-act">
+            <div class="rowhead"><span class="body">Boil water notice</span><span class="badge b-act">Active</span></div>
+            <div class="reason">Issued Oct 1, 2026 · Carroll County · not lifted. ADH reason: multiple E. coli positive samples.</div>
+            <div class="btn act">See what to do</div>
+          </div>
+          <div class="card status s-non">
+            <div class="rowhead"><span class="body">Harmful-algal-bloom advisories</span><span class="badge b-non">None found</span></div>
+            <div class="reason">No active HAB advisory for your lake. Absence is not a safety guarantee.</div>
+          </div>
+        </div>
+        <div class="foot">Source: ADH boil-water list, retrieved 9:14 AM. Official advisories control.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">2b · State: nothing active found</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app</span></div>
+        <div class="screen">
+          <div class="appbar"><div><div class="brand">Water Alert</div><div class="tag">Watching: Bentonville Water Utilities</div></div><div class="checked">Checked<br>9:14 AM</div></div>
+          <div class="card status s-non">
+            <div class="rowhead"><span class="body">No active notice found</span><span class="badge b-non">Quiet</span></div>
+            <div class="reason">Both official sources were checked just now and show nothing active for your water. This is the normal state. It is <b>not</b> a safety guarantee, and conditions can change fast.</div>
+            <div class="btn">See what we checked</div>
+          </div>
+          <div class="sect">Nothing new since your last check</div>
+          <div class="note">We'll stay quiet until something changes.</div>
+        </div>
+        <div class="foot">Sources checked 9:14 AM, Oct 13 · <a href="#">Sources &amp; limits</a></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">2c · State: data unavailable</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app</span></div>
+        <div class="screen">
+          <div class="appbar"><div><div class="brand">Water Alert</div><div class="tag">Watching: Eureka Springs</div></div><div class="checked">Last good<br>8:02 AM</div></div>
+          <div class="card status s-un">
+            <div class="rowhead"><span class="body">Can't confirm right now</span><span class="badge b-un">Data unavailable</span></div>
+            <div class="reason">ADH's boil-water page didn't respond, so we can't say whether anything is active. We are <b>not</b> showing "all clear." Last successful check: 8:02 AM.</div>
+            <div class="btn">Check the source yourself</div>
+          </div>
+          <div class="sect">While we can't reach the source</div>
+          <div class="note">ADH: 1-800-462-0599 · <a href="#">Open the official page</a></div>
+        </div>
+        <div class="foot">Failed sources are named. The app degrades to "Data unavailable," never to an all-clear.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 3. ADVISORY DETAIL ===================== -->
+  <h2>3 · Active advisory detail — the record + the agency's own next steps</h2>
+  <p class="sub">The app <b>relays</b> the agency's published guidance and links to it. It never writes its own advice and never says "safe."</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="cap">3a · Detail — mobile (boil notice)</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/notice/adh</span></div>
+        <div class="screen">
+          <div class="tl">← Back</div>
+          <div class="rowhead"><span class="state">Boil water notice</span><span class="badge b-act">Active</span></div>
+          <div class="reason">Riverside Resort at Kings River · Carroll County</div>
+          <div class="grid2">
+            <div class="card"><div class="sect">Issued</div><div class="body">Oct 1, 2026</div></div>
+            <div class="card"><div class="sect">Lifted</div><div class="body">— not lifted —</div></div>
+          </div>
+          <div class="card"><div class="sect">ADH's stated reason</div><div class="reason">"Multiple E. Coli positive water samples" (quoted as published).</div></div>
+          <div class="sect mt">Official next steps (from ADH)</div>
+          <div class="steps">
+            <div class="step"><span class="n">1</span><span>Bring water to a rolling boil for 1 minute.</div>
+            <div class="step"><div class="n">2</div><span>Let it cool; use boiled or bottled water for drinking, cooking, and brushing teeth.</div></div>
+            <div class="step"><div class="n">3</div><span>Boil-water steps shown here are mirrored from ADH — <a href="#">read the agency's full page</a>. <span class="micro">[exact wording to be quoted verbatim from ADH]</span></div></div>
+          </div>
+          <div class="btn row2"><div class="btn">Share</div><div class="btn pri">Tell me when lifted</span></div>
+        </div>
+        <div class="foot">No app-authored advice, no medical advice. Guidance is quoted from ADH with a link to the original.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">3b · Detail — mobile (HAB advisory)</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/notice/adeq</span></div>
+        <div class="screen">
+          <div class="tl">← Back</div>
+          <div class="rowhead"><span class="state">Algal bloom advisory</span><span class="badge b-act">Active</span></div>
+          <div class="reason">Lake Hogue · Poinsett County</div>
+          <div class="grid2">
+            <div class="card"><div class="sect">Posted</div><div class="body">Sep 16, 2026</div></div>
+            <div class="card"><div class="sect">Lifted</div><div class="body">— not lifted —</div></div>
+          </div>
+          <div class="card"><div class="sect">From ADEQ (relayed)</div><div class="reason">Avoid contact with the water. Keep children, pets, and livestock away. Don't let animals drink discolored water or eat dried algae.</div></div>
+          <div class="btn row2"><div class="btn">Report to ADEQ</div><div class="btn">Report illness</div></div>
+          <div class="btn row2"><div class="btn">Share with household</div><div class="btn pri">Tell me when lifted</div></div>
+        </div>
+        <div class="foot">Contacts: ADEQ ee.habs@arkansas.gov · 501.682.0744 · ADH 501.280.4168 · complaint form at adeq.state.ar.us/complaints</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">3c · Detail — laptop</div>
+      <div class="device laptop">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/notice/adh — Riverside Resort at Kings River</span></div>
+        <div class="screen wide">
+          <div class="appbar"><div><div class="brand">Boil water notice</div><div class="tag">Riverside Resort at Kings River · Carroll County · ADH</div></div><div class="checked">Official record, mirrored verbatim · retrieved 9:14 AM, Oct 13</div></div>
+          <div class="grid2">
+            <div class="card status s-act">
+              <div class="rowhead"><span class="body">Status</span><span class="badge b-act">Active — not lifted</span></div>
+              <div class="reason">Issued Oct 1, 2026. A blank "date lifted" is shown as published and is never interpreted as cleared.</div>
+              <div class="btn row2"><div class="btn">Share</div><div class="btn pri">Tell me when it's lifted</div></div>
+            </div>
+            <div class="card">
+              <div class="sect">What ADH says to do</div>
+              <div class="quote">Boil water for one minute, then let it cool before drinking, cooking, brushing teeth, or making ice. Use bottled water if you can. <span class="micro">— quoted from ADH; <a href="#">read the original</a></span></div>
+              <div class="micro">[NEEDS: ADH's exact published wording, mirrored verbatim.]</div>
+            </div>
+          </div>
+          <div class="sect mt">Where this came from</div>
+          <div class="listitem"><span class="li-l"><span class="reason">ADH boil-water order list — row matched by water system</span><span class="tl">health.arkansas.gov/wa_engTraining/boilwaterorder.aspx</span></span><span class="badge b-off">Official</span></div>
+          <div class="listitem"><span class="li-l"><span class="reason">Record fields shown as published (no editing, no inference)</span><span class="tl">Date Issued · Date Lifted · System · Area Impacted · Reason · County</span></span><span class="badge b-off">Verbatim</span></div>
+        </div>
+        <div class="foot">This app mirrors published records. It does not determine water safety and is not affiliated with ADH or ADEQ.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 4. HISTORY ===================== -->
+  <h2>4 · History — "new since your last check"</h2>
+  <p class="sub">The agencies publish no history and no API, so the app keeps its own first-seen / last-seen / lifted record. This is the second half of what makes it more than a scraper.</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="cap">4a · History — mobile</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/history</span></div>
+        <div class="screen">
+          <div class="appbar"><div><div class="brand">History</div><div class="tag">Riverside Resort (Kings River)</div></div><div class="checked">Since<br>Oct 1</div></div>
+          <div class="card status s-act"><div class="rowhead"><span class="body">New since your last check</span><span class="badge b-act">1</span></div><div class="reason">Boil water notice first seen Oct 1, 9:02 AM. Still active.</div></div>
+          <div class="listitem"><span class="li-l"><span class="reason">Boil notice active</span><span class="tl">first seen Oct 1 · last seen today</span></span><span class="badge b-act">Active</span></div>
+          <div class="listitem"><span class="li-l"><span class="reason">HAB advisory — Lake Atalanta</span><span class="tl">Jun 20 → lifted Jul 12</span></span><span class="badge b-non">Lifted</span></div>
+          <div class="listitem"><span class="li-l"><span class="reason">Precautionary boil notice</span><span class="tl">Mar 3 → lifted Mar 5</span></span><span class="badge b-non">Lifted</span></div>
+          <div class="note">Your private history is stored on your device and is never published or shared.</div>
+        </div>
+        <div class="foot">Lift dates come from the agency's own record. The app never marks something lifted on its own.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">4b · Per-county pattern (from the app's own archive)</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/history/carroll</span></div>
+        <div class="screen">
+          <div class="brand">Carroll County — last 12 months</div>
+          <div class="reason">Built only from records this app has observed, with dates. Coverage grows over time; it is not an official count.</div>
+          <div class="statrow" style="display:flex;justify-content:space-between;font-size:12px;padding:8px 0;border-top:1px solid var(--line)">
+            <span>Boil-water notices observed</span><b>4</b></div>
+          <div class="statrow" style="display:flex;justify-content:space-between;font-size:12px;padding:8px 0;border-top:1px solid var(--line)">
+            <span>Currently active</span><b>1</b></div>
+          <div class="statrow" style="display:flex;justify-content:space-between;font-size:12px;padding:8px 0;border-top:1px solid var(--line)">
+            <span>HAB advisories observed</span><b>2</b></div>
+          <div class="note">Labeled as "observed by this app," never as an official statistic.</div>
+        </div>
+        <div class="foot">The first per-county frequency record for Arkansas that anyone can actually see — with provenance.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== 5. BROWSE ===================== -->
+  <h2>5 · Browse all Arkansas — NWA-first</h2>
+  <p class="sub">The NWA counties (Benton, Washington, Carroll, Madison) lead; everything else is one search away.</p>
+  <div class="row">
+    <div class="col">
+      <div class="cap">5a · Browse — mobile</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/browse</span></div>
+        <div class="screen">
+          <div class="search">⌕ Search any Arkansas system, lake, or county</div>
+          <div class="chips"><span class="chip on">NWA</span><span class="chip">All AR</span><span class="chip">Active only</span></div>
+          <div class="map m">
+            <div class="lake"></div>
+            <span class="pin act" style="top:38%;left:44%"></span>
+            <span class="pin non" style="top:24%;left:60%"></span>
+            <span class="pin non" style="top:60%;left:34%"></span>
+            <div class="callout" style="top:30%;left:46%">Riverside Resort — active boil notice</div>
+          </div>
+          <div class="listitem"><span class="li-l"><span class="reason">Riverside Resort at Kings River</span><span class="tl">Carroll</span></span><span class="badge b-act">Active</span></div>
+          <div class="listitem"><span class="li-l"><span class="reason">Beaver Lake</span><span class="tl">Benton / Carroll / Madison</span></span><span class="badge b-non">None found</span></div>
+        </div>
+        <div class="foot">Pins mirror published records only. No pin is ever shown for a place the agencies haven't posted.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">5b · Browse — laptop</div>
+      <div class="device laptop">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/browse — Arkansas</span></div>
+        <div class="screen wide">
+          <div class="appbar"><div><div class="brand">Browse Arkansas</div><div class="tag">Statewide · NWA shown first</div></div><div class="checked">Both sources checked 9:14 AM<br><a href="#">Sources &amp; limits</a></div></div>
+          <div class="grid2">
+            <div class="map l">
+              <div class="lake"></div>
+              <span class="pin act" style="top:30%;left:40%"></span>
+              <span class="pin act" style="top:66%;left:52%"></span>
+              <span class="pin non" style="top:22%;left:64%"></span>
+              <div class="callout" style="top:26%;left:42%">Carroll — active boil notice</div>
+              <div class="callout" style="top:62%;left:54%">Poinsett — active HAB advisory</div>
+            </div>
+            <div>
+              <div class="sect">Active right now (2)</div>
+              <div class="listitem"><span class="li-l"><span class="reason">Riverside Resort at Kings River</span><span class="tl">Boil notice · Carroll · Oct 1</span></span><span class="badge b-act">Boil</span></div>
+              <div class="listitem"><span class="li-l"><span class="reason">Lake Hogue</span><span class="tl">HAB advisory · Poinsett</span></span><span class="badge b-act">HAB</span></div>
+              <div class="sect mt">Recently lifted</div>
+              <div class="listitem"><span class="li-l"><span class="reason">Waldron Waterworks</span><span class="tl">Scott · Oct 8 → 12</span></span><span class="badge b-non">Lifted</span></div>
+              <div class="listitem"><span class="li-l"><span class="reason">Lake Atalanta</span><span class="tl">Benton · lifted Jul 12</span></span><span class="badge b-non">Lifted</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="foot">Two separate official classes (boil notice vs HAB advisory) are never merged into one number.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 6. SOURCES & LIMITS ===================== -->
+  <h2>6 · Sources &amp; limits + privacy</h2>
+  <p class="sub">The honesty page. It lists every source, its retrieval time, and what the app does <i>not</i> claim.</p>
+  <div class="row">
+    <div class="col">
+      <div class="cap">6a · Sources &amp; limits — laptop</div>
+      <div class="device laptop">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/sources</span></div>
+        <div class="screen wide">
+          <div class="appbar"><div><div class="brand">Sources &amp; limits</div><div class="tag">What we check, when, and what we never claim</div></div><div class="checked">Page built<br>Oct 13, 2026</div></div>
+          <div class="sect">Sources we mirror</div>
+          <div class="listitem"><span class="li-l"><span class="reason">ADH boil-water order list</span><span class="tl">health.arkansas.gov · HTML table · retrieved 9:14 AM</span></span><span class="badge b-off">Official</span></div>
+          <div class="listitem"><span class="li-l"><span class="reason">ADEQ HAB advisories</span><span class="tl">adeq.state.ar.us · JSON feed · retrieved 9:14 AM</span></span><span class="badge b-off">Official</span></div>
+          <div class="grid2" style="margin-top:6px">
+            <div class="card"><div class="sect">What we don't claim</div>
+              <div class="reason">We do not say water is safe. No notice is not proof of safety. We do not predict blooms. We do not test water, detect toxins or species, or give medical advice. We are not affiliated with ADH or ADEQ.</div></div>
+            <div class="card"><div class="sect">Your data</div>
+              <div class="reason">We store your chosen place and, if you opt in, one contact to alert. History stays on your device. Delete it any time from Alerts &amp; privacy. Nothing is published or sold.</div></div>
+          </div>
+          <div class="note">Matching rule: a record is shown for you only when the published system/lake name (or a documented alias, or a partial area that names your county) matches your choice. Partial-area notices are shown as written, never widened to an address.</div>
+        </div>
+        <div class="foot">If a source changes shape or goes down, the app shows "Data unavailable" and names the source — it never guesses.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 7. SAMPLE MODE ===================== -->
+  <h2>7 · Sample mode — for filming and demos</h2>
+  <p class="sub">The demo video must be repeatable even on a day with no active advisory. Sample data is physically separate, unmistakably labeled, and never blended with live records.</p>
+  <div class="row">
+    <div class="col">
+      <div class="cap">7a · Sample mode — mobile</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/?sample=1</span></div>
+        <div class="screen">
+          <div class="samplebar"><span class="tag2">Sample</span> Demo data — not real agency records</div>
+          <div class="appbar"><div><div class="brand">Water Alert</div><div class="tag">Watching: Riverside Resort (sample)</div></div><div class="checked">Sample<br>check</div></div>
+          <div class="card status s-sam">
+            <div class="rowhead"><span class="body">Boil water notice</span><span class="badge b-sam">Sample</span></div>
+            <div class="reason">Fictional record used to demonstrate the app. Not shown during normal use.</div>
+            <div class="btn act">See what to do</div>
+          </div>
+          <div class="note">Every screen in sample mode carries the banner. Exiting returns to live sources.</div>
+        </div>
+        <div class="foot">Sample mode is never a fallback for a failed source. A failed source is "Data unavailable."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 8. SPANISH ===================== -->
+  <h2>8 · Spanish — key screens</h2>
+  <p class="sub">Translated: status, advisory detail, next steps, and alerts settings. Agency guidance is quoted in both languages with a link to the official (English) original.</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="cap">8a · Home / estado — ES</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/es</span></div>
+        <div class="screen">
+          <div class="appbar"><div><div class="brand">Water Alert</div><div class="tag">Vigilando: Riverside Resort (Kings River)</div></div><div style="display:flex;gap:6px;align-items:center"><span class="lang">ES</span><span class="checked">Revisado<br>9:14</span></div></div>
+          <div class="card status s-act">
+            <div class="rowhead"><span class="body">Aviso de hervir el agua</span><span class="badge b-act">Activo</span></div>
+            <div class="reason">Emitido el 1 de oct. de 2026 · Condado de Carroll · sin levantar. No es una garantía de seguridad.</div>
+            <div class="btn act">Ver qué hacer</div>
+          </div>
+          <div class="card status s-non">
+            <div class="rowhead"><span class="body">Avisos de algas nocivas</span><span class="badge b-non">Ninguno</span></div>
+            <div class="reason">La ausencia de un aviso no es prueba de que el agua sea segura.</div>
+          </div>
+        </div>
+        <div class="foot">Las guías de las agencias se citan tal cual, con enlace al original.</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap">8b · Próximos pasos — ES</div>
+      <div class="device mobile">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">wateralert.app/es/notice</span></div>
+        <div class="screen">
+          <div class="tl">← Atrás</div>
+          <div class="rowhead"><span class="state">Aviso de hervir el agua</span><span class="badge b-act">Activo</span></div>
+          <div class="card"><div class="sect">Lo que dice ADH</div><div class="reason">Hervir el agua un minuto y dejar enfriar antes de beber, cocinar o cepillarse los dientes. <span class="micro">— citado de ADH; <a href="#">ver el original</a></span></div></div>
+          <div class="btn row2"><div class="btn">Compartir</div><div class="btn pri">Avisarme cuando se levante</div></div>
+          <div class="note">No damos consejos médicos ni decimos que el agua es "segura."</div>
+        </div>
+        <div class="foot">Teléfonos de las agencias disponibles en la parte inferior de cada pantalla.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="micro" style="max-width:940px;margin-top:10px">
+    Static synthetic design, prepared Oct 13, 2026. Illustrative content only — system names, dates, and reasons shown here are
+    examples, not a live feed. This file is a design artifact, not the shipped application.
+  </p>
+
+</body>
+</html>
