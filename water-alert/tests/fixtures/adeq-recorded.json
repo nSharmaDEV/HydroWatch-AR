@@ -1,0 +1,369 @@
+{
+  "updated": "September 28, 2026",
+  "advisories": [
+    {
+      "waterbody": "Lake Nimrod *",
+      "county": "Perry County",
+      "area": "Ola, AR",
+      "date": "July 29, 2014",
+      "lifted": "August 1, 2014"
+    },
+    {
+      "waterbody": "Gillham Lake *",
+      "county": "Howard County",
+      "area": "DeQueen, AR",
+      "date": "May 24, 2018",
+      "lifted": "June 13, 2018"
+    },
+    {
+      "waterbody": "Lake Bennett *",
+      "county": "Faulkner County",
+      "area": "Greenbrier, AR",
+      "date": "July 12, 2018",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Brewer Lake *",
+      "county": "Conway County",
+      "area": "Plumerville, AR",
+      "date": "August 10, 2018",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Harris Brake Lake *",
+      "county": "Perry County",
+      "area": "Perryville, AR",
+      "date": "May 1, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Conway *",
+      "county": "Faulkner County",
+      "area": "Mayflower, AR",
+      "date": "June 10, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Horseshoe Lake *",
+      "county": "Crittenden County",
+      "area": "Horseshoe Lake, AR",
+      "date": "June 21, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Horsehead Lake *",
+      "county": "Johnson County",
+      "area": "Hunt, AR",
+      "date": "August 20, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Iams Dog Park Pond *",
+      "county": "Washington County",
+      "area": "Fayetteville, AR",
+      "date": "August 30, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Wilson *",
+      "county": "Washington County",
+      "area": "Fayetteville, AR",
+      "date": "October 14, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Catherine - Spencer Bay *",
+      "county": "Garland and Hot Springs County",
+      "area": "Malvern, AR",
+      "date": "October 29, 2019",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Brewer Lake *",
+      "county": "Conway County",
+      "area": "Plumerville, AR",
+      "date": "May 1, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Conway *",
+      "county": "Faulkner County",
+      "area": "Mayflower, AR",
+      "date": "May 13, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Overcup *",
+      "county": "Conway County",
+      "area": "Morrilton, AR",
+      "date": "May 21, 2020",
+      "lifted": "July 2, 2020"
+    },
+    {
+      "waterbody": "Lake Fayetteville *",
+      "county": "Washington County",
+      "area": "Fayetteville, AR",
+      "date": "June 3, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Elmdale *",
+      "county": "Washington County",
+      "area": "Elm Springs, AR",
+      "date": "June 24, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Hamilton - Little Mazarn arm",
+      "county": "Garland County",
+      "area": "Hot Springs, AR",
+      "date": "July 10, 2020",
+      "lifted": "August 13, 2020"
+    },
+    {
+      "waterbody": "Lake Bennett *",
+      "county": "Faulkner County",
+      "area": "Greenbrier, AR",
+      "date": "July 27, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Poteau River near Waldron",
+      "county": "Scott County",
+      "area": "Waldron, AR",
+      "date": "August 7, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Brewer Lake *",
+      "county": "Conway County",
+      "area": "Plumerville, AR",
+      "date": "October 21, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Lake Charles *",
+      "county": "Lawrence County",
+      "area": "Powhatan, AR",
+      "date": "October 22, 2020",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Poteau River near Waldron",
+      "county": "Scott County",
+      "area": "Waldron, AR",
+      "date": "June 25, 2021",
+      "lifted": "N/A"
+    },
+    {
+      "waterbody": "Old River Lake",
+      "county": "Pulaski County",
+      "area": "Scott, AR",
+      "date": "May 26, 2022",
+      "lifted": "June 3, 2022"
+    },
+    {
+      "waterbody": "Victory Lake",
+      "county": "Clay County",
+      "area": "Corning, AR",
+      "date": "June 8, 2023",
+      "lifted": "July 6, 2023"
+    },
+    {
+      "waterbody": "Lake June",
+      "county": "LaFayette County",
+      "area": "Stamps, AR",
+      "date": "July 6, 2023",
+      "lifted": "September 8, 2023"
+    },
+    {
+      "waterbody": "Lake Hogue",
+      "county": "Poinsett County",
+      "area": "Waldenburg, AR",
+      "date": "September 19, 2023",
+      "lifted": "November 9, 2023"
+    },
+    {
+      "waterbody": "Bois D'arc Lake",
+      "county": "Hempstead County",
+      "area": "Hope, AR",
+      "date": "September 28, 2023",
+      "lifted": "November 2, 2023"
+    },
+    {
+      "waterbody": "Bois D'arc Lake",
+      "county": "Hempstead County",
+      "area": "Hope, AR",
+      "date": "May 30, 2024",
+      "lifted": "July 15, 2024"
+    },
+    {
+      "waterbody": "Lake Atalanta",
+      "county": "Benton County",
+      "area": "Rogers, AR",
+      "date": "July 31, 2024",
+      "lifted": "October 10, 2024"
+    },
+    {
+      "waterbody": "Lake Hogue",
+      "county": "Poinsett County",
+      "area": "Waldenburg, AR",
+      "date": "September 10, 2024",
+      "lifted": "November 25, 2024"
+    },
+    {
+      "waterbody": "Heritage Park Lake",
+      "county": "Clay County",
+      "area": "Piggott, AR",
+      "date": "September 23, 2024",
+      "lifted": "October 10, 2024"
+    },
+    {
+      "waterbody": "Lake Flint Creek",
+      "county": "Benton County",
+      "area": "Siloam Springs, AR",
+      "date": "September 24, 2024",
+      "lifted": "October 10, 2024"
+    },
+    {
+      "waterbody": "Lakewood Lake #1",
+      "county": "Pulaski County",
+      "area": "North Little Rock, AR",
+      "date": "October 29, 2024",
+      "lifted": "January 22, 2025"
+    },
+    {
+      "waterbody": "Lake Bennett",
+      "county": "Faulkner County",
+      "area": "Greenbrier, AR",
+      "date": "November 19, 2024",
+      "lifted": "January 21, 2025"
+    },
+    {
+      "waterbody": "Mattocks Park Pond",
+      "county": "Union County",
+      "area": "El Dorado, AR",
+      "date": "August 8, 2025",
+      "lifted": "August 27, 2025"
+    },
+    {
+      "waterbody": "Lake June",
+      "county": "Lafayette County",
+      "area": "Stamps, AR",
+      "date": "August 13, 2025",
+      "lifted": "December 3, 2025"
+    },
+    {
+      "waterbody": "Lake Desoto",
+      "county": "Garland County and Saline County",
+      "area": "Hot Springs Village, AR",
+      "date": "August 27, 2025",
+      "lifted": "September 12, 2025"
+    },
+    {
+      "waterbody": "Lake Omaha",
+      "county": "Fulton County",
+      "area": "Cherokee Village, AR",
+      "date": "August 28, 2025",
+      "lifted": "September 25, 2025"
+    },
+    {
+      "waterbody": "Lake Hogue",
+      "county": "Poinsett County",
+      "area": "Waldenburg, AR",
+      "date": "September 18, 2025",
+      "lifted": "November 5, 2025"
+    },
+    {
+      "waterbody": "Bear Creek Lake",
+      "county": "Lee County",
+      "area": "Marianna, AR",
+      "date": "September 26, 2025",
+      "lifted": "November 5, 2025"
+    },
+    {
+      "waterbody": "Stream by Waterfall Trail East of Lake Alma (coordinates 35.507114, -94.216947)",
+      "county": "Crawford County",
+      "area": "Alma, AR",
+      "date": "June 24, 2026",
+      "lifted": "July 23, 2026"
+    },
+    {
+      "waterbody": "Lake Desoto",
+      "county": "Garland and Saline Counties",
+      "area": "Hot Springs Village, AR",
+      "date": "July 22, 2026",
+      "lifted": "August 7, 2026"
+    },
+    {
+      "waterbody": "Spring Lake",
+      "county": "Yell County",
+      "area": "Belleville, AR",
+      "date": "July 23, 2026",
+      "lifted": "August 19, 2026"
+    },
+    {
+      "waterbody": "Lake Hamilton",
+      "county": "Garland County",
+      "area": "Hot Springs, AR",
+      "date": "July 24, 2026",
+      "lifted": ""
+    },
+    {
+      "waterbody": "Lake June",
+      "county": "Lafayette County",
+      "area": "Stamps, AR",
+      "date": "July 31, 2026",
+      "lifted": ""
+    },
+    {
+      "waterbody": "Bois d’Arc Lake",
+      "county": "Hempstead County",
+      "area": "Hope, AR",
+      "date": "August 12, 2026",
+      "lifted": ""
+    },
+    {
+      "waterbody": "Huston Lake on Big Huston Creek",
+      "county": "Perry County",
+      "area": "Perryville, AR",
+      "date": "August 17, 2026",
+      "lifted": ""
+    },
+    {
+      "waterbody": "Lake Sophia",
+      "county": "Garland and Saline Counties",
+      "area": "Hot Springs Village, AR",
+      "date": "August 20, 2026",
+      "lifted": "September 8, 2026"
+    },
+    {
+      "waterbody": "Lake Poinsett",
+      "county": "Poinsett County",
+      "area": "Harrisburg, AR",
+      "date": "September 3, 2026",
+      "lifted": ""
+    },
+    {
+      "waterbody": "Lake Sophia",
+      "county": "Garland and Saline Counties",
+      "area": "Hot Springs Village, AR",
+      "date": "September 10, 2026",
+      "lifted": "September 28, 2026"
+    },
+    {
+      "waterbody": "Lake Hogue",
+      "county": "Poinsett County",
+      "area": "Waldenburg, AR",
+      "date": "September 16, 2026",
+      "lifted": ""
+    },
+    {
+      "waterbody": "Mom's Lake",
+      "county": "Clay County",
+      "area": "Corning, AR",
+      "date": "September 22, 2026",
+      "lifted": ""
+    }
+  ]
+}

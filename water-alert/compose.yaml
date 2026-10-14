@@ -1,0 +1,14 @@
+# Local container rehearsal only; not a hosted deployment or real push test.
+services:
+  water-alert:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8788:8788"
+    environment:
+      WATER_ALERT_ORIGIN: http://localhost:8788
+      WATER_ALERT_PUSH_ENABLED: "false"
+    volumes:
+      - water-alert-live:/app/data/live
+volumes:
+  water-alert-live:
