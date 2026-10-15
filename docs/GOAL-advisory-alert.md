@@ -1,11 +1,12 @@
 # Goal — Water Alert (resident water-advisory alert app)
 
-Status: proposed, ready to build. Working name **TBD**.
+Status: local live ADH/ADEQ parsing, sample journey, durable change journal, per-device visit changes and opt-in PWA push implementation in `water-alert/`; sending disabled by default and real delivery gated.
+See `water-alert/README.md` for verified capabilities and remaining gates. Working name **TBD**.
 Branch `advisory-alert` · worktree `/Users/nirmay/Documents/advisory-alert` (off `d406832`).
 
-The resident sets their water ONCE — their town's public water system, their private well,
-and/or the lake they use — and the app watches the two official sources and speaks ONLY when
-something changes:
+The resident explicitly chooses their public water supplier and/or lake. A town name
+does not establish the supplier; private wells are outside notice coverage. The intended
+app watches two official sources and implements alerts on verified changes (host/configuration and real device delivery unverified):
 
 - ADH boil-water list: https://health.arkansas.gov/wa_engTraining/boilwaterorder.aspx (server-rendered GridView1 HTML)
 - ADEQ HAB advisories feed: https://adeq.state.ar.us/water/planning/hab/advisories.json
@@ -29,11 +30,13 @@ something changes:
    Screen"; Android/desktop via permission). Each alert names the place, the action, the date,
    and links to the official notice + next steps; a second notification fires when it is lifted.
    Document the iOS install requirement in onboarding. Fallback order: email → check-on-open
-   ("new since your last check"). Near-zero false alarms; silence when normal.
+   ("new since your last check"). [NEEDS: measured delivery reliability and false-alarm
+   evaluation.] Neither a false-alarm rate nor delivery is currently claimed.
 6. An **official next-steps panel** on every active alert: the agency's own guidance quoted and
-   linked (ADH boil-water steps; DEQ HAB Quick Action Guide), plus report links
-   (https://adeq.state.ar.us/complaints/), agency contacts, a share action, and "we'll tell you
-   when it's lifted." The app RELAYS published guidance; it never authors advice, never says
+   linked only after exact wording is verified; otherwise show a verification gap.
+   Report links and contacts require separate approval/verification. Provide a share action
+   and a clearly disconnected lift preference until delivery is verified. The app RELAYS
+   published guidance; it never authors advice, never says
    "safe," never gives medical advice.
 7. A glanceable status view; NWA-first (Benton, Washington, Carroll, Madison) default with
    statewide search.
@@ -53,8 +56,8 @@ something changes:
   freshness/staleness; failure → Data unavailable; blank-lifted = active.
   Fixtures live in tests/fixtures/ (recorded HTML/JSON).
 - `npm run build` passes and the app runs locally for a judge.
-- Documented expected alert frequency (a far-off county: ~5–15/yr; a single lake: ~0–1/summer;
-  ~360 silent days/yr).
+- [NEEDS: measured alert frequency over stated observation coverage.]
+  No yearly counts or silent-day estimates are established.
 - A truthful AI-assistance / student-contribution disclosure.
 
 ## Constraints
@@ -69,13 +72,14 @@ something changes:
 
 ## Iteration policy
 
-(0) Wireframe every state first. Then build source → parser → tests green → resolver → history →
-alerts → UI → guidance panel, verifying each layer with fixtures before the next. Keep the
-two-source failure path honest at every step.
+(0) Wireframes established. Build the isolated sample resident journey first, then
+continue source/proxy, resolver, history and delivery integrations with tests. A blocked
+source gates only its affected integration, not independent sample/local work. Preserve
+the two-source failure path; no invented fixtures or guidance.
 
 ## Stop (blocked) when
 
-A source changes shape or is unavailable and the honest answer is "Data unavailable"; a claim
+Stop only the affected integration when a source changes shape or is unavailable and the honest answer is "Data unavailable"; a claim
 can't be made truthfully; the next step requires the student's own CAC eligibility/contribution
 verification or any account/publish/submit action (including Web-Push hosting/VAPID keys);
 or the app isn't demo-ready as the Oct 26, 2026 deadline nears.
@@ -83,7 +87,7 @@ or the app isn't demo-ready as the Oct 26, 2026 deadline nears.
 ## Confirmed decisions
 
 - Concept: resident water advisory finder/alert. Coverage: statewide, NWA-first.
-- Live via a small serverless proxy; React + Vite; installed PWA with Web Push.
+- Target: a small serverless proxy; React + Vite; installed PWA with Web Push. A separate Vercel-native function path now uses PostgreSQL state, shared job leases/cooldowns, pre-send claims and authenticated cron; local embedded PostgreSQL tests pass. The original local/container service still uses durable disk. Hosted provisioning/costs, platform verification and real-device delivery remain open; see `water-alert/VERCEL.md` and `water-alert/DEPLOYMENT.md`.
 - Alerts: iPhone-style Web Push; iOS requires Add to Home Screen (16.4+); fallbacks email →
   check-on-open.
 - Spanish on key screens.

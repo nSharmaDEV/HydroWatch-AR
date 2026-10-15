@@ -1,6 +1,12 @@
 import { journeyEn, journeyEs } from './journey-strings'
+import { checkEn, checkEs } from './source-check-strings'
+import { adeqEn, adeqEs } from './adeq-guidance'
+import { alertEn, alertEs } from './supplier-alert-strings'
 
 export const en = {
+  ...alertEn,
+  ...adeqEn,
+  ...checkEn,
   ...journeyEn,
   sinceVisit: 'Changes since your previous visit', sinceVisitInfo: 'Observed changes for your watched places. This is not a delivery receipt or a complete official history.',
   home: 'Home', browse: 'Places', history: 'History', settings: 'Settings',
@@ -30,7 +36,7 @@ export const en = {
   noWatches: 'Choose a place to see its published advisory status.', refresh: 'Check sources', refreshing: 'Checking…',
   limits: 'Only ADH boil-water notices and ADEQ HAB advisories. No water testing, prediction, private-well monitoring, medical advice or safety certification. Disappearance from a feed never confirms a lift. Alerts are not an emergency service.',
   sourceCoverage: 'Live records come from the two agency feeds. Search combines a small verified directory with observed places, not every supplier. Directory sources establish identity, not current conditions or monitoring coverage. Failed checks or uncertain record status remain unavailable, never an all-clear.',
-  unknownLift: 'The agency lists the lifted date as “N/A”. This app cannot confirm whether this notice is active or lifted. Check the agency source.',
+  unknownLift: 'ADEQ’s current-advisories table excludes records whose lifted field is “N/A”. No lift date is provided. This app cannot confirm whether this advisory is active or lifted and does not send new/lifted alerts for this record.',
   habScenario: 'Sample HAB source available', storageError: 'Device storage is unavailable. Your choices will not persist.',
   shareCopied: 'Notice text copied.', shareFailed: 'Sharing was unavailable. Copy the agency source link below.',
   sampleShare: 'SAMPLE — fictional notice, not current agency data.', saved: 'Saved on this device only; delivery is not connected.',
@@ -39,6 +45,9 @@ export const en = {
 }
 export type Strings = typeof en
 export const es: Strings = {
+  ...alertEs,
+  ...adeqEs,
+  ...checkEs,
   ...journeyEs,
   sinceVisit: 'Cambios desde tu visita anterior', sinceVisitInfo: 'Cambios observados en los lugares seguidos. No confirma la entrega ni representa un historial oficial completo.',
   home: 'Inicio', browse: 'Lugares', history: 'Historial', settings: 'Ajustes', myWater: 'Mi agua', subtitle: 'La última información disponible para los lugares que sigues.',
@@ -53,7 +62,7 @@ export const es: Strings = {
   watched: 'Tus lugares', language: 'Idioma', sources: 'Fuentes y límites de cobertura', privacy: 'Privacidad y datos guardados', delete: 'Eliminar datos guardados', privacyText: 'Sin notificaciones, tus lugares e idioma permanecen en este navegador. Al activarlas, el servidor guarda el destino push, claves de cifrado, lugares, idioma e intentos de envío. Las suscripciones vencen 90 días después de guardar; los registros vencidos se eliminan mientras funciona el servidor. Los servidores apagados y las copias de respaldo necesitan eliminación por separado. Los servicios push del navegador transportan avisos cifrados. No solicitamos correo, dirección ni cuenta. Desactivar/eliminar borra la suscripción del servidor y la credencial del navegador; las observaciones se conservan por separado. Si falla la eliminación, reintenta antes de borrar el almacenamiento del navegador. No garantizamos la seguridad del almacenamiento.',
   historyTitle: 'Historial observado', historyText: 'Avisos observados por esta app, no totales históricos oficiales. La desaparición no confirma que se levantó un aviso.', since: 'Inicio de cobertura', advisories: 'avisos observados', noHistory: 'Todavía no se han observado avisos.', noResults: 'No hay registros coincidentes en este catálogo limitado. Esto no significa que no haya avisos. Consulta la fuente oficial; no adivinaremos tu proveedor.', noWatches: 'Elige un lugar para ver su estado publicado.', refresh: 'Consultar fuentes', refreshing: 'Consultando…',
   limits: 'Solo avisos de hervir el agua de ADH y avisos de algas de ADEQ. Sin análisis del agua, predicción, monitoreo de pozos, consejo médico ni certificación de seguridad. La desaparición de un registro no confirma su levantamiento. No es un servicio de emergencia.', sourceCoverage: 'Los registros reales provienen de las dos fuentes oficiales. La búsqueda combina un pequeño directorio verificado con lugares observados, no todos los proveedores. Las fuentes del directorio confirman identidad, no condiciones actuales ni cobertura de monitoreo. Una consulta fallida o un estado incierto permanece no disponible, nunca indica que todo está bien.',
-  unknownLift: 'La agencia indica “N/A” como fecha de levantamiento. Esta app no puede confirmar si el aviso sigue activo o se levantó. Consulta la fuente oficial.',
+  unknownLift: 'La tabla de avisos actuales de ADEQ excluye los registros cuyo campo de levantamiento indica “N/A”. No se proporciona una fecha de levantamiento. Esta app no puede confirmar si este aviso está activo o se levantó y no envía avisos nuevos ni de levantamiento para este registro.',
   habScenario: 'Fuente HAB de muestra disponible', storageError: 'El almacenamiento del dispositivo no está disponible. Tus opciones no se conservarán.', shareCopied: 'Texto copiado.', shareFailed: 'No se pudo compartir. Copia el enlace oficial de abajo.', sampleShare: 'MUESTRA — aviso ficticio, no son datos actuales.', saved: 'Guardado solo en este dispositivo; el envío no está conectado.', newSince: 'Observado por primera vez en esta consulta', recordsLanguage: 'Los registros de agencias permanecen en su idioma publicado. La traducción de la interfaz no es una instrucción oficial.',
   pushEnable: 'Activar notificaciones del dispositivo', pushUpdate: 'Guardar opciones de avisos', pushDisable: 'Desactivar y eliminar suscripción', pushUnavailable: 'Las notificaciones del servidor no están configuradas. Aquí no se activan avisos del dispositivo.', pushUnsupported: 'Este navegador no puede usar notificaciones aquí. Usa un navegador compatible con HTTPS; en iPhone, abre la app instalada en la pantalla de inicio.', pushChecking: 'Consultando la configuración de notificaciones…', pushInfo: 'Activa avisos futuros publicados para los lugares seguidos y levantamientos explícitos si los seleccionas. No se envía todo el historial. Guarda las opciones después de cambiar lugares, levantamientos o idioma; las opciones anteriores permanecen hasta actualizar o desactivar. El correo no está conectado.', pushSaved: 'Suscripción guardada; la entrega real no está verificada. La aceptación del navegador o proveedor no demuestra la entrega. No es un servicio de emergencia.', pushDirty: 'Las opciones cambiaron. Guárdalas en Ajustes o desactiva la suscripción; el servidor conserva las opciones anteriores.', pushFailed: 'No se pudo completar la solicitud. Revisa el permiso y la conexión y reintenta. Si falla la eliminación del servidor, se conserva la credencial para reintentar.', pushRemoved: 'Suscripción eliminada. Notificaciones desactivadas.', pushBusy: 'Procesando…', pushNeedsPlaces: 'Selecciona al menos un lugar real observado antes de activar avisos.',
 }

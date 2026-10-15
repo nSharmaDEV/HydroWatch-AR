@@ -51,10 +51,10 @@ it('explains an ADEQ N/A status without displaying an active advisory or a lift'
   await user.click(screen.getByRole('button', { name: /A lake or waterbody/ }))
   await user.click(screen.getByRole('button', { name: 'Select Uncertain Lake' }))
   await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
-  expect(screen.getByText(/The agency lists the lifted date as “N\/A”/)).toBeVisible()
+  expect(screen.getByText(/“N\/A” is excluded from ADEQ’s current table/)).toBeVisible()
   expect(screen.queryByText('Harmful-algal-bloom advisory')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'View details Uncertain Lake' }))
-  expect(screen.getByText(/The agency lists the lifted date as “N\/A”/)).toBeVisible()
+  expect(screen.getByText(/ADEQ’s current-advisories table excludes records/)).toBeVisible()
 })
 
 describe('sample resident journey', () => {
@@ -66,7 +66,8 @@ describe('sample resident journey', () => {
     await user.click(screen.getByRole('button', { name: 'Start sample journey' }))
     await user.click(screen.getByRole('button', { name: 'Select Sample Creek Water' }))
     await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
-    await user.click(screen.getByRole('button', { name: 'Understand this notice Sample Creek Water' }))
+    await user.click(screen.getAllByRole('button', { name: 'About this supplier' })[0])
+    await user.click(screen.getByRole('button', { name: 'Notice details' }))
     expect(screen.getByRole('heading', { name: 'Agency guidance' })).toBeVisible()
     expect(screen.getByText(/Exact agency instructions have not been verified/)).toBeVisible()
     await user.click(screen.getByText('Review alert options', { selector: 'summary' }))

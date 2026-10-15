@@ -50,6 +50,19 @@ it('shares cooldowns and leases, and an old worker cannot release a newer lease'
   await b.release('sources', newer!)
   expect(await a.claim('sources', 0, 30000)).toBeTruthy()
 })
+it('migrates legacy JSONB without fabricated checks and persists evidence across independent instances', async () => {
+  const { pool } = await setup()
+  const legacy = emptyState()
+  await new PostgresCell(pool, 'observations', emptyState).update(state => { Object.assign(state, legacy) })
+  const first = new ObservationStore(new PostgresCell(pool, 'observations', emptyState))
+  const second = new ObservationStore(new PostgresCell(pool, 'observations', emptyState))
+  expect((await second.read()).sources[0].checks).toEqual([])
+  await first.success('ADH', [], '2026-10-14T12:00:00Z')
+  await second.failure('ADH', 'Timeout', '2026-10-14T12:05:00Z')
+  const source = (await first.read()).sources[0]
+  expect(source.checks?.map(c => c.outcome)).toEqual(['success', 'failure'])
+  expect(source.lastSuccessfulCheck?.records).toEqual([])
+})
 it('bounds rate counters across workers rather than trusting per-function memory', async () => {
   const { pool } = await setup()
   let now = 1000000

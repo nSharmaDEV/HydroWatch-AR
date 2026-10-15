@@ -12,7 +12,13 @@ export interface Notice {
   guidance?: { quote: string; url: string; verifiedAt: string };
   liftStatus?: 'unknown';
 }
-export interface SourceSnapshot { agency: Agency; records: Notice[]; retrievedAt: string | null; lastSuccessAt: string | null; error: string | null }
+export type SourceCheck = { at: string; outcome: 'success'; records: Notice[] } | { at: string; outcome: 'failure'; error: string }
+export interface SourceSnapshot {
+  agency: Agency; records: Notice[]; retrievedAt: string | null; lastSuccessAt: string | null; error: string | null;
+  checks?: SourceCheck[];
+  lastSuccessfulCheck?: Extract<SourceCheck, { outcome: 'success' }> | null;
+  historyStartedAt?: string;
+}
 export const SOURCES = {
   ADH: 'https://health.arkansas.gov/wa_engTraining/boilwaterorder.aspx',
   ADEQ: 'https://adeq.state.ar.us/water/planning/hab/advisories.json',

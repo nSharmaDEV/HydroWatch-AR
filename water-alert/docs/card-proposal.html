@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Card proposal — Horseshoe Lake (mockup, not implemented)</title>
+<link rel="stylesheet" href="../src/styles.css" />
+<style>
+  body { margin: 0; }
+  main { max-width: 860px; padding: 32px 20px 60px; margin: auto; }
+  .mock-note { background: #fff8e1; border: 1px solid #e8d48a; border-radius: 10px; padding: 16px 18px; font-size: .9rem; margin-bottom: 26px; }
+  .mock-note b { display: block; margin-bottom: 6px; }
+  .grid { display: grid; gap: 22px; }
+  .section-label { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 30px 0 10px; font-weight: 700; }
+  .timeline { border-left: 2px solid #c9d4df; margin: 4px 0 0 5px; padding-left: 18px; }
+  .tl-row { position: relative; padding: 0 0 14px; }
+  .tl-row .event-dot { position: absolute; left: -24px; top: 4px; }
+  .tl-row p { margin: 2px 0 0; }
+  .tl-row .tl-label { font-size: .92rem; color: #465769; font-weight: 600; }
+  .tl-row .tl-value { margin: 0; }
+  .tl-sub { color: var(--muted); font-size: .85rem; margin: 2px 0 0; }
+  .diff { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 4px 22px 18px; }
+  .diff li { margin: 10px 0; font-size: .92rem; }
+  .quote { border-left: 3px solid var(--teal); margin: 10px 0 0; padding: 2px 0 2px 14px; color: #294055; }
+  blockquote.quote { margin-top: 10px; }
+  .guidance-extra { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 12px; font-size: .9rem; }
+  .guidance-extra ul { margin: 8px 0 0; padding-left: 20px; }
+  .guidance-extra li { margin: 5px 0; }
+  .verified { color: var(--muted); font-size: .78rem; margin: 10px 0 0; }
+  .status-card.hab { border-top-color: #7950b5; }
+  .status-card.unavailable { border-top-color: #7b8997; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Card proposal · mockup</h1>
+  <p class="mock-note"><b>Not implemented — visual proposal only.</b>
+  Built with the app's real stylesheet (<code>src/styles.css</code>). Strings and fields shown here are the Tier&nbsp;1 + 3a + 3b changes discussed; every added sentence must stay verifiable against <code>server/parsers.ts</code>, <code>src/domain.ts</code> and ADEQ's published page. Dates below are from the live fetch on <b>14 Oct 2026</b> (feed <code>updated</code> = 28 Sep 2026).</p>
+
+  <p class="section-label">1 · History card — proposed (unknown lift date)</p>
+  <div class="grid">
+    <article class="panel history-record">
+      <h2>Horseshoe Lake <span aria-hidden="true">*</span></h2>
+      <p>Crittenden County</p>
+
+      <div class="timeline">
+        <div class="tl-row">
+          <span class="event-dot hab" aria-hidden="true"></span>
+          <p class="tl-label">Agency issued</p>
+          <p class="tl-value">June 21, 2019</p>
+        </div>
+        <div class="tl-row">
+          <span class="event-dot" aria-hidden="true">?</span>
+          <p class="tl-label">Agency lifted</p>
+          <p class="tl-value">Not provided — the record reads “N/A”</p>
+          <p class="tl-sub">ADEQ’s own current-advisories table does not display this row, and it publishes no lift date. This app therefore does not treat it as an active advisory and does not notify for it in either direction.</p>
+        </div>
+        <div class="tl-row">
+          <span class="event-dot" aria-hidden="true">·</span>
+          <p class="tl-label">Feed last updated by ADEQ</p>
+          <p class="tl-value">September 28, 2026</p>
+        </div>
+        <div class="tl-row" style="padding-bottom:0">
+          <span class="event-dot" aria-hidden="true">·</span>
+          <p class="tl-label">Observed by this app</p>
+          <p class="tl-value">First June 13, 2026 · last October 14, 2026, 12:21 PM CDT</p>
+          <p class="tl-sub">Present in 47 of 47 successful retrievals. An observation means the row was in the feed — not that the agency re-confirmed it.</p>
+        </div>
+      </div>
+
+      <p class="quiet-note">Source: ADEQ · <a href="https://adeq.state.ar.us/water/planning/hab/advisories.json" target="_blank" rel="noreferrer">advisories.json</a></p>
+    </article>
+
+    <article class="panel">
+      <h2 style="margin-bottom:6px">Agency guidance</h2>
+      <p style="margin:0;color:var(--muted);font-size:.9rem">Verbatim from ADEQ’s HAB page — not advice written by this app.</p>
+      <blockquote class="quote">“A water body with no HAB advisory is not an indication that a bloom is not present. Blooms are unpredictable. They can develop rapidly and may move across a water body due to wind or water current. If you suspect that a water body is experiencing a harmful algal bloom, it is best to avoid.”</blockquote>
+      <div class="guidance-extra">
+        <p style="margin:0"><b>If you suspect a bloom:</b> keep children and pets away, avoid contact, and report it.</p>
+        <ul>
+          <li>Avoid areas of algae accumulation, especially for pets and small children</li>
+          <li>Swimming, wading, skiing and jet skiing are discouraged near visible blooms</li>
+          <li>Avoid direct contact with water, and wash with clean water after any contact</li>
+          <li>Clean fish well with potable water and eat the fillet portion only</li>
+          <li>Contact a medical professional after exposure if nausea, rashes, diarrhea or breathing problems begin</li>
+        </ul>
+        <p style="margin:12px 0 0">Report a bloom: <b>(501) 682-0744</b> · <a href="https://adeq.state.ar.us/complaints/" target="_blank" rel="noreferrer">ADEQ HAB report form</a><br />
+        Possible bloom illness: <b>(501) 280-4168</b> · <a href="mailto:adh.ep.its@arkansas.gov">adh.ep.its@arkansas.gov</a></p>
+        <p class="verified">Quoted from adeq.state.ar.us/water/planning/hab/ · retrieved 14 Oct 2026 · agency text is not translated by this app</p>
+      </div>
+    </article>
+  </div>
+
+  <p class="section-label">2 · Same place on My Water — proposed</p>
+  <article class="status-card unavailable" style="max-width:520px">
+    <div class="card-title"><div><h2>Horseshoe Lake</h2><p>Crittenden County<br />Check source: Arkansas Division of Environmental Quality</p></div></div>
+    <p class="status-label"><span class="status-symbol" aria-hidden="true">?</span>Data unavailable</p>
+    <p style="font-size:.92rem">We cannot confirm the current status. ADEQ lists the lifted date as “N/A” and does not display this row in its own current-advisories table. No advisory is claimed and no all-clear is claimed.</p>
+    <a class="secondary official-list" href="https://adeq.state.ar.us/water/planning/hab/default.aspx" target="_blank" rel="noreferrer">Open ADEQ’s advisory list<span aria-hidden="true">↗</span></a>
+    <button class="card-action">View details →</button>
+  </article>
+
+  <p class="section-label">3 · Contrast — a genuinely current advisory (blank lift date)</p>
+  <article class="status-card hab" style="max-width:520px">
+    <div class="card-title"><div><h2>Lake Hamilton</h2><p>Garland County<br />Check source: Arkansas Division of Environmental Quality</p></div></div>
+    <p class="status-label"><span class="status-symbol" aria-hidden="true">!</span>Harmful-algal-bloom advisory</p>
+    <div class="record-facts">
+      <p><b>Published affected area</b><br />Hot Springs, AR</p>
+      <p><b>Agency issued</b><br />July 24, 2026</p>
+    </div>
+    <p class="quiet-note">No lift date published. Shown as current because ADEQ’s own table lists it.</p>
+    <a class="secondary official-list" href="https://adeq.state.ar.us/water/planning/hab/default.aspx" target="_blank" rel="noreferrer">Open ADEQ’s advisory list<span aria-hidden="true">↗</span></a>
+    <button class="primary card-action">Understand →</button>
+  </article>
+
+  <p class="section-label">4 · What changed vs today</p>
+  <div class="diff">
+    <ul>
+      <li><b>Copy:</b> the “cannot confirm whether active or lifted” sentence becomes a checkable statement (ADEQ's own table omits this row) plus an explicit description of what the app does about it.</li>
+      <li><b>New fields on the history card:</b> published affected area, feed-updated date, first observed, and an observation count — all already stored, none newly claimed.</li>
+      <li><b>Agency guidance:</b> the “guidance has not been verified” gap is filled with verbatim ADEQ text, a link and a retrieval date.</li>
+      <li><b>Unchanged:</b> still not “active”, still not “safe”, still no notification in either direction, still three visually distinct classes.</li>
+      <li><b>Still open:</b> the official meaning of “N/A” and the asterisk — one email to <a href="mailto:ee.habs@arkansas.gov">ee.habs@arkansas.gov</a> closes it.</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>

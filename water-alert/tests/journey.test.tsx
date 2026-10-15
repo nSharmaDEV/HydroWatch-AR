@@ -63,9 +63,11 @@ it('labels retained failed-source notices as previous observations, with questio
   const card = screen.getByRole('article')
   expect(card).toHaveClass('unavailable')
   expect(within(card).getByText('?')).toBeVisible()
-  expect(within(card).getByText(/^Previously observed notice/)).toBeVisible()
+  expect(within(card).getByText('Current advisory status unavailable.')).toBeVisible()
+  expect(within(card).queryByText('No successful check recorded yet for this supplier.')).not.toBeInTheDocument()
   expect(within(card).queryByText('Boil-water notice')).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'View details Real supplier' }))
+  await user.click(screen.getByRole('button', { name: 'About this supplier' }))
+  await user.click(screen.getByRole('button', { name: 'Notice details' }))
   expect(screen.getByText(/Previously observed boil-water notice/)).toBeVisible()
   expect(screen.queryByText('Published \(this record\)')).not.toBeInTheDocument()
 })
@@ -81,7 +83,7 @@ it('keeps agency dates verbatim and formats only app timestamps with language an
 
 it('describes feed retrieval and browser/server deletion accurately in both languages', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={data} />)
-  expect(screen.getByText(/We retrieve the two official feeds/)).toBeVisible()
+  expect(screen.getByText(/We check official ADH and ADEQ notices/)).toBeVisible()
   await user.click(nav('Settings'))
   await user.click(screen.getByRole('button', { name: /Privacy and stored data/ }))
   expect(screen.getByText(/browser preferences and any server notification record/)).toBeVisible()

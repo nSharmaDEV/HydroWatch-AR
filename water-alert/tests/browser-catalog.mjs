@@ -54,7 +54,7 @@ try {
     assert.match(await lake.innerText(), /Published area 1/)
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
     await page.screenshot({ path: `${output}/${width}-${language}-synthetic-home.png`, fullPage: true })
-    await lake.getByRole('button').click()
+    await lake.locator('.card-action').click()
     assert.match(await page.locator('.detail-status').innerText(), /Published area 1/)
     await nav(language === 'en' ? 'History' : 'Historial').click()
     assert.equal(await page.locator('.history-record').count(), 3)

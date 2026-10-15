@@ -29,8 +29,8 @@ export class SourceRunner {
       await this.store.capture(agency, body, metadata)
       error = 'Source format unavailable (schema or empty-feed validation failed)'
       const records = agency === 'ADH' ? parseADH(body) : parseADEQ(body)
-      await this.store.success(agency, records, at)
       await this.store.capture(agency, body, { ...metadata, schemaValidated: true })
+      await this.store.success(agency, records, at)
       return
     } catch { /* Never replace prior records with a fabricated empty snapshot. */ }
     await this.store.failure(agency, error, at)

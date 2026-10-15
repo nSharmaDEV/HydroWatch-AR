@@ -7,6 +7,160 @@ The root `CHANGELOG.md` remains the history of the earlier HydroWatch apps.
 
 ## [Unreleased] — 2026-10-13
 
+### One-tap provider contact — 2026-10-14
+
+- Added visible **Contact water provider** sections to supplier cards and notice
+  details, with call links and organization email links where available, in EN/ES.
+- Checked ADH directory contact fields for Leisure Hills, Fayetteville,
+  Springdale, Rogers and Bentonville; exact supplier-ID matching, source links and
+  check dates prevent guessed contacts. Unknown suppliers get bill/park-management
+  guidance. Lakes and sample mode do not show real provider contact actions.
+- Links open the user's phone/email app, not an in-site delivery service. Directory
+  hours, response times and successful calls/emails are not verified.
+- Verified locally: 183 tests and production build pass; browser checks at
+  1280/390/320px in EN/ES passed without overflow or page errors. No real calls or
+  emails initiated; no deployment performed.
+
+### Compact supplier card refinement — 2026-10-14
+
+- Shortened card labels to **Affected area**, **Reason**, **Issued** and **Active**;
+  normalized uppercase county display. Exact matching supplier/whole-system
+  wording becomes **Entire system**, without shortening exceptions or other areas.
+- Formatted recognized ADH issue date/time fields to short dates and minutes;
+  retained explicit source time zones and never inferred an absent zone. Original
+  area and issued text remain in the info popup; stored/history text is unchanged.
+- Tightened heading spacing, kept 24px desktop padding, used 21px supplier and
+  18px alert headings with 15–16px body text and 12px metadata gaps. Dotted leaders,
+  right-aligned values, natural wrapping and content-driven height remain.
+- Verified locally: 173 tests, production build and supplier/source-activity/journey
+  browser checks pass. Reviewed complete Leisure Hills pages including the sidebar
+  at normal zoom at 1280/1440/390/320px, with original popup evidence and no overflow.
+  No deployment, source/storage changes or real notifications from this work batch.
+
+### My Water layout and supplier info — 2026-10-14
+
+- Matched the approved layout with compact white supplier cards, a top-right info
+  button, restrained status treatment and dotted label/value leaders for genuine
+  affected-area, reason and agency-issued fields. Unavailable findings retain
+  explicitly historical notice facts, never a fabricated active status.
+- Moved safety/coverage notes, instructions, the official link, actual saved
+  check/attempt time and collapsed technical activity into a native modal.
+  Keyboard opening, Escape/Close and focus return are verified. The existing
+  detail/share journey remains available through **Notice details** in the modal.
+- Kept official **Alert history** collapsed with one left chevron. Unboxed the
+  sidebar, added **Manage alerts** and existing device-delivery status, and kept
+  **Add a place** directly below the watched cards. Mobile stacks without the
+  vertical separator; published text wraps without invented values.
+- Verified locally: 163 tests and production build pass; EN/ES supplier browser
+  checks cover 1280/390/320px, popup/history keyboard interactions and unavailable,
+  empty, lifted and missing-field states. Source-activity and journey browser
+  regressions pass. Reviewed saved Leisure Hills ADH facts at 1280/390px with
+  unchanged agency dates and retrieval evidence; API responses were intercepted.
+  No deployment, live checks, record changes or real notifications.
+
+### Supplier alert history — 2026-10-14
+
+- Replaced the supplier card's primary Check history with collapsed **Alert history**
+  from exact supplier/ADH/source-matched retained notices. Shows official facts,
+  explicit missing-field labels, sourced guidance when retained, and separate app
+  observations; failed/repeated checks and disappearance never become lift events.
+- Moved last-success evidence, failures, grouping and retention/storage explanations
+  into collapsed **Data-source activity** on cards/details. Current status remains
+  fail-closed and the default supplier card stays compact; ADEQ UI is unchanged.
+- Added genuine source-specific history-start evidence for new sources; legacy
+  state without start/observation evidence shows an unknown start, not a guessed
+  date. Existing notice archives are reused without check-log backfill or migration.
+  ADH per-notice guidance remains unretained and explicitly missing.
+- Verified locally: 161 tests pass with `npm test -- --maxWorkers=2` and the
+  production build passes; advisory
+  browser checks cover active, lifted, missing, empty, failed and disappeared
+  states at 1440/390/320px in EN/ES, with keyboard toggles and no overflow.
+  Data-source activity, ADEQ, catalog and journey browser regressions also pass.
+  No deployment,
+  publication, live record changes or real notifications.
+
+### Supplier check-history polish — 2026-10-14
+
+- Shortened supplier history to one ADH-specific introduction; removed duplicate
+  source/retrieval-success lines and moved retention/provenance explanations into
+  Supplier details. History and supplier/coverage disclosures remain collapsed.
+- Added local date headings and compact expandable saved-success count/time-range
+  rows with CDT/CST, readable 15px body text, tighter spacing and right-aligned,
+  keyboard-operable full-row disclosures. Individual saved timestamps remain
+  available; identical failures never group, nor do successes across a failure,
+  changed published result or local-date boundary.
+- Current failure remains unavailable; previous successful evidence stays explicitly
+  historical. No storage/parser changes, invented evidence, deployment or real sends.
+- Verified locally: 152 tests and production build pass; supplier browser checks
+  cover 1440/1280/390/320px in EN/ES, keyboard toggles, readable text, wrapping and
+  overflow. Saved Bentonville evidence was also reviewed at 1280/390px without
+  changing it; ADEQ-card browser checks remain green.
+
+### ADEQ advisory cards and verified guidance — 2026-10-14
+
+- Clarified English/Spanish unknown-lift copy: ADEQ's current table excludes
+  `lifted: "N/A"`; this does not establish active or lifted status. Home cards keep
+  short copy; history/details explain the exclusion and lack of new/lifted alerts.
+- ADEQ history now distinguishes agency-issued/feed-updated dates from genuine
+  first/last app observations, explicitly labels the missing N/A lift date, and
+  explains that retrieval is not agency reconfirmation. No illustrative counts or
+  dates were added; the bounded check journal cannot establish lifetime counts.
+- Bundled general ADEQ HAB quotations and reporting/illness contacts, verified
+  against the official page on October 14, 2026, with source/date and English
+  quotation labels in both languages. Reusable detail/history guidance disclosures
+  do not fetch per card or invent advisory-specific reasons.
+- Verified locally: `npm test -- --maxWorkers=2` (151 passed), `npm run build`,
+  ADEQ-card and source-check browser checks at 1440/390/320px in EN/ES; existing
+  journey and catalog browser checks also pass. API-intercepted browser checks
+  cover unknown home/detail/history, guidance keyboard disclosure, current HAB,
+  provenance and overflow. No deployment, real notification sends or physical-device
+  verification. ADH, parser/state semantics, empty-feed guard and live/sample
+  isolation unchanged.
+
+### Compact supplier advisory cards — 2026-10-14
+
+- Simplified supplier cards to one finding and saved check/attempt time, county
+  and ADH identity, a short water-safety limitation and the official ADH list link.
+  Check history and coverage start collapsed; Supplier details opens the existing
+  detail view. Added bilingual labels, right-aligned disclosure indicators and
+  content-height layout with stacked mobile actions and visible keyboard focus.
+- Failed checks remain unavailable, with compact genuine last-success evidence
+  and historical caution, or an explicit no-success message. Stale and unknown-lift
+  results remain unconfirmed. Preserved evidence retention, exact matching,
+  freshness rules, fictional sample isolation and existing waterbody presentation.
+- Verified locally: **140 tests passed**, TypeScript/production build, **8** mocked
+  browser journeys, **4** catalog journeys and **6** source-history journeys.
+  Reviewed desktop/mobile EN/ES screenshots, including compact no-match, active,
+  failure and no-success states. No deployment, hosted mutations or real notifications.
+
+### Source-check evidence — 2026-10-14
+
+- Added bilingual watch-card historical-result panels, actual latest-attempt rows,
+  collapsed keyboard-accessible source-check timelines, consecutive repeated-check
+  groups and progressive reveal. Current unavailable stays neutral and primary;
+  official ADH/ADEQ advisory-list links are separate from supplier/coverage details.
+  Failed retrieval, invalid format, stale, offline and never-checked explanations
+  are distinct. No missing evidence is interpreted as historical no-match.
+
+- Added durable actual success/failure outcomes and complete successful feed evidence
+  to the shared local JSON/PostgreSQL JSONB observation store. Each agency retains
+  at most 64 checks within 30 days, plus one last-success snapshot; a 1 MB journal
+  budget removes older complete checks, always preserving the newest check.
+  Pruning occurs on its next check. Legacy records gain empty history fields without invented
+  checks or archive-derived no-match results. No SQL/grant changes or hosted migration
+  were performed. Notification events and parser/freshness rules remain unchanged.
+
+- Added isolated fictional sample check evidence. Validated captures now persist
+  before committing a successful check, preventing contradictory success/failure
+  journal entries when capture persistence fails.
+- Verified locally: **136 tests passed**, TypeScript/production build, **8** existing
+  mocked browser journeys, **4** catalog journeys and **6** source-history journeys
+  (desktop/mobile, EN/ES, keyboard expansion, grouping and progressive reveal).
+  Restarted the local development servers at the user's request with push disabled.
+  Both agency startup checks succeeded and recorded genuine successful evidence.
+  No deployment, real notification sending or hosted migration; hosted platform,
+  real-device and human Spanish review remain open.
+
 ### Verified local place catalog — 2026-10-13
 
 - Added always-selectable Beaver Lake and Buffalo National River/Buffalo River,

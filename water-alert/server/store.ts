@@ -1,12 +1,29 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { changes, EMPTY_SOURCES, SOURCES, type Agency, type Notice, type Place, type SourceSnapshot } from '../src/domain'
+import { changes, EMPTY_SOURCES, SOURCES, type Agency, type Notice, type Place, type SourceSnapshot, type SourceCheck } from '../src/domain'
 import type { StateCell } from './postgres'
 
 export interface StoredEvent { id: string; type: 'new' | 'lifted'; notice: Notice; observedAt: string }
 export interface StoredState { version: 1; sources: SourceSnapshot[]; archive: Notice[]; places: Place[]; coverageStart: string | null; events: StoredEvent[] }
 export const emptyState = (): StoredState => ({ version: 1, sources: structuredClone(EMPTY_SOURCES), archive: [], places: [], coverageStart: null, events: [] })
 export type CaptureWriter = (agency: Agency, body: string, metadata: Record<string, unknown>) => Promise<void>
+// Additive JSON/JSONB migration: archives and visit/event times are not check evidence.
+function normalizeChecks(state: StoredState) {
+  for (const source of state.sources) {
+    source.checks ??= []
+    source.lastSuccessfulCheck ??= null
+    if (!Array.isArray(source.checks)) throw new Error('Invalid source check journal')
+  }
+  return state
+}
+function retainCheck(source: SourceSnapshot, check: SourceCheck) {
+  source.checks = [...(source.checks ?? []), check].filter(c => Date.parse(check.at) - Date.parse(c.at) < 30 * 86400_000).slice(-64)
+  // Bound full-feed history payloads without ever truncating an individual result.
+  const sizes = source.checks.map(c => Buffer.byteLength(JSON.stringify(c), 'utf8'))
+  let bytes = sizes.reduce((sum, size) => sum + size, 0)
+  while (source.checks.length > 1 && bytes > 1_000_000) { source.checks.shift(); bytes -= sizes.shift()! }
+  if (check.outcome === 'success') source.lastSuccessfulCheck = check
+}
 export class ObservationStore {
   private queue: Promise<unknown> = Promise.resolve()
   constructor(public directory: string | StateCell<StoredState>, private captureWriter?: CaptureWriter) {}
@@ -23,11 +40,11 @@ export class ObservationStore {
       if (state.version !== 1 || !Array.isArray(state.sources) || state.sources.length !== 2 || !Array.isArray(state.archive) || !Array.isArray(state.places)) throw new Error('Invalid observation store; preserve it for inspection')
       state.events ??= [] // Existing archives migrate without replaying historical records.
       if (!Array.isArray(state.events)) throw new Error('Invalid event journal')
-      return state
+      return normalizeChecks(state)
     } catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return emptyState(); throw e }
   }
   private update<T>(apply: (state: StoredState) => T): Promise<T> {
-    if (typeof this.directory !== 'string') return this.directory.update(apply)
+    if (typeof this.directory !== 'string') return this.directory.update(state => apply(normalizeChecks(state)))
     const directory = this.directory
     const work = this.queue.then(async () => {
       const state = await this.read(); const result = apply(state)
@@ -57,7 +74,13 @@ export class ObservationStore {
       const index = new Map(state.archive.map(n => [n.id, n]))
       const observed = records.map(n => ({ ...n, firstObservedAt: index.get(n.id)?.firstObservedAt ?? at, lastObservedAt: at }))
       observed.forEach(n => index.set(n.id, n)); state.archive = [...index.values()]
-      state.sources = state.sources.map(s => s.agency === agency ? { agency, records: observed, retrievedAt: at, lastSuccessAt: at, error: null } : s)
+      state.sources = state.sources.map(s => {
+        if (s.agency !== agency) return s
+        // Legacy last-success times do not establish when source coverage began.
+        const source = { ...s, ...(!s.lastSuccessAt && !s.historyStartedAt ? { historyStartedAt: at } : {}), records: observed, retrievedAt: at, lastSuccessAt: at, error: null }
+        retainCheck(source, { at, outcome: 'success', records: structuredClone(observed) })
+        return source
+      })
       const places = new Map(state.places.map(p => [p.id, p]))
       observed.forEach(n => places.set(n.placeId, { id: n.placeId, name: n.name, county: n.county, kind: n.kind === 'boil' ? 'system' : 'lake' }))
       state.places = [...places.values()]; state.coverageStart ??= at
@@ -65,6 +88,11 @@ export class ObservationStore {
     })
   }
   async failure(agency: Agency, error: string, at: string): Promise<void> {
-    await this.update(state => { state.sources = state.sources.map(s => s.agency === agency ? { ...s, error, retrievedAt: at } : s) })
+    await this.update(state => { state.sources = state.sources.map(s => {
+      if (s.agency !== agency) return s
+      const source = { ...s, error, retrievedAt: at }
+      retainCheck(source, { at, outcome: 'failure', error })
+      return source
+    }) })
   }
 }

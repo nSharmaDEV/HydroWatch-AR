@@ -58,6 +58,17 @@ describe('local observations', () => {
   })
 })
 describe('bounded approved-source retrieval', () => {
+  it('records just one failed outcome if validated capture persistence fails', async () => {
+    const { dir } = await store()
+    const db = new ObservationStore(dir, async (_agency, _body, metadata) => { if (metadata.schemaValidated) throw new Error('Capture write failed') })
+    const html = await readFile(new URL('./fixtures/adh-recorded.html', import.meta.url), 'utf8')
+    const json = await readFile(new URL('./fixtures/adeq-recorded.json', import.meta.url), 'utf8')
+    await new SourceRunner(db, async input => new Response(String(input) === SOURCES.ADH ? html : json)).check()
+    const state = await db.read()
+    expect(state.sources.map(s => s.checks?.map(c => c.outcome))).toEqual([['failure'], ['failure']])
+    expect(state.sources.every(s => s.lastSuccessfulCheck === null)).toBe(true)
+    expect(state.archive).toEqual([])
+  })
   it('fetches only approved URLs and never interprets unknown formats as emptiness', async () => {
     const { db, dir } = await store(); const urls: string[] = []
     const runner = new SourceRunner(db, async input => { urls.push(String(input)); return new Response('<html>unknown</html>') }, () => Date.parse('2026-10-13T12:00:00Z'))

@@ -38,24 +38,119 @@ See [FREE-HOSTING.md](FREE-HOSTING.md) for the database quota blocker and
 Live responses are parsed against the recorded agency structures. Failed checks
 retain prior observations but remain unavailable; downloads alone are not success.
 
+### Supplier alert history and data-source activity
+
+Supplier cards and notice details include **Contact water provider** with one-tap
+phone links and organization email links where verified. Links open the device's
+phone/email app; the website does not send messages or confirm delivery. Initial
+coverage is Leisure Hills Mobile Home Park, Fayetteville, Springdale, Rogers and
+Bentonville, matched by exact supplier ID—not county or a similar name. Unknown
+suppliers show a water-bill/park-management fallback; sample mode has no real
+contact actions. Confirm the supplier against your bill before contacting it.
+
+Contacts are a curated snapshot in `src/provider-contacts.ts`, not a live directory.
+Each entry links to its ADH directory page and records the date checked
+(initially 2026-10-14). Recheck the named system's phone/organization email fields
+before updating an entry; omit individual staff email addresses. These are
+directory-listed contacts, not verified 24-hour customer-service lines; hours,
+response times and actual call/email delivery have not been verified.
+
+Supplier cards show the supplier/county/source, current finding and published
+affected area, reason and agency-issued date. The top-right info button opens
+**Supplier details**, an accessible modal containing safety limitations,
+instructions, **Read official notice**, the actual saved check/attempt time and
+collapsed **Data-source activity**. **Notice details** inside the modal opens
+the existing detail/share view. Escape or Close returns focus to the info button.
+**Alert history** starts collapsed on the card. Failed checks keep
+**Current advisory status unavailable.** primary. Waterbody cards retain their
+separate **Last successful check** and **Latest attempt** panels.
+
+Compact cards use **Affected area**, **Reason**, **Issued** and an **Active**
+badge. Exact whole-system wording (alone or preceded by the matching supplier's
+name and “for the”) displays as **Entire system**; qualifiers and other areas
+remain complete. Recognized ADH numeric issue date/time fields display a short
+date and minute precision, preserving an explicit source zone without guessing
+one. The info modal preserves original area/date text whenever the card formats
+it differently. Stored records, history and detail views retain published wording.
+
+My Water's unboxed sidebar links to sources/coverage and **Manage alerts**, with
+the saved device configuration/delivery limitation shown explicitly. **Add a
+place** stays directly below the cards. On mobile, the sidebar stacks below them
+without a vertical separator.
+
+**Alert history** uses only retained official notices in `archive`, matched to the
+exact supplier, ADH, boil-water type and official feed URL—not check outcomes.
+It shows the notice type/source name, status, affected area/customers, reason,
+agency issue/lift dates, retained sourced guidance and official notice link.
+Missing notice fields say **Not provided in the source.** Agency dates/text remain
+verbatim in history; first/last app observations are separately labelled retrieval evidence.
+Only a fresh current match is active; only an explicit agency lift is lifted.
+Disappearance or retrieval failure leaves an unlifted saved notice unconfirmed.
+Repeated/failed checks never create alert events. Six notices appear initially,
+with **Show more notices** for additional saved records.
+
+An empty archive says **No advisory notices saved for this supplier.** The
+**History begins [date] and may not include earlier advisories.** date uses genuine
+source-specific `historyStartedAt` or the earliest retained matching notice's
+`firstObservedAt`, never a global coverage date or a check-log reconstruction.
+New sources save `historyStartedAt` at their first successful retrieval. Legacy
+sources with prior success but no saved start are not assigned a guessed date;
+without matching observation evidence, the UI explicitly says the start is unknown.
+ADH parsing does not currently retain per-notice guidance, so real notices normally
+show the missing-field label rather than invented boil-water instructions.
+
+**Data-source activity** in the supplier info modal/detail view contains the genuine
+**Last successful check**, historical caution (or **No successful check recorded
+yet for this supplier.**), retrieval errors, retention/storage explanations and
+first retained check. It shows newest checks first and offers **Show more checks**.
+The technical journal has a short ADH-specific introduction,
+one heading per local date, and compact expandable count/time-range rows. Only
+consecutive successful checks with identical published place facts on the same
+local date group together; every failure stays separate and changed facts break
+groups. Expanding a group preserves every saved individual timestamp. Supplier
+activity uses the applicable CDT/CST abbreviation, without repeated timezone IDs.
+These are app checks of published agency feeds, not water tests, agency publication
+times or device visits. Historical results do not confirm current status or safety.
+Official advisory-list links are separate from supplier/waterbody identity references.
+
+`sources[].checks` in `/api/status` and `/api/check` contains actual timestamped
+success/failure outcomes; successful entries retain complete feed records for exact
+place matching. `sources[].lastSuccessfulCheck` separately preserves the last genuine
+success. Local JSON and hosted PostgreSQL JSONB use the same additive fields, with
+no SQL migration required. Legacy state starts with empty check history: archives,
+old retrieval timestamps and device visits are never backfilled into successful
+no-match evidence. The check journal begins with checks actually recorded; it is
+separate from the durable notice archive and never backfilled into Alert history.
+
+Per source, retention is at most **64 checks within 30 days**, pruned on the next
+check. A **1 MB** serialized journal budget can remove older complete checks sooner;
+the newest complete check is always kept, even if individually larger. The last
+successful result is preserved separately. This is not a complete official archive.
+Sample checks remain explicitly fictional and never enter live storage.
+
 ## Review the sample journey
 
 1. Choose **Try sample mode**, then **Start sample journey**. Search “Sample
    Creek” to see two possible suppliers. Select the exact system, review the
    confirmation, then choose **Yes — watch this place**. Selection alone does
    not save a watch; **Choose a different place** returns to the search.
-2. Choose **Understand this notice** to see the published area and reason,
+2. Use the supplier's info button, then **Notice details** to see the published area and reason,
    guidance verification gap, source link and share action. The side disclosures
    contain record metadata, extracted published fields and alert options.
-   Agency dates remain verbatim; known app timestamps use EN/ES formatting with
-   the explicit `America/Chicago` timezone. Missing dates are omitted.
+    Agency dates remain verbatim; known app timestamps use EN/ES formatting in
+     `America/Chicago` (supplier views show CDT/CST without repeating the zone ID).
+     Detail-view missing dates are omitted, except
+    ADEQ unknown lift fields explicitly say no date was provided (“N/A”).
 3. Open **Review alert options**, then **Notify when lifted**. Preferences are
    saved locally, but sample push and email are explicitly disconnected. In
    Settings, **Alert Options** opens the unchanged live opt-in controls.
 4. **Use sample watch list** on the introduction shows active, no-active and
    unavailable states. Unavailable uses neutral gray and a question mark; its
-   retained records are labelled **Previously observed**, not current notices.
-   The sample HAB toggle demonstrates an available source and purple active HAB.
+   retained records in details are labelled **Previously observed**, not current
+   notices. Supplier cards distinguish historical check results from current status.
+    Saved official notices are in **Alert history**; technical check evidence is in
+    collapsed **Data-source activity**. The sample HAB toggle demonstrates an
+    available source and purple active HAB.
 5. In **Places**, remove a watch and use **Undo** to restore its position and
    lift preference. **History** defaults to your places, offers all observed
    places and progressively reveals records ordered by app observation times.
@@ -78,6 +173,45 @@ Run `node tests/browser-catalog.mjs` against the same UI-only server for the
 six-place catalog journeys at desktop/mobile sizes in EN/ES. All advisory records
 are synthetic and all API calls intercepted; screenshots are under ignored
 `test-results/catalog/`.
+
+Run `node tests/browser-source-checks.mjs` against the same UI-only server for
+source-history checks at 1440/1280/390/320px in EN/ES, including compact supplier
+no-match, active, failed and no-success states, keyboard disclosures/focus,
+repeated-check groups, progressive reveal and overflow checks. All API calls are intercepted;
+screenshots are under ignored `test-results/source-checks/`.
+
+Run `node tests/browser-adeq-cards.mjs` against the same UI-only server for
+ADEQ unknown/history and current HAB cards, detail, keyboard guidance disclosures,
+date provenance and overflow at 1440/390/320px in EN/ES. All API calls and advisory
+records are synthetic; screenshots are under ignored `test-results/adeq-cards/`.
+
+### ADEQ cards and agency guidance
+
+ADEQ's official `default.js`, checked **October 14, 2026**, filters its current
+table with `!advisory.lifted`: blank lift fields are included; “N/A” and dated
+lift fields are excluded. Exclusion does not establish what “N/A” means. Those
+records remain **Data unavailable**, with no new/lifted alerts. Details and
+History explain that no lift date is provided and active/lifted status cannot
+be confirmed. A dated lift remains explicit; disappearance is not a lift.
+
+History separates agency issued/lift dates and feed-wide updated text from
+first/last app observations. An observation means the row was returned, not
+that ADEQ reconfirmed the advisory. Missing observation times are not invented.
+Per-record “seen in X of Y checks” counts are omitted: the archive has no lifetime
+counter and the retained check journal is bounded, not complete historical evidence.
+
+ADEQ History and waterbody details bundle verbatim English guidance from the
+[official HAB page](https://adeq.state.ar.us/water/planning/hab/default.aspx),
+verified **October 14, 2026**, with a visible source and verification date.
+It covers advisory absence, suspected blooms/children/pets, washing after contact,
+medical symptoms, DEQ bloom reporting and ADH possible-illness contacts. Spanish
+UI explicitly labels the quotations as English, not translated. These are general
+agency instructions, not a record-specific cause or a live guidance feed. ADH's
+separate guidance-verification gap remains visible.
+
+The official script has distinct empty-filtered-table and retrieval-error messages.
+That does **not** verify a genuinely empty backing JSON feed: the parser's
+empty-feed guard remains unchanged.
 
 ## Verified local place catalog
 
@@ -107,8 +241,9 @@ acceptance and overlapping-watch deduplication are tested with a fake sender;
 real notification delivery is still unverified and was not enabled or performed.
 
 The catalog is a read-only UI/API projection; it creates no observations, checks,
-events or coverage-start timestamps. Failed/offline/stale feeds still show **Data
-unavailable**. A fresh feed with no matching notice is not proof of safety or
+events or coverage-start timestamps. Failed/offline/stale feeds still show **Current
+advisory status unavailable.** for suppliers and **Data unavailable** for waterbodies.
+A fresh feed with no matching notice is not proof of safety or
 complete monitoring. Bacterial results, drinking-water tests, park closures and a
 live NPS conditions feed are **not integrated**. Fictional sample places stay separate.
 
@@ -172,8 +307,9 @@ Sources are restricted to:
 - ADH: https://health.arkansas.gov/wa_engTraining/boilwaterorder.aspx
 - ADEQ: https://adeq.state.ar.us/water/planning/hab/advisories.json
 
-[NEEDS: genuine empty-feed evidence, ADEQ N/A/footnote semantics and verified
-agency-guidance wording. Unknown lift status never triggers a new/lift event.]
+[NEEDS: genuine empty-feed evidence, ADEQ N/A/footnote meanings and verified
+ADH guidance wording. ADEQ general guidance is verified as documented above;
+unknown lift status never triggers a new/lift event.]
 [NEEDS: additional source-verified rural systems and broader supplier coverage;
 the six-place catalog and observed notices are not a statewide directory.]
 [NEEDS: approved HTTPS hosting costs and provisioning (Vercel + PostgreSQL selected), VAPID/contact and browser
