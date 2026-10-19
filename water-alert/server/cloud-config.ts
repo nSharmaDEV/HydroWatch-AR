@@ -1,4 +1,4 @@
-import { runtimeConfig } from './config'
+import { runtimeConfig } from './config.js'
 export function cloudConfig(env: NodeJS.ProcessEnv) {
   if (env.VERCEL_ENV !== 'production' || env.WATER_ALERT_CLOUD_ENABLED !== 'true') throw new Error('Cloud backend requires explicit production enablement; previews must not use production data')
   if (!env.WATER_ALERT_ORIGIN?.startsWith('https://')) throw new Error('Production HTTPS origin required')

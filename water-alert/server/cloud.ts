@@ -1,11 +1,11 @@
 import { createHmac } from 'node:crypto'
 import { isIP } from 'node:net'
-import { JobGate, PostgresCell, type SqlPool } from './postgres'
-import type { cloudConfig } from './cloud-config'
-import { PushStore, emptyDevices, type PushSender } from './push'
-import { ObservationStore, emptyState } from './store'
-import { SourceRunner } from './sources'
-import { createApp } from './app'
+import { JobGate, PostgresCell, type SqlPool } from './postgres.js'
+import type { cloudConfig } from './cloud-config.js'
+import { PushStore, emptyDevices, type PushSender } from './push.js'
+import { ObservationStore, emptyState } from './store.js'
+import { SourceRunner } from './sources.js'
+import { createApp } from './app.js'
 import webpush from 'web-push'
 export function createCloudApp(pool: SqlPool, config: ReturnType<typeof cloudConfig>, fetcher: typeof fetch = fetch, send?: PushSender, clock = Date.now) {
   const gate = new JobGate(pool, clock)

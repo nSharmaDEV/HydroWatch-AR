@@ -1,0 +1,17 @@
+# Never upload credentials, private runtime records or local tooling artifacts.
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+**/.dev.vars
+**/.dev.vars.*
+*.crt
+*.pem
+*.key
+data/
+node_modules/
+dist/
+.wrangler/
+**/.wrangler/
+playwright-report/
+test-results/

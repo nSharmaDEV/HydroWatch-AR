@@ -4,6 +4,7 @@ import { expect, it } from 'vitest'
 import { StatusCard } from '../src/components'
 import { SOURCES, type Notice, type SourceSnapshot } from '../src/domain'
 import { en } from '../src/strings'
+import { supplierArea, supplierIssued } from '../src/supplier-display'
 
 const place = { id: 'ADH:one', name: 'Saved supplier', county: 'Benton', kind: 'system' as const }
 const at = '2026-10-14T12:00:00Z'
@@ -11,19 +12,26 @@ const notice: Notice = { id: 'saved', placeId: place.id, name: place.name, agenc
 const source: SourceSnapshot = { agency: 'ADH', records: [notice], retrievedAt: at, lastSuccessAt: at, error: null }
 function card(s = source) { render(<StatusCard place={place} source={s} archive={[notice]} now={Date.parse(at) + 60000} t={en} onView={() => {}} />) }
 
-it('keeps actual notice facts on the card and moves instructions, retrieval times and technical activity into supplier info', async () => {
+it('shows active area and reason while keeping provider facts and technical activity separate', async () => {
   card()
-  for (const text of [notice.area, notice.reason, notice.issued!, 'Active']) expect(screen.getByText(text)).toBeVisible()
-  expect(screen.queryByRole('link', { name: /Read official notice/ })).not.toBeInTheDocument()
+  expect(screen.getByText(notice.area)).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: en.providerHelp }))
+  expect(document.querySelector('.provider-info-content')).not.toHaveTextContent(notice.area)
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAlertHistory }))
+  const history = within(screen.getByRole('region', { name: en.supplierAlertHistory }))
+  for (const text of [notice.area, notice.reason, notice.issued!]) expect(history.getByText(text)).toBeVisible()
+  expect(screen.getByRole('link', { name: en.activeBoil })).toBeVisible()
+  expect(screen.getByRole('link', { name: /Open ADH notice list/ })).toBeVisible()
   expect(screen.queryByRole('button', { name: 'Data-source activity' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: /Supplier details/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Supplier details & tools' })).toBeVisible()
   const user = userEvent.setup()
   const trigger = screen.getByRole('button', { name: 'About this supplier' })
   trigger.focus(); await user.keyboard('{Enter}')
   const popup = screen.getByRole('dialog', { name: /Supplier details/ })
-  expect(within(popup).getByText('Follow the official notice for instructions.')).toBeVisible()
+  expect(within(popup).queryByText('Follow the official notice for instructions.')).toBeNull()
   expect(within(popup).getByRole('link', { name: /Read official notice/ })).toHaveAttribute('href', SOURCES.ADH)
-  expect(popup.querySelector(`time[datetime="${at}"]`)).toBeVisible()
+  expect(document.querySelector(`article>dl time[datetime="${at}"]`)).toBeVisible()
+  expect(screen.getByRole('link', { name: /View official source/ })).toHaveAttribute('href', SOURCES.ADH)
   expect(within(popup).getByRole('button', { name: 'Data-source activity' })).toHaveAttribute('aria-expanded', 'false')
   await user.keyboard('{Escape}')
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -33,9 +41,13 @@ it('keeps actual notice facts on the card and moves instructions, retrieval time
 it('compacts exact whole-system facts and preserves the full published wording in the info popup', async () => {
   const supplier = { ...place, name: 'LEISURE HILLS MOBILE HOME PARK', county: 'BENTON' }
   const record = { ...notice, name: supplier.name, area: `${supplier.name} for the Entire System`, issued: '10/14/2026 3:12:14 PM' }
-  render(<StatusCard place={supplier} source={{ ...source, records: [record] }} now={Date.parse(at)} t={en} onView={() => {}} />)
+  render(<StatusCard place={supplier} source={{ ...source, records: [record] }} archive={[record]} now={Date.parse(at)} t={en} onView={() => {}} />)
+  await userEvent.setup().click(screen.getByRole('button', { name: en.providerHelp }))
   expect(screen.getByText('Benton County · Arkansas Department of Health')).toBeVisible()
-  for (const text of ['Affected area', 'Reason', 'Issued', 'Entire system', 'Oct 14, 2026 · 3:12 PM', 'Active']) expect(screen.getByText(text)).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAlertHistory }))
+  const history = within(screen.getByRole('region', { name: en.supplierAlertHistory }))
+  for (const text of [record.area, record.issued]) expect(history.getByText(text)).toBeVisible()
+  expect(screen.getByText(en.activeBoil)).toBeVisible()
   await userEvent.setup().click(screen.getByRole('button', { name: 'About this supplier' }))
   const popup = within(screen.getByRole('dialog'))
   expect(popup.getByText(record.area)).toBeVisible()
@@ -48,9 +60,8 @@ it.each([
   ['Saved supplier for the Entire System except Creek Road', 'Saved supplier for the Entire System except Creek Road'],
   ['Other supplier for the Entire System', 'Other supplier for the Entire System'],
   ['Saved supplier for Creek Road and adjacent customers', 'Saved supplier for Creek Road and adjacent customers'],
-])('only shortens an exactly equivalent whole-system area: %s', (area, expected) => {
-  card({ ...source, records: [{ ...notice, area }] })
-  expect(screen.getByText(expected)).toBeVisible()
+])('only shortens an exactly equivalent whole-system area: %s', async (area, expected) => {
+  expect(supplierArea(area, place, 'en')).toBe(expected)
 })
 
 it.each([
@@ -58,13 +69,13 @@ it.each([
   ['12/14/2026 12:02:59 AM CST', 'Dec 14, 2026 · 12:02 AM CST'],
   ['2/30/2026 3:12:14 PM', '2/30/2026 3:12:14 PM'],
   ['Agency date as published', 'Agency date as published'],
-])('formats explicit agency date fields without guessing or rewriting unsupported text: %s', (issued, expected) => {
-  card({ ...source, records: [{ ...notice, issued }] })
-  expect(screen.getByText(expected)).toBeVisible()
+])('formats explicit agency date fields without guessing or rewriting unsupported text: %s', async (issued, expected) => {
+  expect(supplierIssued(issued, 'en')).toBe(expected)
 })
 
-it('keeps failed retrieval unavailable and labels saved notice facts historical rather than active', () => {
+it('keeps failed retrieval unavailable and labels saved notice facts historical rather than active', async () => {
   card({ ...source, error: 'Timeout' })
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAlertHistory }))
   expect(screen.getByText(en.supplierUnavailable)).toBeVisible()
   expect(screen.getByText(en.unverified)).toBeVisible()
   expect(screen.getByText(notice.area)).toBeVisible()

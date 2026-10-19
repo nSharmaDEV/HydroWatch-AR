@@ -2,9 +2,14 @@
 
 ## Current boundary
 
-Code and local configuration only. No host, account, production VAPID key, external
-notification send or publication was created. `WATER_ALERT_PUSH_ENABLED` defaults
-to false. A service worker or saved subscription is not evidence of delivery.
+Local implementation plus an approved linked Vercel Hobby project and provisioned
+Supabase Free database/private runtime role. The initial production deployment is
+live at **https://water-alert-blond.vercel.app**, with push explicitly disabled.
+HTTPS/API/no-store/origin/cron-auth checks and one real two-source retrieval passed;
+observations/captures were verified persisted using read-only SQL. No production
+VAPID key, external notification send or scheduler activation has occurred.
+A service worker or saved subscription is not evidence of delivery. See dated
+verification details and remaining gates in [VERCEL.md](VERCEL.md).
 
 The original local/container design is **one continuously running Node 24 service with durable
 disk**, not serverless, ephemeral disk, multiple replicas or multiple writers.
@@ -15,8 +20,10 @@ require the user's approval. Do not treat this document as deployment permission
 The user subsequently selected a **Vercel-native** path. `api/index.ts` now uses
 PostgreSQL state, shared leases/cooldowns/rate limits and authenticated scheduled
 functions instead of local disk or timers. Read [VERCEL.md](VERCEL.md) for that
-separate path: frequent cron requires Pro, provisioning/deployment remain gated,
-and production/pooler/device verification has not occurred. The filesystem and
+separate path: a disabled Cloudflare Workers Free trigger replaces paid frequent
+Vercel cron. Hosted pooler TLS/login and permissions were verified;
+concurrency, scheduler and device verification remain pending. Initial deployment
+and routing have now been verified. The filesystem and
 socket-rate-limit sections below describe the local/container path only.
 
 ## Local commands
@@ -38,7 +45,10 @@ data outside image layers. `compose.yaml` is a **local** push-disabled rehearsal
 loopback port 8788 and its own `water-alert-live` named volume; it does not import
 existing `data/live` records. Docker build/run has not been verified here. No
 container or public TLS certificate has been created. `npm run icons` reproduces
-the committed PNGs from the SVG using the installed Playwright Chromium browser.
+the header logo and committed PNG icons from `assets/wave-logo-source.png` using
+the installed Playwright Chromium browser. It trims faint export speckles and
+separates the teal wave from navy lettering for square icons. The legacy
+`public/icon.svg` is retained but is no longer referenced by the manifest.
 
 ## Environment
 

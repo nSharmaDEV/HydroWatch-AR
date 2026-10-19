@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { Pool } from 'pg'
-import { createCloudApp } from '../server/cloud'
-import { cloudConfig } from '../server/cloud-config'
-import { databaseOptions } from '../server/database-connection'
+import { createCloudApp } from '../server/cloud.js'
+import { cloudConfig } from '../server/cloud-config.js'
+import { databaseOptions } from '../server/database-connection.js'
 
 let app: ReturnType<typeof createCloudApp> | undefined
 export default function handler(req: IncomingMessage, res: ServerResponse) {

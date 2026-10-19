@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>WAVE · Remaining help designs</title>
+<style>
+:root{font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#102e43;background:#f4f6f8;--navy:#102e43;--teal:#066d73;--line:#dce3e9;--muted:#334f60}*{box-sizing:border-box}body{margin:0}header{background:var(--navy);color:white;padding:18px 24px}.bar,main{max-width:1040px;margin:auto}header small{display:block}main{padding:24px 24px 64px}.review-controls{border:1px dashed #8da4b2;padding:16px;margin-bottom:24px}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.layout{display:grid;grid-template-columns:minmax(0,700px) minmax(0,240px);gap:24px;align-items:start}.screen{min-width:0;background:white;border:1px solid var(--line);border-radius:16px;padding:28px}h1{font-size:1.75rem;line-height:1.2;margin:6px 0 16px}h2{font-size:1.15rem;margin:24px 0 10px}h3{font-size:1rem;margin:0 0 6px}p{margin:0 0 12px}label{display:grid;gap:6px}.field{margin:18px 0}fieldset{border:0;padding:0;margin:18px 0}legend{margin-bottom:8px}.check{display:flex;align-items:center;gap:10px;min-height:44px}.check input{width:20px;height:20px;margin:0;flex-shrink:0}select,input,textarea,button{font:inherit}select,input:not([type=checkbox]),textarea{width:100%;max-width:100%;padding:10px;border:1px solid #8da4b2;border-radius:6px;background:white;color:var(--navy);min-height:44px}textarea{min-height:300px;resize:vertical;font-size:.9rem;line-height:1.6}button{min-height:44px;cursor:pointer;border:1px solid var(--teal);background:white;color:var(--teal);padding:8px 12px;border-radius:6px;max-width:100%}.primary{background:var(--teal);color:white}.back{border:0;text-decoration:underline;padding-left:0;text-underline-offset:3px}.actions,.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.chips button{border-radius:22px;background:#eef7f7;font-size:.875rem;text-align:left;overflow-wrap:anywhere;min-width:0}.chip-label{display:block;font-size:.75rem;color:var(--muted)}.note,.source{color:var(--muted);font-size:.875rem}.source{font-size:.8rem;overflow-wrap:anywhere}.context{font-size:.875rem;color:var(--muted);margin-bottom:12px}.caution{border-left:3px solid #a86710;background:#fff8ec;padding:12px 14px;font-size:.9rem;margin:18px 0}.resource{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}li{margin:8px 0}ul{padding-left:22px}.optional{border-top:1px solid var(--line);margin-top:24px;padding-top:8px}summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:650}details[open] summary{margin-bottom:8px}aside p{font-size:.875rem}aside h2{font-size:1rem}.status{margin-top:16px;background:#eef7f7;padding:12px;border:1px solid var(--line);overflow-wrap:anywhere}.status:empty{display:none}:focus-visible{outline:3px solid #b56a09;outline-offset:4px}[hidden]{display:none!important}#recommendation{font-size:1.12rem;font-weight:600}#result-title:focus,#question-title:focus,#editor-title:focus{outline:none}#draft-destination{margin:16px 0}@media(max-width:800px){.layout{grid-template-columns:minmax(0,1fr)}.controls{grid-template-columns:repeat(2,minmax(0,1fr))}aside{border-top:1px solid var(--line);padding-top:12px}}@media(max-width:480px){main{padding:16px 12px 40px}header{padding:16px}.screen{padding:20px}.controls{grid-template-columns:minmax(0,1fr)}h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<header><div class="bar"><strong>WAVE</strong><small id="banner"></small></div></header>
+<main>
+<section class="review-controls" lang="en" aria-label="Design review controls">
+<details id="review-variants"><summary>Review variants · Not part of the app</summary>
+<div class="controls">
+<label>Screen branch<select id="branch"><option value="advisory">Understand a water advisory</option><option value="billing">Get help with a bill or credit</option><option value="followup">Follow up on an existing issue</option></select></label>
+<label>Supplier context<select id="supplier"><option value="known">Leisure Hills</option><option value="unknown">Unknown supplier · Synthetic</option></select></label>
+<label>Language / Idioma<select id="language"><option value="en">English</option><option value="es">Español</option></select></label>
+<label>Notice context · Synthetic<select id="notice-state"><option value="unavailable">Source unavailable</option><option value="current">Illustrative current record</option><option value="historical">Historical record</option><option value="stale">Stale source</option><option value="none">No active match found</option><option value="ambiguous">Ambiguous match</option><option value="sample">Sample record</option></select></label>
+<label>Illustrative notice type<select id="notice-kind"><option value="boil">Boil-water</option><option value="other">Other / unknown / do-not-use</option></select></label>
+</div>
+<p class="note" style="margin-top:12px;margin-bottom:0">No live record loaded. Use fictional text only. Drafts stay in memory until reload/close. Switching context keeps separate drafts in this review; no production persistence is implied.</p></details>
+</section>
+<div class="layout">
+<section class="screen" aria-label="Proposed help flow">
+<p class="context" id="context"></p>
+<p class="caution" id="emergency"></p>
+<section id="questions"><h1 id="question-title" tabindex="-1"></h1><div id="fields"></div><button id="show-result" class="primary" type="button"></button></section>
+<section id="result" hidden>
+<h1 id="result-title" tabindex="-1"></h1><p id="recommendation"></p><p class="note" id="reason"></p>
+<h2 id="contact-heading"></h2><div id="contacts"></div>
+<h2 id="prepare-heading"></h2><ul id="checklist"></ul><p class="note" id="records-note"></p>
+<div class="optional"><h2 id="optional-heading"></h2><div id="draft-destination"></div><button id="prepare-draft" type="button"></button><p class="note" id="memory-note" style="margin-top:10px"></p></div>
+<div class="actions"><button id="change" type="button"></button><button id="followup" type="button"></button></div>
+</section>
+<section id="editor" hidden>
+<button id="editor-back" class="back" type="button"></button><h1 id="editor-title" tabindex="-1"></h1>
+<p class="caution" id="draft-warning"></p><p class="note" id="editor-memory"></p>
+<label class="field"><span id="subject-label"></span><input id="draft-subject" lang="en" autocomplete="off"></label>
+<label class="field"><span id="body-label"></span><textarea id="draft-body" lang="en" spellcheck="false" autocomplete="off"></textarea></label>
+<div class="actions" id="export-actions"></div>
+<details><summary id="packet-heading"></summary><p class="note" id="packet-note"></p><ul id="packet-list"></ul></details>
+</section>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<p class="note" id="inert-note" style="margin-top:20px"></p>
+</section>
+<aside lang="en"><details><summary>Design review notes</summary>
+<h2>Less reading, clearer actions</h2><p>Only the selected route appears. Phone, full email, and official websites use chips; limitations stay next to the action.</p>
+<h2>No live claims</h2><p>All notice states are synthetic. A current-record variant marks where authoritative published facts belong, without inventing incident instructions or address coverage.</p>
+<h2>Original source dates</h2><p>Supplier directory, CDC and recovery resources: October 14, 2026. ADH program contact: October 18 in existing guide. None reverified for this review. Checked does not mean staffed now.</p>
+<h2>Continuity, not persistence</h2><p>Follow-up carries compatible billing answers. Back and language switches retain edits here. Drafts are keyed by context/destination so a new request never overwrites another. Reload/close loses everything. No storage, downloads, clipboard, mail client, or external navigation.</p>
+<h2>Remaining production gates</h2><p>Separate implementation approval; fresh official-source verification; fluent Spanish review; real notice-context integration; five exact supplier IDs; return-to-card disclosure/focus parity; regression and export testing. These screens are design proposals, not approved app changes.</p>
+</details></aside>
+</div></main>
+<script>
+// Standalone review only. No app imports, requests, storage, analytics or external actions.
+const $=id=>document.getElementById(id);
+const t=(en,es)=>$('language').value==='es'?es:en;
+const answers={advisory:'unsure',request:'charge',biller:'unsure',prior:'unsure',records:[],underlying:'unsure',contacted:'unsure',response:'unsure',next:'unsure',legal:'declined'};
+const drafts=new Map();let view='questions',draftKey='',destination='supplier',plan={};
+const supplierId='ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf';
+const directory={[supplierId]:{name:'Leisure Hills Mobile Home Park',phone:'(479) 549-2158',email:'LEISUREHILLSWATERCO@GMAIL.COM',url:'https://health.arkansas.gov/Eng/WS.aspx?ID=747'}};
+const urls={adh:'https://healthy.arkansas.gov/programs-services/licensing-military-member-licensure-permits-plan-reviews/drinking-water-plan-review',notices:'https://health.arkansas.gov/wa_engTraining/boilwaterorder.aspx',cdc:'https://www.cdc.gov/water-emergency/about/drinking-water-advisories-an-overview.html',ag:'https://arkansasag.gov/file-a-complaint/','pdf-en':'https://media.ark.org/ag/Consumer-Complaint-Form.pdf','pdf-es':'https://media.ark.org/ag/Spanish-Consumer-Complaint-Form-3.pdf',legal:'https://www.arlawhelp.org/',intake:'https://aroi.legalserver.org/modules/matter/extern_intake.php?pid=38&h=757e8c&',court:'https://a.arlawhelp.org/self-representation/small-claims-court/process-and-forms'};
+function record(){return directory[$('supplier').value==='known'?supplierId:'unknown']}
+function text(id,en,es){$(id).textContent=t(en,es)}
+function node(tag,value,cls){const n=document.createElement(tag);n.textContent=value;if(cls)n.className=cls;return n}
+function announce(en,es){$('status').textContent=t(en,es)}
+function button(label,fn){const b=node('button',label);b.type='button';b.onclick=fn;return b}
+function list(id,items){$(id).replaceChildren(...items.map(item=>node('li',item)))}
+function field(id,label,key,options){const wrap=node('label','', 'field');wrap.append(node('span',label));const select=document.createElement('select');select.id=id;for(const [value,title] of options){const o=node('option',title);o.value=value;select.append(o)}select.value=answers[key];select.onchange=()=>{answers[key]=select.value;if(key==='next')renderFields()};wrap.append(select);$('fields').append(wrap)}
+const unsure=()=>['unsure',t('Not sure','No sé')];
+function renderFields(){
+ $('fields').replaceChildren();const branch=$('branch').value;
+ text('question-title',branch==='advisory'?'Understand a water advisory':branch==='billing'?'Get help with a bill or credit':'Follow up on an existing issue',branch==='advisory'?'Entender un aviso sobre el agua':branch==='billing'?'Ayuda con una factura o crédito':'Dar seguimiento a un problema');
+ if(branch==='advisory')field('advisory-question',t('What do you want to understand?','¿Qué quiere entender?'),'advisory',[['area',t('Affected address or area','Dirección o zona afectada')],['precautions',t('Precautions','Precauciones')],['updates',t('Lifting or updates','Levantamiento o actualizaciones')],unsure()]);
+ if(branch==='billing'){
+  field('billing-request',t('What do you want to ask about?','¿Sobre qué quiere preguntar?'),'request',[['charge',t('Explain or dispute a charge','Explicar o disputar un cargo')],['credit',t('Credit policy','Política de créditos')],['expenses',t('Review actual expenses','Revisar gastos reales')],unsure()]);
+  field('biller',t('Who bills you?','¿Quién le factura?'),'biller',[['supplier',t('Water supplier','Proveedor de agua')],['management',t('Landlord or park management','Arrendador o administración del parque')],unsure()]);
+  field('prior',t('Have you contacted them?','¿Ya les contactó?'),'prior',[['notyet',t('Not yet','Aún no')],['pending',t('Awaiting an answer','Espero una respuesta')],['received',t('Response received','Recibí una respuesta')],unsure()]);
+  const set=document.createElement('fieldset');set.append(node('legend',t('Records you have · Optional','Documentos disponibles · Opcional')));
+  for(const [key,en,es] of [['bill','Bill','Factura'],['receipts','Receipts','Recibos'],['letters','Correspondence','Correspondencia']]){const label=node('label','', 'check');const check=document.createElement('input');check.type='checkbox';check.id='record-'+key;check.checked=answers.records.includes(key);check.onchange=()=>{answers.records=check.checked?[...answers.records,key]:answers.records.filter(x=>x!==key)};label.append(check,document.createTextNode(t(en,es)));set.append(label)}set.append(node('p',t('None yet? Leave unchecked. No uploads.','¿Aún no tiene? Deje sin marcar. No se cargan archivos.'),'note'));$('fields').append(set);
+ }
+ if(branch==='followup'){
+  field('underlying',t('What is the issue?','¿Cuál es el problema?'),'underlying',[['operations',t('Supply or pressure','Suministro o presión')],['quality',t('Drinking-water quality','Calidad del agua potable')],['both',t('Both','Ambos')],['billing',t('Bill or credit','Factura o crédito')],unsure()]);
+  field('contacted',t('Who did you contact?','¿A quién contactó?'),'contacted',[['supplier',t('Supplier','Proveedor')],['management',t('Landlord or park management','Arrendador o administración')],['adh','ADH'],['other',t('Another organization','Otra organización')],['none',t('No one yet','Aún a nadie')],unsure()]);
+  field('response',t('What response did you receive?','¿Qué respuesta recibió?'),'response',[['none',t('No response','Sin respuesta')],['pending',t('Pending review','Revisión pendiente')],['denied',t('Request denied','Solicitud rechazada')],['other',t('Other response','Otra respuesta')],unsure()]);
+  field('next-action',t('What would you like to do?','¿Qué le gustaría hacer?'),'next',[['update',t('Ask for a written update','Pedir una actualización por escrito')],['complaint',t('Review consumer complaint information','Revisar información sobre quejas de consumo')],['legal',t('Find legal assistance','Buscar asistencia legal')],unsure()]);
+  if(answers.next==='complaint')field('legal-status',t('Private attorney retained or court action started?','¿Contrató abogado particular o inició acción judicial?'),'legal',[['yes',t('Yes','Sí')],['no','No'],['declined',t('Not sure / prefer not to answer','No sé / prefiero no responder')]]);
+ }
+}
+function chip(parent,kind,value,id,url){const b=button('',()=>announce('Preview only. No call, email or website was opened.','Solo vista previa. No se abrió una llamada, correo ni sitio web.'));b.append(node('span',kind,'chip-label'),document.createTextNode(value));if(id)b.dataset.resource=id;if(url)b.title=url;parent.append(b)}
+function block(title){const b=document.createElement('section');b.className='resource';b.append(node('h3',title));$('contacts').append(b);return b}
+function source(b,date){b.append(node('p',t('Source checked '+date+' · Not reverified here.','Fuente revisada el '+date+' · No verificada de nuevo aquí.'),'source'))}
+function web(b,label,id){const chips=node('div','','chips');const url=id==='notices'&&record()?urls[id]+'#:~:text='+encodeURIComponent(record().name.toUpperCase()):urls[id];chip(chips,t('Official website','Sitio oficial'),label,id,url);b.append(chips)}
+function supplierContact(role='supplier'){
+ const b=block(role==='management'?t('Landlord / park management','Arrendador / administración'):t('Supplier · General contact','Proveedor · Contacto general'));
+ if(role==='management'){b.append(node('p',t('No verified management contact. Check your bill or lease.','No hay contacto verificado de la administración. Revise su factura o contrato.')));return}
+ if(role==='unsure'||role==='other'){b.append(node('p',t('Check your bill or previous correspondence for the right contact. No destination is assumed.','Revise su factura o correspondencia anterior para encontrar el contacto. No se supone un destinatario.')));return}
+ const r=record();if(!r){b.append(node('p',t('No verified supplier contact. Check your bill or ask park management.','No hay contacto verificado del proveedor. Revise su factura o consulte a la administración.')));return}
+ const chips=node('div','','chips');chip(chips,t('Phone','Teléfono'),r.phone);chip(chips,t('Email','Correo'),r.email);chip(chips,t('Directory','Directorio'),'health.arkansas.gov','supplier-directory',r.url);b.append(chips,node('p',t('General directory contact—not a verified billing department. Confirm against your bill.','Contacto general del directorio, no un departamento de facturación verificado. Confirme con su factura.'),'note'));source(b,'2026-10-14');
+}
+function adh(){const b=block(t('ADH Safe Water Engineering · Quality','Ingeniería de Agua Segura de ADH · Calidad'));const c=node('div','','chips');chip(c,t('Phone','Teléfono'),'501-661-2623');chip(c,t('Official website · English','Sitio oficial · Inglés'),'healthy.arkansas.gov','adh',urls.adh);b.append(c,node('p',t('Public drinking-water questions, not emergency response. No verified email.','Consultas sobre agua potable pública, no emergencias. No hay correo verificado.'),'note'));source(b,'2026-10-18')}
+function resource(title,label,id){const b=block(title);web(b,label,id);source(b,'2026-10-14');return b}
+function followupContact(){
+ const who=answers.contacted;
+ if(who==='adh'){adh();destination='adh'}
+ else if(['supplier','management','other'].includes(who)){supplierContact(who);destination=who}
+ else{const issue=answers.underlying;if(['quality','both','unsure'].includes(issue))adh();if(issue!=='quality')supplierContact(issue==='billing'?answers.biller:'supplier');destination=issue==='quality'?'adh':issue==='both'||issue==='unsure'?'choose':issue==='billing'?answers.biller:'supplier'}
+}
+function renderResult(){
+ $('contacts').replaceChildren();$('draft-destination').replaceChildren();$('prepare-draft').hidden=false;$('followup').hidden=$('branch').value==='followup';const branch=$('branch').value;let items=[],recommendation='',reason='';plan={kind:branch,resources:[],expense:false};destination='supplier';
+ if(branch==='advisory'){
+  const state=$('notice-state').value,q=answers.advisory;
+  recommendation=t(q==='area'?'Check the published area, then confirm your address with your supplier.':q==='updates'?'Check official updates before treating an advisory as lifted.':'Check the official advisory for applicable instructions.',q==='area'?'Revise la zona publicada y confirme su dirección con el proveedor.':q==='updates'?'Revise actualizaciones oficiales antes de considerar levantado un aviso.':'Revise las instrucciones del aviso oficial.');
+  const limits={current:t('Illustrative current-record layout only. No live published facts or address coverage are loaded.','Solo diseño de un registro vigente ilustrativo. No se cargaron datos oficiales actuales ni cobertura por dirección.'),historical:t('Historical record: it does not establish current status.','Un registro histórico no establece el estado actual.'),stale:t('Stale source: WAVE cannot confirm current status.','Fuente desactualizada: WAVE no puede confirmar el estado actual.'),unavailable:t('Source unavailable: WAVE cannot confirm current status.','Fuente no disponible: WAVE no puede confirmar el estado actual.'),none:t('No active match found does not prove safety.','No encontrar un aviso activo no demuestra seguridad.'),ambiguous:t('Ambiguous match: WAVE cannot confirm current coverage.','Coincidencia ambigua: WAVE no puede confirmar la cobertura actual.'),sample:t('Sample only—not a real advisory or evidence of current status.','Solo ejemplo: no es un aviso real ni prueba del estado actual.')};reason=limits[state];
+  const b=resource(t('ADH · Official advisory list','ADH · Lista oficial de avisos'),'health.arkansas.gov','notices');b.append(node('p',t('Check the supplier and published area. This is the full list, not an individual notice page.','Verifique el proveedor y la zona publicada. Es la lista completa, no una página de aviso individual.'),'note'));if(record())b.lastElementChild.textContent+=' '+t('Find: ','Buscar: ')+record().name;
+  if(['area','unsure'].includes(q))supplierContact();
+  if(state==='current'&&$('notice-kind').value==='boil'&&q==='precautions'){const c=resource(t('CDC · General boil-water reference','CDC · Referencia general sobre hervir el agua'),'cdc.gov · English','cdc');c.append(node('p',t('General guidance, not incident instructions. Do not apply boiling advice to chemical or do-not-use notices.','Guía general, no instrucciones del incidente. No aplique consejos de hervir a avisos químicos o de no usar el agua.'),'note'))}
+  items=[t('Supplier and published notice area; ask about your address privately.','Proveedor y zona publicada; consulte su dirección en privado.'),q==='updates'?t('Ask where updates and lifting notices will appear.','Pregunte dónde se publicarán actualizaciones y levantamientos.'):q==='precautions'?t('Ask which official instructions apply to this advisory type.','Pregunte qué instrucciones oficiales corresponden a este tipo de aviso.'):t('Ask whether your location is covered. Do not infer it from the supplier name.','Pregunte si su ubicación está incluida. No lo deduzca del nombre del proveedor.')];
+  plan.kind='advisory';
+ }
+ if(branch==='billing'){
+  destination=answers.biller;const follow=['pending','received'].includes(answers.prior);plan.kind=follow?'billing-followup':'billing';plan.expense=answers.request==='expenses';
+  recommendation=t(follow?'Ask the biller for a written update or explanation.':'Ask whoever bills you about the charge or policy.',follow?'Pida una actualización o explicación por escrito a quien le factura.':'Pregunte sobre el cargo o la política a quien le factura.');
+  reason=t('Based on your request and who bills you. Credits and expense reimbursement are not automatic.','Según su solicitud y quién le factura. Los créditos y reembolsos no son automáticos.');supplierContact(answers.biller);
+  items=[t('Identify the biller and the charge or policy you want explained.','Identifique a quien le factura y el cargo o política que quiere aclarar.'),t('Ask for the policy, any deadline, a reference and a written decision.','Pida la política, cualquier plazo, un número de referencia y una decisión escrita.')];
+  if(answers.request==='expenses')items.push(t(answers.records.includes('receipts')?'Keep copies of actual receipts; list the amount requested for review.':'List actual expenses if known; ask what evidence is accepted without receipts.',answers.records.includes('receipts')?'Guarde copias de recibos reales; indique el importe que solicita revisar.':'Enumere gastos reales si los conoce; pregunte qué pruebas se aceptan sin recibos.'));
+  else if(answers.records.includes('bill'))items.push(t('Use your bill to identify the disputed line and period.','Use la factura para identificar el cargo y período en disputa.'));
+  if(answers.records.includes('letters')||follow)items.push(t('Keep previous correspondence and the response or pending reference.','Guarde correspondencia previa y la respuesta o referencia pendiente.'));
+  else if(answers.prior==='notyet')items.push(t('Keep a dated copy of your first inquiry.','Guarde una copia fechada de su primera consulta.'));
+  else items.push(t('Check whether an earlier request exists before calling this a follow-up.','Verifique si existe una solicitud anterior antes de llamarlo seguimiento.'));
+ }
+ if(branch==='followup'){
+  plan.kind=answers.next;plan.expense=answers.underlying==='billing'&&answers.request==='expenses';
+  if(answers.next==='complaint'){
+   destination='ag';recommendation=t('Review the Attorney General’s consumer complaint instructions.','Revise las instrucciones para quejas de consumo del Fiscal General.');reason=t('You chose consumer complaint information. An unresolved issue does not establish AG jurisdiction.','Eligió información sobre quejas de consumo. Un problema sin resolver no establece competencia del Fiscal General.');
+   const b=block(t('Arkansas Attorney General · Consumer complaints','Fiscal General de Arkansas · Quejas de consumo'));const c=node('div','','chips');chip(c,t('Online form','Formulario en línea'),'arkansasag.gov','ag',urls.ag);chip(c,'PDF · English','Consumer complaint','pdf-en',urls['pdf-en']);chip(c,'PDF · Español','Queja de consumo','pdf-es',urls['pdf-es']);b.append(c,node('p',t('Complaints are shared with the business and may become public records. This is not an outage, emergency or water-quality report.','Las quejas se comparten con el negocio y pueden ser registros públicos. No es para reportar interrupciones, emergencias ni calidad del agua.'),'caution'));
+   b.append(node('p',t(answers.legal==='yes'?'AG does not mediate when a private attorney is retained or court action has started. Review the official restriction before proceeding.':answers.legal==='no'?'AG reviews jurisdiction and may mediate or refer. Your answer does not establish eligibility or guarantee payment.':'No eligibility is inferred. AG does not mediate when a private attorney is retained or court action has started; review the official instructions.',answers.legal==='yes'?'El Fiscal General no media si ya contrató abogado particular o inició acción judicial. Revise la restricción oficial.':answers.legal==='no'?'El Fiscal General revisa su competencia y puede mediar o derivar. Su respuesta no establece elegibilidad ni garantiza pago.':'No se infiere elegibilidad. No hay mediación si contrató abogado particular o inició acción judicial; revise las instrucciones oficiales.'),'note'));source(b,'2026-10-14');
+   items=[t('Verify the business’s legal name and contact details.','Verifique el nombre legal y contacto del negocio.'),t('Put your own facts, contact attempts and requested resolution in date order.','Ordene por fecha sus hechos, contactos y solución solicitada.'),t('Use relevant copies, not originals. Read the form’s privacy instructions first.','Use copias pertinentes, no originales. Lea primero las instrucciones de privacidad.')];
+  }else if(answers.next==='legal'){
+   destination='legal';recommendation=t('Review legal information or ask about legal-help intake.','Revise información legal o consulte cómo solicitar asistencia.');reason=t('You chose legal assistance. Eligibility, availability and representation are not guaranteed.','Eligió asistencia legal. No se garantizan elegibilidad, disponibilidad ni representación.');
+   resource('Arkansas Law Help','arlawhelp.org · English','legal');resource(t('Legal-aid intake','Solicitud de asistencia legal'),'aroi.legalserver.org · English','intake');
+   const optional=block(t('Only if you want court-process information','Solo si desea información sobre el proceso judicial'));optional.append(button(t('Court-process information','Información del proceso judicial'),()=>{if(optional.querySelector('[data-resource="court"]'))return;web(optional,t('Small-claims process · English','Proceso de reclamos menores · Inglés'),'court');optional.append(node('p',t('Verify the correct party, court, deadlines, fees, service and possible immunity. This is not a recommendation to sue.','Verifique la parte correcta, tribunal, plazos, costos, notificación e inmunidad posible. No es una recomendación de demandar.'),'caution'));source(optional,'2026-10-14')}));
+   items=[t('Your issue, dates, housing/billing relationship and the response so far.','Su problema, fechas, relación de vivienda/facturación y respuesta recibida.'),t('Ask about eligibility and any applicable deadlines; keep court documents private.','Pregunte sobre elegibilidad y plazos aplicables; mantenga privados los documentos judiciales.')];
+  }else{
+   recommendation=t(answers.next==='update'?'Ask the previous contact for a written update.':'Choose a contact that fits the unresolved issue.',answers.next==='update'?'Pida una actualización por escrito al contacto anterior.':'Elija un contacto adecuado para el problema sin resolver.');reason=t(answers.contacted==='none'?'No earlier contact is assumed. Start with an initial inquiry.':answers.response==='denied'?'A denial is not proof of entitlement or grounds for automatic escalation.':'Keep the response and reference. There is no automatic escalation timer.',answers.contacted==='none'?'No se supone contacto previo. Empiece con una consulta inicial.':answers.response==='denied'?'Un rechazo no demuestra derecho a compensación ni justifica escalamiento automático.':'Guarde la respuesta y referencia. No hay escalamiento automático por tiempo.');followupContact();
+   items=[t('Record the contact, date and reference, if known.','Anote el contacto, fecha y referencia, si los conoce.'),t(answers.response==='denied'?'Keep the denial and ask for the policy or review process.':answers.response==='pending'?'Use the pending reference; ask for the next update point.':answers.response==='none'?'Note the date through which no response was received.':'Use the exact response, or say it is unknown.',answers.response==='denied'?'Guarde el rechazo y pida la política o proceso de revisión.':answers.response==='pending'?'Use la referencia pendiente y pregunte cuándo habrá una actualización.':answers.response==='none'?'Anote hasta qué fecha no recibió respuesta.':'Use la respuesta exacta o indique que no la conoce.'),t('Ask for a written answer and save your own copy.','Pida respuesta escrita y guarde su propia copia.')];
+  }
+ }
+ $('recommendation').textContent=recommendation;$('reason').textContent=reason;list('checklist',items);plan.items=items;plan.resources=[...$('contacts').querySelectorAll('[data-resource]')].map(x=>x.dataset.resource);
+ if(destination==='choose'){
+  const label=node('label',t('Choose the draft’s intended contact','Elija el destinatario del borrador'));const s=document.createElement('select');s.id='destination';for(const [value,title] of [['',t('Choose a contact','Elija un contacto')],['supplier',t('Supplier · Operations','Proveedor · Servicio')],['adh',t('ADH · Quality','ADH · Calidad')]]){const o=node('option',title);o.value=value;s.append(o)}label.append(s);$('draft-destination').append(label);s.onchange=()=>{$('prepare-draft').disabled=!s.value};$('prepare-draft').disabled=true;
+ }else $('prepare-draft').disabled=false;
+}
+function labels(){
+ document.documentElement.lang=$('language').value;
+ text('banner','Standalone design proposal · No production changes','Propuesta de diseño independiente · Sin cambios en producción');
+ $('context').textContent=record()?record().name:t('Unknown supplier · Synthetic example','Proveedor desconocido · Ejemplo ficticio');
+ text('emergency','Medical emergency? Call 911. For health concerns, contact a health professional. Follow applicable official notices; WAVE cannot establish water safety.','¿Emergencia médica? Llame al 911. Para inquietudes de salud, consulte a un profesional. Siga los avisos oficiales aplicables; WAVE no establece la seguridad del agua.');
+ text('show-result','Show my next step','Ver mi siguiente paso');text('result-title','Your next step','Su siguiente paso');text('contact-heading','Who to contact / official resource','Contacto / recurso oficial');text('prepare-heading','What to prepare','Qué preparar');text('optional-heading','Optional preparation','Preparación opcional');text('prepare-draft','Prepare a draft','Preparar un borrador');text('change','Change answers','Cambiar respuestas');text('followup','Follow up on this issue','Dar seguimiento a este problema');
+ text('records-note','Missing records do not block asking for help. Keep account numbers, medical details and identity documents out of WAVE.','La falta de documentos no impide pedir ayuda. No incluya números de cuenta, detalles médicos ni documentos de identidad en WAVE.');
+ text('memory-note','Optional, session-only preparation. Back keeps edits here; reload or close loses them.','Preparación opcional, solo en esta sesión. Volver conserva cambios aquí; recargar o cerrar los pierde.');
+ text('inert-note','Preview only: chips and export controls do not open, call, copy, save or send anything. WAVE cannot confirm receipt.','Solo vista previa: los controles no abren, llaman, copian, guardan ni envían nada. WAVE no puede confirmar recepción.');
+ text('editor-back','Back to my next step','Volver a mi siguiente paso');text('editor-title','Review your draft','Revise su borrador');text('subject-label','Subject · English template','Asunto · Plantilla en inglés');text('body-label','Draft body · English template','Texto del borrador · Plantilla en inglés');
+ text('draft-warning','Use fictional text for this review. English preparation template—not legal advice or a submitted form. Verify every fact and replace bracketed fields.','Use texto ficticio en esta revisión. Plantilla de preparación en inglés, no asesoría legal ni formulario presentado. Verifique cada hecho y sustituya los campos entre corchetes.');
+ text('editor-memory','Edits stay only in page memory. Back and language switches preserve them in this review; reload/close loses them. No sensitive details.','Los cambios solo quedan en memoria. Volver y cambiar idioma los conserva en esta revisión; recargar o cerrar los pierde. Sin datos sensibles.');
+ text('packet-heading','What the preparation packet would include','Qué incluiría el paquete de preparación');text('packet-note','Only this route’s checklist, selected resources and reviewed draft. No generic directory dump. Not submitted.','Solo la lista de esta vía, recursos seleccionados y borrador revisado. No un directorio genérico. No presentado.');
+}
+function keyFor(dest){return JSON.stringify([$('supplier').value,$('branch').value,$('notice-state').value,$('notice-kind').value,plan.kind,dest,answers.request,answers.advisory,answers.underlying,answers.prior,answers.contacted,answers.response,answers.legal])}
+function template(dest){
+ const follow=$('branch').value==='followup'||plan.kind==='billing-followup';let subject='Question about my water bill',body='Hello,\n\nPlease explain [CHARGE / BILLING PERIOD] and the applicable policy.';
+ if($('branch').value==='advisory'){subject='Question about a water advisory';body='Hello,\n\nPlease confirm [ADDRESS COVERAGE / APPLICABLE INSTRUCTIONS / OFFICIAL UPDATES]. I have not confirmed whether my address is affected.'}
+ if(plan.kind==='billing'||plan.kind==='billing-followup'){
+  if(answers.request==='credit')body='Hello,\n\nPlease explain the applicable bill-credit policy and how to request a review.';
+  if(plan.expense)body='Hello,\n\nPlease review actual documented expenses of $[ACTUAL AMOUNT] for [ITEMS / DATES]. I am asking for review, not stating that compensation is automatically owed.';
+  body+='\n\nPlease provide the applicable policy, claim instructions, any deadline, a reference and a written decision.';
+ }
+ if(follow&&plan.kind!=='complaint'&&plan.kind!=='legal')body=(answers.contacted==='none'?'Hello,\n\nI would like to ask about [ISSUE].':'Hello,\n\nI contacted [ORGANIZATION] on [DATE / METHOD] about [ISSUE]. My reference is [REFERENCE OR UNKNOWN]. The response so far is [EXACT RESPONSE OR UNKNOWN].\n\nPlease provide a written update and the appropriate next step.')+(plan.expense?'\nActual expenses requested for review: [AMOUNT / EVIDENCE]. No automatic entitlement is asserted.':'');
+ if(dest==='adh'){subject='Drinking-water quality inquiry';body='Hello,\n\nMy observations: [WHAT / WHEN / WHERE].\n'+(follow?'Earlier contact and response: [DATE / REFERENCE / RESPONSE OR UNKNOWN].\n':'')+'Please advise what information and next steps are appropriate. These observations are not a diagnosis.'}
+ if(plan.kind==='complaint'){subject='Preparation for AG consumer complaint';body='PREPARATION ONLY — NOT SUBMITTED\n\nBusiness legal name and contact: [VERIFY].\nMy facts in date order: [FACTS].\nContact attempts and response: [DATES / METHODS / RESPONSE].\nResolution requested: [REQUEST].\nRelevant copies: [DOCUMENTS].\n\nComplaints are shared with the business and may become public records. Review AG jurisdiction and attorney/court-action mediation restrictions.'}
+ if(plan.kind==='legal'){subject='Preparation for legal-help intake';body='PREPARATION ONLY — NOT AN APPLICATION OR LAWSUIT\n\nMy issue, dates and housing/billing relationship: [FACTS].\nPrior contact and response: [FACTS OR UNKNOWN].\nMy questions: [QUESTIONS].\n\nPlease explain intake eligibility, availability and applicable deadlines. Representation is not guaranteed.'}
+ return {subject,body:body+'\n\n[YOUR NAME / PREFERRED CONTACT — DO NOT ENTER REAL DETAILS IN THIS REVIEW]\n\nNo live incident facts are supplied. An advisory alone is not proof of personal loss, liability or entitlement.'};
+}
+function renderEditor(){
+ const saved=drafts.get(draftKey);$('draft-subject').value=saved.subject;$('draft-body').value=saved.body;$('export-actions').replaceChildren();
+ for(const [en,es] of [['Copy draft','Copiar borrador'],['Download draft','Descargar borrador'],['Download preparation packet','Descargar paquete de preparación']])$('export-actions').append(button(t(en,es),()=>announce('Preview only. Nothing was copied, downloaded, sent or filed.','Solo vista previa. No se copió, descargó, envió ni presentó nada.')));
+ if(saved.dest==='supplier'&&record()&&plan.kind!=='complaint'&&plan.kind!=='legal'&&(saved.subject.length+saved.body.length)<7000)$('export-actions').append(button(t('Open email draft','Abrir borrador de correo'),()=>announce('Preview only. Confirm the recipient against your bill. Opening email would pass text to your mail app, not send it. No email opened.','Solo vista previa. Confirme el destinatario con la factura. Abrir correo pasaría texto a su aplicación, sin enviarlo. No se abrió correo.')));
+ else $('export-actions').append(node('p',t('No verified email for this destination or no compatible email draft. Use copy/download in the future app.','No hay correo verificado para este destinatario o borrador compatible. Use copiar/descargar en la futura aplicación.'),'note'));
+ list('packet-list',[...plan.items,t('Selected official resources with original source dates.','Recursos oficiales seleccionados con fechas originales.'),t('Reviewed draft and relevant contact log.','Borrador revisado y registro de contactos pertinente.'),...(plan.expense?[t('Actual expense log; no automatic credit or reimbursement.','Registro de gastos reales; sin crédito ni reembolso automático.')]:[])]);
+}
+function show(next,focus=true){view=next;for(const id of ['questions','result','editor'])$(id).hidden=id!==next;$('status').textContent='';if(focus)$(next==='questions'?'question-title':next==='result'?'result-title':'editor-title').focus()}
+function render(){labels();renderFields();if(view==='result')renderResult();if(view==='editor')renderEditor();show(view,false)}
+$('show-result').onclick=()=>{renderResult();show('result')};$('change').onclick=()=>show('questions');
+$('followup').onclick=()=>{if($('branch').value==='billing'){answers.underlying='billing';answers.contacted=answers.biller;answers.response=answers.prior==='pending'?'pending':answers.prior==='notyet'?'unsure':answers.prior==='received'?'other':'unsure';if(answers.prior==='notyet')answers.contacted='none'}else{answers.underlying='unsure';answers.contacted='unsure';answers.response='unsure'}answers.next='update';$('branch').value='followup';renderFields();show('questions')};
+$('prepare-draft').onclick=()=>{const dest=destination==='choose'?$('destination').value:destination;draftKey=keyFor(dest);if(!drafts.has(draftKey))drafts.set(draftKey,{...template(dest),dest});renderEditor();show('editor')};
+$('editor-back').onclick=()=>{show('result',false);$('prepare-draft').focus()};
+for(const [id,key] of [['draft-subject','subject'],['draft-body','body']])$(id).oninput=()=>{const d=drafts.get(draftKey);d[key]=$(id).value};
+$('language').onchange=render;
+for(const id of ['branch','supplier','notice-state','notice-kind'])$(id).onchange=()=>{show('questions',false);render();announce('Context changed. Existing draft edits remain separate in this page until reload or close.','Cambió el contexto. Los borradores anteriores quedan separados en esta página hasta recargar o cerrar.')};
+render();
+</script>
+</body>
+</html>

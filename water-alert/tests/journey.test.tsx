@@ -58,17 +58,17 @@ it('filters observed history to watched places without treating disappearance as
   expect(screen.getByText('Other supplier')).toBeVisible()
 })
 
-it('labels retained failed-source notices as previous observations, with question-mark status', async () => {
+it('labels retained failed-source notices as previous observations, with unavailable status', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={{ ...data, sources: data.sources.map(s => ({ ...s, error: 'Failed' })) }} />)
   const card = screen.getByRole('article')
   expect(card).toHaveClass('unavailable')
-  expect(within(card).getByText('?')).toBeVisible()
+  expect(within(card).queryByText('No active boil-water notice found')).not.toBeInTheDocument()
   expect(within(card).getByText('Current advisory status unavailable.')).toBeVisible()
   expect(within(card).queryByText('No successful check recorded yet for this supplier.')).not.toBeInTheDocument()
   expect(within(card).queryByText('Boil-water notice')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'About this supplier' }))
   await user.click(screen.getByRole('button', { name: 'Notice details' }))
-  expect(screen.getByText(/Previously observed boil-water notice/)).toBeVisible()
+  expect(screen.getByText('Previously observed notice · current status unverified')).toBeVisible()
   expect(screen.queryByText('Published \(this record\)')).not.toBeInTheDocument()
 })
 
@@ -83,12 +83,13 @@ it('keeps agency dates verbatim and formats only app timestamps with language an
 
 it('describes feed retrieval and browser/server deletion accurately in both languages', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={data} />)
-  expect(screen.getByText(/We check official ADH and ADEQ notices/)).toBeVisible()
+  await user.click(screen.getByText('About these results', { selector: 'summary' }))
+  expect(screen.getByText(/WAVE checks ADH boil-water notices and ADEQ HAB advisories/)).toBeVisible()
   await user.click(nav('Settings'))
   await user.click(screen.getByRole('button', { name: /Privacy and stored data/ }))
-  expect(screen.getByText(/browser preferences and any server notification record/)).toBeVisible()
+  expect(screen.getByText(/Disable\/delete removes the server subscription and browser credential/)).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'ES' }))
-  expect(screen.getByText(/preferencias del navegador y cualquier registro de notificaciones del servidor/)).toBeVisible()
+  expect(screen.getByText(/Desactivar\/eliminar borra la suscripción del servidor y la credencial del navegador/)).toBeVisible()
 })
 
 it('introduces a fictional sample journey and keeps removal/undo isolated from live preferences', async () => {
@@ -113,10 +114,11 @@ it('retains deletion credentials and choices until server removal succeeds on re
     const user = userEvent.setup(); render(<App liveData={data} />)
     await user.click(nav('Settings')); await user.click(screen.getByRole('button', { name: /Privacy and stored data/ }))
     await user.click(screen.getByRole('button', { name: 'Remove saved data' }))
+    await user.click(screen.getByRole('button', { name: 'Confirm removal' }))
     expect(localStorage.getItem('water-alert:push-device:v1')).not.toBeNull()
     expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([place.id])
     fail = false
-    await user.click(screen.getByRole('button', { name: 'Remove saved data' }))
+    await user.click(screen.getByRole('button', { name: 'Confirm removal' }))
     expect(localStorage.getItem('water-alert:push-device:v1')).toBeNull()
     expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
     expect(screen.getByRole('heading', { name: 'Follow water notices for your places.' })).toBeVisible()

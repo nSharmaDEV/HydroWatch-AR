@@ -1,6 +1,6 @@
-import { SOURCES, type Agency } from '../src/domain'
-import type { ObservationStore } from './store'
-import { parseADH, parseADEQ } from './parsers'
+import { SOURCES, type Agency } from '../src/domain.js'
+import type { ObservationStore } from './store.js'
+import { parseADH, parseADEQ } from './parsers.js'
 
 // Parse only the verified source structures; failures retain prior observations.
 export class SourceRunner {

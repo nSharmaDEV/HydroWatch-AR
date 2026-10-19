@@ -2,13 +2,16 @@ import { useRef, useState } from 'react'
 import { SOURCES, resolvePlaces, type Place } from './domain'
 import { CatalogCoverage, Icon, Panel, SourceLink } from './components'
 import type { Strings } from './strings'
+import { supplierCounty } from './supplier-display'
+import { catalogEntry } from './place-catalog'
 
 export function Welcome({ t, onSearch, onWell, onSample }: { t: Strings; onSearch: (kind: Place['kind']) => void; onWell: () => void; onSample: () => void }) {
-  return <Panel className="journey-panel"><h1>{t.welcome}</h1><p>{t.welcomeQuestion}</p>
+  return <Panel className="journey-panel"><h1>{t.welcome}</h1><p>{t.welcomeIntro}</p>
     <button className="choice" onClick={() => onSearch('system')}><span className="choice-icon"><Icon name="water" /></span><span><b>{t.supplierChoice}</b><small>{t.supplierHelp}</small></span><span aria-hidden="true">›</span></button>
     <button className="choice" onClick={() => onSearch('lake')}><span className="choice-icon"><Icon name="water" /></span><span><b>{t.lakeChoice}</b><small>{t.lakeHelp}</small></span><span aria-hidden="true">›</span></button>
     <div className="choice-links"><button onClick={onWell}>{t.privateWell}<span aria-hidden="true">›</span></button><button onClick={onSample}>{t.trySample}<span aria-hidden="true">›</span></button></div>
-    <p className="info">{t.welcomeLimit}</p>
+    <p className="quiet-note">{t.shortLimit}</p>
+    <details><summary>{t.aboutWave}<span className="disclosure-icon" aria-hidden="true" /></summary><p>{t.purpose}</p><p>{t.verificationLimit}</p><p>{t.setupIntro}</p><p>{t.coverage}</p></details>
   </Panel>
 }
 
@@ -26,19 +29,21 @@ export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack 
     <div className="search-field"><Icon name="search" /><input ref={input} id="place-search" name="place-search" type="search" autoComplete="off" value={query} placeholder={system ? t.supplierSearch : t.lakeSearch} onChange={e => { setLimit(5); onQuery(e.target.value) }} /></div>
     {query && system && matches.length > 1 ? <p className="info">{t.ambiguous}</p> : null}
     <div className="search-results" aria-live="polite">
-      {matches.slice(0, limit).map(p => <div className="place-row" key={p.id}><div><h2>{p.name}</h2><p>{p.county} · {system ? 'ADH' : 'ADEQ'}</p></div><button className="primary" aria-label={`${t.select} ${p.name}`} onClick={() => onSelect(p)}>{t.select}</button></div>)}
+      {matches.slice(0, limit).map(p => <div className="place-row" key={p.id}><div><h2>{supplierCounty(p.name)}</h2><p>{supplierCounty(p.county)} · {system ? 'ADH' : 'ADEQ'}</p></div><button className="primary" aria-label={`${t.select} ${p.name}`} onClick={() => onSelect(p)}>{t.select}</button></div>)}
       {!matches.length ? <p>{t.noResults}</p> : null}
     </div>
     {matches.length > limit ? <button className="text-button" onClick={() => setLimit(n => n + 5)}>{t.moreMatches} <span aria-hidden="true">⌄</span></button> : null}
-    <div className="info"><p>{noMatch ? t.noAdvisoryMeaning : t.catalogHelp}</p><SourceLink url={SOURCES[system ? 'ADH' : 'ADEQ']}>{system ? t.checkADH : t.checkADEQ}</SourceLink></div>
+    <p className="quiet-note">{noMatch ? t.noAdvisoryMeaning : t.limitedCatalog}</p>
+    {noMatch ? <SourceLink url={SOURCES[system ? 'ADH' : 'ADEQ']}>{system ? t.checkADH : t.checkADEQ}</SourceLink> : null}
+    <details><summary>{t.coverageDetails}<span className="disclosure-icon" aria-hidden="true" /></summary><p>{t.catalogHelp}</p><p>{system ? t.catalogSupplier : t.catalogWaterbody}</p>{!noMatch ? <SourceLink url={SOURCES[system ? 'ADH' : 'ADEQ']}>{system ? t.checkADH : t.checkADEQ}</SourceLink> : null}</details>
     {noMatch ? <button className="secondary full" onClick={() => { input.current?.focus(); input.current?.select() }}>{t.editSearch}</button> : null}
   </Panel>
 }
 
 export function ConfirmPlace({ place, t, onConfirm, onBack }: { place: Place; t: Strings; onConfirm: () => void; onBack: () => void }) {
   return <Panel className="journey-panel"><button className="back" onClick={onBack}>‹ {t.backStep}</button><h1>{place.kind === 'system' ? t.confirmSupplier : t.confirmLake}</h1>
-    <div className="confirm-place"><h2>{place.name}</h2><p>{place.county}</p><p>{t.source}: {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p></div>
-    <p>{place.kind === 'system' ? t.confirmBill : t.confirmArea}</p><CatalogCoverage placeId={place.id} t={t} /><button className="primary full" onClick={onConfirm}>{t.confirmWatch}</button><button className="secondary full" onClick={onBack}>{t.differentPlace}</button>
+    <div className="confirm-place"><h2>{supplierCounty(place.name)}</h2><p>{supplierCounty(place.county)}</p><p>{t.source}: {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p></div>
+    <p>{place.kind === 'system' ? t.confirmBill : t.confirmArea}</p><details><summary>{t.coverageDetails}<span className="disclosure-icon" aria-hidden="true" /></summary>{catalogEntry(place.id) ? <CatalogCoverage placeId={place.id} t={t} /> : <><p>{place.kind === 'system' ? t.coverage : t.catalogWaterbody}</p><SourceLink url={SOURCES[place.kind === 'system' ? 'ADH' : 'ADEQ']}>{t.sourceLink}</SourceLink></>}</details><button className="primary full" onClick={onConfirm}>{t.confirmWatch}</button><button className="secondary full" onClick={onBack}>{t.differentPlace}</button>
   </Panel>
 }
 
@@ -47,5 +52,5 @@ export function PrivateWell({ t, onBack, onLake }: { t: Strings; onBack: () => v
 }
 
 export function SampleIntro({ t, onStart, onList }: { t: Strings; onStart: () => void; onList: () => void }) {
-  return <Panel className="journey-panel"><h1>{t.sampleJourney}</h1><p>{t.sampleJourneyText}</p><ol className="journey-steps">{[[t.sampleStep1, t.sampleStep1Text], [t.sampleStep2, t.sampleStep2Text], [t.sampleStep3, t.sampleStep3Text]].map(([title, text]) => <li key={title}><b>{title}</b><p>{text}</p></li>)}</ol><button className="primary full" onClick={onStart}>{t.startSample}</button><button className="text-button full" onClick={onList}>{t.sampleList}</button></Panel>
+  return <Panel className="journey-panel"><h1>{t.sampleJourney}</h1><p>{t.sampleText}</p><button className="primary full" onClick={onStart}>{t.startSample}</button><button className="text-button full" onClick={onList}>{t.sampleList}</button></Panel>
 }

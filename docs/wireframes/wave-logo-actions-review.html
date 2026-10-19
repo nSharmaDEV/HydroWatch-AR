@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WAVE · Logo colors and help button wireframe</title>
+<style>
+:root{font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#102e43;background:#f4f6f8;--aqua:#46cccd;--teal:#017685;--navy:#02285a;--line:#dce3e9;--muted:#354f60}*{box-sizing:border-box}body{margin:0}header{background:white;border-bottom:1px solid var(--line)}.header-inner{max-width:1100px;margin:auto;padding:20px 28px}header img{width:220px;max-width:100%;height:auto;display:block}main{max-width:1100px;margin:auto;padding:30px 28px 56px}.review-label{font-size:.875rem;color:var(--muted);margin:0 0 20px}.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:28px;align-items:start}h1{font-size:1.85rem;line-height:1.25;margin:0 0 24px;letter-spacing:-.025em}h2{font-size:1.3rem;margin:0 0 4px}h3{font-size:1rem;margin:0 0 12px}p{margin:0 0 16px}.card{background:white;border:1px solid var(--line);border-top:4px solid #bc541b;border-radius:16px;padding:26px}.supplier-meta{font-size:.9rem;color:var(--muted);margin-bottom:24px}.finding{border:1px solid #efd9c7;border-radius:10px;background:#fff4eb;color:#9c3e10;padding:18px;margin-bottom:24px}.finding strong{font-size:1.2rem}.finding p{font-size:.925rem;color:#613d29;margin:8px 0 0}.freshness{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);margin:0 0 22px}.leader{flex:1;min-width:15px;border-bottom:2px dotted #a5b7c2}.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}.button{font:inherit;font-weight:650;min-height:50px;border-radius:7px;padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;text-align:center;border:1px solid transparent;text-decoration:none}.check{background:#f7f8f9;color:var(--teal);border-color:var(--teal)}.source{background:var(--aqua);color:var(--navy)}.help{width:100%;background:var(--navy);color:white;margin-top:24px}button:hover{filter:brightness(.96)}:focus-visible{outline:3px solid #145fc0;outline-offset:4px}details{border-top:1px solid var(--line)}summary{font-weight:650;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}summary::after{content:'+';font-size:1.4rem}details[open]>summary::after{content:'−'}details p{font-size:.9rem;color:var(--muted);padding-bottom:12px}.review{font-size:.9rem;color:var(--muted)}.review section{margin-bottom:26px}.swatch{display:flex;align-items:center;gap:12px;margin:10px 0}.chip{height:28px;width:28px;border-radius:5px;border:1px solid #0001;flex-shrink:0}.review ul{padding-left:20px}.review li{margin-bottom:9px}.note{font-size:.8rem;color:var(--muted);margin:18px 0 0}.feedback{background:#eef3f6;border-left:3px solid var(--teal);padding:12px 14px;margin:18px 0 0;font-size:.9rem}.feedback[hidden]{display:none}footer{max-width:1044px;margin:0 auto;padding:20px 0;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}@media(max-width:760px){.layout{grid-template-columns:minmax(0,1fr)}main{padding:24px 18px 36px}.header-inner{padding:16px 18px}.card{padding:20px}h1{font-size:1.6rem}.freshness{display:block}.freshness strong,.freshness time{display:block}.leader{display:none}footer{margin:0 18px}.review{border-top:1px solid var(--line);padding-top:22px}}@media(max-width:420px){.actions{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="header-inner"><img src="../../water-alert/public/wave-logo.png" alt="WellPower: WAVE"></div></header>
+<main>
+<p class="review-label">Design wireframe · Sample content only · Not the live app</p>
+<h1>My water</h1>
+<div class="layout">
+<section aria-label="Proposed supplier card">
+<article class="card">
+<h2>Example water supplier</h2>
+<p class="supplier-meta">Arkansas Department of Health · Fictional supplier</p>
+<div class="finding"><strong>Active boil-water notice</strong><p>Sample status for layout review—not a current advisory. Follow applicable official instructions.</p></div>
+<div class="freshness"><strong>Last successful check</strong><span class="leader" aria-hidden="true"></span><time>Oct 19, 2026, 5:14 PM CDT</time></div>
+<div class="actions">
+<button class="button check" type="button" data-preview="check">Check now</button>
+<button class="button source" type="button" data-preview="source">View official source <span aria-hidden="true">↗</span></button>
+</div>
+<details><summary>Service questions?</summary><p>The existing supplier-contact section stays here, unchanged. Contact content is not part of this wireframe.</p></details>
+<details><summary>Advisory history</summary><p>The existing advisory history stays here, unchanged. No live records are loaded.</p></details>
+<details><summary>Supplier information</summary><p>The existing supplier-information section stays here, unchanged.</p></details>
+<button class="button help" type="button" data-preview="help">Get help with a water issue</button>
+</article>
+<p class="feedback" id="feedback" role="status" hidden></p>
+<p class="note">Prototype controls only. No source check, external navigation, or report submission occurs.</p>
+</section>
+<aside class="review" aria-label="Wireframe notes">
+<section><h3>The logo’s three colors</h3>
+<div class="swatch"><span class="chip" style="background:var(--aqua)"></span><span>Light aqua · #46CCCD</span></div>
+<div class="swatch"><span class="chip" style="background:var(--teal)"></span><span>Teal · #017685</span></div>
+<div class="swatch"><span class="chip" style="background:var(--navy)"></span><span>Dark navy · #02285A</span></div>
+</section>
+<section><h3>Two requested changes</h3><ul><li><strong>View official source:</strong> light aqua background with navy text, rather than white text, to preserve contrast.</li><li><strong>Get help with a water issue:</strong> one full-width navy button at the bottom of the supplier card.</li></ul></section>
+<section><h3>One click, not two</h3><p>Remove the “Get help with a water issue” expandable section and its separate “Open guide” button. The new bottom button opens the existing guide directly for this supplier.</p><p>Other card sections remain in place. On narrow screens, the source actions stack; the help button stays at the bottom in normal page flow, not fixed over content.</p></section>
+</aside>
+</div>
+</main>
+<footer>Standalone visual proposal. No production app files changed.</footer>
+<script>
+const messages={check:'Wireframe only: this would check the official source for updated notices.',source:'Wireframe only: this would open the official agency source in a new tab.',help:'Wireframe only: this would open the existing help guide directly, with the selected supplier carried forward. No expandable help section or extra “Open guide” click.'};
+document.querySelectorAll('[data-preview]').forEach(button=>button.addEventListener('click',()=>{const feedback=document.getElementById('feedback');feedback.hidden=false;feedback.textContent=messages[button.dataset.preview]}));
+</script>
+</body>
+</html>

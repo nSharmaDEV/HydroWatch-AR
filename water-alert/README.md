@@ -1,13 +1,163 @@
-# Water Alert — local implementation and Vercel backend
+# WellPower: WAVE — local implementation and Vercel backend
+
+**Visible contacts, advisory history and guided help — October 18, 2026
+(local only; not deployed):** Verified phone numbers and full email addresses
+are visible links, stacked on phones with wrapping rather than truncation.
+Missing contacts have visible explanations. This supersedes the older horizontal,
+icon-only contact treatment described below; exact supplier matching and contact
+targets are unchanged. Leisure Hills contact provenance remains October 14;
+the October 18 directory check reconfirmed its phone, not its email.
+
+Advisory history prioritizes status, agency-issued date, area and reason, with
+one per-notice disclosure for unabridged supplied fields and observation evidence.
+Unknown lift dates remain unknown. **Provider information** separates directory
+facts from help. **Get help with a water issue** opens a five-step EN/ES guide
+for service, water-quality/health, consumer disputes or legal help. It reuses all
+five editable draft templates, local copy/download and preparation packets.
+Back/Next retains edits; leaving, changing context/language, reloading or closing
+can discard them. Warnings are informational, not navigation protection.
+
+The non-emergency ADH Safe Water Engineering contact, (501) 661-2623, was checked
+October 18 against its [official program page](https://healthy.arkansas.gov/programs-services/licensing-military-member-licensure-permits-plan-reviews/drinking-water-plan-review).
+AG form/PDF and legal-help destinations were also checked read-only. Complaint
+preparation is not emergency assistance or filing: WAVE does not submit forms,
+determine jurisdiction, track cases or guarantee eligibility, response or outcomes.
+Drafts stay in page memory; no new browser/cloud persistence was added.
+
+Verification under Node 24: **277 unit/integration tests in 37 files**, **56 guarded
+desktop/phone Chromium cases**, production TypeScript/Vite build and
+`git diff --check` pass. Expanded history/provider information and guide screenshots
+were inspected in EN/ES at 320/390/1366px, including full email wrapping and multiple
+notices; keyboard guide navigation clears the mobile bottom bar. The running
+localhost:5178 sample guide was also checked. Browser fixtures block external
+requests and API mutations. No deployment, real calls/emails, form submissions or
+notification sends occurred. Fluent human Spanish review and real-device delivery
+remain unverified.
+
+**Reference-matched supplier cards — October 18, 2026 (local only):** Centered
+findings use a 56px outline warning for active notices and no icon for fresh
+successful no-match results. Active notices emphasize **View official source**;
+other states emphasize **Check now**. Actions have equal widths and a 12px gap.
+Desktop successful-check rows use a dotted leader; phones stack the timestamp.
+Verified contact targets and disabled explanations are preserved, with outline
+icons and accessible icon-only controls on narrow phones. Every supplier card
+shows the complete water-safety qualification. No status, persistence, recovery,
+notification or deployment logic changed.
+
+Local visual check: open `http://localhost:5178` and compare cards at 320, 390
+and 1366 pixels. Use sample mode for active/no-match examples (sample mode
+intentionally hides checking and real contacts). Check English/Spanish wrapping,
+keyboard +/− disclosures, safety text, and the existing local recovery drafts.
+Failed, stale and unchecked status layouts are covered with synthetic browser
+fixtures; do not create fake live records or send notifications to test styling.
+
+Verification: **270 unit/integration tests**, **44 guarded desktop/phone Chromium
+cases**, and TypeScript/Vite build pass under Node 24. Active, no-match, failed,
+stale and unchecked card layouts are tested at all three widths. Local browser
+views and synthetic screenshots were inspected. No real delivery was tested;
+human Spanish review remains outstanding.
+
+**Concise English/Spanish copy — October 18, 2026 (local only, not deployed):**
+Home, Places and Settings omit repeated introductions. Status cards retain visible
+safety qualifications, real successful-check times and official sources. Coverage,
+observation metadata and notification evidence start collapsed; issue dates, affected
+areas and lift uncertainty stay visible. Sources and Privacy group their distinct
+facts, installation guidance is platform-relevant, and data removal requires an
+inline confirmation. Notification states/actions and failed-deletion retry credentials
+are preserved; no backend, matching, delivery or retention logic changed.
+Verification: **265 unit/integration tests**, **34 guarded desktop/phone Chromium
+cases**, TypeScript/Vite build and `git diff --check` pass. Run suites sequentially:
+simultaneous test/build runs hit resource-related timeouts; no timeouts were changed.
+English mobile and Spanish desktop sample views were inspected locally. Browser
+tests use synthetic data, prohibit external/API mutations and make no real sends.
+Human Spanish review and real-device notification delivery remain unverified.
+
+**WAVE card redesign — October 18, 2026 (local only, not deployed):** My Water
+places **Add a place** beside the page heading. Cards use navy headings, a tinted
+status panel, the actual last successful check (with timezone), **Check now** and
+a state-dependent official-source link (filled for active supplier notices). Verified contacts stay in one horizontal row,
+including on phones; suppliers without a verified email show a disabled Email
+button with an accessible explanation. Sample mode still suppresses real contacts
+and checking. **Advisory history** and **Provider details & help** start closed;
+sitewide disclosures use a right-aligned +/−. The water-safety qualification stays
+visible. Recovery tools, source-failure states and notification behavior are preserved.
+Verification: 250 unit/integration tests pass with `npm test -- --maxWorkers=1`,
+30 guarded Chromium cases pass, and the TypeScript/Vite build passes. Default
+parallel unit runs hit existing PGlite database-test timeouts; no timeout or test
+configuration was changed. Layouts were reviewed at 320/390/1366 pixels. This is
+not deployment, human Spanish review or real-device notification verification.
+
+**Production update — October 18, 2026:** the five approved Task 5 fixes are now
+live at **https://water-alert-blond.vercel.app** (tablet header, mobile focus
+spacing, Spanish sample continuity, missing saved-notice explanation and scoped
+provider-contact disclaimer). This supersedes their earlier local-only notes below.
+An isolated release preserved deployed backend/scheduler code; unrelated shared
+checkout changes were not released. Production push configuration is unchanged.
+See `VERCEL.md` and `CAC-CHECKLIST.md` for deployment evidence and remaining limits.
+
+**Local UI refresh — October 18, 2026 (not deployed):** onboarding now leads with
+supplier/lake choices; cards lead with status, last successful check with timezone,
+official source and compact verified contacts. Coverage explanations are expandable.
+Sample views keep a persistent banner and fictional labels. Navy/teal branding,
+source-failure handling and saved preferences are preserved.
+Notification configuration has explicit loading/ready/unsupported/unavailable/error
+states, a 10-second limit and retry for failed/unavailable checks. Local preferences,
+browser permission and server-registration evidence are shown separately; delivery
+is not verified and email alerts are not connected. This refresh enables neither.
+Verification: 242 unit/integration tests, 28 guarded desktop/phone browser cases and
+the TypeScript/Vite build pass. Browser cases include 320/390/1366-pixel layouts.
 
 Isolated React + TypeScript + Vite app with a localhost Express proxy. No imports,
-dependencies or records are shared with the earlier Python apps. Working name only.
+dependencies or records are shared with the earlier Python apps.
+
+WellPower: WAVE—Water Advisory Verification & Empowerment—helps Arkansas residents
+check official advisories for their exact water supplier and take informed action
+through verified provider contacts and editable follow-up or reimbursement requests.
+“Verification” means checking published advisories, not testing water or certifying safety.
+
+Approved branding is integrated locally in the header, welcome About section,
+browser/install metadata and share/fallback notification titles (October 16).
+English/Spanish purpose text is included; Spanish wording still needs human review.
+Existing storage keys and app identity/scope are unchanged. This batch is not deployed
+and does not enable notifications or background checking.
+
+The supplied teal-wave logo now replaces the default header drop locally. Its
+wave-only mark is used for the favicon, PWA PNGs and Apple touch icon. The original
+is preserved in `assets/wave-logo-source.png`; `npm run icons` reproduces the trimmed
+transparent header logo and white-background square icons with Playwright Chromium.
+App identity and saved preferences are unchanged. Existing installed icons may need
+a browser refresh/reinstallation after a separately approved deployment.
 
 See [CHANGELOG.md](CHANGELOG.md) for notable website, backend and hosting changes.
 
+## Supplier details and preparation tools (local changes, updated October 18)
+
+Open **Get help with a water issue** directly on a watched supplier for the guide.
+For the detailed tools page, expand **Provider information**, then open
+**Supplier details & tools**, or use **Open in WAVE** in expanded **Advisory history**.
+Status, check evidence, official source and contacts
+come before **What do you need help with?** Choose a service question, credit/
+reimbursement request, complaint or assistance; an existing-request follow-up is
+also available. No editor opens until a task is selected. Edits are retained while
+switching tasks on that page. Copy/download a
+reviewed draft or preparation pack; a verified provider email can open your email
+app. Nothing is sent, filed or attached automatically; compensation is not promised.
+Edits stay only in page memory and are lost when leaving/reloading the page.
+Spanish controls retain clearly labelled English templates and CDC quotations.
+
+Verified Leisure Hills directory facts and ADH annual-report search are separate
+from current incident information. Unknown suppliers get no invented facts.
+General CDC guidance is not incident-specific ADH instructions; stale, failed
+and historical views keep it collapsed as reference. Sample mode suppresses real
+provider contacts and labels exported drafts as synthetic.
+
+Earlier October 14 verification: 210 tests and the TypeScript/Vite build passed
+under Node 24 after the missing observation-store module was repaired. The latest
+local verification is recorded above; the preparation-tool changes remain undeployed.
+
 ## Run
 
-Use Node 22.12+ or Node 24 LTS. From `water-alert/`:
+Use Node 24 LTS (also pinned for production). From `water-alert/`:
 
 ```sh
 npm ci
@@ -18,7 +168,52 @@ Open **http://localhost:5178** (the default allowed mutation origin). UI port 51
 localhost. `npm test` runs the domain, UI and local-server tests;
 `npm run build` checks TypeScript and builds the UI. `npm run dev:ui` runs
 the sample UI alone. `npm run preview` previews the build but does not start
-the API. No deployment has occurred.
+the API. Initial production deployment: **https://water-alert-blond.vercel.app**.
+Production push is enabled as of October 17, 2026; the separately approved
+Cloudflare scheduler is active. Activation checks found zero production devices
+and sent nothing. Production-device delivery, scheduled advisory-to-push execution,
+day-long observation and free-tier quota review remain open. See [PUSH-PLAN.md](PUSH-PLAN.md).
+
+### Local browser journey checks
+
+With Node 24, from `water-alert/`:
+
+```sh
+npx playwright install chromium # One-time browser download, if not installed
+npm run test:e2e
+npm run test:e2e -- --list
+```
+
+Playwright discovers only `tests/e2e/*.spec.ts`, separate from Vitest. It starts
+its own UI-only Vite server at `http://127.0.0.1:5194` (port must be free), without
+the normal API proxy, env-file loading, backend, scheduler or database. Tests use
+a fixed clock and a synthetic Leisure Hills incident, not `data/` or live feeds.
+External requests and unexpected API requests are blocked and fail the tests;
+service workers are blocked. Contact and agency links are checked without opening
+them. Nothing is called, emailed, filed or sent.
+
+Fifty-six Chromium cases cover desktop (1440×900) and phone-sized (390×844) journeys,
+logo loading, contact targets, editable request/follow-up downloads, clipboard,
+email-draft encoding, memory-only draft edits, and failed/stale-source states.
+The header regression additionally checks 761/768/820/900px with a reserved
+scrollbar gutter. The approved October 17 local fix reduces only the tablet logo
+width. A keyboard-focus regression checks that Tab to the draft editor clears
+bottom navigation at 320/390/760px. The approved mobile scroll-margin fix and
+tablet fix are local only, not deployed. Spanish sample-entry regressions cover
+new/saved sample preferences and unchanged live choices on exit: entering sample
+retains the current language; exiting restores saved live preferences. This fix
+is also local only. Bounded Spanish browser review is not fluent-speaker review.
+Saved-notice checks cover English/Spanish missing IDs and unresolvable places,
+return home, exact historical facts and archive removal without substitution.
+The approved missing-link explanation fix is local only, not deployed.
+The approved English/Spanish provider-contact disclaimer now specifies no
+automatic provider calls/emails, not a website-wide absence of messages; push
+behavior is unchanged. This wording fix is also local only. See
+`CAC-CHECKLIST.md` for the bounded clipboard/download/recipient, fallback,
+draft-storage and source reviews, plus unresolved human/device/link checks.
+This is not real-phone/virtual-keyboard,
+assistive-technology, hosted-backend or notification-delivery verification.
+Failure screenshots/traces are saved in ignored `test-results/`.
 
 ### Automatic checking
 
@@ -27,13 +222,14 @@ minutes**, with no overlapping runs or immediate retry loop. The live website
 reads saved observations every **30 seconds** (can be disabled in Settings).
 Sample mode does not poll the live API. Manual checking keeps its cooldown.
 
-Checks continue with the browser closed **only while the local server is running
-and the computer is awake**. This is not yet a hosted scheduler. A configured,
-authorized always-running host is required for checks when this computer is off.
-The new Vercel path uses scheduled functions and PostgreSQL rather than a listening
-server/durable disk. It has not been deployed. The free-only configuration uses
-a separate Cloudflare scheduled Worker, not Vercel's paid frequent cron.
-See [FREE-HOSTING.md](FREE-HOSTING.md) for the database quota blocker and
+For the local server, checks continue with the browser closed **only while the
+server is running and the computer is awake**. The deployed Vercel path instead
+uses PostgreSQL and an approved Cloudflare scheduled Worker, independently of the
+laptop, not Vercel's paid frequent cron. Hosted source retrieval, persistence and
+HTTPS/API/cron protection checks passed; production push is enabled. A configured
+five-minute schedule is not a guarantee of uninterrupted five-minute checks:
+day-long reliability, quota review and automatic device delivery remain open.
+See [FREE-HOSTING.md](FREE-HOSTING.md) for free-plan limits and remaining scheduler gates, and
 [VERCEL.md](VERCEL.md) for setup, authorization gates and limitations.
 Live responses are parsed against the recorded agency structures. Failed checks
 retain prior observations but remain unavailable; downloads alone are not success.
@@ -237,8 +433,9 @@ watches match only ADEQ HAB records with the verified exact names, preserving ea
 published area, county, date and record ID. Supplier watches use the existing ADH
 exact-name identity; a lake HAB notice never becomes a tap-water boil notice.
 History and existing future-only opt-in matching use the same rules. Enrollment
-acceptance and overlapping-watch deduplication are tested with a fake sender;
-real notification delivery is still unverified and was not enabled or performed.
+acceptance and overlapping-watch deduplication are tested with a fake sender.
+Later isolated phone tests arrived; production push is now enabled, but deployed
+automatic advisory-to-device delivery remains unverified. See [PUSH-PLAN.md](PUSH-PLAN.md).
 
 The catalog is a read-only UI/API projection; it creates no observations, checks,
 events or coverage-start timestamps. Failed/offline/stale feeds still show **Current
@@ -277,7 +474,8 @@ live NPS conditions feed are **not integrated**. Fictional sample places stay se
 - Durable 30-day change journal, first-check baseline suppression, future-only
   opt-in Web Push transport, EN/ES settings, restricted endpoint/key validation,
   retry backoff, restart deduplication and disable/delete with failure retry.
-  Sending is disabled by default; no real-device delivery has been verified.
+   Sending is disabled by default locally; production is explicitly enabled.
+   Isolated iPhone tests arrived; production-device delivery remains unverified.
 - Live watched-place changes since the previous device visit, using separate
   per-agency browser cursors. First visit establishes a baseline, not a history flood.
   Failed/stale sources do not advance agency cursors; uncertain records never display changes.
@@ -312,9 +510,10 @@ ADH guidance wording. ADEQ general guidance is verified as documented above;
 unknown lift status never triggers a new/lift event.]
 [NEEDS: additional source-verified rural systems and broader supplier coverage;
 the six-place catalog and observed notices are not a statewide directory.]
-[NEEDS: approved HTTPS hosting costs and provisioning (Vercel + PostgreSQL selected), VAPID/contact and browser
-push-service authorization, security/operations review and real device delivery
-verification. Local implementation is not proof of connected/reliable delivery.
+[NEEDS: remaining security/operations review, production-device and deployed
+scheduled delivery verification, day-long observation and free-tier quota review.
+Free hosting and production VAPID/contact configuration are approved and active;
+local tests and activation do not prove reliable automatic delivery.
 Email is not implemented.] See [VERCEL.md](VERCEL.md) and [DEPLOYMENT.md](DEPLOYMENT.md).
 [NEEDS: human Spanish/accessibility review and browser-device testing.]
 

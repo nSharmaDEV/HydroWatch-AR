@@ -4,7 +4,7 @@ export const alertEn = {
   resultsSummary: 'We check official ADH and ADEQ notices. Check times show when the app retrieved the source.',
   manageAlerts: 'Manage alerts', alertSummary: 'Manage updates for your watched places.',
   deliveryOff: 'Device notifications are not enabled. Email delivery is not connected.',
-  supplierAlertHistory: 'Alert history', supplierActivity: 'Data-source activity',
+  supplierAlertHistory: 'Advisory history', supplierActivity: 'Data-source activity',
   supplierAlertEmpty: 'No advisory notices saved for this supplier.',
   supplierAlertStart: 'History begins', supplierAlertEarlier: 'and may not include earlier advisories.',
   supplierAlertLimits: 'Saved official notices, not a complete agency archive. Missing notices do not establish a lift or water safety.',

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { load } from 'cheerio'
-import { SOURCES, type Notice } from '../src/domain'
+import { SOURCES, type Notice } from '../src/domain.js'
 
 const text = (value: string) => value.replace(/\s+/g, ' ').trim()
 const key = (value: string) => text(value).normalize('NFKC').replace(/[’‘]/g, "'").toLowerCase()

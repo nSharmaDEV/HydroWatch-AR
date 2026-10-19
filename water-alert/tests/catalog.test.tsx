@@ -16,12 +16,13 @@ it('offers both verified waterbodies offline, confirms before watching, and show
   expect(screen.getByRole('button', { name: 'Select Beaver Lake' })).toBeVisible()
   expect(screen.getByRole('button', { name: 'Select Buffalo National River' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Select Beaver Lake' }))
+  await user.click(screen.getByText('Coverage details', { selector: 'summary' }))
   expect(screen.getByRole('link', { name: /Catalog source/ })).toHaveAttribute('href', 'https://www.swl.usace.army.mil/Missions/Recreation/Lakes/Beaver-Lake/Dam-and-Lake-Information/')
   expect(screen.getByText(/not drinking-water tests, bacterial results, or park closures/)).toBeVisible()
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
   await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([beaver])
-  expect(within(screen.getByRole('article')).getByText('Data unavailable')).toBeVisible()
+  expect(within(screen.getByRole('article')).getByText('Advisory status unavailable')).toBeVisible()
 })
 
 it('offers all four ADH-verified suppliers without an observed notice and does not guess a supplier from a lake', async () => {
@@ -48,6 +49,7 @@ it('matches exact waterbody records without changing their area identities or tr
 it('shows a catalog watch matching observed records in home, details, and my-place history', async () => {
   localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: [beaver], liftWatches: [], language: 'en', checkOnOpen: false }))
   const user = userEvent.setup(); render(<App liveData={{ sources: [EMPTY_SOURCES[0], source], places: [], archive: [record], coverageStart: at }} />)
+  await user.click(screen.getByText('Place details & help', { selector: 'summary' }))
   expect(within(screen.getByRole('article')).getByText('Published cove only')).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Understand this notice Beaver Lake' }))
   expect(within(document.querySelector('.detail-status') as HTMLElement).getByText('Published cove only')).toBeVisible()
@@ -67,6 +69,7 @@ it('distinguishes catalog identity sources from the two advisory feeds in Source
   const user = userEvent.setup(); render(<App />)
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
   await user.click(screen.getByRole('button', { name: /Sources and coverage limits/ }))
-  expect(screen.getByText(/small source-verified directory/)).toBeVisible()
+  expect(screen.getByText(/small verified directory with observed places/)).toBeVisible()
+  await user.click(screen.getByText('Catalog source', { selector: 'summary' }))
   expect(screen.getByRole('link', { name: 'Buffalo National River' })).toHaveAttribute('href', 'https://www.nps.gov/buff/learn/nature/waterquality.htm')
 })

@@ -1,0 +1,28 @@
+export const recoveryStrings = {
+  en: {
+    title: 'Drafts, forms & help', intro: 'Prepare a request or complaint using editable templates. Review every fact; nothing is sent or filed here.',
+    prepare: 'What do you need help with?', choose: 'Choose an option', service: 'Ask about my service', request: 'Prepare a credit/reimbursement request', followup: 'Follow up on an existing request', complaint: 'Prepare a complaint', legal: 'Find assistance', subject: 'Subject', body: 'Draft body',
+    english: 'Editable English template. Replace every bracketed field and verify all facts. This is preparation, not legal advice or a promise of compensation.',
+    privacy: 'Drafts stay only in this page’s memory. Leaving, reloading or closing loses edits. No uploads or browser storage. Copy/download saves text to your device; opening email passes it to your email app.',
+    copy: 'Copy draft', download: 'Download draft', packet: 'Download preparation pack', email: 'Open email draft',
+    emailHelp: 'Confirm the recipient against your bill. Your email app may not open; use Copy or Download instead. Nothing is sent automatically. Attach documents yourself.',
+    noEmail: 'No email draft link is available for this recipient, template or message length. Copy/download and choose the correct destination yourself.',
+    copied: 'Copied. Nothing was sent.', failed: 'Copy unavailable. Text selected: use your device’s Copy action or download.', downloaded: 'Download requested. Nothing was sent, filed or attached.',
+    forms: 'Official forms & assistance', ag: 'AG complaint form', formEn: 'English complaint PDF', formEs: 'Spanish complaint PDF', help: 'Arkansas Law Help / legal aid', intake: 'Legal-aid intake', court: 'Small-claims process & forms',
+    limits: 'How these options work & their limits', checked: 'Reference links checked 2026-10-14; recheck before using.',
+    limitsText: 'First ask your provider or park management for the credit policy, claim deadline, reference number and a written decision. Keep copies of actual receipts and correspondence. The AG reviews jurisdiction and may mediate or refer; it is not your private attorney and does not guarantee payment. Complaints are shared with the business and may be public records. The AG does not mediate when a private attorney is retained or court action has started. Legal aid depends on eligibility and availability. Before court, verify the correct defendant, court, deadlines, fees, service and possible immunity. Do not withhold rent or utility payments based on this tool. An advisory alone proves neither personal loss nor liability.',
+  },
+  es: {
+    title: 'Borradores, formularios y ayuda', intro: 'Prepare una solicitud o queja con plantillas editables. Verifique cada hecho; aquí no se envía ni se presenta nada.',
+    prepare: '¿Con qué necesita ayuda?', choose: 'Elija una opción', service: 'Preguntar por mi servicio', request: 'Preparar solicitud de crédito o reembolso', followup: 'Dar seguimiento a una solicitud', complaint: 'Preparar una queja', legal: 'Buscar asistencia', subject: 'Asunto', body: 'Texto del borrador',
+    english: 'Plantilla editable en inglés. Sustituya los campos entre corchetes y verifique todos los hechos. Es preparación, no asesoría legal ni promesa de compensación.',
+    privacy: 'Los borradores quedan solo en la memoria de esta página. Se pierden al salir, recargar o cerrar. No hay cargas ni almacenamiento del navegador. Copiar o descargar guarda texto en su dispositivo; abrir correo lo pasa a su aplicación.',
+    copy: 'Copiar borrador', download: 'Descargar borrador', packet: 'Descargar paquete de preparación', email: 'Abrir borrador de correo',
+    emailHelp: 'Confirme el destinatario con su factura. Si no se abre el correo, copie o descargue. No se envía nada automáticamente. Adjunte documentos usted mismo.',
+    noEmail: 'No hay enlace de correo para este destinatario, plantilla o tamaño de mensaje. Copie o descargue y elija el destino correcto.',
+    copied: 'Copiado. No se envió nada.', failed: 'No se pudo copiar. Texto seleccionado: use Copiar en su dispositivo o descargue.', downloaded: 'Descarga solicitada. No se envió, presentó ni adjuntó nada.',
+    forms: 'Formularios oficiales y asistencia', ag: 'Formulario de queja ante AG', formEn: 'Formulario de queja en inglés', formEs: 'Formulario de queja en español', help: 'Arkansas Law Help / ayuda legal', intake: 'Solicitar ayuda legal', court: 'Proceso y formularios de reclamos menores',
+    limits: 'Cómo funcionan estas opciones y sus límites', checked: 'Enlaces revisados el 2026-10-14; verifique antes de usarlos.',
+    limitsText: 'Pida al proveedor o a la administración la política de crédito, el plazo, un número de referencia y una decisión escrita. Guarde recibos y correspondencia. AG revisa su competencia y puede mediar o derivar; no es su abogado y no garantiza pago. Las quejas se comparten con el negocio y pueden ser públicas. AG no media si ya contrató abogado o inició acción judicial. La ayuda legal depende de elegibilidad y disponibilidad. Antes de acudir al tribunal, verifique demandado, tribunal, plazos, costos, notificación e inmunidad. Esta herramienta no justifica dejar de pagar renta o servicios. Un aviso no demuestra pérdidas personales ni responsabilidad legal.',
+  },
+}

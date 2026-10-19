@@ -2,8 +2,21 @@ import { journeyEn, journeyEs } from './journey-strings'
 import { checkEn, checkEs } from './source-check-strings'
 import { adeqEn, adeqEs } from './adeq-guidance'
 import { alertEn, alertEs } from './supplier-alert-strings'
+import { contentEn, contentEs } from './content-strings'
 
-export const en = {
+export const APP_NAME = 'WellPower: WAVE'
+
+export const en = Object.assign({
+  welcomeIntro: 'Check published water advisories for your Arkansas water supplier or lake.',
+  shortLimit: 'Published notices are not a water safety test.', aboutWave: 'About WAVE', fictional: 'Fictional',
+  successfulCheck: 'Last successful check', officialSource: 'View official source',
+  checkNow: 'Check now', uncheckedStatus: 'Advisory status unavailable', uncheckedExplanation: 'The source hasn’t been checked yet.', noSuccessfulCheck: 'No successful check yet',
+  providerHelp: 'Provider information', waterbodyHelp: 'Place details & help', waterUpdates: 'Get water updates',
+  cardQualification: 'Published notices are not a water safety test. No advisory found does not mean the water is safe.',
+  noneBoil: 'No active boil-water notice found',
+  noNoticeExplanation: 'No active notice was listed at the last successful check.',
+  purpose: 'WellPower: WAVE—Water Advisory Verification & Empowerment—helps Arkansas residents check official advisories for their exact water supplier and take informed action through verified provider contacts and editable follow-up or reimbursement requests.',
+  verificationLimit: 'Verification means checking published advisories, not testing water or certifying safety.',
   ...alertEn,
   ...adeqEn,
   ...checkEn,
@@ -42,9 +55,19 @@ export const en = {
   sampleShare: 'SAMPLE — fictional notice, not current agency data.', saved: 'Saved on this device only; delivery is not connected.',
   newSince: 'Newly observed on this check', recordsLanguage: 'Agency record text remains in its published language. Spanish UI translations are not official agency guidance.',
   pushEnable: 'Enable device notifications', pushUpdate: 'Save alert choices', pushDisable: 'Disable & remove subscription', pushUnavailable: 'Server push is not configured. No device alerts are being enabled here.', pushUnsupported: 'This browser cannot use push here. Use a supported browser over HTTPS; on iPhone, open the installed Home Screen app.', pushChecking: 'Checking notification configuration…', pushInfo: 'Opt in to future published notices for your watched places and explicit agency lifts when selected. No historical flood. Save alert choices after changing places, lift choices or language; previously saved server choices remain until updated or disabled. Email is not connected.', pushSaved: 'Subscription saved; real device delivery is unverified. Browser/provider acceptance is not proof of delivery. Not an emergency service.', pushDirty: 'Alert choices have changed. Save alert choices in Settings or disable the subscription; the server still has your previous choices.', pushFailed: 'Could not complete the request. Check permission and connection, then retry. Deletion credentials are retained if server removal fails.', pushRemoved: 'Subscription removed. Device notifications are disabled.', pushBusy: 'Working…', pushNeedsPlaces: 'Select at least one observed live place before enabling device alerts.',
-}
+}, contentEn)
 export type Strings = typeof en
-export const es: Strings = {
+export const es: Strings = Object.assign({
+  welcomeIntro: 'Consulte los avisos publicados para su proveedor de agua o lago de Arkansas.',
+  shortLimit: 'Los avisos publicados no son una prueba de seguridad del agua.', aboutWave: 'Acerca de WAVE', fictional: 'Ficticio',
+  successfulCheck: 'Última consulta exitosa', officialSource: 'Ver fuente oficial',
+  checkNow: 'Consultar ahora', uncheckedStatus: 'Estado de avisos no disponible', uncheckedExplanation: 'La fuente aún no se ha consultado.', noSuccessfulCheck: 'Aún no hay consulta exitosa',
+  providerHelp: 'Información del proveedor', waterbodyHelp: 'Detalles y ayuda del lugar', waterUpdates: 'Recibir novedades del agua',
+  cardQualification: 'Los avisos publicados no son una prueba de seguridad del agua. No encontrar un aviso no significa que el agua sea segura.',
+  noneBoil: 'No se encontró un aviso activo de hervir el agua',
+  noNoticeExplanation: 'No había un aviso activo en la lista en la última consulta exitosa.',
+  purpose: 'WellPower: WAVE—Water Advisory Verification & Empowerment (Verificación de avisos sobre el agua y empoderamiento)—ayuda a los residentes de Arkansas a consultar los avisos oficiales de su proveedor exacto de agua y a tomar decisiones informadas mediante contactos verificados del proveedor y solicitudes editables de seguimiento o reembolso.',
+  verificationLimit: 'Verificación significa consultar avisos publicados, no analizar el agua ni certificar su seguridad.',
   ...alertEs,
   ...adeqEs,
   ...checkEs,
@@ -65,4 +88,4 @@ export const es: Strings = {
   unknownLift: 'La tabla de avisos actuales de ADEQ excluye los registros cuyo campo de levantamiento indica “N/A”. No se proporciona una fecha de levantamiento. Esta app no puede confirmar si este aviso está activo o se levantó y no envía avisos nuevos ni de levantamiento para este registro.',
   habScenario: 'Fuente HAB de muestra disponible', storageError: 'El almacenamiento del dispositivo no está disponible. Tus opciones no se conservarán.', shareCopied: 'Texto copiado.', shareFailed: 'No se pudo compartir. Copia el enlace oficial de abajo.', sampleShare: 'MUESTRA — aviso ficticio, no son datos actuales.', saved: 'Guardado solo en este dispositivo; el envío no está conectado.', newSince: 'Observado por primera vez en esta consulta', recordsLanguage: 'Los registros de agencias permanecen en su idioma publicado. La traducción de la interfaz no es una instrucción oficial.',
   pushEnable: 'Activar notificaciones del dispositivo', pushUpdate: 'Guardar opciones de avisos', pushDisable: 'Desactivar y eliminar suscripción', pushUnavailable: 'Las notificaciones del servidor no están configuradas. Aquí no se activan avisos del dispositivo.', pushUnsupported: 'Este navegador no puede usar notificaciones aquí. Usa un navegador compatible con HTTPS; en iPhone, abre la app instalada en la pantalla de inicio.', pushChecking: 'Consultando la configuración de notificaciones…', pushInfo: 'Activa avisos futuros publicados para los lugares seguidos y levantamientos explícitos si los seleccionas. No se envía todo el historial. Guarda las opciones después de cambiar lugares, levantamientos o idioma; las opciones anteriores permanecen hasta actualizar o desactivar. El correo no está conectado.', pushSaved: 'Suscripción guardada; la entrega real no está verificada. La aceptación del navegador o proveedor no demuestra la entrega. No es un servicio de emergencia.', pushDirty: 'Las opciones cambiaron. Guárdalas en Ajustes o desactiva la suscripción; el servidor conserva las opciones anteriores.', pushFailed: 'No se pudo completar la solicitud. Revisa el permiso y la conexión y reintenta. Si falla la eliminación del servidor, se conserva la credencial para reintentar.', pushRemoved: 'Suscripción eliminada. Notificaciones desactivadas.', pushBusy: 'Procesando…', pushNeedsPlaces: 'Selecciona al menos un lugar real observado antes de activar avisos.',
-}
+}, contentEs)

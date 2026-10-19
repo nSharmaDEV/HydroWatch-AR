@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { changes, EMPTY_SOURCES, SOURCES, type Agency, type Notice, type Place, type SourceSnapshot, type SourceCheck } from '../src/domain'
-import type { StateCell } from './postgres'
+import { changes, EMPTY_SOURCES, SOURCES, type Agency, type Notice, type Place, type SourceSnapshot, type SourceCheck } from '../src/domain.js'
+import type { StateCell } from './postgres.js'
 
 export interface StoredEvent { id: string; type: 'new' | 'lifted'; notice: Notice; observedAt: string }
 export interface StoredState { version: 1; sources: SourceSnapshot[]; archive: Notice[]; places: Place[]; coverageStart: string | null; events: StoredEvent[] }

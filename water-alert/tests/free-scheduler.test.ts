@@ -15,7 +15,7 @@ describe('free scheduled trigger', () => {
     await runScheduled(env, async (input, init) => { request = new Request(input, init); return Response.json({ ok: true }) })
     expect(request?.url).toBe('https://water-alert.example/api/cron')
     expect(request?.headers.get('authorization')).toBe(`Bearer ${env.CRON_SECRET}`)
-    expect(request?.redirect).toBe('error')
+    expect(request?.redirect).toBe('manual')
     expect(request?.signal.aborted).toBe(false)
   })
   it('rejects unsafe configuration before making a request', async () => {
@@ -30,13 +30,28 @@ describe('free scheduled trigger', () => {
     await expect(runScheduled(env, async () => new Response(env.CRON_SECRET, { status: 503 }))).rejects.toThrow(/^Scheduled check failed$/)
     await expect(runScheduled(env, async () => { throw new Error(`private ${env.CRON_SECRET}`) })).rejects.toThrow(/^Scheduled check failed$/)
   })
-  it('does not configure paid Vercel cron and leaves the five-minute Worker disabled', async () => {
+  it('rejects redirect responses without following them or forwarding the bearer', async () => {
+    for (const status of [301, 302, 303, 307, 308]) {
+      let requests = 0
+      let redirect: RequestRedirect | undefined
+      await expect(runScheduled(env, async (_input, init) => {
+        requests++
+        redirect = init?.redirect
+        return new Response(null, { status, headers: { Location: 'https://other.example/private' } })
+      })).rejects.toThrow(/^Scheduled check failed$/)
+      expect(requests).toBe(1)
+      expect(redirect).toBe('manual')
+    }
+  })
+  it('uses the approved five-minute Worker without paid Vercel cron or public URLs', async () => {
     const vercel = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'))
     const worker = JSON.parse(await readFile(new URL('../scheduler/wrangler.json', import.meta.url), 'utf8'))
     expect(vercel.crons ?? []).toEqual([])
     expect(worker.triggers.crons).toEqual(['*/5 * * * *'])
-    expect(worker.vars.ENABLED).toBe('false')
+    expect(worker.vars.ENABLED).toBe('true')
+    expect(worker.vars.WATER_ALERT_ORIGIN).toBe('https://water-alert-blond.vercel.app')
     expect(worker.workers_dev).toBe(false)
+    expect(worker.preview_urls).toBe(false)
     expect(worker.vars.CRON_SECRET).toBeUndefined()
   })
 })

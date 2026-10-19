@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>WAVE · Water problem result · Screen 3 review</title>
+<style>
+:root{font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#102e43;background:#f4f6f8;--navy:#102e43;--slate:#334f60;--teal:#066d73;--line:#dce3e9}*{box-sizing:border-box}body{margin:0}header{background:var(--navy);color:white;padding:18px 24px}.bar,main{max-width:1120px;margin:auto}header small{display:block}main{padding:24px 24px 60px}.review-controls{border:1px dashed #8da4b2;padding:16px;margin-bottom:24px}.controls{display:flex;flex-wrap:wrap;gap:16px}.controls label{display:grid;gap:5px;flex:1;min-width:0}select,button{font:inherit;min-height:44px}select{width:100%;max-width:100%;padding:8px;background:white;color:var(--navy);border:1px solid #8da4b2;border-radius:6px}.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:start}.screen{min-width:0;background:white;border:1px solid var(--line);border-radius:16px;padding:28px}.context,.note{color:var(--slate);font-size:.875rem}.context{margin:18px 0 6px}h1{font-size:1.75rem;line-height:1.2;margin:0 0 12px}h2{font-size:1.15rem;margin:24px 0 10px}h3{font-size:1rem;margin:0 0 6px}p{margin:0 0 12px}ul{padding-left:22px}li{margin-bottom:8px}.caution{border-left:3px solid #a86710;background:#fff8ec;padding:12px 14px;font-size:.9rem;margin:20px 0}.contact{border-top:1px solid var(--line);padding:16px 0 6px}.contact p{overflow-wrap:anywhere}.contact-number{font-size:1.15rem;font-weight:650}.source{font-size:.8rem;overflow-wrap:anywhere;color:var(--slate)}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}button{cursor:pointer;border:1px solid var(--teal);background:white;color:var(--teal);padding:8px 12px;border-radius:6px}.back{border:0;padding:0;text-decoration:underline;text-underline-offset:3px}.primary{background:var(--teal);color:white}.optional{border-top:1px solid var(--line);margin-top:24px}.review section{margin-bottom:24px}.review h2{margin-top:0}.preview{background:#eef7f7;border:1px solid var(--line);padding:14px;margin-top:18px;border-radius:6px}:focus-visible{outline:3px solid #2b63cc;outline-offset:4px}[hidden]{display:none!important}@media(max-width:780px){main{padding:18px 16px 40px}.layout{grid-template-columns:1fr}.screen{padding:20px}header{padding:16px}.controls{flex-direction:column}.review{border-top:1px solid var(--line);padding-top:24px}}
+.contact-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.contact-chips button{min-width:0;max-width:100%;text-align:left;overflow-wrap:anywhere;white-space:normal;border-radius:20px;padding:8px 12px;font-size:.875rem;background:#eef7f7}.chip-label{font-size:.75rem;color:var(--slate);display:block}.review summary{cursor:pointer;font-weight:650;min-height:44px;padding:10px 0}.review details[open] summary{margin-bottom:12px}.contact .source{margin-top:10px}.optional h2{font-size:1rem}.review-controls .note{margin-bottom:0}
+</style>
+</head>
+<body>
+<header><div class="bar"><strong>WAVE</strong><small>Standalone design proposal · Screen 3 only · Not the live app</small></div></header>
+<main>
+<section class="review-controls" aria-label="Design review variants">
+<p><strong>Review controls—not part of the proposed app screen</strong></p>
+<div class="controls">
+<label>Supplier context<select id="supplier"><option value="known">Leisure Hills</option><option value="unknown">Unknown supplier (synthetic)</option></select></label>
+<label>Answer from screen 2<select id="problem"><option value="operations">No water or low pressure</option><option value="quality">Quality concern</option><option value="both">Both</option><option value="unsure">Not sure</option></select></label>
+</div>
+<p class="note">Switch variants to review matching. No answers are imported from other pages or saved.</p>
+</section>
+<div class="layout">
+<section class="screen" aria-label="Proposed tailored water-problem result">
+<button class="back" type="button" id="back">Back to water problem</button>
+<p class="context" id="context"></p>
+<h1>Your next step</h1>
+<p id="recommendation"></p>
+<p class="note" id="reason"></p>
+<p class="caution">Medical emergency? Call 911. For health concerns, contact a health professional. Follow applicable official notices; WAVE cannot establish water safety.</p>
+<h2>Who to contact</h2>
+<div id="contacts"></div>
+<h2>What to prepare</h2>
+<ul id="checklist"></ul>
+<p class="note">Missing records? You can still ask for help. Keep account numbers, medical details, and identity documents out of WAVE.</p>
+<div class="optional">
+<h2>Optional preparation</h2>
+<button type="button" id="draft">Prepare a question draft</button>
+<p class="note">A draft is optional and session-only. Leaving, changing context, or reloading can discard edits. Editor not built.</p>
+</div>
+<div class="actions"><button type="button" id="change">Change answers</button><button type="button" id="followup">Follow up on this issue</button></div>
+<div class="preview" id="preview" role="status" hidden></div>
+<p class="note" style="margin-top:20px">Preview only: chips do not call, email, or open websites. Nothing is sent; WAVE cannot confirm receipt.</p>
+</section>
+<aside class="review" aria-label="Result design notes">
+<details><summary>Design review notes</summary>
+<section><h2>Selected resources, not a directory dump</h2><p>The screen-2 answer selects the contact role and checklist. Operational results do not include ADH quality resources; quality results do not assume a supplier email is the destination. Both explains two distinct roles.</p><p>Not sure explains both roles and offers a choice without diagnosing or silently classifying the concern. No AG, legal, annual-report, receipts, or compensation resources are added by default.</p></section>
+<section><h2>Missing contact stays missing</h2><p>The Leisure Hills contact comes from its exact supplier-ID record. The synthetic unknown supplier receives bill/park-management guidance, never Leisure Hills’ details or a nearby supplier’s number.</p><p>A supplier directory entry is a general contact, not a verified billing department or a promise of service. An unknown supplier does not remove the general ADH quality resource.</p></section>
+<section><h2>Evidence, not fresh verification</h2><p>Supplier fields retain the October 14, 2026 check date. The existing guide records the ADH program-contact check on October 18, 2026. Neither was reverified for this design review. Checked does not mean staffed now or accepted for this issue.</p><p>No live notice data is loaded. No current advisory, affected address, lifting status, or safety conclusion is asserted.</p></section>
+<section><h2>Review before continuing</h2><p>Review all four answers and both supplier variants. Are the next step, contact purpose, and preparation clear? Drafts and follow-up are only placeholders; no later screens have been built.</p><p class="note">English design review only. Spanish, keyboard/focus continuity across actual guide screens, notice-context variants, and optional editors remain review gates. No production changes are authorized by this prototype.</p></section>
+</details></aside>
+</div>
+</main>
+<script>
+// Standalone synthetic review state only. No fetch, storage, tel/mailto, or app imports.
+const supplier=document.getElementById('supplier'),problem=document.getElementById('problem'),preview=document.getElementById('preview');
+const supplierId='ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf';
+const records={ [supplierId]:{name:'Leisure Hills Mobile Home Park',phone:'(479) 549-2158',email:'LEISUREHILLSWATERCO@GMAIL.COM',source:'https://health.arkansas.gov/Eng/WS.aspx?ID=747',checked:'October 14, 2026'} };
+const adhSource='https://healthy.arkansas.gov/programs-services/licensing-military-member-licensure-permits-plan-reviews/drinking-water-plan-review';
+function announce(text){preview.hidden=false;preview.textContent=text}
+function paragraph(parent,text,className){const node=document.createElement('p');node.textContent=text;if(className)node.className=className;parent.append(node)}
+function action(parent,label,text){const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',()=>announce(text));parent.append(button)}
+function chip(parent,kind,value,text,source){const button=document.createElement('button');button.type='button';const label=document.createElement('span');label.className='chip-label';label.textContent=kind;button.append(label,document.createTextNode(value));if(source)button.title=source;button.addEventListener('click',()=>announce(text));parent.append(button)}
+function contact(title){const block=document.createElement('section');block.className='contact';const heading=document.createElement('h3');heading.textContent=title;block.append(heading);document.getElementById('contacts').append(block);return block}
+function render(){
+const record=records[supplier.value==='known'?supplierId:'unknown'],kind=problem.value;
+const operations=kind==='operations'||kind==='both'||kind==='unsure';
+const quality=kind==='quality'||kind==='both'||kind==='unsure';
+document.getElementById('context').textContent=(record?record.name:'Unknown supplier · Synthetic example')+' · Report a water problem';
+const recommendations={operations:record?'Ask your supplier about supply or pressure.':'Find your supplier on your bill, or ask park management.',quality:'Ask ADH Safe Water Engineering about the quality concern.',both:'Ask your supplier about supply or pressure, and ADH about quality.',unsure:'Choose the contact that fits your concern.'};
+document.getElementById('recommendation').textContent=recommendations[kind];
+const reasons={operations:'Based on: no water or low pressure.',quality:'Based on: quality concern. Observations alone do not diagnose contamination.',both:'Based on: both supply and quality concerns.',unsure:'Based on: not sure. You do not need to identify the cause.'};
+document.getElementById('reason').textContent=reasons[kind];
+document.getElementById('contacts').replaceChildren();
+if(operations){const block=contact('Supplier · Supply and pressure');
+if(record){const chips=document.createElement('div');chips.className='contact-chips';chip(chips,'Phone',record.phone,'Review only: call this supplier for operational questions. No call was made.');chip(chips,'Email',record.email,'Review only: email this supplier for operational questions. No email was opened or sent.');chip(chips,'Website','health.arkansas.gov','Review only: open the ADH supplier directory, not a supplier-owned website. No website was opened.',record.source);block.append(chips);paragraph(block,'General directory contact—not a dedicated department. Check against your bill; response not guaranteed.','note');paragraph(block,'ADH directory · Checked '+record.checked+' · Not reverified here.','source')}
+else{paragraph(block,'No verified supplier contact.');paragraph(block,'Check your bill or ask park management who supplies your water and how to reach them.','note');paragraph(block,'No matching directory record; no substitute contact.','source')}
+}
+if(quality){const block=contact('ADH Safe Water Engineering · Quality');const chips=document.createElement('div');chips.className='contact-chips';chip(chips,'Phone','501-661-2623','Review only: call ADH for drinking-water quality questions. No call was made.');chip(chips,'Website','healthy.arkansas.gov','Review only: open the official ADH program source in English. No website was opened.',adhSource);block.append(chips);paragraph(block,'Public drinking-water quality questions, not emergency response. No verified email.','note');paragraph(block,'ADH program source (English) · Checked October 18, 2026 in existing guide · Not reverified here.','source')}
+const items=['Supplier and service location, if known.'];
+if(kind==='unsure'){items.push('What you noticed and when it started.','Ask whether this contact handles your concern.')}else{
+if(operations)items.push('When supply or pressure changed; is it ongoing?','Ask about service work, affected areas, and updates.');
+if(quality)items.push('Changes you noticed, with dates and locations.','Ask ADH what information and next steps are appropriate.');
+}
+items.push('Earlier contact or reference, if any. Keep the response.');
+const list=document.getElementById('checklist');list.replaceChildren();items.forEach(text=>{const li=document.createElement('li');li.textContent=text;list.append(li)});
+preview.hidden=true;preview.textContent='';
+}
+supplier.addEventListener('change',render);problem.addEventListener('change',render);
+document.getElementById('back').addEventListener('click',()=>announce('Review only: return to the water-problem question with the current answer retained in the open guide. No navigation occurred.'));
+document.getElementById('change').addEventListener('click',()=>announce('Review only: return to the guide questions to change answers. The controls above let you inspect result variants without navigating.'));
+document.getElementById('draft').addEventListener('click',()=>announce(problem.value==='unsure'?'Proposed optional preparation: choose the intended contact first, then prepare a factual question. No draft or email recipient is selected automatically.':'Proposed optional preparation: a factual inquiry for the selected contact role. Both requires choosing the intended destination; an ADH quality inquiry must not default to the supplier email. No editor has been built.'));
+document.getElementById('followup').addEventListener('click',()=>announce('Proposed follow-up: retain this supplier and problem answer within the open guide, then ask only missing prior-contact and response details. No earlier contact or response is assumed. Reload would discard this context. No follow-up screen has been built.'));
+render();
+</script>
+</body>
+</html>

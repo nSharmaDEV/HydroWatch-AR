@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { expect, it } from 'vitest'
 import { ObservedHistory } from '../src/ObservedHistory'
 import { NoticeDetail } from '../src/NoticeDetail'
@@ -12,12 +13,15 @@ const place = { id: notice.placeId, name: notice.name, county: notice.county, ki
 const source: SourceSnapshot = { agency: 'ADEQ', records: [notice], retrievedAt: at, lastSuccessAt: at, error: null }
 
 for (const [language, t] of [['en', en], ['es', es]] as const) {
-  it(`explains unknown lift semantics and preserves distinct history dates in ${language}`, () => {
+  it(`explains unknown lift semantics and preserves distinct history dates in ${language}`, async () => {
     render(<ObservedHistory archive={[notice]} watches={[place.id]} coverageStart={null} t={t} language={language} />)
     expect(screen.getByText(t.unknownLift)).toHaveTextContent(language === 'en' ? /current-advisories table excludes/ : /tabla de avisos actuales.*excluye/)
     expect(screen.getByText(t.unknownLift)).toHaveTextContent(language === 'en' ? /does not send new\/lifted alerts/ : /no envía avisos nuevos ni de levantamiento/)
     expect(screen.getByText(language === 'en' ? 'Not provided — record reads “N/A”' : 'No proporcionado — el registro indica “N/A”')).toBeVisible()
-    for (const label of [t.issued, t.sourceUpdated, t.firstObserved, t.lastObserved]) expect(screen.getByText(label)).toBeVisible()
+    expect(screen.getByText(t.issued)).toBeVisible()
+    expect(screen.getByText(t.firstObserved)).not.toBeVisible()
+    await userEvent.setup().click(screen.getByText(t.observationDetails, { selector: 'summary' }))
+    for (const label of [t.sourceUpdated, t.firstObserved, t.lastObserved]) expect(screen.getByText(label)).toBeVisible()
     expect(screen.getByText('June 21, 2019').closest('time')).not.toHaveAttribute('datetime')
     expect(screen.getByText('September 28, 2026')).toBeVisible()
     expect(document.querySelector(`time[datetime="${at}"]`)).not.toBeNull()
@@ -39,10 +43,11 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     expect(screen.getByText(language === 'en' ? 'Not provided — record reads “N/A”' : 'No proporcionado — el registro indica “N/A”')).toBeVisible()
     expect(screen.queryByText(t.guidanceGap)).not.toBeInTheDocument()
   })
-  it(`keeps unknown home copy concise and shows the issued date for current HAB in ${language}`, () => {
+  it(`keeps unknown home copy concise and preserves issued dates in place details for current HAB in ${language}`, async () => {
     const view = render(<StatusCard place={place} source={source} now={Date.parse(at)} t={t} language={language} onView={() => {}} />)
     expect(screen.getByRole('article')).toHaveClass('unavailable')
     expect(screen.queryByText(t.unknownLift)).not.toBeInTheDocument()
+    await userEvent.setup().click(screen.getByText(t.waterbodyHelp, { selector: 'summary' }))
     expect(screen.getByText(language === 'en' ? /“N\/A” is excluded from ADEQ/ : /ADEQ excluye.*“N\/A”/)).toBeVisible()
     view.rerender(<StatusCard place={place} source={{ ...source, records: [{ ...notice, liftStatus: undefined }] }} now={Date.parse(at)} t={t} language={language} onView={() => {}} />)
     expect(screen.getByRole('article')).toHaveClass('hab')

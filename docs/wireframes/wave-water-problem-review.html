@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<title>WAVE · Water problem · Screen 2 review</title>
+<style>
+:root{font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#102e43;background:#f4f6f8;--navy:#102e43;--slate:#334f60;--teal:#066d73;--line:#dce3e9}*{box-sizing:border-box}body{margin:0}header{background:var(--navy);color:white;padding:18px 24px}.bar{max-width:1120px;margin:auto}header small{display:block}main{max-width:1120px;margin:28px auto;padding:0 24px 60px}.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:start}.screen{background:white;border:1px solid var(--line);border-radius:16px;padding:28px}.context{color:var(--slate);font-size:.9rem;margin:18px 0 6px}h1{font-size:1.75rem;line-height:1.2;margin:0 0 12px;max-width:24ch}h2{font-size:1.12rem;margin:0 0 10px}p{margin:0 0 14px}.intro,.note{color:var(--slate)}.note{font-size:.875rem}.caution{border-left:3px solid #a86710;background:#fff8ec;padding:12px 14px;font-size:.9rem;margin:20px 0}fieldset{border:0;padding:0;margin:22px 0}legend{font-size:.9rem;color:var(--slate);margin-bottom:10px}.choice{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;align-items:start;border:1px solid #b7c7d1;padding:15px;border-radius:8px;margin-bottom:10px;cursor:pointer}.choice:has(input:checked){border:2px solid var(--teal);padding:14px;background:#eef7f7}.choice input{margin:5px 0 0;width:18px;height:18px;accent-color:var(--teal)}.choice strong,.choice span span{display:block}.choice span span{color:var(--slate);font-size:.9rem;margin-top:3px}button{font:inherit;min-height:44px;cursor:pointer}.back{background:none;border:0;color:var(--teal);padding:0;text-decoration:underline;text-underline-offset:3px}.primary{border:0;background:var(--teal);color:white;padding:10px 22px;border-radius:7px;font-weight:650}.primary:disabled{background:#dde4e8;color:#536572;cursor:not-allowed}:focus-visible{outline:3px solid #2b63cc;outline-offset:4px}.choice:focus-within{outline:3px solid #2b63cc;outline-offset:3px}.preview{margin-top:20px;padding:16px;border:1px solid var(--line);background:#eef7f7;border-radius:8px}.footer{border-top:1px solid var(--line);margin-top:24px;padding-top:18px}.review section{margin-bottom:24px}.review li{margin-bottom:10px}.review ul{padding-left:22px}[hidden]{display:none!important}@media(max-width:780px){.layout{grid-template-columns:1fr}main{padding:0 16px 40px;margin-top:18px}.screen{padding:20px}header{padding:16px}.review{border-top:1px solid var(--line);padding-top:24px}}
+</style>
+</head>
+<body>
+<header><div class="bar"><strong>WAVE</strong><small>Standalone design proposal · Screen 2 only · Not the live app</small></div></header>
+<main><div class="layout">
+<section class="screen" aria-label="Proposed water-problem question">
+<button class="back" type="button" id="back">Back to help choices</button>
+<p class="context">Leisure Hills Mobile Home Park · Report a water problem</p>
+<h1>What kind of water problem?</h1>
+<p class="intro">This helps us show the relevant contact and what to prepare. Choose “Not sure” if you don’t know.</p>
+<p class="caution">For immediate medical danger, contact emergency services (911). For health concerns, contact a health professional. Follow any applicable official notice. This guide does not provide emergency assistance.</p>
+<form id="choices">
+<fieldset><legend>Choose the closest match</legend>
+<label class="choice"><input type="radio" name="problem" value="operations"><span><strong>No water or low pressure</strong><span>A water-supply or service problem.</span></span></label>
+<label class="choice"><input type="radio" name="problem" value="quality"><span><strong>Taste, odor, color, or another quality concern</strong><span>A concern about your drinking water.</span></span></label>
+<label class="choice"><input type="radio" name="problem" value="both"><span><strong>Both</strong><span>A supply or pressure problem and a quality concern.</span></span></label>
+<label class="choice"><input type="radio" name="problem" value="unsure"><span><strong>Not sure</strong><span>Show me who handles each kind of concern.</span></span></label>
+</fieldset>
+<p class="note">Taste, odor, or color alone cannot establish whether water is safe or diagnose contamination.</p>
+<button class="primary" type="button" id="continue" disabled>Continue</button>
+</form>
+<div class="preview" id="preview" role="status" hidden></div>
+<div class="footer"><p class="note">No personal information is needed here. WAVE does not send a report or contact anyone.</p><p class="note">Design review only: Continue previews the proposed result direction below. The result screen is not built. Back does not navigate. This selection is cleared on reload.</p></div>
+</section>
+<aside class="review" aria-label="Design review notes">
+<section><h2>One question with a routing purpose</h2><p>The selected supplier carries forward from screen 1. This question changes the contact, preparation checklist, and applicable limits—not just the wording of a generic resource list.</p><ul><li><strong>No water / low pressure:</strong> supplier contact for operational questions; prepare when and where the problem occurred.</li><li><strong>Quality concern:</strong> ADH Safe Water Engineering resource for drinking-water quality questions; prepare observations and timing without diagnosing the cause.</li><li><strong>Both:</strong> show supplier operations and ADH quality resources, explaining their different roles and relevant preparation.</li><li><strong>Not sure:</strong> explain both roles and let the user choose; do not silently classify the concern.</li></ul></section>
+<section><h2>No extra barrier before contacts</h2><p>No symptom screening, account number, uploads, or draft is required. Ask about earlier contact only if it changes the next action or the optional follow-up preparation.</p><p class="note">This screen does not assert an active advisory or confirm address coverage. It is not a reporting channel or an emergency-response service.</p></section>
+<section><h2>Next review—not built yet</h2><p>After approval, design the matched result: <strong>Your next step</strong>, <strong>Who to contact</strong>, and <strong>What to prepare</strong>. Review Leisure Hills and an unknown-supplier variant.</p><p class="note">Use exact-ID supplier records with original source dates. If a contact is unknown, use bill or park-management guidance—not another supplier’s number. No generic consumer complaint form for an outage or quality report.</p></section>
+<section><h2>Design boundary</h2><p>This English review uses the existing screen-1 visual style. It makes no live requests and contains no phone, email, submission, export, or storage actions. Source destinations have not been newly verified. Spanish and other planned variants remain separate reviews before production authorization.</p></section>
+</aside>
+</div></main>
+<script>
+// Standalone, in-memory design interaction only. No external actions or app imports.
+const directions={
+operations:'Proposed result: supplier contact for water supply and pressure questions, plus a checklist of when and where the issue occurred. Verify the contact against your bill. No report has been sent.',
+quality:'Proposed result: ADH Safe Water Engineering resource for drinking-water quality questions, plus a checklist of observations and timing. This is not an emergency-response service or a diagnosis. No report has been sent.',
+both:'Proposed result: supplier for supply and pressure questions; ADH Safe Water Engineering for drinking-water quality questions. Explain each role and show relevant preparation for both. No report has been sent.',
+unsure:'Proposed result: explain that the supplier handles operational questions and ADH Safe Water Engineering is a resource for drinking-water quality questions. Let you choose which help to use without classifying the issue for you. No report has been sent.'
+};
+const form=document.getElementById('choices'),button=document.getElementById('continue'),preview=document.getElementById('preview');
+form.addEventListener('submit',event=>event.preventDefault());
+form.addEventListener('change',()=>{button.disabled=false;preview.hidden=true;preview.textContent=''});
+button.addEventListener('click',()=>{const selected=form.querySelector('input:checked');if(!selected)return;preview.hidden=false;preview.textContent=directions[selected.value]});
+document.getElementById('back').addEventListener('click',()=>{preview.hidden=false;preview.textContent='Review only: Back would return to the approved help choices and retain this answer within the open guide. This standalone screen does not navigate.'});
+</script>
+</body>
+</html>

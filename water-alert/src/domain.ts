@@ -1,4 +1,4 @@
-import { noticeMatchesPlace } from './place-catalog'
+import { noticeMatchesPlace } from './place-catalog.js'
 
 export type Agency = 'ADH' | 'ADEQ'
 export type Mode = 'live' | 'sample'

@@ -38,8 +38,11 @@ Palette: white #ffffff, light gray #f4f6f8, navy #172e46, teal #087f83, orange #
 - [x] Local embedded PostgreSQL integration tests and deployment instructions (`VERCEL.md`).
 - [x] User selected free-only hosting; remove paid Vercel cron and add a disabled-by-default five-minute Cloudflare trigger with local tests.
 - [x] Replace Neon with user-approved Supabase Free; prepare verified single-connection pooling and tested private runtime-role/RLS access (`FREE-HOSTING.md`).
-- [ ] Authorize free account/project provisioning; verify actual Supabase pooler/TLS/permissions and quotas.
-- [ ] Link CLI project, configure secrets/roles, apply approved migration and verify Vercel build/routing.
-- [ ] Approve deployment, verify remote concurrency/scheduled checks and actual iPhone/other-device delivery.
+- [x] Approved free provisioning, Vercel CLI linking, schema/runtime role and hosted pooler/TLS/permission checks (quota monitoring remains ongoing).
+- [x] Pin Node 24/iad1, exclude private upload artifacts, add a tested read-only initial hosted smoke check; 194 tests/build pass on Node 24.
+- [x] Confirm private runtime-password rotation after tool-output exposure; select canonical origin, configure approved production-only secrets and deploy with push disabled. Live: https://water-alert-blond.vercel.app.
+- [x] Reproduce/fix emitted native-ESM imports test-first; 195 tests/build pass. Verify hosted HTTPS/API/no-store, cron protection, origin rejection and disabled push; authenticated retrieval and read-only SQL confirm two validated captures/82 archive records/zero baseline events.
+- [ ] Verify hosted routing, fresh source retrieval, persistence and concurrency; approve/deploy/activate Cloudflare and observe laptop-off checks.
+- [ ] Separately approve VAPID setup and isolated consenting-device new/lift/link/language/delete tests; enable production sends only after verification and approval.
 - [ ] Verify authoritative supplier catalog/guidance, human Spanish/accessibility and release/security checks.
-- [ ] Run container in an approved Docker-capable environment; implement approved email fallback.
+- [ ] Optional local/container verification in an approved Docker-capable environment; no email fallback is authorized in the current hosting/notification scope.

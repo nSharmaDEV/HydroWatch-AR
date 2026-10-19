@@ -32,6 +32,44 @@ shown as written, never narrowed to an address.
 
 ## Screens in this set
 
+### Proposed advisory-help flow (October 14, 2026)
+
+[`advisory-help.html`](advisory-help.html) is a separate interactive, synthetic
+design preview for richer **Water Alert** advisory information. It covers full
+detail and expanded history, general CDC guidance clearly separated from
+incident instructions, provider-contact fallbacks, active/unavailable/stale/
+not-yet-checked/no-active/lifted/historical/sample/HAB scenarios, EN/ES interface
+labels and light/dark inspection. Actions are simulated; no real call, email,
+share or notification is sent. ADH/CDC reference links are real external links.
+Official quoted guidance stays in English with language markup.
+
+The revised detail puts provider contact and an actionable toolkit before the
+detailed notice panels: four editable English templates (request, follow-up,
+AG complaint and legal intake), working copy/text-download buttons, preparation
+pack with checklist/expense/contact logs, and direct official complaint/PDF/
+legal-aid application/court-form links. Explanatory advice is collapsed.
+Edits are tab-memory only; reload/close loses them. Use synthetic information.
+Copy/download saves text to your device but never sends, files or attaches it.
+Public-resource phone numbers are visible, but calls are not launched from this
+preview. Compensation and legal liability are not guaranteed; complaint privacy
+and legal-aid limits remain explicit. Spanish interface labels do not imply
+verified Spanish legal templates; the official Spanish AG PDF is linked.
+
+`advisory-help-toolkit.js` owns the local draft/export interactions.
+With the repository-root server running, test the preview using
+`node docs/wireframes/advisory-help.test.mjs` (uses the installed Playwright in
+`water-alert/`). This checks real copy/download contents, edit retention,
+responsive layouts and sample/HAB boundaries; it does not test the working app.
+
+To keep the linked planning documents accessible, serve the repository root
+with `python3 -m http.server 8771 --bind 127.0.0.1`, then open
+`http://127.0.0.1:8771/docs/wireframes/advisory-help.html`. See the
+[design specification](../superpowers/plans/2026-10-14-advisory-help-design.md) and
+[implementation plan](../superpowers/plans/2026-10-14-advisory-help.md).
+This preview is not shipped UI and does not change the existing app.
+
+### Original whole-app atlas
+
 0. **Notifications** — iPhone lock screen (notice active + lifted), in-app banner, permission + iOS "Add to Home Screen" note
 1. **Set your water** — search town/system/lake · ambiguous → choose · private-well path
 2. **Home / status** — all three states side by side

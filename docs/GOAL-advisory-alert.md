@@ -63,7 +63,14 @@ app watches two official sources and implements alerts on verified changes (host
 ## Constraints
 
 - Do NOT modify the existing HydroWatch-AR checkout.
-- No new data sources; no bloom/prediction model; no sensor; no resident login.
+- No additional live advisory feeds; no bloom/prediction model; no sensor; no resident login.
+  Approved October 14, 2026: curated ADH supplier profiles/annual-report search,
+  CDC general guidance, Arkansas AG complaint resources and Arkansas Law Help
+  preparation links may appear separately from live feeds. They must carry
+  provenance and limits, never establish current status or entitlement.
+  Editable templates are preparation, not medical/legal advice or submissions;
+  drafts are page-memory-only unless explicitly copied/downloaded or passed
+  to the user's email application.
 - No personal data beyond an optional alert contact (stored minimally, with stated retention
   and a delete/unsubscribe path).
 - No publishing or submission without explicit authorization.

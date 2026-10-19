@@ -6,7 +6,7 @@ export function AdeqGuidance({ t }: { t: Strings }) {
   return <section className="adeq-guidance">
     <h3>{t.guidance}</h3><p className="quiet-note">{t.guidanceVerbatim}</p>
     <blockquote lang="en">{g.absence}</blockquote>
-    <details><summary>{t.guidanceMore}</summary>
+    <details><summary>{t.guidanceMore}<span className="disclosure-icon" aria-hidden="true" /></summary>
       <blockquote lang="en">{g.suspected}</blockquote>
       <blockquote lang="en">{g.contact}</blockquote>
       <blockquote lang="en"><p>{g.medical}</p><ul>{g.symptoms.map(symptom => <li key={symptom}>{symptom}</li>)}</ul></blockquote>

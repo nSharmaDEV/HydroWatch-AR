@@ -1,4 +1,4 @@
-import type { Notice, Place } from './domain'
+import type { Notice, Place } from './domain.js'
 
 // Manually verified on 2026-10-13. These pages establish place identity, not
 // current conditions, monitoring completeness, or a household's service area.

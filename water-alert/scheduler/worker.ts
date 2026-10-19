@@ -8,7 +8,8 @@ export async function runScheduled(env: SchedulerEnv, fetcher: typeof fetch = fe
   } catch { throw new Error('Scheduler configuration invalid') }
   try {
     const response = await fetcher(`${origin.origin}/api/cron`, {
-      method: 'GET', redirect: 'error',
+      // Workers rejects redirect:'error'; manual never forwards the bearer to a redirect target.
+      method: 'GET', redirect: 'manual',
       headers: { Authorization: `Bearer ${env.CRON_SECRET}` },
       signal: AbortSignal.timeout(150000),
     })

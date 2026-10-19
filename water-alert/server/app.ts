@@ -1,9 +1,9 @@
 import express, { type ErrorRequestHandler, type Request } from 'express'
 import { timingSafeEqual } from 'node:crypto'
-import type { ObservationStore } from './store'
-import type { SourceRunner } from './sources'
-import type { PushStore } from './push'
-import { withPlaceCatalog } from '../src/place-catalog'
+import type { ObservationStore } from './store.js'
+import type { SourceRunner } from './sources.js'
+import type { PushStore } from './push.js'
+import { withPlaceCatalog } from '../src/place-catalog.js'
 export function createApp({ store, runner, pushes, origin, publicKey, drain, cron, limiter }: { store: ObservationStore; runner: Pick<SourceRunner, 'check'>; pushes: PushStore; origin: string; publicKey: string | null; drain: () => Promise<void>; cron?: { secret: string; run: () => Promise<void> }; limiter?: (req: Request) => Promise<boolean> }) {
   const app = express()
   app.disable('x-powered-by')

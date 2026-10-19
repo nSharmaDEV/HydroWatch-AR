@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WellPower: WAVE · Logo concepts</title>
+<style>
+:root{color-scheme:light dark;--paper:#f4f6f8;--surface:#fff;--ink:#18383c;--muted:#476269;--line:#cbd9dc;--teal:#087f83}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,sans-serif}main{max-width:1120px;margin:auto;padding:48px 24px}h1{font-size:clamp(28px,4vw,44px);letter-spacing:-.035em;line-height:1.15;margin:12px 0}h2{font-size:22px;margin:24px 0 8px}p{max-width:68ch;margin:8px 0;color:var(--muted)}.status{font-size:14px;font-weight:650}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px}article{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px}.hero{height:184px;display:grid;place-items:center;border-bottom:1px solid var(--line)}.mark{width:128px;height:128px;display:block;color:var(--teal)}.small{display:flex;align-items:center;gap:16px;margin-top:24px}.small svg{width:32px;height:32px}.small .tiny{width:16px;height:16px}.lockup{display:flex;align-items:center;gap:10px;font-weight:750;font-size:16px;letter-spacing:-.025em;margin-top:24px}.lockup svg{width:28px;height:28px;flex-shrink:0}.inverse{background:#123b40;color:#f4f6f8;padding:18px;border-radius:10px;display:flex;align-items:center;gap:12px;margin-top:24px}.inverse svg{width:40px;height:40px;color:inherit}.inverse span{font-size:14px}footer{margin-top:32px;border-top:1px solid var(--line);padding-top:20px}svg.defs{position:absolute;width:0;height:0;overflow:hidden}
+@media(max-width:760px){main{padding:28px 18px}.grid{grid-template-columns:1fr}.hero{height:160px}}
+@media(prefers-color-scheme:dark){:root{--paper:#10282d;--surface:#18373c;--ink:#edf6f7;--muted:#b9cdd0;--line:#49646a;--teal:#63ced0}}
+</style>
+</head>
+<body>
+<svg class="defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="wave" viewBox="0 0 96 96"><path d="M14 31 28 65Q31 72 36 64L48 40 60 64Q65 72 69 63L82 31" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="current" viewBox="0 0 96 96"><rect x="4" y="4" width="88" height="88" rx="22" fill="currentColor"/><path d="M20 33C27 33 25 64 34 64S42 39 49 39 54 64 63 64 70 33 77 33" fill="none" stroke="#f4f6f8" stroke-width="8" stroke-linecap="round"/></symbol>
+<symbol id="ripple" viewBox="0 0 96 96"><circle cx="48" cy="48" r="39" fill="none" stroke="currentColor" stroke-width="6"/><path d="m23 34 12 29 13-24 13 24 12-29M32 75q16 8 32 0" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs></svg>
+<main>
+<div class="status">WellPower: WAVE · Design review only</div>
+<h1>A mark of your own.</h1>
+<p>Three directions for replacing the default water drop. Each keeps the existing teal and connects the W in WAVE to water, without suggesting official certification or guaranteed safety.</p>
+<div class="grid">
+<article>
+<div class="hero"><svg class="mark" role="img" aria-label="Angular W wave logo"><use href="#wave"/></svg></div>
+<h2>A. Open wave</h2><p>A clear W with rounded wave troughs. The simplest silhouette and the recommended starting point.</p>
+<div class="lockup"><svg aria-hidden="true" class="mark"><use href="#wave"/></svg>WellPower: WAVE</div>
+<div class="small" aria-label="Small-size previews"><svg class="mark" aria-hidden="true"><use href="#wave"/></svg><svg class="mark tiny" aria-hidden="true"><use href="#wave"/></svg><span>32 / 16 px</span></div>
+<div class="inverse"><svg aria-hidden="true"><use href="#wave"/></svg><span>Single-color reverse</span></div>
+</article>
+<article>
+<div class="hero"><svg class="mark" role="img" aria-label="Flowing W in a rounded square"><use href="#current"/></svg></div>
+<h2>B. Steady current</h2><p>A flowing W inside a teal tile. More app-like, with a softer shape for the home screen.</p>
+<div class="lockup"><svg aria-hidden="true" class="mark"><use href="#current"/></svg>WellPower: WAVE</div>
+<div class="small" aria-label="Small-size previews"><svg class="mark" aria-hidden="true"><use href="#current"/></svg><svg class="mark tiny" aria-hidden="true"><use href="#current"/></svg><span>32 / 16 px</span></div>
+<div class="inverse"><svg aria-hidden="true" style="color:#087f83"><use href="#current"/></svg><span>Dark-surface preview</span></div>
+</article>
+<article>
+<div class="hero"><svg class="mark" role="img" aria-label="W with a ripple in an open circular outline"><use href="#ripple"/></svg></div>
+<h2>C. Ripple ring</h2><p>A W above a small ripple. A contained mark with more detail; the ring is not a verification seal.</p>
+<div class="lockup"><svg aria-hidden="true" class="mark"><use href="#ripple"/></svg>WellPower: WAVE</div>
+<div class="small" aria-label="Small-size previews"><svg class="mark" aria-hidden="true"><use href="#ripple"/></svg><svg class="mark tiny" aria-hidden="true"><use href="#ripple"/></svg><span>32 / 16 px</span></div>
+<div class="inverse"><svg aria-hidden="true"><use href="#ripple"/></svg><span>Single-color reverse</span></div>
+</article>
+</div>
+<footer><p>Concepts only, not an installed icon update or trademark clearance. No current header, favicon, PWA icon, manifest or notification asset has been replaced. After selection: refine the mark and prepare matching SVG, app-icon and Apple touch-icon assets, then verify them locally.</p></footer>
+</main>
+</body>
+</html>

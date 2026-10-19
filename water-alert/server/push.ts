@@ -1,10 +1,10 @@
 import { createHash, randomBytes, randomUUID, ECDH } from 'node:crypto'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { statusFor, type Place } from '../src/domain'
-import type { StoredState } from './store'
-import type { StateCell } from './postgres'
-import { noticeMatchesPlace, withPlaceCatalog } from '../src/place-catalog'
+import { statusFor, type Place } from '../src/domain.js'
+import type { StoredState } from './store.js'
+import type { StateCell } from './postgres.js'
+import { noticeMatchesPlace, withPlaceCatalog } from '../src/place-catalog.js'
 export interface DeviceInput { subscription: { endpoint: string; keys: { p256dh: string; auth: string } }; watches: string[]; liftWatches: string[]; language: 'en' | 'es' }
 export type PushSender = (subscription: DeviceInput['subscription'], payload: string) => Promise<unknown>
 interface Attempt { tries: number; nextAt: number; accepted: boolean; claimId?: string }

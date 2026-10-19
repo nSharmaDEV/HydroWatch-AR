@@ -2,10 +2,57 @@
 
 ## Goal and current boundary
 
-The user selected a Vercel-native backend. Code is implemented locally. On
+### October 18 approved Task 5 deployment
+
+- User explicitly approved deploying the reviewed fixes. Deployment
+  `ZwyfHKFJriBYhmxPNYEK4jUpmPNQ` is Ready at
+  `https://water-alert-qmttujpc5-nirmays06-3523s-projects.vercel.app`, aliased to
+  **https://water-alert-blond.vercel.app**. Previous production reference:
+  `dpl_6LCVnamQNHzqwnxXmwbRSvi3kNoN`.
+- Compared uploaded production file hashes to the checkout. Runtime differences
+  were exactly the approved `src/App.tsx`, `src/ProviderContact.tsx` and
+  `src/styles.css` fixes. An isolated temporary source snapshot retained deployed
+  backend, configuration and scheduler inputs; differing local scheduler code and
+  its tests were replaced only in that snapshot with the deployed baseline.
+  No environment/private-data files were copied; the shared checkout was preserved.
+- The exact release snapshot passed 219 included tests in 31 files, 24 isolated
+  browser cases and TypeScript/Vite build. Its smaller suite excludes unrelated
+  newly added local push tests and uses the deployed scheduler test baseline;
+  the earlier full-checkout 232-test result is distinct, not this release's count.
+  Remote build passed and produced `index-G1elCvej.js` / `index-CZ-x7F04.css`.
+- At `2026-10-18T16:04:23Z`, six public GET checks passed: HTML, worker, status,
+  push config and both assets. HTML references the expected assets; served asset
+  bytes equal the tested local build. HTML/worker/status/config remain no-store.
+  Enabled push config fingerprint is identical before/after; no settings changed.
+- Fresh guarded production Chromium contexts at 390/768/1440×900 verified missing
+  notice explanation, Spanish continuity into sample and header bounds. No
+  external/API mutation attempts or uncaught errors; service workers blocked,
+  no permissions, contacts or notification sends. An initial inline gutter-style
+  probe was correctly blocked by production CSP; rerun used actual layout without
+  injection or CSP changes. Reserved-gutter regression remains isolated-test evidence.
+- Evidence: ignored `test-results/task5-deployment/`. This supersedes Task 5's
+  local-only status, not its human/device/Spanish/legal-intake limitations. No
+  Cloudflare deployment, scheduler/environment changes or Task 6 execution.
+
+**Current production status, October 17, 2026:** push is now enabled with separately
+approved operator contact and new production-only VAPID keys. Deployment
+`dpl_6LCVnamQNHzqwnxXmwbRSvi3kNoN` rebuilt the previous uploaded release, not
+the shared dirty checkout. At `2026-10-17T20:52:54Z`, HTML/worker/config/status,
+no-store, cron 401 and foreign-origin 403 checks passed; both sources were healthy
+and 453 seconds old. Verified-TLS inspection found zero production subscriptions
+before and after activation. No test send or manual authenticated cron occurred.
+Local `.env`, project link and existing UI asset references are unchanged.
+Production-device delivery, automatic advisory-to-push execution and day-long/quota
+gates remain open. Earlier disabled-push results below are historical, and
+`verify:hosting` still intentionally expects disabled push; use scoped enabled-push
+read-only verification instead. Full activation evidence: [PUSH-PLAN.md](PUSH-PLAN.md).
+
+The user selected a Vercel-native backend. The initial push-disabled production
+deployment is live at **https://water-alert-blond.vercel.app** as of October 14,
+2026 (verification at `2026-10-15T01:57Z`). On
 2026-10-13, with explicit approval, the `water-alert/` directory was linked to
 the new `water-alert` project in the verified Hobby/free workspace
-`nirmays06-3523s-projects`. No Git integration or deployment was created.
+`nirmays06-3523s-projects`. No Git integration or deployment was created at that step.
 Also created the separate Supabase organization `Water Alert`
 (`vcbtwkiieuqxvxlwnczt`). The user privately created `WellPower: WAVE`
 (`eeuknpzklzoijvjsshwx`, us-east-1). With subsequent explicit approval, applied
@@ -15,10 +62,138 @@ Hosted checks confirmed four tables with RLS, restricted runtime CRUD (test writ
 rolled back), and browser-role read denial. The user subsequently set the runtime
 password privately and enabled LOGIN. Verified port-6543 pooler login with verified
 TLS in `psql` and a read-only Node `pg` query using the app's `databaseOptions`.
-Runtime URL and project CA are saved only in ignored local `.env` (mode 0600),
-with cloud operation and push disabled. Hosted concurrency checks remain pending.
-No paid plan, VAPID key generation, deployment or external push send has occurred.
-This document is not authorization for further work.
+Runtime URL and project CA were saved in ignored local `.env` (mode 0600),
+initially with cloud operation and push disabled. After private password rotation
+and renewed approval, production cloud operation is enabled; push remains disabled.
+Hosted concurrency checks remain pending. No paid plan, VAPID key generation,
+or external push send has occurred. Separately approved Cloudflare scheduler
+activation was registered October 17; see `FREE-HOSTING.md` for evidence and
+remaining execution-verification limits. This document is not
+authorization for further work.
+
+### October 17 isolated test hosting setup (initial configuration)
+
+- With separate approval, reverified the workspace as Hobby/free and created
+  `wellpower-wave-push-test`, distinct from `water-alert`, without Git integration.
+  Vite/build/output settings match the app; Node 24, Fluid compute, `iad1` and
+  180-second function timeout are configured. Zero deployments existed at setup.
+- Assigned origin: `https://wellpower-wave-push-test.vercel.app` (initially not live).
+  Six Production-only variables use the isolated test database's restricted runtime
+  URL and CA, a new test-only cron secret, cloud `true`, this origin and push `false`.
+  Database/CA/cron values are sensitive; the other settings were read back. No
+  Preview/Development variables, VAPID setup or scheduler were added.
+- Private test setup remains in ignored `0600` `.env.push-test.provisioning`.
+  The checkout's production `.vercel` link and `.env` were not replaced. Any approved
+  test deployment must target the test project explicitly, not the existing link.
+  Local config validation/three targeted tests passed. The separately authorized
+  deployment results follow; real phone delivery and sends remain separately gated.
+
+### October 17 isolated test deployment and read-only verification
+
+- User approved deployment and read-only HTTPS smoke verification, not push or
+  source-check execution. Deployed a temporary source copy with private files
+  excluded, explicitly targeting the test project. The production checkout's
+  `.vercel` link and `.env` hashes remained unchanged.
+- `dpl_8nCQNq7oWCLUe4bXrFJ5KAwD81dR` is READY and serves
+  `https://wellpower-wave-push-test.vercel.app`. Local TypeScript/Vite build and
+  15 targeted hosting/compiled-API/config/cloud tests passed before upload.
+- All six `npm run verify:hosting -- https://wellpower-wave-push-test.vercel.app`
+  checks passed: HTTPS/no redirects, HTML/worker/database-backed API routing,
+  no-store, disabled push, unauthenticated cron 401 and foreign-origin 403.
+  At `2026-10-17T20:00:43Z`, test archive/events were empty and production's
+  public push configuration remained disabled with a null public key.
+- No authenticated cron invocation, source fetch, scheduler, VAPID setup, push
+  activation or notification sends occurred. This verifies basic hosted database
+  integration, not concurrency/load behavior, failure recovery or device delivery.
+
+### October 17 isolated test-only push activation
+
+- After separate approval, enabled push only in `wellpower-wave-push-test` and
+  redeployed the same verified application snapshot. Current test deployment:
+  `dpl_HRz4e2LSuy2mHPyS35fdFgitXp81` (READY). Production push remains disabled.
+- Preflight verified zero test devices/captures over TLS, valid VAPID inputs, Hobby
+  and no Vercel cron definitions. No test scheduler was created. At
+  `2026-10-17T20:06:58Z`, seven read-only checks passed: HTML/worker/status, enabled
+  test config with exact test key privately compared, cron 401, foreign-origin 403
+  and disabled production config. Test archive/events remain empty; production
+  local project link and `.env` hashes unchanged.
+- `verify:hosting` is intentionally a disabled-push verifier: its disabled check
+  no longer applies to this enabled test app. No source baseline, enrollment or
+  notification sends were authorized or performed at activation. Device arrival,
+  failure recovery and production activation remain open gates; see `PUSH-PLAN.md`.
+
+### October 17 approved release update
+
+- After the earlier hold, user explicitly selected “Approve deployment.” No release
+  inputs were newer than the passing local build (217 unit tests, six isolated
+  browser cases). Existing logo/shared work preserved; no environment changes.
+- Deployment `9MVBydK2eJcfdBEMPmQPzAhjKxvN` at
+  `https://water-alert-kzg5kju4l-nirmays06-3523s-projects.vercel.app` is aliased to
+  `https://water-alert-blond.vercel.app`. Remote TypeScript/Vite build passed in
+  `iad1`; HTML contains the tested `index-BLDV0n4t.js` artifact.
+- At `2026-10-17T17:21:31Z`, public HTML returned 200 and push configuration reported
+  disabled with a null public key. CLI environment downloads expose sensitive-value
+  markers rather than actual values; contents were not printed and temporary files
+  removed. No claim of independent secret-value verification is made.
+- Public journey/privacy checks remain the next approval gate. Scheduling, sends,
+  production failure injection and elapsed reliability claims are not authorized
+  or established by this deployment.
+
+### October 14 local preparation (before deployment)
+
+- Reverified local baseline (183 tests/build), and read-only Vercel inventory:
+  no deployments or environment variables. Initial push-disabled production
+  configuration/deployment is now explicitly approved **after credential rotation**.
+- A prior tool read exposed the local runtime database credential. Treat it as
+  compromised: rotate `water_alert_runtime` privately using `\password` in the
+  authorized administrative session, update the ignored `.env` connection URL,
+  and confirm completion without sharing the password. Do not deploy the old URL.
+  User confirmed rotation is not yet done and requested deployment be paused.
+  No remote settings were changed here.
+- Local deployment configuration now pins Node 24 and `iad1` (us-east-1).
+  `.vercelignore` explicitly excludes environment files, local records and key files.
+  Node 24.22.0 local verification: 194 tests and production build pass.
+- After deploying, run `npm run verify:hosting -- https://canonical-host`.
+  This read-only, unauthenticated smoke check requires HTTPS without redirects,
+  HTML/worker/API routing, no-store responses, disabled push, cron 401 and foreign
+  Origin 403. It prints only named pass/fail checks, not response bodies or errors.
+  It does **not** verify fresh source checks, cross-worker persistence/concurrency,
+  laptop-off scheduling, device arrival or any notification sends.
+- Canonical production origin still needs to be selected/confirmed from the linked
+  project's available domain before setting `WATER_ALERT_ORIGIN`. Cloudflare,
+  VAPID, device tests and production sends retain their separate approval gates.
+
+### October 14 production deployment and verified results
+
+- User confirmed private runtime-password rotation and updated ignored `.env`;
+  read-only Node verification passed with verified TLS and restricted runtime identity.
+  User explicitly authorized proceeding with initial push-disabled deployment.
+- Verified linked domain `water-alert-blond.vercel.app`; configured exactly six
+  Production-only secret variables from the table below (cloud/origin/database/CA/
+  cron/push). No Preview or Development variables, VAPID keys or Git integration.
+  The random cron secret is retained only in ignored `.env` and Vercel Production.
+- Active deployment: `5ATdWFpaEnZnf9AwAXj3RhUePdPo` at
+  `https://water-alert-fr13aghfn-nirmays06-3523s-projects.vercel.app`, aliased to the
+  canonical origin above. Build and runtime region: `iad1`; project Node: `24.x`.
+- The first build succeeded but invocation failed with `ERR_MODULE_NOT_FOUND`.
+  Explicit `.js` imports in the emitted API dependency graph fixed native ESM loading;
+  a compile-and-native-Node regression reproduced the failure before the fix.
+  Local verification after the fix: **195 tests and production build pass on Node 24**.
+- All six `npm run verify:hosting -- https://water-alert-blond.vercel.app` checks
+  pass: HTTPS/no redirects, HTML/worker/API routing, no-store, disabled push,
+  unauthenticated cron 401, foreign Origin 403. Incorrect cron bearer also returned
+  401. A privately authenticated invocation returned 200 with `{ "ok": true }`.
+  The hosted Alert Options screen also reports push not configured and disables
+  device enablement; no browser permission or subscription was requested.
+- That invocation parsed ADH (30 records) and ADEQ (52 records), with success
+  timestamps `2026-10-15T01:57:03Z`. These are parsed feed records, not counts of
+  current active advisories. Read-only SQL confirmed 82 persisted archive records,
+  schema-validated captures for both agencies and **zero baseline events**.
+- Cross-cold-start/concurrency/load verification remains pending; a successful
+  read-only persistence check does not prove these. No continuous scheduling or
+  laptop-off checks are established. Source status must age to unavailable after
+  15 minutes without further successful checks. Cloudflare setup/activation,
+  VAPID/device tests and production sends still require separate approval.
 
 Vercel serves `dist/` and routes `/api/*` to `api/index.ts`. No listening server,
 background timer or filesystem persistence runs in the cloud path. PostgreSQL stores
@@ -31,7 +206,8 @@ existing local Node/filesystem implementation remains available independently.
   Cloudflare Workers Free cron invokes the API every five minutes. `vercel.json`
   contains no Vercel cron. Sources still become unavailable after 15 minutes.
 - Supabase Free PostgreSQL + Cloudflare was approved as an approach; subsequent
-  approvals covered Vercel linking and database setup, not deployment or scheduling.
+  approvals covered Vercel linking/database setup, then initial push-disabled
+  deployment. Scheduling remains separately gated.
   Neon Free was replaced after reviewing its compute quota.
   See [FREE-HOSTING.md](FREE-HOSTING.md) for restricted role and free pooler setup.
   Use a dedicated PostgreSQL database and TLS-verified pooled runtime connection.
@@ -53,8 +229,9 @@ npx vercel link
 
 Link this folder, not the repository root. Confirm scope before accepting project
 creation prompts. Set Node 24 and Fluid compute with at least 180-second function
-duration. Match the function region to the database. CLI build/routing and managed
-database behavior have not been verified; they remain deployment gates.
+duration. Match the function region to the database. Initial CLI build/routing and
+hosted database read/write persistence are verified above; managed concurrency,
+load behavior and device delivery remain gates.
 
 Put the approved direct administrative URL in private `.env` as `DATABASE_URL_ADMIN`,
 then run `npm run db:migrate`. This applies `server/migrations/001-cloud.sql` with
