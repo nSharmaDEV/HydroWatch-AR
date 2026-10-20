@@ -6,9 +6,84 @@
 
 **Architecture:** Replace the forced five-screen HelpGuide with a single progressively revealed workspace. Use the existing exact-ID annual-report catalog, provider contacts, source links and local draft tools. Historical report context and live notice context remain separate inputs and visibly separate sections.
 
-**Tech stack:** Existing React 19, TypeScript, Vite and native CSS; Vitest/Testing Library and Playwright. No new backend, accounts or external AI processing.
+**Tech stack:** Existing React 19, TypeScript, Vite and native CSS; Vitest/Testing Library and Playwright. Proposed device-local IndexedDB communication storage. Automatic reply receipt requires a separately approved integration and architecture; no new backend, accounts or external AI processing is authorized by this plan.
 
 **Spec:** The user-facing journey and behavior rules below are this proposal's specification. The user requested a detailed explanation of what users do at each step; implementation starts only after review.
+
+## Communication lifecycle extension (proposed October 19, 2026)
+
+This extension supersedes session-only saving and the exclusion of persistent communication tracking below. It also incorporates the findings-first direction: show the supplier's reviewed findings immediately, each with “Ask about this”; general service/quality/billing help remains below. Choosing a finding opens its prepared question directly, without another template dropdown or prepare button. These are proposed changes only, not shipped capabilities.
+
+### Delivery boundaries
+
+- **Phase A — saved, user-maintained communications:** device-local history, explicit save, user-reported contact events, manually added replies and deterministic next-step guidance. No accounts or mail access. Communication progress never changes advisory status or marks a historical finding resolved.
+- **Phase B — follow-up reminders:** in-app due indicators based on a date the user chooses. Background/push reminders are separately gated on permission, scheduling and verified delivery behavior; they are not implied by saving a date.
+- **Phase C — automatic response notifications:** a separately approved inbound-email integration. This cannot be delivered by `mailto:`. Do not show “waiting for an automatic reply” or promise notifications before that integration exists and is verified.
+
+### What the user does, sees and does next
+
+| Stage | User action and app behavior | Explicit next action |
+|---|---|---|
+| 1. Pick the concern | Select “Ask about this” beside a cited finding, or choose a general concern. Show historical facts separately from current notices. | “Review the question and choose whom to contact.” |
+| 2. Review and save | Show a neutral editable question, supplier/ADH choices, source references and optional observations. Explain local storage and offer “Save on this device”; copy/download/contact remain usable without saving. Confirm success only after storage succeeds. | “Copy or download your question, or open it in your email app. WAVE has not sent it.” |
+| 3. Contact outside WAVE | Open a verified email draft, call, or visit the relevant official form. Do not interpret opening, copying or downloading as sending. | “After you contact them, return here to record what you sent or discussed.” |
+| 4. Record the contact | User selects “Record contact” and confirms channel, destination, actual contact date and the text actually sent or call notes. Reference number is optional. Save a new immutable contact event; later edits create a correction, not a rewritten sent record. Label it “Contact recorded by you — delivery not verified.” | “Keep any receipt/reference number. Choose a follow-up date if you want a reminder.” |
+| 5. Wait or follow up | Show the recorded contact, any user-chosen reminder date and “No reply recorded”; that does not mean the recipient never replied. No invented agency deadline or automatic escalation. | “Add a reply if you receive one, or prepare a polite follow-up when you choose.” |
+| 6. Add a reply | Paste only relevant reply text or write a summary; record sender and received date, with unknown dates allowed. Preview before saving; warn against account numbers, medical details or unrelated email content. Label manually entered content as user-provided, not verified. | “Review whether your questions were answered. You can ask for clarification, follow up, or finish tracking this conversation.” |
+| 7. Choose the next step | Offer deterministic options: request missing information, clarify a conflicting statement, prepare a follow-up, contact ADH if relevant, or finish tracking. Copy facts from the selected reply only with user review; do not infer legal/compliance conclusions or use AI to interpret it. | Each choice opens a reviewed editable draft or a clearly described resource. Never send or escalate automatically. |
+| 8. Finish, export or delete | User marks “Finished tracking”, reopens, exports or deletes the conversation. This means only the user stopped tracking it, not that the water issue is resolved. | Explain how to return, where the export was saved by the browser, or what deletion removed. |
+
+Every stage displays one short “What to do next” instruction. Users may go back, skip optional reminders, contact someone without saving, and reopen finished conversations. No forced completion of an irrelevant stage.
+
+### Saved history and privacy contract
+
+- Save only after an explicit device-storage choice. Use IndexedDB, with a versioned schema, rather than session state or notification enrollment records. No silent upload or cross-device synchronization.
+- Store a stable conversation ID, exact supplier ID, live/sample class, concern, source-context snapshot (year/finding/printed facts/page/URL), draft revisions, recipient, contact/reply/correction events and optional follow-up date. Preserve the original historical attribution if the catalog changes later.
+- Use stable event IDs and explicit event timestamps; distinguish recorded-at from contacted-at/received-at. Do not invent a contact time, response date or delivery confirmation.
+- Separate editable drafts from immutable user-recorded contact/reply events. Before recording contact, ask whether the saved draft matches what was actually sent; let the user correct the snapshot.
+- Explain: “Saved in this browser on this device. Other people using this browser may be able to read it. Clearing browser data can remove it. It is not backed up or end-to-end encrypted by WAVE.” Do not claim confidentiality or legal protection.
+- Initial scope supports plain text and manual summaries, not attachments, mailbox imports, HTML email rendering or forwarding full inbox threads. Render saved content as text; reject unsafe URLs in generated actions and never execute reply content.
+- Offer readable text and versioned JSON exports. Import/restore is not promised in Phase A. Remind users to store exports privately.
+- Provide per-conversation deletion and “Delete all saved communications” with confirmation. Deleting browser records does not delete sent emails, agency records or downloaded exports. Reuse existing full-device deletion behavior only after checking its actual scope and updating its explanation.
+- Isolate sample records from live records and real contact targets. A sample cannot enroll a reminder or trigger a real delivery. Language changes translate interface labels, not user-authored or historical event text, and must not delete saved content.
+- Handle unavailable storage, quota errors, migrations and interrupted writes honestly: retain the open draft, show save failure, offer download, and never show a false saved state. Warn before discarding unsaved changes; saved records survive reload and workspace exit.
+
+### Reminders versus response notifications
+
+**Phase B initial guarantee:** an in-app “Follow-up due” indicator is recalculated when the app opens. The user picks the date; WAVE does not invent a legal deadline. State explicitly that a closed app may not alert them. Users can change, dismiss or cancel a reminder; record a reminder as displayed, not delivered externally.
+
+**Background reminder gate:** inspect the existing Web Push architecture before choosing a scheduler. Specify consent, minimal server-held metadata, timezone/DST handling, retry/deduplication, cancellation/deletion and device revocation. Do not upload message bodies for reminders. Test actual scheduled delivery before making a background-delivery claim.
+
+**Phase C proposed route:** use a dedicated per-conversation reply address with a verified inbound-email provider, rather than requesting access to the user's whole mailbox. The user explicitly opts in before sending and uses a supported sending/reply-routing flow. Explain whether the recipient will reply to that address and that off-thread replies, phone calls and ordinary external-form responses may not be captured. A plain email-app handoff without this routing still requires manual reply logging.
+
+Before Phase C can be implemented, decide and approve:
+
+1. Inbound provider, account/device ownership and secure retrieval model; secret links alone must not expose other conversations.
+2. Where reply bodies are stored, access controls, retention, deletion/export, abuse limits and processor/privacy disclosures. Device-local-only wording must change for opted-in routed conversations.
+3. Webhook signature verification, replay protection, deduplication, unguessable routing IDs, sender spoofing/authentication limits, HTML sanitization and attachment rejection. Receipt is not proof the sender is genuine or their claims are true.
+4. Notification permission, minimal lock-screen text (“A reply was received”), private content hidden by default, and a polling/in-app fallback when push is denied or unavailable. Distinguish inbound receipt, notification queued, attempted delivery and reply viewed; do not claim guaranteed delivery.
+5. End-to-end tests for a routed reply, duplicates, forged webhooks, wrong-conversation routing, revoked devices, deletion, provider failure and replies arriving after tracking ends. Automatic receipt must not mark a finding resolved.
+
+Until these gates pass, show “Replies are not monitored by WAVE. Add a reply here when you receive one.” A reminder is never labeled a response notification.
+
+### Implementation tasks for the extension (after approval)
+
+These follow the supplier-context/template work below and replace its session-only persistence assumptions. Use test-first implementation; no production integration or deployment is authorized.
+
+1. **Persistence boundary:** create `water-alert/src/communication-types.ts`, `communication-store.ts` and `tests/communication-store.test.ts`. Define versioned conversation/event records, injected storage/clock interfaces, atomic writes, correction events, exports, deletion and explicit live/sample separation. First test reload persistence, immutable snapshots, failed writes, schema upgrades, quota failures and exact-ID isolation; then implement the minimal IndexedDB adapter. Select a deterministic IndexedDB test strategy before adding any dependency.
+2. **Guided history UI:** create `water-alert/src/CommunicationHistory.tsx` and `tests/communication-history.test.tsx`; modify `HelpGuide.tsx`, `RecoveryActions.tsx`, help strings and styles. Test explicit save consent, recipient review, actual-sent snapshot confirmation, manual reply entry, next-step instructions at every stage, back/skip/reopen paths, unsaved-change warnings and truthful labels. A saved contact must never imply WAVE sent it or verified receipt.
+3. **Follow-up guidance and in-app reminders:** create `water-alert/src/communication-next-steps.ts` and its unit tests. Use deterministic rules and an injected clock; test due dates/timezones, cancellation, no-reply wording, missing dates, manual reply arrival and “Finished tracking” without status changes. Background reminders stay gated until their architecture is approved.
+4. **Lifecycle/privacy verification:** extend `water-alert/tests/e2e/journey.spec.ts` using isolated synthetic browser storage and blocked live mutations. Verify save → reload → record contact → add reply → prepare clarification → finish/reopen → export/delete; test EN/ES, keyboard/320px, shared-device warnings, storage failures and sample isolation. Run unit tests, build and relevant browser tests; update README and dated local-only CHANGELOG entries with only verified behavior.
+5. **Automatic reply design gate:** write a separate integration specification only after choosing the Phase C architecture with the user. Include the five gates above and a provider-independent inbound contract. Do not retrofit existing alert subscriptions to carry private correspondence or implement server/mail access as part of Phase A.
+
+### Added acceptance criteria
+
+- Saved communications survive reload on the same browser; users can distinguish drafts, user-recorded contacts, manually entered replies and any future automatically received replies.
+- Each stage explains what happened, what WAVE did not do and the next optional action.
+- Users can follow the process without consenting to storage, notifications or mail processing.
+- No sending/delivery/reply claim is inferred from opening an email client or official form.
+- Reminders and response notifications have distinct labels, permissions and verified capability boundaries.
+- Users can export/delete records, understand device-local limitations and finish tracking without changing official status.
 
 ## User refinement: safe, templateable and easy to understand
 
@@ -52,10 +127,10 @@ Bracketed values here illustrate the template contract; the app must populate su
 - Show the supplier, selected source/year and intended contact beside the review action so residents can catch identity or routing mistakes.
 - No automatic escalation. First offer the appropriate provider/ADH information route. Consumer complaints and legal resources remain optional, separately explained actions rather than the next compulsory step.
 - Explain that missing monitoring is missing evidence, not proof of contamination; explain reported corrective action without claiming verified resolution.
-- Never treat editing, saving or opening email as submission. Do not request a “filed” checkbox or display case progress.
+- Never treat editing, saving or opening email as submission. Communication progress reflects only explicit user-recorded events, not verified filing, receipt or agency case progress.
 - No required account, full address, account number, medical detail or identity document. Keep sensitive details out of drafts; external services may have their own requirements and privacy policies.
 - Label technical source wording and translated explanations distinctly. Keep the original PDF reachable; do not imply English templates are Spanish simply because the interface is Spanish.
-- Preserve drafts across in-workspace choices using context-keyed edits. Warn plainly about leaving/reloading and language resets; do not promise durable saving.
+- Preserve drafts across in-workspace choices using context-keyed edits. Offer explicit device-local saving under the lifecycle extension; warn about leaving with unsaved changes.
 
 ### Simplicity acceptance tests
 
@@ -86,7 +161,7 @@ Bracketed values here illustrate the template contract; the app must populate su
 - “Current” in a PDF means as printed, not current today.
 - Contradictory findings stay contradictory; request clarification rather than choosing a conclusion.
 - Preserve existing service, billing, reimbursement-review, complaint, legal-preparation and follow-up tools.
-- Drafts remain local to the open component/session; no automatic filing or durable case tracking.
+- Unsaved drafts remain session-local. Opted-in saved communications persist on this device under the lifecycle extension; no automatic filing or verified agency case tracking.
 - English and Spanish interface parity; existing English draft templates must remain clearly labeled as English unless translation is separately implemented and reviewed.
 - Sample mode must not attach real findings or expose real phone/email targets.
 - Implementation changes require a dated, local-only `water-alert/CHANGELOG.md` entry in the same batch.
@@ -227,15 +302,15 @@ Water Help: [supplier]
 
 **Packet:** The downloadable preparation packet includes the selected historical source context, relevant questions, draft, private checklist and a blank contact log. It must not retain notice-only assertions that imply an incident exists.
 
-**Privacy:** Keep drafts in the current open session only. Explain copy/download before leaving, switching supplier/mode/language or reloading. Downloads are the user's responsibility to store privately.
+**Privacy:** Offer explicit device-local saving as specified in the lifecycle extension. Explain unsaved-change loss, shared-device access and browser-data deletion. Downloads are the user's responsibility to store privately.
 
-### Step 7: Follow up without implying case tracking
+### Step 7: Record communications and follow up
 
-**User does:** After contacting the provider or agency outside WAVE, keeps the date, response and reference number privately. Can prepare a follow-up draft using their own facts.
+**User does:** After contacting the provider or agency outside WAVE, may record the contact, actual sent text/call notes, date and optional reference number on this device. May add a reply manually and prepare a follow-up using their own facts.
 
 **User sees:** A brief checklist: save what you sent; request a reference number; keep the response; ask for written clarification if unanswered. No fabricated response deadline.
 
-**App does not:** Record a case as filed, verify receipt, monitor the agency, promise a response, mark the report finding resolved or change live status. Any contact log is a downloaded blank template, not an in-app tracking service.
+**App does not:** Verify filing or receipt, monitor replies without the separately approved integration, promise a response, mark the report finding resolved or change live status. Saved communication history is user-maintained, not an official agency case tracker. See the lifecycle extension for the full sequence and next-step guidance.
 
 ## Other routes remain first-class
 
@@ -254,11 +329,11 @@ User sees legal-information/intake links and optional preparation notes. No elig
 ## Editing and navigation rules
 
 - Reveal the workspace sections in place; these are task stages, not five mandatory separate screens.
-- Do not show the editor before the user chooses to prepare a draft.
+- Show the matching prepared question directly after the user chooses a finding/concern; do not require another prepare action.
 - Keep edits when opening sources/contact details or moving among workspace sections.
 - Switching a route, report year, finding or draft template must not silently replace edited text. Store edits by exact context key during this mount; new contexts get new drafts and returning restores the prior edited draft.
-- Context key includes supplier ID, live/sample mode, notice identity, route, report year and finding identity. Keep language behavior explicit: initial scope retains current reset behavior and warning, not a claim of cross-language draft preservation.
-- Leaving the workspace and reloading may discard edits. Do not describe warnings as unsaved-change protection; navigation interception is not part of this proposal.
+- Context key includes supplier ID, live/sample mode, notice identity, route, report year and finding identity. Preserve saved user-authored content across language changes; translating interface labels does not translate saved messages.
+- Leaving/reloading may discard unsaved edits, with an unsaved-change warning where supported. Explicitly saved records survive workspace exit and reload; storage failure must not look like success.
 - Back restores focus to the initiating help button; all choices and disclosures work by keyboard.
 - On phones, avoid a sticky action bar that covers the textarea or privacy note. Use the normal document flow at 320px.
 
@@ -321,4 +396,4 @@ User sees legal-information/intake links and optional preparation notes. No elig
 
 ## Scope deliberately excluded
 
-Automatic complaints, background report scraping, safety scores, medical/legal diagnosis, persistent case tracking, accounts, external AI drafting, automatic multi-finding inquiries, translated English legal/draft templates without review, and treating old findings as live notices.
+Automatic complaints, background report scraping, safety scores, medical/legal diagnosis, verified agency case tracking, accounts in Phase A, external AI drafting, automatic multi-finding inquiries, translated English legal/draft templates without review, and treating old findings as live notices. Background reminder delivery and automatic reply receipt remain gated future phases, not initial implementation commitments.
