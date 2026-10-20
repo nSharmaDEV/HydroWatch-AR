@@ -1,0 +1,1059 @@
+[
+  {
+    "id": "ADH:573b41ace89198422234fda05a66c8043cfaf5b9110349079912b75c64741bd0",
+    "name": "BANKS WATERWORKS",
+    "county": "BRADLEY",
+    "query": "BANKS",
+    "candidates": [
+      {
+        "cells": [
+          "Banks",
+          "068",
+          "BRADLEY",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=068&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "068",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=068&YEAR=2025",
+    "searchName": "Banks",
+    "pdf": "pdfs/068.pdf",
+    "extractedText": "text/068.txt",
+    "sha256": "87d62047830f6882020da8fa832ccb62d633046b95bf5ee441f7fb083a507172",
+    "bytes": 112503,
+    "physicalPages": 3
+  },
+  {
+    "id": "ADH:62bf401b065d0ff341e7ab9dbbfd57e99db5783c3ced3383494219e08926fb86",
+    "name": "SMACKOVER WATERWORKS",
+    "county": "UNION",
+    "query": "SMACKOVER",
+    "candidates": [
+      {
+        "cells": [
+          "Smackover",
+          "555",
+          "UNION",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=555&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "555",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=555&YEAR=2025",
+    "searchName": "Smackover",
+    "pdf": "pdfs/555.pdf",
+    "extractedText": "text/555.txt",
+    "sha256": "f7013aab6b9d0071da0507a633be294764369993e8611dabc4ed12babe2e74d3",
+    "bytes": 116848,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:e3a609125c8dbbdc5a0f94d2b9f301a5ea1bf1c8a7fdb26411b27070ada05b9c",
+    "name": "WALDRON WATERWORKS",
+    "county": "SCOTT",
+    "query": "WALDRON",
+    "candidates": [
+      {
+        "cells": [
+          "Waldron",
+          "498",
+          "SCOTT",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=498&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "498",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=498&YEAR=2025",
+    "searchName": "Waldron",
+    "pdf": "pdfs/498.pdf",
+    "extractedText": "text/498.txt",
+    "sha256": "6fef2dd69cd126618d7e1c34148c310a71341f1ac851969cedd71b5c97706e7a",
+    "bytes": 251370,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:dca2e7f080b8ddd909498d21d8baa011da9fb424aef1352a4c4506283815990a",
+    "name": "NORTH JACKSON CO RURAL WATER ASSN",
+    "county": "JACKSON",
+    "query": "NORTH JACKSON",
+    "candidates": [
+      {
+        "cells": [
+          "North Jackson County",
+          "767",
+          "JACKSON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=767&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "767",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=767&YEAR=2025",
+    "searchName": "North Jackson County",
+    "pdf": "pdfs/767.pdf",
+    "extractedText": "text/767.txt",
+    "sha256": "d6cc418a38caadcb76ac65e15fed0eb2283ca58fd0cd3a893290bfd3512d1ca5",
+    "bytes": 114598,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:c8aa1b0178e1fe33110e44dc55b9065c631dc701bf7534967eb0fcd49a052c3f",
+    "name": "TUCKERMAN WATERWORKS",
+    "county": "JACKSON",
+    "query": "TUCKERMAN",
+    "candidates": [
+      {
+        "cells": [
+          "Tuckerman",
+          "266",
+          "JACKSON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=266&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "266",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=266&YEAR=2025",
+    "searchName": "Tuckerman",
+    "pdf": "pdfs/266.pdf",
+    "extractedText": "text/266.txt",
+    "sha256": "60a2d47c3e709bbf60947ca0ec55651e7597af8327f7cdf00a866f9f7530eab8",
+    "bytes": 146250,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:2c15921bcf6d2b37db97fbab65ba8adde0b65ca7cb8654a0dfe547bb7036dd09",
+    "name": "CROSS COUNTY RURAL WATER SYS",
+    "county": "CRAIGHEAD, JACKSON, POINSETT",
+    "query": "CROSS COUNTY",
+    "candidates": [
+      {
+        "cells": [
+          "Cross County Rural",
+          "459",
+          "CRAIGHEAD",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Cross County Rural",
+          "459",
+          "CROSS",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Cross County Rural",
+          "459",
+          "JACKSON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Cross County Rural",
+          "459",
+          "POINSETT",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Cross County Rural",
+          "459",
+          "ST. FRANCIS",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Cross County Rural",
+          "459",
+          "WOODRUFF",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "459",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=459&YEAR=2025",
+    "searchName": "Cross County Rural",
+    "pdf": "pdfs/459.pdf",
+    "extractedText": "text/459.txt",
+    "sha256": "d89ce7d664d30f2c5a9776ad42eef2122f31dcbb7431fffde7978d33f59edcef",
+    "bytes": 140786,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:74ade4dfe3721f77ed2756a11406ffc00e45dbdbcc6c956745dbb8573d4153ea",
+    "name": "SYLAMORE VALLEY WATER ASSN",
+    "county": "STONE",
+    "query": "SYLAMORE VALLEY",
+    "candidates": [
+      {
+        "cells": [
+          "Sylamore Valley",
+          "882",
+          "STONE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=882&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "882",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=882&YEAR=2025",
+    "searchName": "Sylamore Valley",
+    "pdf": "pdfs/882.pdf",
+    "extractedText": "text/882.txt",
+    "sha256": "b559824e5b043696227443b2713d22f0ee4f774d5e5567e962daeaa683b13ecf",
+    "bytes": 146184,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:a12f41b2b9ea15999a66e205359086a4e565a7733f5f0d4b791e653f5b30ec03",
+    "name": "MIDWAY WATER ASSOCIATION",
+    "county": "CRITTENDEN",
+    "query": "MIDWAY",
+    "candidates": [
+      {
+        "cells": [
+          "Lakeview Midway",
+          "027",
+          "BAXTER",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=027&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Midway",
+          "153",
+          "CRITTENDEN",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=153&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "153",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=153&YEAR=2025",
+    "searchName": "Midway",
+    "pdf": "pdfs/153.pdf",
+    "extractedText": "text/153.txt",
+    "sha256": "b6617f374d56e1f860861b8db02e6b5b0c0f5ce40d6f6d69a1b1e5b9b89d7475",
+    "bytes": 109492,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:12bb8f46cb9fd02f88bf88b6d20172df4c34e235781dd5d43199b24761259eba",
+    "name": "RIVERSIDE RESORT AT KINGS RIVER",
+    "county": "CARROLL",
+    "query": "Riverside",
+    "candidates": [],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "no-matching-2025-search-result"
+  },
+  {
+    "id": "ADH:0f8b954e9aa2f3d1deeb3b2b8125ca21afe1e6716b670b5a6ca3449f03a6219d",
+    "name": "HOLLY GROVE WATERWORKS",
+    "county": "MONROE",
+    "query": "HOLLY GROVE",
+    "candidates": [
+      {
+        "cells": [
+          "Holly Grove",
+          "388",
+          "MONROE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=388&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "388",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=388&YEAR=2025",
+    "searchName": "Holly Grove",
+    "pdf": "pdfs/388.pdf",
+    "extractedText": "text/388.txt",
+    "sha256": "af14373549805a505fbefee2348265e86a4454845c3b8f061eed7cf94bda9414",
+    "bytes": 165092,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:410e67db91f7d62c58b60070829a626df9b22f370e9f034925149311abe84287",
+    "name": "CENTRAL LOGAN COUNTY PWFB",
+    "county": "LOGAN",
+    "query": "CENTRAL LOGAN",
+    "candidates": [
+      {
+        "cells": [
+          "Central Logan Co",
+          "845",
+          "LOGAN",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=845&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "845",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=845&YEAR=2025",
+    "searchName": "Central Logan Co",
+    "pdf": "pdfs/845.pdf",
+    "extractedText": "text/845.txt",
+    "sha256": "7b78d416480ac7e3833acc6b02f02060e3d9814ba58bfb2cbcd9f7ce1f794d84",
+    "bytes": 124677,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:48b60fbd46da25141439df596676074dbda0bb07f32053f4dc48bcb987edeba1",
+    "name": "SOUTH MOUNTAIN WATER ASSN",
+    "county": "SEARCY",
+    "query": "SOUTH MOUNTAIN",
+    "candidates": [
+      {
+        "cells": [
+          "South Mountain",
+          "815",
+          "SEARCY",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=815&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "815",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=815&YEAR=2025",
+    "searchName": "South Mountain",
+    "pdf": "pdfs/815.pdf",
+    "extractedText": "text/815.txt",
+    "sha256": "def619360be660add4b823b49fed0fcddd565ccbe1fe87b8d2cd15ac3cb5361e",
+    "bytes": 171596,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:39e0d7b57f74fdf7084a73ed951a0068e326d23223986d271b4d4f2ee8845e35",
+    "name": "BRUNNER HILL PUBLIC WATER AUTHORITY",
+    "county": "BAXTER",
+    "query": "BRUNNER HILL",
+    "candidates": [
+      {
+        "cells": [
+          "Brunner Hill",
+          "837",
+          "BAXTER",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=837&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "837",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=837&YEAR=2025",
+    "searchName": "Brunner Hill",
+    "pdf": "pdfs/837.pdf",
+    "extractedText": "text/837.txt",
+    "sha256": "b2c52e202a8fea530735ef74b572f82bc4d8f9916f01df584644ce33ec09d98d",
+    "bytes": 160411,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:da62ed37b05b8ebd3bd0abfc13095400f919abbc413c6422de0939f3d0073123",
+    "name": "BERGMAN WATERWORKS",
+    "county": "BOONE",
+    "query": "BERGMAN",
+    "candidates": [
+      {
+        "cells": [
+          "Bergman",
+          "060",
+          "BOONE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=060&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "060",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=060&YEAR=2025",
+    "searchName": "Bergman",
+    "pdf": "pdfs/060.pdf",
+    "extractedText": "text/060.txt",
+    "sha256": "d41b302062f81e0e7ee1a4a3610c70e86a76be717697ea9450dc6f92345d5fa7",
+    "bytes": 163698,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:f8b097675075d67ac8a3501f358dd18c8d8ea84afa903488c53b50d35ce93c87",
+    "name": "EAST JOHNSON CO WATER ASSN",
+    "county": "JOHNSON, POPE",
+    "query": "EAST JOHNSON",
+    "candidates": [
+      {
+        "cells": [
+          "East Johnson Co",
+          "772",
+          "JOHNSON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=772&YEAR=2025"
+      },
+      {
+        "cells": [
+          "East Johnson Co",
+          "772",
+          "POPE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=772&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "772",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=772&YEAR=2025",
+    "searchName": "East Johnson Co",
+    "pdf": "pdfs/772.pdf",
+    "extractedText": "text/772.txt",
+    "sha256": "184b324949385d1517036f30da9f4bf7bdc8d94eafa5d4e4f990f1d61bdf7f81",
+    "bytes": 152023,
+    "physicalPages": 3
+  },
+  {
+    "id": "ADH:b14abf76a55845b0bb11b47e18977509249beb34534f2263c5ea01a141b5925b",
+    "name": "FLIPPIN WATERWORKS",
+    "county": "MARION",
+    "query": "FLIPPIN",
+    "candidates": [
+      {
+        "cells": [
+          "Flippin",
+          "351",
+          "MARION",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=351&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "351",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=351&YEAR=2025",
+    "searchName": "Flippin",
+    "pdf": "pdfs/351.pdf",
+    "extractedText": "text/351.txt",
+    "sha256": "04261e29550f62d6bb07793aab80f641cb105ec9f6bace6885d58a06eae91fcc",
+    "bytes": 120724,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:b603457dbbdc01ccdf6783a16bdd384e032259488d9e4eed5dcd872aa1557c89",
+    "name": "GLEN ACRES",
+    "county": "CARROLL",
+    "query": "GLEN",
+    "candidates": [
+      {
+        "cells": [
+          "Glen Acres",
+          "857",
+          "CARROLL",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=857&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Glenwood",
+          "422",
+          "PIKE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=422&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "857",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=857&YEAR=2025",
+    "searchName": "Glen Acres",
+    "pdf": "pdfs/857.pdf",
+    "extractedText": "text/857.txt",
+    "sha256": "d0dc8969cf5c0d66a787048d4f75a60e49a238d2ab69bd2c5498acaa24a241be",
+    "bytes": 123265,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:a505cc396de76ffa77fbb8ef7caff101fd0a7cfa3198841287784d13d89ad9c7",
+    "name": "MOCKINGBIRD HILL WATER ASSOC",
+    "county": "NEWTON",
+    "query": "MOCKINGBIRD HILL",
+    "candidates": [
+      {
+        "cells": [
+          "Mockingbird Hill",
+          "042",
+          "NEWTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=042&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "042",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=042&YEAR=2025",
+    "searchName": "Mockingbird Hill",
+    "pdf": "pdfs/042.pdf",
+    "extractedText": "text/042.txt",
+    "sha256": "fa97466aff829bb798cee962f77722e545b0e78c3c8c93ced57c785297d5bf31",
+    "bytes": 193802,
+    "physicalPages": 3
+  },
+  {
+    "id": "ADH:02cb014bef8a82412f4e855b029446ca9bdeade1bd8655f44abb39350e718682",
+    "name": "LESLIE WATER SYSTEM",
+    "county": "SEARCY",
+    "query": "LESLIE",
+    "candidates": [
+      {
+        "cells": [
+          "Leslie",
+          "500",
+          "SEARCY",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=500&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "500",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=500&YEAR=2025",
+    "searchName": "Leslie",
+    "pdf": "pdfs/500.pdf",
+    "extractedText": "text/500.txt",
+    "sha256": "34f0a41dc12cd6c4f60ecd435ad76696aea42da08f8d6c361fa9d7dba87c3d23",
+    "bytes": 149472,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:1f17d89c87a89f004a71c5917ebc694d83031c66eabf12e52a59f855baa1daa0",
+    "name": "WEST STONE COUNTY WATER ASSN",
+    "county": "STONE",
+    "query": "WEST STONE",
+    "candidates": [
+      {
+        "cells": [
+          "West Stone Co",
+          "735",
+          "CLEBURNE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=735&YEAR=2025"
+      },
+      {
+        "cells": [
+          "West Stone Co",
+          "735",
+          "SEARCY",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=735&YEAR=2025"
+      },
+      {
+        "cells": [
+          "West Stone Co",
+          "735",
+          "STONE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=735&YEAR=2025"
+      },
+      {
+        "cells": [
+          "West Stone Co",
+          "735",
+          "VAN BUREN",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=735&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "735",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=735&YEAR=2025",
+    "searchName": "West Stone Co",
+    "pdf": "pdfs/735.pdf",
+    "extractedText": "text/735.txt",
+    "sha256": "f822bc878b50d64399c6992caacd915bcf403b3e8c257565d7cb485157123778",
+    "bytes": 122563,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:2d4c0fafe8c636fbc7555d68cec719635be1e66e6eccf62f71269a6a4a2a19dd",
+    "name": "LEAD HILL WATERWORKS",
+    "county": "BOONE",
+    "query": "LEAD HILL",
+    "candidates": [
+      {
+        "cells": [
+          "Lead Hill",
+          "063",
+          "BOONE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=063&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "063",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=063&YEAR=2025",
+    "searchName": "Lead Hill",
+    "pdf": "pdfs/063.pdf",
+    "extractedText": "text/063.txt",
+    "sha256": "18d5c94dbafe64dcef441f394cfe6068835e71d6a8586e4ad2cbdd439dc960e6",
+    "bytes": 144256,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:6e9a20f3e00cb91c44f1085265928d4ad99e308ef8bd53ef628c89f8a753162b",
+    "name": "FORT SMITH WATER UTILITIES",
+    "county": "SEBASTIAN",
+    "query": "FORT SMITH",
+    "candidates": [
+      {
+        "cells": [
+          "Fort Smith",
+          "507",
+          "SEBASTIAN",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=507&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "507",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=507&YEAR=2025",
+    "searchName": "Fort Smith",
+    "pdf": "pdfs/507.pdf",
+    "extractedText": "text/507.txt",
+    "sha256": "d4eee695f7078445a9a735eb0bed05c12cc396a818ef37e2a14ac54bac16b57a",
+    "bytes": 164003,
+    "physicalPages": 3
+  },
+  {
+    "id": "ADH:5f4986a6a9331a48c8f43286111e6299c98be5ace3d850aa47881c7ba733058a",
+    "name": "PALESTINE WATER ASSOCIATION",
+    "county": "ST. FRANCIS",
+    "query": "PALESTINE",
+    "candidates": [
+      {
+        "cells": [
+          "Palestine",
+          "536",
+          "ST. FRANCIS",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=536&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "536",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=536&YEAR=2025",
+    "searchName": "Palestine",
+    "pdf": "pdfs/536.pdf",
+    "extractedText": "text/536.txt",
+    "sha256": "777665b88d59fa6f055487861b458a23105a23f63715ed4d4c54fa0e9a3896bd",
+    "bytes": 190405,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:7eea5393b7363d6dfd4f223e6b6de7d4a57a71ed2749a3b0ea2dd3927004f92a",
+    "name": "DOVER WATERWORKS",
+    "county": "POPE",
+    "query": "DOVER",
+    "candidates": [
+      {
+        "cells": [
+          "Dover",
+          "444",
+          "POPE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=444&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "444",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=444&YEAR=2025",
+    "searchName": "Dover",
+    "pdf": "pdfs/444.pdf",
+    "extractedText": "text/444.txt",
+    "sha256": "45b1ab03b6c69df376c7508d02280e790c024935b0e57429354e1b310efbb9d8",
+    "bytes": 146230,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:6648e4db8d9deee84cfcc11c7421166901949dcedec15c0df5b13cf7162a8fe7",
+    "name": "TEXARKANA WATER UTILITIES",
+    "county": "MILLER",
+    "query": "TEXARKANA",
+    "candidates": [
+      {
+        "cells": [
+          "Texarkana",
+          "360",
+          "MILLER",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=360&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "360",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=360&YEAR=2025",
+    "searchName": "Texarkana",
+    "pdf": "pdfs/360.pdf",
+    "extractedText": "text/360.txt",
+    "sha256": "46264c5e3fc38533ff2aad70b02df2fd9dd174685a3a355352edb0e9aa8a24c4",
+    "bytes": 171041,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:dbf53925bdd33aa59425250c763c498e78d49d9b9dafa33585f495b829f2d212",
+    "name": "SALEM WATER USERS LLC",
+    "county": "SALINE",
+    "query": "SALEM WATER",
+    "candidates": [
+      {
+        "cells": [
+          "Salem Water Users",
+          "492",
+          "SALINE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=492&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "492",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=492&YEAR=2025",
+    "searchName": "Salem Water Users",
+    "pdf": "pdfs/492.pdf",
+    "extractedText": "text/492.txt",
+    "sha256": "0805d9392fe1b41dbd5aa81f5f84779a025a7c96cd80062f833af9c6698ad376",
+    "bytes": 172205,
+    "physicalPages": 3
+  },
+  {
+    "id": "ADH:517d90b862897b092ed779c9b347f45cd1e4d461f8855ee611f49e7bd6fce65e",
+    "name": "USCOE OC - LITTLE FIR",
+    "county": "GARLAND",
+    "query": "Little Fir",
+    "candidates": [],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "no-matching-2025-search-result"
+  },
+  {
+    "id": "ADH:734db608102088dbce04b8d92156cc248a9cc375a70905fe288aca9f5f550c4a",
+    "name": "GURDON WATERWORKS",
+    "county": "CLARK",
+    "query": "GURDON",
+    "candidates": [
+      {
+        "cells": [
+          "Gurdon",
+          "087",
+          "CLARK",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=087&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "087",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=087&YEAR=2025",
+    "searchName": "Gurdon",
+    "pdf": "pdfs/087.pdf",
+    "extractedText": "text/087.txt",
+    "sha256": "db17fe9f5412b2c3d9de6893c7947bdc20473eca4fcf8755dd7b924734629125",
+    "bytes": 136900,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf",
+    "name": "LEISURE HILLS MOBILE HOME PARK",
+    "county": "BENTON",
+    "query": "Leisure Hills",
+    "candidates": [
+      {
+        "cells": [
+          "Leisure Hills MP",
+          "747",
+          "BENTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "747",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025",
+    "searchName": "Leisure Hills MP",
+    "pdf": "pdfs/747.pdf",
+    "extractedText": "text/747.txt",
+    "sha256": "7f6c06fb3c45e6883ede2fec4ba3c7078bdb9deded226f1e73907979ab8aa2ed",
+    "bytes": 146428,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:ca6ccc23d097ff186823c601fe725e0f4f63d89083b8b0e27f2a24d41ee1df58",
+    "name": "NEWPORT WATERWORKS",
+    "county": "JACKSON",
+    "query": "NEWPORT",
+    "candidates": [
+      {
+        "cells": [
+          "Newport",
+          "264",
+          "JACKSON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=264&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "264",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=264&YEAR=2025",
+    "searchName": "Newport",
+    "pdf": "pdfs/264.pdf",
+    "extractedText": "text/264.txt",
+    "sha256": "be47f40e64abde93ca22270188b63b943c80d9c0e99e82e8928cc394d29850e8",
+    "bytes": 112794,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:d1bf471be8487e1b4003bb2e98916593413537252b895fe5a05f3e68f29f081d",
+    "name": "BULL SHOALS WATER SYSTEM",
+    "county": "MARION",
+    "query": "BULL SHOALS",
+    "candidates": [
+      {
+        "cells": [
+          "Bull Shoals",
+          "352",
+          "MARION",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=352&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Lake Bull Shoals",
+          "031",
+          "MARION",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=031&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "352",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=352&YEAR=2025",
+    "searchName": "Bull Shoals",
+    "pdf": "pdfs/352.pdf",
+    "extractedText": "text/352.txt",
+    "sha256": "6f20c5844b66977c40e41417efbe846a0c1f874647936eba1a71766e35392108",
+    "bytes": 148816,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:d0d0e4d6d963087023a220d1e53cce5144fba15898034786ef95734647f08275",
+    "name": "FAYETTEVILLE WATERWORKS",
+    "query": "FAYETTEVILLE",
+    "candidates": [
+      {
+        "cells": [
+          "Fayetteville",
+          "569",
+          "WASHINGTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=569&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "569",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=569&YEAR=2025",
+    "searchName": "Fayetteville",
+    "pdf": "pdfs/569.pdf",
+    "extractedText": "text/569.txt",
+    "sha256": "96b15c8afbb676e6b6b22afbe5cf0390468ff4d5c94b0eda3f61b9f68d318b14",
+    "bytes": 151650,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:053f9d9a4da2a01c88521af3b90956c809eb8a96e3df0304ab4cfa8956163140",
+    "name": "SPRINGDALE WATER UTILITIES",
+    "query": "SPRINGDALE WATER",
+    "candidates": [
+      {
+        "cells": [
+          "Springdale",
+          "575",
+          "BENTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=575&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Springdale",
+          "575",
+          "WASHINGTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=575&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "575",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=575&YEAR=2025",
+    "searchName": "Springdale",
+    "pdf": "pdfs/575.pdf",
+    "extractedText": "text/575.txt",
+    "sha256": "7eb45701877649d6d683e3f9d234c95594cc48f048272c6c5f8276ca9087c1aa",
+    "bytes": 148342,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:ee7fdb65f65842e938d8b03b2ad2316ae23a827ee37db5e36728540a52bf09b7",
+    "name": "ROGERS WATER UTILITIES",
+    "query": "ROGERS WATER",
+    "candidates": [
+      {
+        "cells": [
+          "Rogers",
+          "055",
+          "BENTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=055&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "055",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=055&YEAR=2025",
+    "searchName": "Rogers",
+    "pdf": "pdfs/055.pdf",
+    "extractedText": "text/055.txt",
+    "sha256": "ceebe3a50711a99c9631fd943654c51a0f43c487f7a7be47485d546c6aae7399",
+    "bytes": 151593,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:cb08f1d6d339ab0c908178b44da1deb36c8fddcf607f91025bcfef4d84b681bb",
+    "name": "BENTONVILLE WATER UTILITIES",
+    "query": "BENTONVILLE WATER",
+    "candidates": [
+      {
+        "cells": [
+          "Bentonville",
+          "041",
+          "BENTON",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=041&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-10-19",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "041",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=041&YEAR=2025",
+    "searchName": "Bentonville",
+    "pdf": "pdfs/041.pdf",
+    "extractedText": "text/041.txt",
+    "sha256": "778f48c17e66bec1da1d5701aab1d67dab99f33e284f955f3632501d1f128402",
+    "bytes": 176656,
+    "physicalPages": 3
+  }
+]

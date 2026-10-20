@@ -98,13 +98,13 @@ it('provides Spanish controls without silently translating verified English exce
   expect(screen.getByRole('link', { name: /Formulario de queja en español/ })).toHaveAttribute('href', 'https://media.ark.org/ag/Spanish-Consumer-Complaint-Form-3.pdf')
 })
 
-it('offers a direct supplier hub action and exact historical notice selection', async () => {
+it('removes the redundant supplier tools action from provider information', async () => {
   const user = userEvent.setup()
   const onView = vi.fn()
   render(<StatusCard place={place} source={source} now={now} t={en} onView={onView} />)
   await user.click(screen.getByRole('button', { name: en.providerHelp }))
-  await user.click(screen.getByRole('button', { name: 'Supplier details & tools' }))
-  expect(onView).toHaveBeenCalledOnce()
+  expect(screen.queryByRole('button', { name: 'Supplier details & tools' })).toBeNull()
+  expect(onView).not.toHaveBeenCalled()
 })
 
 it('opens the official list rather than implying an individual historical URL', async () => {

@@ -1,4 +1,4 @@
-import { useId, useRef, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import { SOURCES, statusFor, type Language, type Notice, type Place, type SourceSnapshot } from './domain'
 import type { Strings } from './strings'
 import { catalogEntry } from './place-catalog'
@@ -9,6 +9,7 @@ import { supplierArea, supplierCounty, supplierIssued } from './supplier-display
 import { ProviderContact } from './ProviderContact'
 import { SupplierInformation } from './SupplierProfile'
 import { helpGuideStrings } from './help-guide-strings'
+import { NoticeChecklist } from './NoticeChecklist'
 
 export function Icon({ name }: { name: 'home' | 'browse' | 'history' | 'settings' | 'water' | 'bell' | 'search' }) {
   const paths = { home: 'M3 10 12 3l9 7v11h-6v-7H9v7H3Z', browse: 'M3 3h7v7H3ZM14 3h7v7h-7ZM3 14h7v7H3ZM14 14h7v7h-7Z', history: 'M3 12a9 9 0 1 0 3-7M3 3v6h6M12 7v5l3 2', settings: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2', water: 'M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13ZM9 15c0 2 1 3 3 3', bell: 'M5 17h14l-2-3V9a5 5 0 0 0-10 0v5ZM10 21h4', search: 'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM15 15l6 6' }
@@ -39,6 +40,7 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
   const dialog = useRef<HTMLDialogElement>(null)
   const infoButton = useRef<HTMLButtonElement>(null)
   const infoTitle = useId()
+  const [infoOpen, setInfoOpen] = useState(false)
   const status = statusFor(place.id, source, now)
   // Match the agency's original supplier name, not WAVE's display capitalization.
   // Text fragments scroll/highlight where supported; ADH still controls table order.
@@ -49,7 +51,7 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
   const reason = unavailableReason(source, now)
   const explanation = reason === 'offline' ? t.checkOffline : reason === 'never' ? t.checkNever : reason === 'stale' ? t.checkStale : reason === 'format' ? t.checkFormatFailed : reason === 'failed' ? t.checkRetrievalFailed : t.checkUnconfirmed
   if (place.kind === 'system') return <article className={`status-card supplier-card ${tone}`}>
-    <div className="supplier-heading"><div className="supplier-title-row"><h2>{supplierCounty(place.name)}</h2><button ref={infoButton} className="supplier-info-button" aria-label={t.supplierAbout} aria-haspopup="dialog" onClick={() => dialog.current?.showModal()}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v7M12 6v2" /></svg></button></div><p>{language === 'en' ? `${supplierCounty(place.county)} ${t.supplierCounty}` : `${t.supplierCounty} de ${supplierCounty(place.county)}`} · Arkansas Department of Health</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div>
+    <div className="supplier-heading"><div className="supplier-title-row"><h2>{supplierCounty(place.name)}</h2><button ref={infoButton} className="supplier-info-button" aria-label={t.supplierAbout} aria-haspopup="dialog" onClick={() => { setInfoOpen(true); dialog.current?.showModal() }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v7M12 6v2" /></svg></button></div><p>{language === 'en' ? `${supplierCounty(place.county)} ${t.supplierCounty}` : `${t.supplierCounty} de ${supplierCounty(place.county)}`} · Arkansas Department of Health</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div>
     <div className="supplier-finding">{status.state === 'active' ? <svg className="warning-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.8 2 18.2A2 2 0 0 0 3.7 21h16.6a2 2 0 0 0 1.7-2.8L13.7 3.8a2 2 0 0 0-3.4 0Z" /><path d="M12 9v5m0 3h.01" /></svg> : null}<div className="finding-copy">
       <p className="status-label">{status.state === 'active' ? !sample ? <a className="active-notice-link" href={activeSupplierUrl} target="_blank" rel="noopener noreferrer" title={language === 'es' ? 'Abre la lista de ADH en otra pestaña; los navegadores compatibles resaltan al proveedor.' : 'Opens the ADH list in a new tab; supported browsers highlight the supplier.'}>{t.activeBoil}</a> : t.activeBoil : status.state === 'none' ? t.noneBoil : reason === 'never' ? t.uncheckedStatus : t.supplierUnavailable}</p>
       {status.state === 'active' ? activeNotices.map(n => {
@@ -62,21 +64,19 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
       }) : <p className="status-explanation">{status.state === 'unavailable' ? reason === 'never' ? t.uncheckedExplanation : explanation : t.noNoticeExplanation}</p>}
     </div></div>
     <dl>{source?.lastSuccessAt ? <DateRow label={t.successfulCheck} value={source.lastSuccessAt} app language={language} zoneId={false} leader /> : <div className="date-row freshness-row"><dt><span className="freshness-label">{t.successfulCheck}</span><span className="freshness-leader" aria-hidden="true" /></dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl>
-    <div className="card-check-actions">{!sample && onRefresh ? <button className={status.state === 'active' ? 'secondary' : 'primary'} disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow}</button> : null}<a className={`${status.state === 'active' ? 'primary' : 'secondary'} official-list`} href={SOURCES.ADH} target="_blank" rel="noreferrer">{t.officialSource} <span aria-hidden="true">↗</span></a></div>
-    {!sample ? <details key={`contact:${place.id}`} className="supplier-contact-section supplier-section"><summary>{language === 'en' ? 'Service questions?' : '¿Preguntas del servicio?'}<span className="disclosure-icon" aria-hidden="true" /></summary><ProviderContact place={place} language={language} sample={sample} compact /></details> : null}
-    {onHelp ? <details key={`help:${place.id}`} className="supplier-help-section supplier-section"><summary>{helpGuideStrings[language].entry}<span className="disclosure-icon" aria-hidden="true" /></summary><button className="secondary guide-entry" data-help-place={place.id} onClick={onHelp}>{language === 'es' ? 'Abrir guía' : 'Open guide'}</button></details> : null}
+    <div className="card-check-actions">{!sample && onRefresh ? <button className={status.state === 'active' ? 'secondary' : 'primary'} disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow}</button> : null}<a className="official-source-action official-list" href={SOURCES.ADH} target="_blank" rel="noreferrer">{t.officialSource} <span aria-hidden="true">↗</span></a></div>
+    <SupplierInformation key={`profile:${place.id}`} place={place} language={language} sample={sample} onView={onView} />
     <SupplierAlertHistory key={place.id} place={place} archive={archive} source={source} now={now} t={t} language={language} onViewNotice={onViewNotice} />
     {status.state === 'unavailable' && status.records.length ? <p className="historical-note">{t.unverified}</p> : null}
-    <SupplierInformation key={`profile:${place.id}`} place={place} language={language} sample={sample} onView={onView} />
-    <dialog ref={dialog} className="supplier-info" aria-labelledby={infoTitle} onClose={() => infoButton.current?.focus()} onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); dialog.current?.close() } }}>
+    {!sample ? <details key={`contact:${place.id}`} className="supplier-contact-section supplier-section"><summary>{language === 'en' ? 'Service questions?' : '¿Preguntas del servicio?'}<span className="disclosure-icon" aria-hidden="true" /></summary><ProviderContact place={place} language={language} sample={sample} compact /></details> : null}
+    {onHelp ? <button className="supplier-help-action guide-entry" data-help-place={place.id} onClick={onHelp}>{helpGuideStrings[language].entry}</button> : null}
+    <dialog ref={dialog} className="supplier-info" aria-labelledby={infoTitle} onClose={() => { setInfoOpen(false); infoButton.current?.focus() }} onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); dialog.current?.close() } }}>
       <div className="supplier-popup-heading"><h2 id={infoTitle}>{t.supplierDetails}</h2><button className="secondary" onClick={() => dialog.current?.close()}>{t.supplierClose}</button></div>
       <h3>{place.name}</h3><p className="quiet-note">{supplierCounty(place.county)} · Arkansas Department of Health</p>
-      {status.records.filter(n => supplierArea(n.area, place, language) !== n.area || supplierIssued(n.issued, language) !== n.issued).map(n => <section className="supplier-original" key={n.id}><h4>{t.supplierOriginal}</h4><dl><div><dt>{t.supplierAlertArea}</dt><dd>{n.area || t.supplierAlertMissing}</dd></div><div><dt>{t.issued}</dt><dd>{n.issued || t.supplierAlertMissing}</dd></div></dl></section>)}
-      <CatalogCoverage placeId={place.id} t={t} /><p>{t.coverage}</p><p>{t.supplierSafety}</p>
-      <SourceLink url={SOURCES.ADH}>{t.supplierAlertRead}</SourceLink>
-      <div><button className="text-button" onClick={() => { dialog.current?.close(); onView() }}>{t.noticeDetails}</button></div>
-      {source?.retrievedAt !== source?.lastSuccessAt ? <dl><DateRow label={t.supplierAttempted} value={source?.retrievedAt} app language={language} zoneId={false} /></dl> : null}{!source?.retrievedAt ? <p>{t.checkNoAttempt}</p> : null}
-      <SourceCheckHistory key={`activity:${place.id}`} place={place} source={source} unavailable={status.state === 'unavailable'} t={t} language={language} compact explanation={status.state === 'unavailable' ? explanation : undefined} />
+      {infoOpen ? <>{status.state === 'active' && activeNotices.length ? <NoticeChecklist key={`${sample}:${place.id}:${activeNotices.map(n => `${n.id}:${n.issued}:${n.area}`).join('|')}`} notices={activeNotices} place={place} language={language} t={t} sample={sample} onHelp={() => { dialog.current?.close(); (onHelp ?? onView)() }} /> : <p className="info">{status.state === 'unavailable' ? t.supplierUnavailable : t.noneBoil}</p>}
+      <dl className="supplier-popup-check">{source?.lastSuccessAt ? <DateRow label={t.successfulCheck} value={source.lastSuccessAt} app language={language} zoneId={false} leader /> : <div className="date-row freshness-row"><dt><span className="freshness-label">{t.successfulCheck}</span><span className="freshness-leader" aria-hidden="true" /></dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl>
+      <ProviderContact place={place} language={language} sample={sample} compact />
+      </> : null}
     </dialog>
   </article>
   return <article className={`status-card ${tone}`}>

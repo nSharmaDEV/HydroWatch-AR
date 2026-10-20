@@ -38,8 +38,12 @@ it.each(['en', 'es'] as const)('keeps %s provider sources inside the six-fact di
   await userEvent.setup().click(toggle)
   const panel = document.getElementById(toggle.getAttribute('aria-controls')!)!
   expect(panel).toBeVisible()
-  expect(within(panel).queryByRole('link', { name: /ADH profile|Perfil de ADH/ })).toBeNull()
-  expect(within(panel).getByRole('link', { name: language === 'en' ? /Annual water-quality reports/ : /Informes anuales/ })).toBeVisible()
+  const details = panel.querySelector('.provider-more') as HTMLDetailsElement
+  expect(details.open).toBe(false)
+  expect(within(details).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).not.toBeVisible()
+  expect(within(panel).getByRole('link', { name: language === 'en' ? /View original report/ : /Ver informe original/ })).toBeVisible()
+  await userEvent.setup().click(details.querySelector('summary')!)
+  expect(within(details).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toBeVisible()
   expect(panel.querySelectorAll('.profile-facts>div')).toHaveLength(6)
   expect(within(panel).getByText('WELL #1')).toHaveAttribute('lang', 'en')
   expect(panel).toHaveTextContent(language === 'en' ? 'Not live readings' : 'No son mediciones en vivo')
@@ -48,16 +52,20 @@ it.each(['en', 'es'] as const)('keeps %s provider sources inside the six-fact di
    expect(within(panel).getAllByRole('link', { hidden: true })[0]).not.toBeVisible()
  })
 
-it.each(['en', 'es'] as const)('uses a short %s guide action inside its separate help section', async language => {
+it.each(['en', 'es'] as const)('opens the %s guide directly from the bottom of the supplier card', async language => {
   let opened = false
   render(<StatusCard place={place} now={Date.parse(at)} language={language} t={language === 'en' ? en : es} onView={() => {}} onHelp={() => { opened = true }} />)
-  const help = document.querySelector('.supplier-help-section') as HTMLDetailsElement
-  expect(help).not.toBeNull()
-  expect(help.open).toBe(false)
+  const help = screen.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua' })
+  expect(document.querySelector('.supplier-help-section')).toBeNull()
+  expect(help.closest('details')).toBeNull()
+  expect(help).toBeVisible()
+  expect(help).toHaveAttribute('data-help-place', place.id)
+  expect(help.previousElementSibling).toHaveClass('supplier-contact-section')
+  expect(help.nextElementSibling?.tagName).toBe('DIALOG')
   expect(screen.queryByText('More details')).toBeNull()
   expect(screen.getByText(language === 'en' ? en.uncheckedStatus : es.uncheckedStatus)).toBeVisible()
-  await userEvent.setup().click(help.querySelector('summary')!)
-  await userEvent.setup().click(within(help).getByRole('button', { name: language === 'en' ? 'Open guide' : 'Abrir guía' }))
+  help.focus()
+  await userEvent.setup().keyboard('{Enter}')
   expect(opened).toBe(true)
 })
 

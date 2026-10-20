@@ -68,18 +68,15 @@ it('explains an ADEQ N/A status without displaying an active advisory or a lift'
 })
 
 describe('sample resident journey', () => {
-  it('chooses an explicit system, opens its guidance, and never promises push', async () => {
+  it('opens sample waterbody guidance and never promises push', async () => {
     const user = userEvent.setup()
     render(<App />)
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     expect(screen.getByRole('region', { name: 'Sample mode' })).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Start sample journey' }))
-    await user.click(screen.getByRole('button', { name: 'Select Sample Creek Water' }))
-    await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
-    await user.click(screen.getAllByRole('button', { name: 'About this supplier' })[0])
-    await user.click(screen.getByRole('button', { name: 'Notice details' }))
+    await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
+    await user.click(screen.getByRole('button', { name: 'View details Sample Cove Lake' }))
     expect(screen.getByRole('heading', { name: 'Agency guidance' })).toBeVisible()
-    expect(screen.getByText(/Exact agency instructions have not been verified/)).toBeVisible()
+    expect(screen.getByText(/A water body with no HAB advisory is not an indication that a bloom is not present/)).toBeVisible()
     await user.click(screen.getByText('Review alert options', { selector: 'summary' }))
     await user.click(screen.getByRole('button', { name: 'Notify when lifted' }))
     expect(screen.getByText('Notifications are disabled in sample mode.')).toBeVisible()

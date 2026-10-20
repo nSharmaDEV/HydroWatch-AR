@@ -7,6 +7,81 @@ The root `CHANGELOG.md` remains the history of the earlier HydroWatch apps.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-19 — Supplier section order (local only; not deployed)
+
+- Reorder shared supplier cards to **Provider information → Advisory history → Service questions?**, preserving disclosure content and behavior in English and Spanish.
+
+### 2026-10-19 — Contained report issues and simpler provider information (local only; not deployed)
+
+- Right-align the issue toggle beside the report heading and keep all expanded issues inside the yellow summary panel, with responsive wrapping on narrow screens.
+- Remove the redundant **Supplier details & tools** action from the shared provider-information layout across suppliers. Preserve reports, provider facts and direct guided help.
+- Verified 443 unit/integration tests, the production build and 10 focused desktop/phone browser cases, including EN/ES alignment, panel containment, 320px overflow and updated sample/deep-link journeys. Inspected desktop/phone renders; full browser suite not rerun. No backend, advisory-data or notification changes; no deployment.
+
+### 2026-10-19 — All-supplier annual reports in Provider information (local only; not deployed)
+
+- Connect the 35 scoped suppliers to exact-ID 2025 report records: 32 reviewed (including explicitly conflicting Central Logan findings), Springdale's year mismatch unreviewed, and two unavailable reports with ADH search/directory provenance. Retain original PDF-page links and document-scoped limits; no live-status, backend or notification changes.
+- Keep findings numbered and initially collapsed. Distinguish formal violations, significant deficiencies, upstream supplier results and document conflicts. Show inspection dates/progress rather than invented violation dates; group identical findings with separate reported intervals without inflating counts. Preserve EN/ES, desktop columns and mobile stacking.
+- Correct four research-manifest city IDs to the existing app catalog IDs; source PDFs, URLs and hashes are unchanged. Coverage tests compare every manifest record and all four catalog suppliers.
+- Verified 373 unit/integration tests in 44 files, production build and 40 focused desktop/phone EN/ES browser cases, including 320px overflow, keyboard disclosure, source links and unchanged synthetic active-notice status. Inspected desktop/mobile renders. Full browser suite not rerun; no deployment.
+
+### 2026-10-19 — All-supplier ADH annual-report research (local archive only)
+
+- Use ADH's public form search to retrieve 33 requested-year 2025 PDFs across all 35 currently represented drinking-water systems; preserve original PDFs, extracted text, exact supplier/PWS mappings, URLs and SHA-256 hashes under `docs/research/adh-ccr-2025/`.
+- Document findings, reported dates/actions and significant deficiencies separately from formal violations and upstream-supplier findings. Flag contradictory Central Logan HAA5 information, Springdale's year mismatch and two unmatched searches rather than infer reassuring results or substitute similarly named systems.
+- Research/documentation only: no runtime catalog, UI, live advisory, backend or notification changes; no deployment. Verified 35 unique supplier mappings, persisted-system coverage, all 33 PDF signatures/sizes/hashes and extracted page counts, local links and review totals. No app tests rerun for this research-only batch.
+
+### 2026-10-19 — Consistent supplier profiles and reports (local only; not deployed)
+
+- Reuse the source-water and six-fact directory layout across Leisure Hills, Bentonville, Fayetteville, Rogers and Springdale with exact supplier IDs and independently verified facts/provenance. Unknown suppliers show an explicit unverified source-water state.
+- Review the 2025 Bentonville, Fayetteville and Rogers reports and display document-scoped no-violations findings. Preserve Leisure Hills' four issues. Flag Springdale's conflicting 2024 title / 2025 results as unreviewed, with the original PDF link rather than inferred findings.
+- Keep contacts, history, provider details and guided help available across active, no-notice and unavailable advisory states in EN/ES. Active-notice checklists remain conditional; sample data and lakes do not inherit real supplier records. No live-status, backend, persistence or notification changes.
+- Verified 340 unit/integration tests, the production build and 20 focused desktop/phone EN/ES browser cases, including 320px overflow checks and Leisure Hills regressions. Inspected rendered Bentonville/Springdale layouts. Full browser suite not rerun; no deployment or submission.
+
+### 2026-10-19 — Numbered annual-report issues (local only; not deployed)
+
+- Present expanded annual-report problems as a semantic numbered list, preserving the fact hierarchy and report links in both languages.
+
+### 2026-10-19 — Annual-issue fact hierarchy (local only; not deployed)
+
+- Match the notice wireframe for expanded annual issues: short navy headings, dotted leaders to PDF-page links, and labeled start/end dates above the finding and corrective action in a two-column desktop grid. Stack fields and links on phones.
+- Preserve full reported findings, report-qualified “Current” wording, the default-collapsed summary, source-water information and independent provider details in English and Spanish.
+- Verified 304 unit/integration tests, the production build and four focused EN/ES desktop/phone browser cases, including column/stack geometry and 320px overflow checks. Inspected rendered screenshots; full browser suite not rerun. Not deployed.
+
+### 2026-10-19 — Issues-first annual report (local only; not deployed)
+
+- Lead Provider information with Leisure Hills' manually reviewed 2025 annual report: four collapsed compliance issues, category counts, reported periods/corrective actions and original PDF/page links. Label “Current” as report wording, not a verified current condition.
+- Add groundwater/aquifer context and independently expandable six-fact provider details with directory provenance. Preserve EN/ES, sample isolation and live advisory status.
+- Offer only the verified provider/year. Unreviewed suppliers link to ADH search without reassuring findings; reviewed-empty and unavailable variants have synthetic component coverage only. No automatic PDF retrieval, new backend or notification behavior.
+- Verified 304 unit/integration tests, TypeScript/Vite production build and 16 focused desktop/phone EN/ES browser cases (including 320px). Inspected rendered report layouts; full browser suite not rerun. No deployment or submission.
+
+### 2026-10-19 — Simplified info popup and aligned check date (local only; not deployed)
+
+- Remove all requested lower popup sections: CDC guidance, original source wording, coverage/safety notes, duplicate official/detail links and data-source activity. Preserve the checklist, provider contacts and unavailable states; published wording remains in advisory history/detail views.
+- Right-align the popup's last successful check with a dotted leader on desktop and mobile. Other date rows are unchanged.
+- Update popup regression/browser checks and retain standalone source-history test coverage. Update README usage; no deployment.
+- Verified 298 unit/integration tests, four English/Spanish desktop/mobile popup browser checks, the TypeScript/Vite build, and a clean whitespace diff.
+
+### 2026-10-19 — In-app notice checklist (local only; not deployed)
+
+- Expand the supplier info popup with published area, reason and issue date, plus a three-step English/Spanish checklist with official-notice, affected-area and help actions.
+- Show manual completion progress without changing advisory status; progress resets on close/reload. Include the saved successful-check time, provider contacts and general boil-water guidance. Failed/stale checks remain unavailable instead of presenting an active checklist.
+- Preserve official external links, original source wording, and keyboard close/return focus. Add unit and guarded desktop/mobile browser coverage.
+- Verification: 297 unit/integration tests, all four new English/Spanish desktop/mobile checklist cases, and the TypeScript/Vite build pass. The full browser suite passes 50/60 cases; ten reference-card geometry cases still assume the earlier primary-button class and side-by-side mobile actions, conflicting with the prior action-button redesign.
+
+### 2026-10-19 — Bold supplier check/source actions (local only; not deployed)
+
+- Set “Check now” and “View official source” to bold (700) on supplier cards, preserving colors, layout and behavior.
+
+### 2026-10-19 — Revised action colors (local only; not deployed)
+
+- Change the supplier help button to `#047885` and the light-aqua official-source label and arrow to white as requested. Layout and guide behavior are unchanged. White on light aqua does not meet WCAG AA text contrast.
+
+### 2026-10-19 — Logo-colored supplier actions (local only; not deployed)
+
+- Use the logo's light aqua (`#46cccd`) with navy text for supplier-card “View official source” actions across evidence states.
+- Replace the expandable help section and “Open guide” step with a full-width navy (`#02285a`) button at the bottom of the supplier card. Open the existing English/Spanish guide directly and preserve keyboard navigation and return focus. Stack source/check actions below 420px; lake cards are unchanged.
+- Verified 294 unit/integration tests, six guarded English/Spanish browser cases at 320/390/1366px, and the TypeScript/Vite build. No deployment.
+
 ### 2026-10-19 — Two-line active notice context (local only; not deployed)
 
 - Put affected area and reason on separate lines beneath the active supplier headline, retaining centered alignment, original source content and missing-field handling.

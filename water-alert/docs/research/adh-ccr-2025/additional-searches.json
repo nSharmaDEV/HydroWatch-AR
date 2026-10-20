@@ -1,0 +1,51 @@
+[
+  {
+    "name": "RIVERSIDE RESORT AT KINGS RIVER",
+    "searchQuery": "Kings",
+    "kind": "system",
+    "query": "Kings",
+    "candidates": [
+      {
+        "cells": [
+          "Kings Hill",
+          "827",
+          "CARROLL",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=827&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Kingsland",
+          "108",
+          "CLEVELAND",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=108&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Outside Kingsland",
+          "802",
+          "CLEVELAND",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=802&YEAR=2025"
+      }
+    ]
+  },
+  {
+    "name": "RIVERSIDE RESORT AT KINGS RIVER",
+    "searchQuery": "Resort",
+    "kind": "system",
+    "query": "Resort",
+    "candidates": []
+  },
+  {
+    "name": "USCOE OC - LITTLE FIR",
+    "searchQuery": "Fir",
+    "kind": "system",
+    "query": "Fir",
+    "candidates": []
+  }
+]

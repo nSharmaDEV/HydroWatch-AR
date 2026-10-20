@@ -38,12 +38,12 @@ it('does not target a fictional supplier on the live ADH page in sample mode', (
   expect(screen.getByText(en.activeBoil)).toBeVisible()
   expect(screen.queryByRole('link', { name: en.activeBoil })).toBeNull()
 })
-it('removes the supplier footer while retaining the no-notice explanation and safety details', () => {
+it('removes the supplier footer and redundant popup notes while retaining the no-notice explanation', () => {
   const { container } = render(<StatusCard place={place} source={{ ...source, records: [] }} now={Date.parse(at)} t={en} onView={() => {}} />)
   expect(screen.queryByText(en.cardQualification)).toBeNull()
   expect(container.querySelectorAll('.card-qualification')).toHaveLength(0)
   expect(screen.getByText(en.noNoticeExplanation)).toBeVisible()
-  expect(container.querySelector('.supplier-info')).toHaveTextContent(en.supplierSafety)
+  expect(container.querySelector('.supplier-info')).not.toHaveTextContent(en.supplierSafety)
 })
 it('uses one meaningful empty check field and never labels a failed check unattempted', () => {
   const { container } = render(<StatusCard place={place} source={{ ...source, lastSuccessAt: null, error: 'Timeout', records: [] }} now={Date.parse(at)} t={en} onView={() => {}} />)

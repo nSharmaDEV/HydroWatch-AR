@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { SOURCES, type Notice, type Place, type SourceSnapshot } from '../../src/domain'
 import { en, es } from '../../src/strings'
+import { PLACE_CATALOG } from '../../src/place-catalog'
 
 // Synthetic incident on the exact directory-backed supplier ID. Not a live record.
 const at = '2026-10-17T12:00:00Z'
@@ -50,17 +51,209 @@ test.afterEach(async ({ page }) => {
   expect(evidence.errors, 'No uncaught browser exceptions').toEqual([])
 })
 
-async function watchSupplier(page: Page) {
+async function watchSupplier(page: Page, supplier = place) {
   await page.goto('/')
   await page.getByRole('button', { name: /My public water supplier/ }).click()
-  await page.getByRole('searchbox').fill('Leisure')
-  await page.getByRole('button', { name: `Select ${place.name}`, exact: true }).click()
+  await page.getByRole('searchbox').fill(supplier.name)
+  await page.getByRole('button', { name: `Select ${supplier.name}`, exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()
   await expect(page.getByText('Does this match your water bill?')).toBeVisible()
   await page.getByRole('button', { name: 'Yes — watch this place', exact: true }).click()
 }
 
 for (const [language, t] of [['en', en], ['es', es]] as const) {
+  for (const entry of PLACE_CATALOG.filter(entry => entry.place.kind === 'system')) {
+    test(`supplier parity without an active notice: ${entry.place.name} (${language})`, async ({ page }) => {
+      await page.route('**/api/status', route => route.fulfill({ json: {
+        ...observations(), archive: [], places: [entry.place],
+        sources: observations().sources.map(source => ({ ...source, records: [] })),
+      } }))
+      await watchSupplier(page, entry.place)
+      await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+      await expect(page.locator('.supplier-finding .status-label')).toContainText(t.noneBoil)
+      await page.getByRole('button', { name: t.providerHelp, exact: true }).click()
+      const report = page.locator('.annual-report')
+      await expect(report.getByRole('combobox')).toHaveValue('2025')
+      await expect(report.getByText(entry.place.name.startsWith('SPRINGDALE')
+        ? language === 'en' ? 'Report not yet reviewed' : 'Informe aún no revisado'
+        : language === 'en' ? 'No violations reported' : 'No se reportaron infracciones', { exact: true })).toBeVisible()
+      await expect(page.locator('.provider-water-source')).toContainText('Beaver Water District')
+      await expect(page.locator('.provider-water-source a')).toHaveAttribute('href', entry.url)
+      await page.locator('.provider-more>summary').click()
+      await expect(page.locator('.profile-facts')).toBeVisible()
+      await expect(page.locator('.profile-facts')).not.toContainText('WELL #1')
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      if (test.info().project.name === 'phone-sized') {
+        await page.setViewportSize({ width: 320, height: 844 })
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      }
+      await page.screenshot({ path: test.info().outputPath(`supplier-parity-${language}.png`), fullPage: true })
+      await page.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true }).click()
+      await expect(page.locator('.help-guide')).toBeVisible()
+    })
+  }
+
+  for (const scenario of [
+    { name: 'GURDON WATERWORKS', id: 'ADH:734db608102088dbce04b8d92156cc248a9cc375a70905fe288aca9f5f550c4a', count: 1, pws: '087', kind: 'deficiency' },
+    { name: 'SALEM WATER USERS LLC', id: 'ADH:dbf53925bdd33aa59425250c763c498e78d49d9b9dafa33585f495b829f2d212', count: 1, pws: '492', kind: 'intervals' },
+    { name: 'LESLIE WATER SYSTEM', id: 'ADH:02cb014bef8a82412f4e855b029446ca9bdeade1bd8655f44abb39350e718682', count: 4, pws: '500', kind: 'upstream' },
+    { name: 'CENTRAL LOGAN COUNTY PWFB', id: 'ADH:410e67db91f7d62c58b60070829a626df9b22f370e9f034925149311abe84287', count: 2, pws: '845', kind: 'conflict' },
+    { name: 'RIVERSIDE RESORT AT KINGS RIVER', id: 'ADH:12bb8f46cb9fd02f88bf88b6d20172df4c34e235781dd5d43199b24761259eba', count: 0, pws: '', kind: 'missing' },
+  ]) {
+    test(`reviewed supplier report formatting: ${scenario.kind} (${language})`, async ({ page }) => {
+      const supplier: Place = { ...place, name: scenario.name, id: scenario.id, county: ({ deficiency: 'Clark', intervals: 'Saline', upstream: 'Searcy', conflict: 'Logan', missing: 'Carroll' })[scenario.kind] ?? '' }
+      const synthetic = { ...notice, name: supplier.name, placeId: supplier.id }
+      const fixture = observations()
+      await page.route('**/api/status', route => route.fulfill({ json: {
+        ...fixture, places: [supplier], archive: [synthetic],
+        sources: fixture.sources.map(source => source.agency === 'ADH' ? { ...source, records: [synthetic] } : source),
+      } }))
+      await watchSupplier(page, supplier)
+      await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+      await expect(page.locator('.supplier-finding .status-label')).toContainText(t.activeBoil)
+      await page.getByRole('button', { name: t.providerHelp, exact: true }).click()
+      const report = page.locator('.annual-report')
+      if (scenario.kind === 'missing') {
+        await expect(report.getByText(language === 'en' ? 'Report unavailable' : 'Informe no disponible', { exact: true })).toBeVisible()
+        await expect(report.locator('.report-toggle')).toHaveCount(0)
+      } else {
+        await expect(report.locator('.report-issues')).not.toBeVisible()
+        const toggle = report.locator('.report-toggle')
+        await toggle.focus()
+        await page.keyboard.press('Enter')
+        await expect(report.locator('.report-issues>ol>li')).toHaveCount(scenario.count)
+        await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+        const first = report.locator('.report-issues>ol>li').first()
+        const expectedPage = scenario.kind === 'intervals' ? 3 : 2
+        await expect(first.locator('.report-issue-header a')).toHaveAttribute('href', `https://health.arkansas.gov/eng/d.aspx?P=${scenario.pws}&YEAR=2025#page=${expectedPage}`)
+        if (scenario.kind === 'intervals') {
+          await expect(report.locator('.report-periods li')).toHaveCount(2)
+          await expect(report.locator('.report-periods')).toContainText('04/01/2025 – 04/30/2025')
+          await expect(report.locator('.report-periods')).toContainText('10/01/2025 – 12/31/2025')
+        } else if (scenario.kind === 'deficiency') {
+          await expect(first.locator('.report-issue-kind')).toHaveText(language === 'en' ? 'Significant deficiency' : 'Deficiencia significativa')
+          await expect(first.locator('dt').first()).toHaveText(language === 'en' ? 'Identified on' : 'Identificado el')
+        } else if (scenario.kind === 'upstream') {
+          await expect(first.locator('.report-issue-kind')).toHaveText(language === 'en' ? 'Upstream supplier finding' : 'Hallazgo del proveedor de origen')
+          await expect(first).toContainText('Community Water')
+        } else await expect(report.locator('.report-finding')).toContainText(language === 'en' ? 'clarification needed' : 'se requiere aclaración')
+      }
+      await report.scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      if (test.info().project.name === 'phone-sized') {
+        await page.setViewportSize({ width: 320, height: 844 })
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      }
+      await page.screenshot({ path: test.info().outputPath(`reviewed-${scenario.kind}-${language}.png`), fullPage: true })
+      await expect(page.locator('.supplier-finding .status-label')).toContainText(t.activeBoil)
+    })
+  }
+
+  test(`issues-first annual report and independent provider details (${language})`, async ({ page }) => {
+    await watchSupplier(page)
+    await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+    await page.getByRole('button', { name: t.providerHelp, exact: true }).click()
+    const report = page.locator('.annual-report')
+    await expect(report.getByRole('combobox')).toHaveValue('2025')
+    await expect(report.getByRole('option')).toHaveCount(1)
+    await expect(report.locator('.report-finding')).toHaveText(language === 'en' ? '4 compliance issues reported' : '4 problemas de cumplimiento reportados')
+    await expect(report.locator('.report-issues')).not.toBeVisible()
+    await expect(page.locator('.profile-facts')).not.toBeVisible()
+    await report.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-collapsed.png`), fullPage: true })
+    const toggle = report.locator('.report-toggle')
+    await expect(toggle).toHaveText(language === 'en' ? 'View 4 issues' : 'Ver 4 problemas')
+    const header = report.locator('.report-summary-header')
+    await expect(header.locator('.report-toggle')).toHaveCount(1)
+    const headerBox = await header.boundingBox()
+    const toggleBox = await toggle.boundingBox()
+    expect(toggleBox!.x + toggleBox!.width).toBeCloseTo(headerBox!.x + headerBox!.width, 0)
+    if (test.info().project.name === 'desktop') {
+      const titleBox = await report.locator('.report-finding').boundingBox()
+      expect(Math.abs(titleBox!.y + titleBox!.height / 2 - toggleBox!.y - toggleBox!.height / 2)).toBeLessThan(2)
+    }
+    await toggle.focus()
+    await page.keyboard.press('Enter')
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await expect(report.locator('.report-summary-issues .report-issues>ol>li')).toHaveCount(4)
+    await expect(page.getByRole('button', { name: /Supplier details & tools|Detalles y herramientas del proveedor/ })).toHaveCount(0)
+    const issues = report.locator('li')
+    await expect(issues).toHaveCount(4)
+    for (const issue of await issues.all()) {
+      await expect(issue).toBeVisible()
+      await expect(issue.getByRole('link')).toHaveAttribute('href', 'https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025#page=2')
+      await expect(issue.locator('.report-issue-header a')).toBeVisible()
+      await expect(issue.locator('dt')).toHaveCount(4)
+    }
+    const facts = issues.first().locator('dl>div')
+    const from = await facts.nth(0).boundingBox()
+    const through = await facts.nth(1).boundingBox()
+    const finding = await facts.nth(2).boundingBox()
+    if (test.info().project.name === 'phone-sized') {
+      expect(through!.x).toBeCloseTo(from!.x, 0)
+      expect(through!.y).toBeGreaterThan(from!.y + from!.height)
+    } else {
+      expect(through!.y).toBeCloseTo(from!.y, 0)
+      expect(through!.x).toBeGreaterThan(from!.x + from!.width)
+      expect(finding!.x).toBeCloseTo(from!.x, 0)
+      expect(finding!.y).toBeGreaterThan(from!.y + from!.height)
+      await expect(issues.first().locator('.report-issue-leader')).toBeVisible()
+    }
+    await expect(report.locator('li').last()).toContainText('“Current”')
+    await expect(report.locator('li').nth(2)).toContainText(language === 'en' ? 'None listed' : 'Ninguna indicada')
+    expect(await toggle.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44)
+    await expect(issues.first().locator('dd').first()).toHaveCSS('font-size', '16px')
+    await page.locator('.provider-more>summary').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('.profile-facts')).toBeVisible()
+    await expect(page.locator('.provider-more').getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-expanded.png`), fullPage: true })
+    if (test.info().project.name === 'phone-sized') {
+      await page.setViewportSize({ width: 320, height: 844 })
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-320.png`), fullPage: true })
+    }
+    await expect(page.locator('.supplier-finding .status-label')).toContainText(t.activeBoil)
+  })
+
+  test(`supplier info checklist stays in app (${language})`, async ({ page }) => {
+    await watchSupplier(page)
+    await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+    const trigger = page.getByRole('button', { name: t.supplierAbout, exact: true })
+    await trigger.click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('.boil-guidance, .supplier-original, .source-check-history')).toHaveCount(0)
+    const checkRow = dialog.locator('.supplier-popup-check .freshness-row')
+    const geometry = await checkRow.evaluate(row => {
+      const label = row.querySelector('.freshness-label')!.getBoundingClientRect()
+      const leader = row.querySelector('.freshness-leader')!
+      const value = row.querySelector('dd')!
+      return { labelRight: label.right, leaderLeft: leader.getBoundingClientRect().left, leaderRight: leader.getBoundingClientRect().right, valueLeft: value.getBoundingClientRect().left, valueRight: value.getBoundingClientRect().right, rowRight: row.getBoundingClientRect().right, align: getComputedStyle(value).textAlign, leaderDisplay: getComputedStyle(leader).display }
+    })
+    expect(geometry.align).toBe('right')
+    expect(geometry.leaderDisplay).not.toBe('none')
+    expect(geometry.leaderLeft).toBeGreaterThan(geometry.labelRight)
+    expect(geometry.valueLeft).toBeGreaterThan(geometry.leaderRight)
+    expect(geometry.valueRight).toBeCloseTo(geometry.rowRight, 0)
+    await expect(dialog.getByText(notice.reason, { exact: true })).toBeVisible()
+    await expect(dialog.getByRole('checkbox')).toHaveCount(3)
+    await dialog.getByRole('checkbox').first().check()
+    await expect(dialog.getByRole('status')).toHaveText(language === 'en' ? '1 of 3 complete' : '1 de 3 completados')
+    await dialog.getByRole('button', { name: language === 'en' ? 'View area' : 'Ver área', exact: true }).click()
+    await expect(dialog.locator('.notice-area-details')).toContainText(notice.area)
+    await expect(dialog.getByRole('checkbox').nth(1)).not.toBeChecked()
+    await expect(dialog.getByRole('link', { name: language === 'en' ? 'View notice' : 'Ver aviso', exact: true })).toHaveAttribute('href', SOURCES.ADH)
+    expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+    await page.screenshot({ path: test.info().outputPath(`notice-checklist-${language}.png`) })
+    await checkRow.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: test.info().outputPath(`notice-check-date-${language}.png`) })
+    await page.keyboard.press('Escape')
+    await expect(dialog).not.toBeVisible()
+    await expect(trigger).toBeFocused()
+  })
+
   test(`concise copy and native disclosures across screens (${language})`, async ({ page }) => {
     await page.addInitScript(() => { Reflect.deleteProperty(window, 'PushManager') })
     await watchSupplier(page)
@@ -129,8 +322,7 @@ test('exact supplier → saved notice → provider contact → editable local dr
   await expect.poll(() => logo.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
   await page.getByRole('button', { name: 'Advisory history', exact: true }).click()
   await expect(page.getByRole('link', { name: /Open ADH notice list/ })).toHaveAttribute('href', SOURCES.ADH)
-  await page.getByRole('button', { name: 'Provider information', exact: true }).click()
-  await page.getByRole('button', { name: 'Supplier details & tools', exact: true }).click()
+  await page.goto(`/?notice=${notice.id}`)
   await expect(page.getByRole('heading', { name: displayName, exact: true })).toBeVisible()
   await expect(page.getByText(notice.reason, { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('link', { name: /View official source/ })).toHaveAttribute('href', SOURCES.ADH)
@@ -153,9 +345,8 @@ test('exact supplier → saved notice → provider contact → editable local dr
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.reload()
-  await page.getByRole('button', { name: 'Provider information', exact: true }).click()
-  await page.getByRole('button', { name: 'Supplier details & tools', exact: true }).click()
   await expect(body).toHaveCount(0)
+  await page.goto(`/?notice=${notice.id}`)
   await page.getByRole('combobox', { name: 'What do you need help with?', exact: true }).selectOption('request')
   await expect(body).not.toHaveValue(/SYNTHETIC E2E ONLY/)
 })
@@ -334,7 +525,18 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     const card = page.locator('.supplier-card')
     const email = card.locator('a[href^="mailto:"]')
     await expect(email).not.toBeVisible()
-    await expect(card.locator('.supplier-help-section .guide-entry')).not.toBeVisible()
+    await expect(card.locator('.supplier-help-section')).toHaveCount(0)
+    const help = card.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true })
+    await expect(help).toBeVisible()
+    await expect(help).toHaveCSS('background-color', 'rgb(4, 120, 133)')
+    await expect(help).toHaveCSS('color', 'rgb(255, 255, 255)')
+    const official = card.getByRole('link', { name: t.officialSource })
+    await expect(card.locator('.card-check-actions > button')).toHaveCSS('font-weight', '700')
+    await expect(official).toHaveCSS('font-weight', '700')
+    await expect(official).toHaveCSS('background-color', 'rgb(70, 204, 205)')
+    await expect(official).toHaveCSS('color', 'rgb(255, 255, 255)')
+    await expect(official.locator('span')).toHaveCSS('color', 'rgb(255, 255, 255)')
+    expect(await help.evaluate(el => el.previousElementSibling?.classList.contains('provider-information'))).toBe(true)
     await card.locator('.supplier-contact-section>summary').click()
     await expect(email).toHaveText('LEISUREHILLSWATERCO@GMAIL.COM')
     const emailBounds = await email.boundingBox()
@@ -347,10 +549,11 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await expect(panel.locator('details')).toHaveCount(0)
     await expect(panel.getByRole('link', { name: language === 'en' ? /Open ADH notice list/ : /Abrir lista de avisos de ADH/ }).first()).toHaveAttribute('href', SOURCES.ADH)
     await card.getByRole('button', { name: t.providerHelp, exact: true }).click()
+    await expect(card.locator('.profile-facts')).not.toBeVisible()
+    await card.locator('.provider-more>summary').click()
     await expect(card.locator('.profile-facts')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: test.info().outputPath(`expanded-${language}-${width}.png`), fullPage: true })
-    await card.locator('.supplier-help-section>summary').click()
     await card.locator('.guide-entry').click()
     const billing = language === 'en' ? 'Billing or consumer dispute' : 'Facturación o disputa de consumo'
     const next = language === 'en' ? 'Next' : 'Siguiente'
@@ -392,14 +595,16 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await expect(page.locator('.status-label').filter({ hasText: 'Data unavailable' })).toBeVisible()
   await page.getByLabel('Sample HAB source available', { exact: true }).check()
   await expect(page.locator('.status-label').filter({ hasText: 'Active harmful-algal-bloom advisory' })).toBeVisible()
-  await page.locator('.supplier-card .provider-info-toggle').first().click()
-  await page.getByRole('button', { name: 'Supplier details & tools', exact: true }).first().click()
+  await page.getByText('Place details & help', { exact: true }).click()
+  await page.getByRole('button', { name: 'Understand this notice Sample Cove Lake', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Agency guidance', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Sample Creek Water', exact: true }) }).getByRole('button', { name: 'Get help with a water issue', exact: true }).click()
   await expect(page.getByRole('textbox')).toHaveCount(0)
-  const chooser = page.getByRole('combobox', { name: 'What do you need help with?', exact: true })
-  for (const kind of ['service', 'request', 'complaint', 'legal']) {
-    await chooser.selectOption(kind)
-    await expect(page.getByRole('textbox', { name: 'Draft body', exact: true })).toHaveValue(/SAMPLE — NOT A REAL CLAIM/)
-  }
+  await page.getByRole('button', { name: 'Billing or consumer dispute', exact: true }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
+  await expect(page.getByRole('textbox', { name: 'Draft body', exact: true })).toHaveValue(/SAMPLE — NOT A REAL CLAIM/)
   await expect(page.locator('a[href^="mailto:"],a[href^="tel:"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'History', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Sample mode', exact: true })).toBeVisible()
@@ -409,11 +614,7 @@ test('sample scenarios stay fictional across detail, help choices, history and e
 })
 
 test('keyboard-focused draft editor stays above mobile bottom navigation', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Try sample mode', exact: true }).click()
-  await page.getByRole('button', { name: 'Use sample watch list', exact: true }).click()
-  await page.locator('.supplier-card .provider-info-toggle').first().click()
-  await page.getByRole('button', { name: 'Supplier details & tools', exact: true }).first().click()
+  await page.goto(`/?notice=${notice.id}`)
   await page.getByRole('combobox', { name: 'What do you need help with?', exact: true }).selectOption('request')
   for (const width of [320, 390, 760]) {
     await page.setViewportSize({ width, height: 900 })

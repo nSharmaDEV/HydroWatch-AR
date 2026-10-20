@@ -69,8 +69,7 @@ it('shares a sample notice under the approved name while preserving its sample w
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
-    await user.click(screen.getAllByRole('button', { name: 'About this supplier' })[0])
-    await user.click(screen.getByRole('button', { name: 'Notice details' }))
+    await user.click(screen.getByRole('button', { name: 'View details Sample Cove Lake' }))
     await user.click(screen.getByRole('button', { name: 'Share notice' }))
     expect(share).toHaveBeenCalledWith(expect.objectContaining({ title: name, text: expect.stringContaining('SAMPLE') }))
   } finally { Reflect.deleteProperty(navigator, 'share') }

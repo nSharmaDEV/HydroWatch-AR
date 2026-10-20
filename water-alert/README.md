@@ -1,5 +1,88 @@
 # WellPower: WAVE — local implementation and Vercel backend
 
+**All-supplier annual reports — October 19, 2026 (local only; not deployed):**
+The [2025 ADH review](docs/research/adh-ccr-2025/README.md) covers all 35 currently
+represented drinking-water systems. It preserves 33 retrieved PDFs, extracted
+text, exact supplier/PWS mappings, source URLs and hashes. Seventeen reports have
+violations and/or significant deficiencies; fourteen report neither; Central
+Logan and Springdale need clarification; no matching 2025 report was located for
+Riverside Resort or Little Fir. These are historical document findings, not
+current safety assessments. **Provider information now connects all 35 suppliers
+to their dated report records:** 32 reviewed records (including Central Logan's
+explicit unresolved document conflict), Springdale unreviewed because its year
+is inconsistent, and two unavailable records with ADH search/directory links.
+Fourteen reviewed documents report no violations or significant deficiencies.
+Numbered findings are initially collapsed, with physical PDF-page links, clear
+finding types and separate reported dates/actions. Significant deficiencies use
+inspection dates and reported progress, not invented violation periods. Repeated
+findings list their separate intervals once; upstream results retain Community
+Water attribution. Desktop facts use two columns and stack on mobile in EN/ES.
+No live advisory, backend or notification behavior changes; no automatic PDF
+retrieval. Unknown future suppliers remain unreviewed; sample mode and lakes do
+not inherit real supplier reports. Human Spanish review remains unverified.
+
+Verification: **373 unit/integration tests in 44 files**, production build and
+**40 focused desktop/phone EN/ES browser cases** pass. Browser checks cover
+deficiencies, multiple intervals, upstream attribution, conflicting/missing
+reports, four city suppliers and Leisure Hills, including 320px overflow checks.
+Rendered desktop and mobile layouts were inspected. Browser fixtures block
+external requests and API mutations; the full browser suite was not rerun.
+
+**Consistent supplier features — October 19, 2026 (local only; not deployed):**
+Leisure Hills, Bentonville, Fayetteville, Rogers and Springdale now use the same
+provider-information layout, source-water section and expandable directory facts.
+Contacts, advisory history, supplier details and guided help remain available
+without an active notice and when the advisory feed is unavailable. The notice
+checklist still requires a current active notice; no notice or safety finding is
+invented to fill it. Other observed suppliers use the same tools with explicit
+unverified directory-profile states, with annual reports as described above.
+Lakes remain separate.
+
+`src/provider-profiles.ts` stores exact-ID directory facts and per-record review
+dates. The four city profiles were checked against ADH on October 19; Leisure
+Hills retains its October 14 directory provenance. No supplier inherits another's
+population, source, inspection date or annual-report findings.
+
+**Issues-first Provider information — October 19, 2026 (local only; not deployed):**
+Open **Provider information** on Leisure Hills to see its reviewed **2025** annual
+report: four compliance issues, initially collapsed, with reported periods,
+corrective actions and links to page 2 of the original ADH PDF. “Current” is
+explicitly the report's wording, not verified present-day status. Source-water
+information follows; **More provider details** independently reveals the original
+six directory facts and provenance. Both English and Spanish are implemented.
+Expanded issues form a numbered list with the notice-style hierarchy: short headings with report-page
+links, then **Reported from**, **Reported through**, **What was reported** and
+**Reported corrective action**. Facts form two columns on desktop and stack on
+phones; full findings remain visible without shortening the source meaning.
+
+Coverage uses exact-supplier-ID records in `src/annual-reports.ts`, checked
+October 19. Leisure Hills' [PWS 747 / 2025 report](https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025)
+retains its four findings. Reviewed 2025 reports for Bentonville (PWS 041),
+Fayetteville (569) and Rogers (055) show **No violations reported**, scoped to
+those documents—not current safety or compliance. Springdale's PWS 575 / 2025
+link returns a document titled 2024 with 2025 test results; the panel explains
+the mismatch and keeps findings **Report not yet reviewed** with the original
+PDF link. Only requested year 2025 is offered. The other observed suppliers are
+now covered by `src/observed-supplier-reports.ts`; see the all-supplier summary
+above for reviewed, contradictory and unavailable records.
+These historical findings do not affect live notices or notifications; no automatic
+PDF retrieval or report-health check is performed. Sample mode excludes real report
+findings. Fluent human Spanish review remains unverified.
+
+Latest hierarchy verification: 304 unit/integration tests, the TypeScript/Vite
+production build and four focused EN/ES desktop/phone browser cases pass,
+including desktop-column/mobile-stack geometry. Report layouts were inspected
+at desktop and 320px; browser checks block external requests and API mutations.
+The full browser suite was not rerun for this change.
+
+Latest supplier-parity verification: **340 unit/integration tests in 42 files**,
+the TypeScript/Vite production build and **20 focused desktop/phone EN/ES browser
+cases** pass. Unit coverage includes all four city suppliers in active, no-notice
+and unavailable states. Browser coverage checks no-notice access, real record
+links, guided-help entry and 320px overflow, plus Leisure Hills report regressions.
+Rendered Bentonville and Springdale layouts were inspected. Browser fixtures block
+external requests and API mutations; the full browser suite was not rerun.
+
 **Visible contacts, advisory history and guided help — October 18, 2026
 (local only; not deployed):** Verified phone numbers and full email addresses
 are visible links, stacked on phones with wrapping rather than truncation.
@@ -11,11 +94,20 @@ the October 18 directory check reconfirmed its phone, not its email.
 Advisory history prioritizes status, agency-issued date, area and reason, with
 one per-notice disclosure for unabridged supplied fields and observation evidence.
 Unknown lift dates remain unknown. **Provider information** separates directory
-facts from help. **Get help with a water issue** opens a five-step EN/ES guide
+facts from help. The full-width teal **Get help with a water issue** button at
+the bottom of each supplier card directly opens a five-step EN/ES guide
 for service, water-quality/health, consumer disputes or legal help. It reuses all
 five editable draft templates, local copy/download and preparation packets.
 Back/Next retains edits; leaving, changing context/language, reloading or closing
 can discard them. Warnings are informational, not navigation protection.
+
+**Supplier actions — October 19, 2026 (local only; not deployed):**
+**View official source** uses the logo's light aqua with white text and arrow in every
+supplier status. The bottom help button replaces the expandable help section
+and its separate “Open guide” step. Source/check actions stack below 420px.
+This supersedes the older state-dependent source emphasis described below.
+The help button uses `#047885` with white text. White on the light-aqua source
+button has low contrast and does not meet WCAG AA text-contrast requirements.
 
 The non-emergency ADH Safe Water Engineering contact, (501) 661-2623, was checked
 October 18 against its [official program page](https://healthy.arkansas.gov/programs-services/licensing-military-member-licensure-permits-plan-reviews/drinking-water-plan-review).
@@ -133,8 +225,11 @@ See [CHANGELOG.md](CHANGELOG.md) for notable website, backend and hosting change
 ## Supplier details and preparation tools (local changes, updated October 18)
 
 Open **Get help with a water issue** directly on a watched supplier for the guide.
-For the detailed tools page, expand **Provider information**, then open
-**Supplier details & tools**, or use **Open in WAVE** in expanded **Advisory history**.
+Expand **Provider information** for annual reports and verified supplier facts.
+Report issue toggles sit beside the summary heading; expanded issues stay inside
+the yellow report panel. The redundant **Supplier details & tools** action has
+been removed across suppliers (local only; not deployed). Saved notice links
+still open the detailed notice page.
 Status, check evidence, official source and contacts
 come before **What do you need help with?** Choose a service question, credit/
 reimbursement request, complaint or assistance; an existing-request follow-up is
@@ -253,10 +348,16 @@ response times and actual call/email delivery have not been verified.
 
 Supplier cards show the supplier/county/source, current finding and published
 affected area, reason and agency-issued date. The top-right info button opens
-**Supplier details**, an accessible modal containing safety limitations,
-instructions, **Read official notice**, the actual saved check/attempt time and
-collapsed **Data-source activity**. **Notice details** inside the modal opens
-the existing detail/share view. Escape or Close returns focus to the info button.
+**Supplier details**, an accessible modal with published notice facts and a
+three-step checklist for active notices: read the official notice, review the
+affected area, and get help. Checkboxes are manual, do not change advisory status,
+and reset when the modal closes or the page reloads. English and Spanish controls
+are available. Failed or stale checks do not show an active-notice checklist.
+The modal ends with the actual **Last successful check**, right-aligned with a
+dotted leader, and provider contacts. The lower CDC guidance, original-wording
+section, coverage notes, duplicate notice/detail links and source activity are
+removed from this popup. Checklist actions and the main app's history, source
+information and guidance remain available. Escape or Close returns focus to the info button.
 **Alert history** starts collapsed on the card. Failed checks keep
 **Current advisory status unavailable.** primary. Waterbody cards retain their
 separate **Last successful check** and **Latest attempt** panels.
@@ -266,8 +367,8 @@ badge. Exact whole-system wording (alone or preceded by the matching supplier's
 name and “for the”) displays as **Entire system**; qualifiers and other areas
 remain complete. Recognized ADH numeric issue date/time fields display a short
 date and minute precision, preserving an explicit source zone without guessing
-one. The info modal preserves original area/date text whenever the card formats
-it differently. Stored records, history and detail views retain published wording.
+one. Stored records, history and detail views retain published wording; the
+checklist's **View area** action also reveals the original affected-area text.
 
 My Water's unboxed sidebar links to sources/coverage and **Manage alerts**, with
 the saved device configuration/delivery limitation shown explicitly. **Add a

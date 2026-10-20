@@ -13,13 +13,12 @@ const liveData = { places: [place], sources: [], archive: [], coverageStart: nul
 const now = Date.parse('2026-10-18T12:00:00Z')
 
 // Hiding contact values behind icons or removing the direct guide entry must fail.
-it('keeps linked contact values and help in their individual collapsed sections', async () => {
+it('keeps contact values in their collapsed section and help directly available', async () => {
   render(<StatusCard place={place} now={now} t={en} onView={() => {}} onHelp={() => {}} />)
   await userEvent.setup().click(document.querySelector('.supplier-contact-section>summary')!)
-  await userEvent.setup().click(document.querySelector('.supplier-help-section>summary')!)
   expect(screen.getByRole('link', { name: /Call.*479/ })).toHaveTextContent('(479) 549-2158')
   expect(screen.getByRole('link', { name: /LEISUREHILLSWATERCO@GMAIL.COM/ })).toHaveTextContent('LEISUREHILLSWATERCO@GMAIL.COM')
-  expect(screen.getByRole('button', { name: 'Open guide' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Get help with a water issue' })).toBeVisible()
   expect(screen.getByRole('button', { name: 'Provider information' })).toBeVisible()
 })
 
@@ -28,8 +27,7 @@ it('walks five steps, preserves edits and restores trigger focus without submitt
   savePreferences('live', { ...defaults(), watches: [place.id] })
   const user = userEvent.setup()
   render(<App liveData={liveData} />)
-  await user.click(document.querySelector('.supplier-help-section>summary')!)
-  await user.click(screen.getByRole('button', { name: 'Open guide' }))
+  await user.click(screen.getByRole('button', { name: 'Get help with a water issue' }))
   expect(screen.getByRole('heading', { name: 'What do you need help with?' })).toHaveFocus()
   expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
   await user.click(screen.getByRole('button', { name: 'Billing or consumer dispute' }))
@@ -50,15 +48,14 @@ it('walks five steps, preserves edits and restores trigger focus without submitt
   expect(screen.getByText('Step 5 of 5')).toBeVisible()
   expect(screen.getByText(/30–40 days/)).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Back to water results' }))
-  expect(screen.getByRole('button', { name: 'Open guide' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Get help with a water issue' })).toHaveFocus()
 })
 
 it('routes quality questions to verified ADH engineering, never emergency complaints', async () => {
   savePreferences('live', { ...defaults(), watches: [place.id] })
   const user = userEvent.setup()
   render(<App liveData={liveData} />)
-  await user.click(document.querySelector('.supplier-help-section>summary')!)
-  await user.click(screen.getByRole('button', { name: 'Open guide' }))
+  await user.click(screen.getByRole('button', { name: 'Get help with a water issue' }))
   expect(screen.getByText(/immediate medical danger/)).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Water quality or health concern' }))
   await user.click(screen.getByRole('button', { name: 'Next' }))
@@ -103,8 +100,7 @@ it('warns about language loss then resets the guide in Spanish', async () => {
   savePreferences('live', { ...defaults(), watches: [place.id] })
   const user = userEvent.setup()
   render(<App liveData={liveData} />)
-  await user.click(document.querySelector('.supplier-help-section>summary')!)
-  await user.click(screen.getByRole('button', { name: 'Open guide' }))
+  await user.click(screen.getByRole('button', { name: 'Get help with a water issue' }))
   await user.click(screen.getByRole('button', { name: 'Service or outage' }))
   await user.click(screen.getByRole('button', { name: 'Next' }))
   await user.click(screen.getByRole('button', { name: 'Next' }))

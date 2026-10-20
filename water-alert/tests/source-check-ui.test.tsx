@@ -6,6 +6,7 @@ import { en, es } from '../src/strings'
 import { SOURCES, type Notice, type SourceCheck, type SourceSnapshot } from '../src/domain'
 import { sampleSources } from '../src/sample'
 import { groupChecks } from '../src/source-checks'
+import { SourceCheckHistory } from '../src/SourceCheckHistory'
 
 const place = { id: 'ADH:bentonville water utilities', name: 'BENTONVILLE WATER UTILITIES', county: 'Benton', kind: 'system' as const }
 const now = Date.parse('2026-10-14T12:10:00Z')
@@ -16,13 +17,16 @@ const failure: SourceCheck = { at: '2026-10-14T12:05:00Z', outcome: 'failure', e
 const source: SourceSnapshot = { agency: 'ADH', records: success.records, retrievedAt: failure.at, lastSuccessAt: at, error: 'Timeout', checks: [success, failure], lastSuccessfulCheck: success }
 function card(s: SourceSnapshot = source, language: 'en' | 'es' = 'en') { return render(<StatusCard place={place} source={s} now={now} t={language === 'en' ? en : es} language={language} onView={() => {}} />) }
 async function openInfo(language: 'en' | 'es' = 'en') { await userEvent.setup().click(screen.getByRole('button', { name: language === 'en' ? en.supplierAbout : es.supplierAbout })) }
+function activity(s = source, language: 'en' | 'es' = 'en', explanation?: string) { return render(<SourceCheckHistory place={place} source={s} unavailable={true} t={language === 'en' ? en : es} language={language} compact explanation={explanation} />) }
 
 it('keeps unavailable primary, links to ADH advisory list, and shows genuine historical supplier no-match with actual attempt', async () => {
   card()
   expect(screen.getByText('Current advisory status unavailable.')).toBeVisible()
   await openInfo()
-  expect(screen.getByRole('link', { name: /Read official notice/ })).toHaveAttribute('href', SOURCES.ADH)
-  expect(screen.getByText('Last successful check')).toBeVisible()
+  expect(screen.queryByRole('link', { name: /Read official notice/ })).toBeNull()
+    expect(within(screen.getByRole('dialog')).getByText('Last successful check')).toBeVisible()
+  await userEvent.setup().keyboard('{Escape}')
+  activity()
   const toggle = screen.getByRole('button', { name: 'Data-source activity' })
   expect(toggle).toHaveAttribute('aria-expanded', 'false')
   await userEvent.setup().click(toggle)
@@ -39,8 +43,7 @@ it('keeps unavailable primary, links to ADH advisory list, and shows genuine his
 })
 
 it('never infers successful evidence from legacy record absence', async () => {
-  card({ ...source, checks: [], lastSuccessfulCheck: null, records: [], lastSuccessAt: at })
-  await openInfo()
+  activity({ ...source, checks: [], lastSuccessfulCheck: null, records: [], lastSuccessAt: at })
   await userEvent.setup().click(screen.getByRole('button', { name: 'Data-source activity' }))
   expect(screen.getByText('No successful check recorded yet for this supplier.')).toBeVisible()
   expect(screen.queryByText('No matching active advisory was found for this supplier during that check.')).not.toBeInTheDocument()
@@ -48,8 +51,7 @@ it('never infers successful evidence from legacy record absence', async () => {
 
 it('labels historical active notices and preserves published details without confirming them current', async () => {
   const historical = { ...success, records: [notice] }
-  card({ ...source, records: [notice], checks: [historical, failure], lastSuccessfulCheck: historical })
-  await openInfo()
+  activity({ ...source, records: [notice], checks: [historical, failure], lastSuccessfulCheck: historical })
   await userEvent.setup().click(screen.getByRole('button', { name: 'Data-source activity' }))
   const panel = document.querySelector('.last-check') as HTMLElement
   expect(within(panel).getByText('Matching active advisory found during that check.')).toBeVisible()
@@ -69,24 +71,27 @@ it.each([
   card(s)
   expect(screen.getByText(s.retrievedAt ? en.supplierUnavailable : en.uncheckedStatus)).toBeVisible()
   await openInfo()
+  expect(within(screen.getByRole('dialog')).queryByRole('button', { name: 'Data-source activity' })).toBeNull()
+  await userEvent.setup().keyboard('{Escape}')
+  const evidence = activity(s, 'en', text)
   await userEvent.setup().click(screen.getByRole('button', { name: 'Data-source activity' }))
-  expect(within(screen.getByRole('dialog')).getByText(text)).toBeVisible()
+  expect(within(evidence.container).getByText(text)).toBeVisible()
 })
 
-it('shows a compact successful supplier finding with check evidence and coverage in the popup', async () => {
+it('shows the successful check in the popup without the removed lower sections', async () => {
   card({ ...source, retrievedAt: at, error: null, checks: [success], lastSuccessfulCheck: success })
   expect(screen.getByText('No active boil-water notice found')).toBeVisible()
   expect(screen.queryByRole('button', { name: 'Data-source activity' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Advisory history' })).toHaveAttribute('aria-expanded', 'false')
   await openInfo()
-  expect(screen.getByText('This does not establish water safety.')).toBeVisible()
-  expect(document.querySelectorAll(`time[datetime="${at}"]`)).toHaveLength(1)
-  expect(screen.getByText('Last successful check')).toBeVisible()
+  expect(within(screen.getByRole('dialog')).queryByText('This does not establish water safety.')).toBeNull()
+  expect(screen.getByRole('dialog').querySelector(`time[datetime="${at}"]`)).toBeVisible()
+  expect(within(screen.getByRole('dialog')).getByText('Last successful check')).toBeVisible()
   expect(screen.queryByText('Latest attempt')).not.toBeInTheDocument()
   expect(screen.queryByText('No matching active advisory was found for this supplier during that check.')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Advisory history' })).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.getByRole('button', { name: 'Data-source activity' })).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.getByText(en.coverage)).toBeVisible()
+  expect(screen.queryByRole('button', { name: 'Data-source activity' })).toBeNull()
+  expect(within(screen.getByRole('dialog')).queryByText(en.coverage)).toBeNull()
   expect(screen.getByRole('dialog', { name: 'Supplier details' })).toBeVisible()
 })
 
@@ -97,23 +102,23 @@ it('keeps an active supplier advisory distinct without repeating historical find
   expect(screen.getByText('Last successful check')).toBeVisible()
   expect(screen.queryByText('No active boil-water notice found')).not.toBeInTheDocument()
   await openInfo()
-  expect(screen.getByRole('link', { name: /Read official notice/ })).toBeVisible()
+  expect(screen.getByRole('link', { name: 'View notice' })).toBeVisible()
 })
 
-it.each(['stale', 'unknown'] as const)('keeps a successful but %s result unavailable without duplicate timestamps', async (state) => {
+it.each(['stale', 'unknown'] as const)('keeps a successful but %s result unavailable in the card and popup', async (state) => {
   const check = { ...success, records: state === 'unknown' ? [{ ...notice, liftStatus: 'unknown' as const }] : [] }
   render(<StatusCard place={place} source={{ ...source, records: check.records, retrievedAt: at, lastSuccessAt: at, error: null, checks: [check], lastSuccessfulCheck: check }} now={state === 'stale' ? now + 900000 : now} t={en} onView={() => {}} />)
   expect(screen.getByText('Current advisory status unavailable.')).toBeVisible()
   expect(screen.queryByText('No active boil-water notice found')).not.toBeInTheDocument()
   await openInfo()
-  expect(document.querySelectorAll(`time[datetime="${at}"]`)).toHaveLength(1)
+  expect(screen.getByRole('dialog').querySelector(`time[datetime="${at}"]`)).toBeVisible()
+  expect(within(screen.getByRole('dialog')).getByText(en.supplierUnavailable)).toBeVisible()
 })
 
 it('groups only consecutive identical place results, preserving failures and edits, with progressive reveal', async () => {
   const checks: SourceCheck[] = [success, { ...success, at: '2026-10-14T12:01:00Z' }, failure, { ...success, at: '2026-10-14T12:06:00Z' }, { ...success, at: '2026-10-14T12:07:00Z', records: [notice] }, { ...success, at: '2026-10-14T12:08:00Z', records: [{ ...notice, reason: 'Changed reason' }] }, ...Array.from({ length: 5 }, (_, i) => ({ ...failure, at: `2026-10-14T12:${10 + i}:00Z`, error: `HTTP ${500 + i}` }))]
-  card({ ...source, checks })
+  activity({ ...source, checks })
   const user = userEvent.setup()
-  await openInfo()
   await user.click(screen.getByRole('button', { name: 'Data-source activity' }))
   expect(screen.getByRole('button', { name: 'Show more checks' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Show more checks' }))
@@ -134,8 +139,7 @@ it('never groups identical failures or successes across a failure, changed fact 
     { ...success, at: '2026-10-14T12:08:00Z', records: [notice] },
   ]
   expect(groupChecks(place.id, checks).map(group => group.length)).toEqual([4, 1, 1, 1, 1])
-  card({ ...source, checks })
-  await openInfo()
+  activity({ ...source, checks })
   await userEvent.setup().click(screen.getByRole('button', { name: 'Data-source activity' }))
   const history = document.querySelector('.check-history') as HTMLElement
   expect(history.textContent).not.toContain('America/Chicago')
@@ -150,8 +154,7 @@ it('never groups identical failures or successes across a failure, changed fact 
 })
 
 it('renders Spanish historical and failure copy', async () => {
-  card(source, 'es')
-  await openInfo('es')
+  activity(source, 'es')
   const toggle = screen.getByRole('button', { name: es.supplierActivity })
   expect(toggle).toHaveAttribute('aria-expanded', 'false')
   await userEvent.setup().click(toggle)

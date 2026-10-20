@@ -52,8 +52,8 @@ it('keeps history and provider help closed initially and keyboard-operable', asy
   expect(help).toHaveAttribute('aria-expanded', 'false')
   help.focus()
   await userEvent.setup().keyboard('{Enter}')
-  await userEvent.setup().click(screen.getByRole('button', { name: 'Supplier details & tools' }))
-  expect(view).toHaveBeenCalledOnce()
+  expect(screen.queryByRole('button', { name: 'Supplier details & tools' })).toBeNull()
+  expect(view).not.toHaveBeenCalled()
   expect(screen.queryByText(en.cardQualification)).toBeNull()
 })
 
@@ -64,7 +64,8 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
   const check = screen.getByRole('button', { name: en.checkNow })
   const official = screen.getByRole('link', { name: /View official source/ })
   expect(check).toHaveClass(state === 'active' ? 'secondary' : 'primary')
-  expect(official).toHaveClass(state === 'active' ? 'primary' : 'secondary')
+  expect(official).toHaveClass('official-source-action')
+  expect(official).not.toHaveClass('primary', 'secondary')
   expect(container.querySelectorAll('.supplier-finding .warning-icon')).toHaveLength(state === 'active' ? 1 : 0)
   if (state === 'none') {
     expect(screen.getByText('No active boil-water notice found')).toBeVisible()
