@@ -2,6 +2,26 @@
 
 ## Goal and current boundary
 
+### October 20 logo intro and current checkout deployment
+
+- With explicit user approval, deployed app source at commit `f9e5966` to the
+  existing `water-alert` project without changing production environment,
+  notification or scheduler settings. Deployment `APxqzYx8PRRtZZ7JB44z7Ux6L1mD`
+  is Ready at `https://water-alert-qw47wwx5x-nirmays06-3523s-projects.vercel.app`,
+  aliased to **https://water-alert-blond.vercel.app**. Remote TypeScript/Vite build
+  passed; assets are `index-DGsY989J.js` and `index-Jtv882zG.css`.
+- The pre-push full suite passed 462 tests. After the production-CSP timing fix,
+  five focused unit tests, six isolated browser cases and the build passed.
+  Fresh production Chromium contexts at desktop 1440×900, phone 390×844 and
+  reduced-motion phone verified sizing, completed artwork, the normal-motion
+  700ms hold, overlay removal, sample-mode navigation and session replay skipping.
+  No uncaught errors or CSP violations were observed. These are synthetic browser
+  checks, not physical-device or notification-delivery verification. Checks blocked
+  API requests, non-GET/HEAD requests, external origins and service workers.
+- Vercel has no Git integration; pushing `advisory-alert` alone does not deploy.
+  This release used the existing project's CLI deployment. Linking created ignored
+  local Vercel metadata and an ignored environment file; neither is committed.
+
 ### October 18 approved Task 5 deployment
 
 - User explicitly approved deploying the reviewed fixes. Deployment

@@ -8,6 +8,15 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-20 — Approved production deployment
+
+- Deployed source `f9e5966` to the existing Vercel production alias after explicit
+  approval. Remote build and guarded live desktop/phone/reduced-motion browser
+  checks passed, including the 700ms completed-logo hold and session replay skip.
+  No notification or scheduler settings changed; real-device delivery is unverified.
+  Record evidence in `VERCEL.md` and ignore CLI-created local metadata/environment
+  files. Git pushes alone do not deploy this unconnected Vercel project.
+
 ### 2026-10-20 — Production-compatible logo timing
 
 - Move SVG timing from inline style attributes to data attributes and external

@@ -11,3 +11,5 @@ test-results/
 .dev.vars
 .dev.vars.*
 .compiled-api-*/
+.vercel
+.env*
