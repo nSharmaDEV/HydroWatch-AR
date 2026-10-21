@@ -26,6 +26,26 @@
 .logo-intro__art [data-part="symbol"] { --draw-time: 515ms; }
 .logo-intro__art [data-part="wellpower"] { --draw-time: 310ms; }
 .logo-intro__art [data-part="wave"] { --draw-time: 345ms; }
+/* External CSS keeps staggered timing compatible with the production CSP. */
+.logo-intro__art [data-draw-delay="50"] { --draw-delay: 50ms; }
+.logo-intro__art [data-draw-delay="150"] { --draw-delay: 150ms; }
+.logo-intro__art [data-draw-delay="250"] { --draw-delay: 250ms; }
+.logo-intro__art [data-draw-delay="350"] { --draw-delay: 350ms; }
+.logo-intro__art [data-draw-delay="450"] { --draw-delay: 450ms; }
+.logo-intro__art [data-draw-delay="495"] { --draw-delay: 495ms; }
+.logo-intro__art [data-draw-delay="540"] { --draw-delay: 540ms; }
+.logo-intro__art [data-draw-delay="585"] { --draw-delay: 585ms; }
+.logo-intro__art [data-draw-delay="630"] { --draw-delay: 630ms; }
+.logo-intro__art [data-draw-delay="675"] { --draw-delay: 675ms; }
+.logo-intro__art [data-draw-delay="720"] { --draw-delay: 720ms; }
+.logo-intro__art [data-draw-delay="765"] { --draw-delay: 765ms; }
+.logo-intro__art [data-draw-delay="810"] { --draw-delay: 810ms; }
+.logo-intro__art [data-draw-delay="855"] { --draw-delay: 855ms; }
+.logo-intro__art [data-draw-delay="900"] { --draw-delay: 900ms; }
+.logo-intro__art [data-draw-delay="800"] { --draw-delay: 800ms; }
+.logo-intro__art [data-draw-delay="1000"] { --draw-delay: 1000ms; }
+.logo-intro__art [data-draw-delay="1200"] { --draw-delay: 1200ms; }
+.logo-intro__art [data-draw-delay="1400"] { --draw-delay: 1400ms; }
 /* Scale the artwork's left-to-right delays with the shorter intro; WAVE's
    sequence still gets more time than WellPower before all contours fill. */
 @keyframes logo-intro-draw { to { stroke-dashoffset: 0; } }

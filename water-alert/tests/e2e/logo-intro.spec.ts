@@ -5,6 +5,12 @@ test.beforeEach(async ({ context, baseURL }) => {
     const url = new URL(route.request().url())
     if (url.origin !== baseURL) return route.abort()
     if (url.pathname.startsWith('/api/')) return route.fulfill({ json: { sources: [], places: [], archive: [], coverageStart: null } })
+    // Production disallows inline style attributes. Keep Vite's development
+    // stylesheet injection working while exercising the same attribute policy.
+    if (route.request().isNavigationRequest()) {
+      const response = await route.fetch()
+      return route.fulfill({ response, headers: { ...response.headers(), 'Content-Security-Policy': "style-src-attr 'none'" } })
+    }
     return route.continue()
   })
 })

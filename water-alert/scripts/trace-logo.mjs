@@ -47,7 +47,7 @@ try {
       const section = part === 'navy' ? (startY < 2400 ? 'wave' : 'wellpower') : 'symbol'
       const order = counts[section]++
       const delay = section === 'wave' ? 800 + order * 200 : section === 'wellpower' ? 450 + order * 45 : 50 + order * 100
-      return `<path data-part="${section}" data-order="${i}" style="--draw-delay:${delay}ms" pathLength="1" fill="${color}" stroke="${color}" d="${d}"/>`
+      return `<path data-part="${section}" data-order="${i}" data-draw-delay="${delay}" pathLength="1" fill="${color}" stroke="${color}" d="${d}"/>`
     }))
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -8 1846 432" aria-hidden="true" focusable="false">\n<!-- Contours traced from public/wave-logo.png; original proportions and outlined lettering. -->\n<g transform="translate(0 416) scale(.1 -.1)">\n${groups.join('\n')}\n</g>\n</svg>\n`

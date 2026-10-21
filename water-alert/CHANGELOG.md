@@ -8,6 +8,13 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-20 — Production-compatible logo timing
+
+- Move SVG timing from inline style attributes to data attributes and external
+  CSS so the existing production security policy permits the drawing animation.
+  Keep all contours and timing unchanged; add browser coverage that blocks inline
+  style attributes. Deployment verification is recorded separately.
+
 ### 2026-10-20 — Hold the finished opening logo (local only)
 
 - Keep the completed, filled logo visible for 700ms before its 240ms exit fade.
