@@ -1,7 +1,10 @@
-# Water Alert — wireframes (static design)
+# WellPower: WAVE — wireframes (design history)
 
 Static, synthetic wireframes for the **resident water-advisory alert** app
-(working name TBD). This is design, **not shipped UI** — no live data, no logic.
+(now WellPower: WAVE). These historical proposals are **not shipped UI**;
+they use synthetic scenarios, not live data. For the actual app, start with the
+[project README](../../README.md). Proposed features and older labels below do
+not establish current capabilities.
 
 Open it:
 

@@ -8,7 +8,6 @@ import { catalogEntry } from './place-catalog'
 export function Welcome({ t, onSearch, onWell, onSample }: { t: Strings; onSearch: (kind: Place['kind']) => void; onWell: () => void; onSample: () => void }) {
   return <Panel className="journey-panel"><h1>{t.welcome}</h1><p>{t.welcomeIntro}</p>
     <button className="choice" onClick={() => onSearch('system')}><span className="choice-icon"><Icon name="water" /></span><span><b>{t.supplierChoice}</b><small>{t.supplierHelp}</small></span><span aria-hidden="true">›</span></button>
-    <button className="choice" onClick={() => onSearch('lake')}><span className="choice-icon"><Icon name="water" /></span><span><b>{t.lakeChoice}</b><small>{t.lakeHelp}</small></span><span aria-hidden="true">›</span></button>
     <div className="choice-links"><button onClick={onWell}>{t.privateWell}<span aria-hidden="true">›</span></button><button onClick={onSample}>{t.trySample}<span aria-hidden="true">›</span></button></div>
     <p className="quiet-note">{t.shortLimit}</p>
     <details><summary>{t.aboutWave}<span className="disclosure-icon" aria-hidden="true" /></summary><p>{t.purpose}</p><p>{t.verificationLimit}</p><p>{t.setupIntro}</p><p>{t.coverage}</p></details>
@@ -47,8 +46,8 @@ export function ConfirmPlace({ place, t, onConfirm, onBack }: { place: Place; t:
   </Panel>
 }
 
-export function PrivateWell({ t, onBack, onLake }: { t: Strings; onBack: () => void; onLake: () => void }) {
-  return <Panel className="journey-panel"><button className="back" onClick={onBack}>‹ {t.backStep}</button><h1>{t.wellInfo}</h1><p>{t.wellText}</p><SourceLink url={SOURCES.ADH}>{t.checkADH}</SourceLink><hr /><button className="choice" onClick={onLake}><span className="choice-icon"><Icon name="water" /></span><b>{t.lakeInstead}</b><span aria-hidden="true">›</span></button><p className="info">{t.limits}</p></Panel>
+export function PrivateWell({ t, onBack }: { t: Strings; onBack: () => void }) {
+  return <Panel className="journey-panel"><button className="back" onClick={onBack}>‹ {t.backStep}</button><h1>{t.wellInfo}</h1><p>{t.wellText}</p><SourceLink url={SOURCES.ADH}>{t.checkADH}</SourceLink><p className="info">{t.limits}</p></Panel>
 }
 
 export function SampleIntro({ t, onStart, onList }: { t: Strings; onStart: () => void; onList: () => void }) {

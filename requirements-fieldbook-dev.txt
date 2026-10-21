@@ -1,3 +1,0 @@
-# Watershed Fieldbook service + test tooling
--r requirements-fieldbook.txt
-pytest==9.1.1

@@ -4,6 +4,7 @@ import { appTimestamp, DateRow } from './components'
 import { groupChecks, resultForCheck } from './source-checks'
 import type { Strings } from './strings'
 import { checkDate, checkTime, checkTimeRange } from './source-check-time'
+import { lakeCardStrings } from './lake-card-strings'
 
 function CheckResult({ check, place, t, compact = false }: { check: SourceCheck; place: Place; t: Strings; compact?: boolean }) {
   const result = resultForCheck(place.id, check)
@@ -17,12 +18,13 @@ function CheckResult({ check, place, t, compact = false }: { check: SourceCheck;
 }
 export function SupplierLastCheck({ place, source, t, language }: { place: Place; source?: SourceSnapshot; t: Strings; language: Language }) {
   const check = source?.lastSuccessfulCheck
-  return check ? <section className="last-check compact-last-check" aria-label={t.checkLastSuccess}><h3>{t.checkLastSuccess}</h3><time dateTime={check.at}>{appTimestamp(check.at, language).replace(' (America/Chicago)', '')}</time><CheckResult check={check} place={place} t={t} compact /><p className="historical-note">{t.checkHistorical}</p></section> : <p>{t.supplierNoSuccess}</p>
+  return check ? <section className="last-check compact-last-check" aria-label={t.checkLastSuccess}><h3>{t.checkLastSuccess}</h3><time dateTime={check.at}>{appTimestamp(check.at, language).replace(' (America/Chicago)', '')}</time><CheckResult check={check} place={place} t={t} compact /><p className="historical-note">{t.checkHistorical}</p></section> : <p>{place.kind === 'lake' ? t.checkNoSuccess : t.supplierNoSuccess}</p>
 }
 export function SourceCheckHistory({ place, source, unavailable, t, language, compact = false, explanation, action }: { place: Place; source?: SourceSnapshot; unavailable: boolean; t: Strings; language: Language; compact?: boolean; explanation?: string; action?: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(6)
   const id = useId()
+  const activity = place.kind === 'lake' ? lakeCardStrings[language].activity : compact ? t.supplierActivity : t.checkHistory
   const checks = source?.checks ?? []
   const lastSuccess = source?.lastSuccessfulCheck
   const latest = checks.at(-1)
@@ -37,9 +39,10 @@ export function SourceCheckHistory({ place, source, unavailable, t, language, co
       <p className="historical-note">{unavailable ? t.checkHistorical : t.checkHistoricalAvailable}</p>
       <div className="latest-attempt"><h3>{t.checkLatest}</h3>{attemptAt ? <><time dateTime={attemptAt}>{appTimestamp(attemptAt, language)}</time><p>{outcome}</p></> : <p>{t.checkNoAttempt}</p>}</div>
     </section>}
-    <div className={compact ? 'supplier-source-activity' : undefined}><button className="check-toggle text-button disclosure-toggle" aria-label={compact ? t.supplierActivity : t.checkHistory} aria-expanded={open} aria-controls={id} onClick={() => setOpen(v => !v)}>{compact ? t.supplierActivity : t.checkHistory}<span aria-hidden="true" className="disclosure-icon" /></button>{action}</div>
+    <div className={compact ? 'supplier-source-activity' : undefined}><button className="check-toggle text-button disclosure-toggle" aria-label={activity} aria-expanded={open} aria-controls={id} onClick={() => setOpen(v => !v)}>{activity}<span aria-hidden="true" className="disclosure-icon" /></button>{action}</div>
     <div id={id} hidden={!open} className="check-history">
-      {open ? <>{explanation ? <p>{explanation}</p> : null}{compact ? <SupplierLastCheck place={place} source={source} t={t} language={language} /> : null}<p className="quiet-note">{compact ? t.supplierCheckMeaning : t.checkMeaning}</p><p className="quiet-note">{t.checkRetention}</p>{compact ? <><p className="quiet-note">{t.supplierStorage}</p><p className="quiet-note">{t.supplierArchiveStorage}</p>{!lastSuccess && source?.lastSuccessAt ? <p>{t.checkLegacy}</p> : null}</> : null}
+      {open ? <>{explanation ? <p>{explanation}</p> : null}{compact ? <SupplierLastCheck place={place} source={source} t={t} language={language} /> : null}<p className="quiet-note">{compact && place.kind === 'system' ? t.supplierCheckMeaning : t.checkMeaning}</p><p className="quiet-note">{t.checkRetention}</p>{compact ? <><p className="quiet-note">{t.supplierStorage}</p><p className="quiet-note">{t.supplierArchiveStorage}</p>{!lastSuccess && source?.lastSuccessAt ? <p>{t.checkLegacy}</p> : null}</> : null}
+        {compact && place.kind === 'lake' ? <div className="latest-attempt"><h3>{t.checkLatest}</h3>{attemptAt ? <><time dateTime={attemptAt}>{appTimestamp(attemptAt, language).replace(' (America/Chicago)', '')}</time><p>{outcome}</p></> : <p>{t.checkNoAttempt}</p>}</div> : null}
         {checks.length ? <><dl><DateRow label={t.checkStart} value={checks[0].at} app language={language} zoneId={!compact} /></dl><ol aria-label={t.checkList} className="check-timeline">
           {groups.slice(0, visible).map((group, i) => compact ? <Fragment key={`${group[0].at}:${i}`}>
             {i === 0 || checkDate(group[0].at) !== checkDate(groups[i - 1][0].at) ? <li className="check-date"><h4>{checkDate(group[0].at, language)}</h4></li> : null}

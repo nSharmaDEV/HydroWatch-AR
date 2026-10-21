@@ -85,7 +85,7 @@ it('keeps agency dates verbatim and formats only app timestamps with language an
 it('describes feed retrieval and browser/server deletion accurately in both languages', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={data} />)
   await user.click(screen.getByText('About these results', { selector: 'summary' }))
-  expect(screen.getByText(/WAVE checks ADH boil-water notices and ADEQ HAB advisories/)).toBeVisible()
+  expect(screen.getByText(/WAVE checks ADH boil-water notices for public-water suppliers/)).toBeVisible()
   await user.click(nav('Settings'))
   await user.click(screen.getByRole('button', { name: /Privacy and stored data/ }))
   expect(screen.getByText(/Disable\/delete removes the server subscription and browser credential/)).toBeVisible()

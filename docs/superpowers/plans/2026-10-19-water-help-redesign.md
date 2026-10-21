@@ -1,18 +1,188 @@
 # Supplier-specific Water Help: user journey and implementation plan
 
-**Status:** Proposed for user review. Planning only; no app behavior has changed.
+**Status (October 20, 2026):** Implementation withdrawn at the user's request because its formatting was unacceptable. The previous guide remains in place. This document retains the design plan, not implemented capabilities.
 
-**Goal:** Help a resident understand a specific supplier report finding, ask useful questions, and prepare an accurate inquiry without treating historical findings as present-day safety evidence.
+**Goal:** Help residents act on a boil-water notice, ask about a general water issue, or clarify a specific supplier report finding, then optionally save and follow up on their communications. Historical findings never become present-day safety evidence.
 
 **Architecture:** Replace the forced five-screen HelpGuide with a single progressively revealed workspace. Use the existing exact-ID annual-report catalog, provider contacts, source links and local draft tools. Historical report context and live notice context remain separate inputs and visibly separate sections.
 
 **Tech stack:** Existing React 19, TypeScript, Vite and native CSS; Vitest/Testing Library and Playwright. Proposed device-local IndexedDB communication storage. Automatic reply receipt requires a separately approved integration and architecture; no new backend, accounts or external AI processing is authorized by this plan.
 
-**Spec:** The user-facing journey and behavior rules below are this proposal's specification. The user requested a detailed explanation of what users do at each step; implementation starts only after review.
+**Spec:** The user-facing journey and behavior rules below are the approved implementation specification. The October 20 routing correction takes precedence over earlier findings-first descriptions.
 
 ## Communication lifecycle extension (proposed October 19, 2026)
 
 This extension supersedes session-only saving and the exclusion of persistent communication tracking below. It also incorporates the findings-first direction: show the supplier's reviewed findings immediately, each with “Ask about this”; general service/quality/billing help remains below. Choosing a finding opens its prepared question directly, without another template dropdown or prepare button. These are proposed changes only, not shipped capabilities.
+
+## Corrected entry points and screen map (October 20, 2026)
+
+This is the authoritative screen/routing specification. The detailed stages below describe responsibilities, not compulsory wizard screens. This documentation correction does not implement, commit, push or deploy anything.
+
+- **Notice “Get help”:** open Screen 1N for the explicitly selected boil-water notice and supplier. Prioritize that notice's official instructions and notice-related questions; never divert into annual-report findings. Carry the notice identity and actual freshness/status separately. Multiple notices require an explicit selection, not a guessed association.
+- **General “Get help”:** open Screen 1G for service/outage, water quality, billing or other help. An active notice is not required. If a supplier has not been confirmed, offer the existing supplier selector or general ADH resources without inventing a supplier.
+- **Report “Ask about this”:** open Screen 2 directly with that supplier's exact historical finding and a prepared question. A report-level help link without a selected finding first shows Screen 1R. Never imply that a report finding caused a notice or a personal experience.
+- **“My communications”:** reachable from Water Help and the app's existing My Places area; opens Screen 3. Preserve exact supplier association and live/sample separation. Empty state explains saving and links to general help.
+
+### TL;DR delivery plan
+
+1. Route the three entry points correctly and show the right source context.
+2. Give users short, reviewed templates and verified contacts, with no automatic sending.
+3. Add optional device-local saving, actual-contact records and manual replies.
+4. Add in-app follow-up dates and clear next-step guidance.
+5. Design automatic reply receipt/notifications separately; do not promise them in the initial release.
+
+### Wireframes for every screen/state
+
+Bracketed values are illustrative populated content, not unresolved tokens shipped to users. These are compact phone-first wireframes; desktop may add a contact sidebar without changing reading order. Screen numbers identify views, not mandatory numbered steps. Screens 4–6 are optional forms opened from a conversation; no one must traverse all views to get a phone number.
+
+**Screen 1N — notice-related help**
+
+```text
+< Back                  My communications
+Help with this boil-water notice
+[Supplier] · [published date]
+[Actual live status / unavailable warning]
+[Official wording and instructions]
+[View official notice]
+
+What do you need?
+[Understand the notice]
+[Ask supplier for an update]
+[Service or billing help]
+[Another water issue]
+[Call supplier]          [ADH resources]
+Next: choose a question or contact directly.
+```
+
+“Understand the notice” reveals source-backed instructions inline, not AI advice or a newly invented boiling duration. “Ask supplier” opens Screen 2 with the notice reference. Archived references and unavailable checks are labeled honestly; guidance never implies a retained notice is current. A different concern may open Screen 1G while preserving any explicitly selected reference separately.
+
+**Screen 1G — general help**
+
+```text
+< Back                  My communications
+What do you need help with?
+[Confirmed supplier / Choose supplier]
+[Service or outage]
+[Water-quality concern]
+[Billing or expenses]
+[Other help]
+Contacts available without a draft
+[Supplier contact]       [ADH resources]
+Next: choose a concern to see a prepared question.
+```
+
+Concern selection opens Screen 2 immediately with appropriate wording, even without a notice. Optional legal/consumer resources live under the relevant other/billing route, not default escalation. Show a brief emergency direction for immediate medical danger; do not diagnose symptoms.
+
+**Screen 1R — report findings (report entry only)**
+
+```text
+< Back                  My communications
+Questions about [Supplier]'s report
+[2025] · Historical; not today's status
+[Monitoring finding]       [Ask about this]
+[Licensing finding]        [Ask about this]
+[View original report]
+Need help with a different water issue?
+[General help]
+Next: choose the finding you want clarified.
+```
+
+Only show actual reviewed findings. Missing/unreviewed/conflicting reports offer the corresponding neutral report request; zero findings never means safe. Selecting “Ask about this” opens Screen 2, not another category/template picker.
+
+**Screen 2 — prepared question and contact workspace**
+
+```text
+< Back                  My communications
+[Notice question / General issue / Report question]
+[Supplier and short source context]
+[Expand source details]
+Who can help?
+[Supplier] [ADH, where relevant]
+[Why this contact / verified contact details]
+Your question
+Subject: [prepared editable subject]
+[Short prepared message]
+[Edit message] [Add observations, optional]
+[Save on this device] [Storage/privacy details]
+[Copy] [Download] [Open email, if verified]
+[Call, if verified]
+WAVE has not sent anything.
+Next: contact them outside WAVE; afterward,
+return to record what you actually sent/discussed.
+[Record contact]
+```
+
+Notice, general and report routes share this layout, not interchangeable facts. Changing recipient updates only untouched template wording; never silently replace edited text. Saving requires explicit storage consent; successful save provides “View saved conversation” (Screen 3 detail). Recording contact without an existing saved conversation first explains/requests local saving. Declining storage preserves copy/download/contact access. Missing contact values leave directory/bill guidance and copying available. Supplier and ADH are choices, not a compulsory supplier-first sequence.
+
+**Screen 3 — My communications and conversation detail**
+
+```text
+< Back
+My communications · This browser only
+[Supplier / concern] [Draft / Contact recorded]
+[Supplier / concern] [Follow-up due]
+[Open conversation]
+-----------------------------------------
+Conversation: [selected supplier + concern]
+[Source snapshot] [Draft] [Contact/reply timeline]
+Contact recorded by you; delivery not verified.
+[No reply recorded / User-added reply]
+Next: [instruction matching recorded events]
+[Record contact] [Add reply] [Prepare follow-up]
+[Set follow-up date] [Finish tracking]
+[Export] [Delete]
+```
+
+List and detail may be separate mobile views of one communications area. Opening a draft returns to Screen 2 without creating a duplicate. “Prepare follow-up” opens Screen 2 with a neutral follow-up template and reviewed references to recorded events. Unknown contact dates remain unknown. Finished records can reopen. Export offers text/JSON; deletion has confirmation and explains that emails/downloads are unaffected. “Finished tracking” never changes water/advisory status.
+
+**Screen 4 — record an actual contact**
+
+```text
+< Conversation
+Record contact
+Channel: [Email / Phone / Official form / Other]
+Contact: [recipient actually contacted]
+Date: [actual date / I don't know]
+[Message actually sent / call notes]
+Reference number: [optional]
+[Review and save record] [Cancel]
+Next: check this matches what actually happened.
+Delivery/filing is not verified by WAVE.
+```
+
+Preview before committing the event. Unknown dates must be supported, consistent with the no-invented-timestamp rule. Save returns to Screen 3 and offers a follow-up date. Later corrections append an event, not an altered sent snapshot.
+
+**Screen 5 — add a received reply manually**
+
+```text
+< Conversation
+Add a reply
+From: [sender]
+Received: [date / I don't know]
+[Relevant reply text or your summary]
+Avoid account numbers and sensitive details.
+[Preview and save] [Cancel]
+Next: review whether your question was answered.
+WAVE does not monitor your inbox.
+```
+
+Save returns to Screen 3 with “Reply added by you”. Offer clarification/follow-up/finish choices without judging truth or compliance. If a reminder exists, ask whether to keep, change or cancel it; adding a reply must not silently change that reminder.
+
+**Screen 6 — optional follow-up date**
+
+```text
+< Conversation
+When would you like to follow up?
+[Choose local calendar date]
+This is your reminder, not an agency deadline.
+Shown when you open WAVE; no closed-app alert.
+[Save date] [No reminder / Cancel reminder]
+Next: return here to add a reply or follow up.
+```
+
+In-app reminder dates use local calendar-day semantics, not a fabricated exact-time alarm. Screen 3 shows due reminders on return. Finishing a conversation explicitly cancels its active reminder after confirmation; reopening does not silently reinstate it. Background push and automatic response notifications are not part of these initial screens.
+
+**Shared states:** source unavailable retains honest context and contact access; storage failure keeps editable text with “Not saved” plus download; empty communications show “No saved communications on this browser”; deletion requests confirmation; unsaved navigation warns where supported. Use EN/ES labels, visible keyboard focus and 320px layouts. Never label a copy, download, email handoff or user-recorded contact “Submitted”.
 
 ### Delivery boundaries
 
@@ -24,7 +194,7 @@ This extension supersedes session-only saving and the exclusion of persistent co
 
 | Stage | User action and app behavior | Explicit next action |
 |---|---|---|
-| 1. Pick the concern | Select “Ask about this” beside a cited finding, or choose a general concern. Show historical facts separately from current notices. | “Review the question and choose whom to contact.” |
+| 1. Pick the concern | Enter from the selected notice's “Get help”, general “Get help”, or a report's “Ask about this”. Preserve the matching context; reports are not a prerequisite for notice/general help. | “Review the guidance/question and choose whom to contact.” |
 | 2. Review and save | Show a neutral editable question, supplier/ADH choices, source references and optional observations. Explain local storage and offer “Save on this device”; copy/download/contact remain usable without saving. Confirm success only after storage succeeds. | “Copy or download your question, or open it in your email app. WAVE has not sent it.” |
 | 3. Contact outside WAVE | Open a verified email draft, call, or visit the relevant official form. Do not interpret opening, copying or downloading as sending. | “After you contact them, return here to record what you sent or discussed.” |
 | 4. Record the contact | User selects “Record contact” and confirms channel, destination, actual contact date and the text actually sent or call notes. Reference number is optional. Save a new immutable contact event; later edits create a correction, not a rewritten sent record. Label it “Contact recorded by you — delivery not verified.” | “Keep any receipt/reference number. Choose a follow-up date if you want a reminder.” |
@@ -91,7 +261,7 @@ This section takes precedence over the earlier seven-stage explanation and wiref
 
 ### The visible experience: three stages
 
-1. **Choose your concern.** Confirm the supplier name, then choose “Question about a report”, “Service or water quality”, or “Billing or other help”. For a report question, choose one finding; for the other routes, choose a short subcategory. Contacts are available without completing a draft. Legal information is an optional resource under other help, not a default escalation.
+1. **Start with the reason you clicked.** Notice “Get help” shows notice guidance and notice questions; general “Get help” shows general concerns; report “Ask about this” selects that historical finding directly. Confirm the supplier without forcing a report detour. Contacts are available without completing a draft. Legal information is optional, not default escalation.
 2. **Review your question.** Show a prepared, neutral question immediately after selection—no extra “prepare” gate. Clearly separate the historical source facts, optional user observations, and the requested information. Offer a few optional fields and an expandable full draft editor; no mandatory personal narrative or personal identifiers.
 3. **Save or contact.** Let the user copy/download the reviewed text, call an available contact, or open an email draft where verified details exist. Explain the destination and what will happen before the handoff. State “Nothing has been sent by WAVE.”
 
@@ -151,7 +321,7 @@ Bracketed values here illustrate the template contract; the app must populate su
 
 ## Constraints and decisions
 
-- Scope: `water-alert/`, not `fieldbook-ui/` or the legacy apps.
+- Scope: the WAVE app in `water-alert/`; do not restore removed prototypes.
 - Preserve all existing dirty and untracked work. Do not reset, overwrite wholesale, or commit unrelated changes.
 - No deployment, publication or submission is authorized.
 - Match suppliers by exact ID; never borrow another supplier's report or contact.
@@ -165,12 +335,14 @@ Bracketed values here illustrate the template contract; the app must populate su
 - English and Spanish interface parity; existing English draft templates must remain clearly labeled as English unless translation is separately implemented and reviewed.
 - Sample mode must not attach real findings or expose real phone/email targets.
 - Implementation changes require a dated, local-only `water-alert/CHANGELOG.md` entry in the same batch.
-- The inherited expanded report catalog has only focused verification recorded in the handoff. Do not describe it as fully verified, deployed, or documentation-complete.
+- Re-establish the current baseline before implementation. The October 20 app README records 445 unit/integration tests and build passing, with 78 browser checks passing and 22 failing; do not treat earlier focused checks or synthetic checks as full verification or deployment evidence.
 
 ## Design direction
 
 Reading this as a trust-first resident help workspace, using WAVE's existing visual language rather than a new marketing-page aesthetic.
 
+- **User requirement (October 20): keep the formatting used throughout the current app.** The ASCII wireframes describe content and behavior only, not a new visual style. Reuse existing page/dialog shells, headers/back controls, cards, disclosures, form fields, button hierarchy, spacing, typography, colors, borders and responsive conventions. Do not introduce a separate dashboard theme, decorative stepper, new font/icon family or replacement design system.
+- Inspect the current rendered notice/help/provider screens and their shared components before implementation; use those as the visual reference. Compose new communication views from the same patterns, adding only the minimal styles needed for new behavior. Preserve EN/ES wrapping, keyboard focus and narrow-screen readability. Verify the result alongside existing screens on desktop and mobile, not against the ASCII box shapes.
 - Keep the existing type, colors and button vocabulary; reuse semantic CSS variables after checking their actual definitions.
 - Left-align headings and facts. Avoid a large decorative hero or severity scores.
 - Use one main working column, with a compact contact/source sidebar on wide screens. On phones, put contacts before the editor in the reading order.
@@ -178,28 +350,7 @@ Reading this as a trust-first resident help workspace, using WAVE's existing vis
 - Distinguish “Official notice context” from “Historical report finding” with headings and explicit dates, not color alone.
 - Use numbered steps only for the actual task sequence below, not for decorative content.
 
-```text
-Back to water results
-Water Help: [supplier]
-[Verify provider on your bill]
-[Official notice context / unavailable explanation, when relevant]
-
-1. What do you need help with?
-[Report question] [New service/quality issue] [Billing] [Legal]
-
-2. Choose the report finding             Contact and source
-[Year and finding list, if applicable]   [Provider / ADH]
-[Selected finding and source page]       [Why this contact]
-
-3. Prepare your question
-[Suggested questions]
-[Editable subject and body]
-
-4. Review and use your draft
-[Copy] [Download] [Email, if available]
-[External form only for the relevant route]
-[Follow-up instructions]
-```
+Use the corrected screen map above. It replaces the older category-first wireframe and keeps notice help, general concerns and report questions distinct.
 
 ## Detailed user journey
 
@@ -217,12 +368,7 @@ Water Help: [supplier]
 
 ### Step 2: Choose the reason for asking
 
-**User does:** Chooses one of four plain-language concerns:
-
-1. “Ask about an annual-report finding.”
-2. “I have a new service or water-quality concern.”
-3. “I have a billing or expense dispute.”
-4. “I need legal information.”
+**User does:** Uses Screen 1N for the selected notice, Screen 1G for general concerns, or enters a selected report finding directly in Screen 2. Screen 1R is only for browsing report questions. Never require a notice-help user to choose an annual-report finding. Optional legal information remains under other help.
 
 **User sees:** One sentence explaining each route. A short, visible emergency note directs immediate medical danger to 911 and symptoms to a health professional. The guide does not diagnose illness.
 
@@ -270,7 +416,7 @@ Water Help: [supplier]
 | Upstream finding | How did the upstream supplier's finding relate to this system, and what subsequent information is available? |
 | Document conflict | Can you clarify these inconsistent report statements and provide the authoritative record? |
 
-**Contact routing:** For report questions, start with the supplier for its records and status; provide ADH Safe Water Engineering for regulatory clarification or quality concerns. Do not automatically send all report findings to the Attorney General or legal aid.
+**Contact routing:** Offer the supplier for its records/status and ADH Safe Water Engineering for regulatory clarification or quality concerns. The resident may choose either relevant route; supplier-first is not compulsory. Verify official contact provenance before implementation. Do not automatically send report findings to the Attorney General or legal aid.
 
 **Missing contacts:** Say the number/email is not verified, direct the user to their bill or the directory, and keep copy/download available. Never guess an email or reuse a neighboring supplier's details.
 
@@ -278,9 +424,9 @@ Water Help: [supplier]
 
 ### Step 5: Prepare an accurate draft
 
-**User does:** Selects “Prepare a question.” Reviews and edits the subject and body in the page. Optional prompts ask what they want to know, whether they contacted the provider before and whether they have a reference number. No prompt requires medical details, account numbers or identity documents.
+**User does:** Reviews the question shown immediately after choosing a concern/finding; no extra prepare button. Notice-related questions use the selected notice, general questions do not assume one, and report questions use historical findings. Optional prompts ask what they want clarified and allow observations/reference numbers. No prompt requires medical details, account numbers or identity documents.
 
-**App includes:** Supplier name; report year; selected finding and printed dates; attributed corrective action; PDF URL/page; and the category-specific questions. For unknown/missing/conflicting reports, use the matching neutral clarification/request wording instead.
+**App includes:** The exact supplier and relevant context only: notice wording/date/source for notice questions; user-supplied concern for general help; report year/finding/printed facts/PDF page for report questions. Unknown/missing/conflicting reports use neutral clarification/request wording. Never imply one context caused another.
 
 **Example wording:**
 
@@ -364,7 +510,7 @@ User sees legal-information/intake links and optional preparation notes. No elig
 **Create:** `water-alert/src/ReportHelp.tsx`, `water-alert/tests/report-help-ui.test.tsx`.
 **Modify tests:** `water-alert/tests/help-redesign.test.tsx` and affected journey tests.
 
-- [ ] Write failing interaction tests for route selection, finding selection, source disclosure, immediate contact access and explicit draft preparation.
+- [ ] Write failing interaction tests for notice/general/report entry routing, direct prepared questions, source disclosure, immediate contacts and My communications list/detail navigation. Notice help must never require a report selection.
 - [ ] Pass actual current status/source context from App separately from optional saved notice context.
 - [ ] Add report selection/details and reuse existing contacts/source links. Reuse or extract the finding grouping logic rather than diverging from the provider panel.
 - [ ] Add EN/ES copy for the workspace; label English draft content honestly.
@@ -384,7 +530,7 @@ User sees legal-information/intake links and optional preparation notes. No elig
 
 ## Acceptance criteria
 
-1. A resident can select their supplier's exact historical finding and prepare a source-linked question without traversing the old wizard.
+1. Notice “Get help” opens guidance for that notice; general help works without a notice; report “Ask about this” opens that exact historical finding's question. None requires traversing the old wizard or detouring through unrelated reports.
 2. Contacts remain accessible without composing a draft or having an active notice.
 3. Every supported report state has an honest useful next action.
 4. Drafts never invent current violations, contamination, resolution, loss or legal entitlement.

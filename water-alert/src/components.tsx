@@ -1,8 +1,7 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
 import { SOURCES, statusFor, type Language, type Notice, type Place, type SourceSnapshot } from './domain'
 import type { Strings } from './strings'
-import { catalogEntry } from './place-catalog'
-import { SourceCheckHistory } from './SourceCheckHistory'
+import { catalogEntry, noticeMatchesPlace } from './place-catalog'
 import { SupplierAlertHistory } from './SupplierAlertHistory'
 import { unavailableReason } from './source-checks'
 import { supplierArea, supplierCounty, supplierIssued } from './supplier-display'
@@ -10,6 +9,8 @@ import { ProviderContact } from './ProviderContact'
 import { SupplierInformation } from './SupplierProfile'
 import { helpGuideStrings } from './help-guide-strings'
 import { NoticeChecklist } from './NoticeChecklist'
+import { lakeCardStrings } from './lake-card-strings'
+import { SourceCheckHistory } from './SourceCheckHistory'
 
 export function Icon({ name }: { name: 'home' | 'browse' | 'history' | 'settings' | 'water' | 'bell' | 'search' }) {
   const paths = { home: 'M3 10 12 3l9 7v11h-6v-7H9v7H3Z', browse: 'M3 3h7v7H3ZM14 3h7v7h-7ZM3 14h7v7H3ZM14 14h7v7h-7Z', history: 'M3 12a9 9 0 1 0 3-7M3 3v6h6M12 7v5l3 2', settings: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2', water: 'M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13ZM9 15c0 2 1 3 3 3', bell: 'M5 17h14l-2-3V9a5 5 0 0 0-10 0v5ZM10 21h4', search: 'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM15 15l6 6' }
@@ -50,6 +51,9 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
   const tone = status.state === 'active' ? place.kind === 'system' ? 'boil' : 'hab' : status.state
   const reason = unavailableReason(source, now)
   const explanation = reason === 'offline' ? t.checkOffline : reason === 'never' ? t.checkNever : reason === 'stale' ? t.checkStale : reason === 'format' ? t.checkFormatFailed : reason === 'failed' ? t.checkRetrievalFailed : t.checkUnconfirmed
+  const lakeText = lakeCardStrings[language]
+  const unknownHab = status.records.some(n => n.agency === 'ADEQ' && n.kind === 'hab' && n.liftStatus === 'unknown')
+  const feedUpdated = source?.agency === 'ADEQ' ? source.records.find(n => noticeMatchesPlace(place.id, n) && n.sourceUpdatedAt)?.sourceUpdatedAt : undefined
   if (place.kind === 'system') return <article className={`status-card supplier-card ${tone}`}>
     <div className="supplier-heading"><div className="supplier-title-row"><h2>{supplierCounty(place.name)}</h2><button ref={infoButton} className="supplier-info-button" aria-label={t.supplierAbout} aria-haspopup="dialog" onClick={() => { setInfoOpen(true); dialog.current?.showModal() }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v7M12 6v2" /></svg></button></div><p>{language === 'en' ? `${supplierCounty(place.county)} ${t.supplierCounty}` : `${t.supplierCounty} de ${supplierCounty(place.county)}`} · Arkansas Department of Health</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div>
     <div className="supplier-finding">{status.state === 'active' ? <svg className="warning-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.8 2 18.2A2 2 0 0 0 3.7 21h16.6a2 2 0 0 0 1.7-2.8L13.7 3.8a2 2 0 0 0-3.4 0Z" /><path d="M12 9v5m0 3h.01" /></svg> : null}<div className="finding-copy">
@@ -80,16 +84,15 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
     </dialog>
   </article>
   return <article className={`status-card ${tone}`}>
-    <div className="card-title"><div><h2>{supplierCounty(place.name)}</h2><p>{t.checkCounty}: {supplierCounty(place.county)}<br />{t.checkSource}: Arkansas Division of Environmental Quality</p></div>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div>
-    <div className="supplier-finding"><p className="status-label"><span aria-hidden="true" className="status-symbol">{status.state === 'active' ? '!' : status.state === 'none' ? '—' : '?'}</span>{status.state === 'active' ? t.activeHab : status.state === 'none' ? t.none : reason === 'never' ? t.uncheckedStatus : t.unavailable}</p><p className="status-explanation">{status.state === 'unavailable' ? reason === 'never' ? t.uncheckedExplanation : explanation : status.state === 'none' ? t.noneText : t.supplierInstructions}</p></div>
-    <dl>{source?.lastSuccessAt ? <DateRow label={t.successfulCheck} value={source.lastSuccessAt} app language={language} zoneId={false} /> : <div className="date-row"><dt>{t.successfulCheck}</dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl>
-    <div className="card-check-actions">{!sample && onRefresh ? <button className="primary" disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow}</button> : null}<a className="secondary official-list" href={SOURCES.ADEQ} target="_blank" rel="noreferrer">{t.officialSource}<span aria-hidden="true">↗</span></a></div>
-    <details className="provider-help"><summary>{t.waterbodyHelp}<span className="disclosure-icon" aria-hidden="true" /></summary>
-    {status.records.some(n => n.liftStatus === 'unknown') ? <p>{t.unknownLiftShort}</p> : null}
-    {status.records.map(n => <div className="record-summary" key={n.id}>{status.state === 'unavailable' ? <strong>{t.unverified}</strong> : null}<div className="record-facts"><p><b>{t.affected}</b><br />{n.area}</p>{status.state === 'active' && n.reason ? <p><b>{t.reason}</b><br />{n.reason}</p> : null}</div><dl><DateRow label={t.issued} value={n.issued} /></dl></div>)}
-    <details><summary>{t.checked}<span className="disclosure-icon" aria-hidden="true" /></summary><SourceCheckHistory key={place.id} place={place} source={source} unavailable={status.state === 'unavailable'} t={t} language={language} /></details>
-    <details className="card-coverage"><summary>{t.checkCoverageLake}<span className="disclosure-icon" aria-hidden="true" /></summary><CatalogCoverage placeId={place.id} t={t} /></details>
-    <button className={status.state === 'active' ? 'primary card-action' : 'card-action'} aria-label={`${status.state === 'active' ? t.understand : t.viewDetails} ${place.name}`} onClick={onView}>{status.state === 'active' ? t.understand : t.viewDetails} <span aria-hidden="true">→</span></button></details>
-    {status.state !== 'none' ? <p className="card-qualification">{t.shortLimit}</p> : null}
+    <div className="supplier-heading"><div className="supplier-title-row"><h2>{supplierCounty(place.name)}</h2></div><p>{language === 'en' ? `${supplierCounty(place.county.replace(/\s+county$/i, ''))} ${t.supplierCounty}` : `${t.supplierCounty} de ${supplierCounty(place.county.replace(/\s+county$/i, ''))}`} · Arkansas Division of Environmental Quality</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div>
+    <div className="supplier-finding"><div className="finding-copy"><p className="status-label">{unknownHab ? lakeText.notice : status.state === 'active' ? t.activeHab : status.state === 'none' ? t.none : reason === 'never' ? t.uncheckedStatus : t.supplierUnavailable}</p>{feedUpdated ? <><dl className="lake-feed-date"><DateRow label={lakeText.feedUpdated} value={feedUpdated} /></dl><p className="quiet-note">{lakeText.feedMeaning}</p></> : null}{unknownHab ? <><p className="status-explanation"><strong>{lakeText.uncertain}</strong></p><p className="status-explanation">{lakeText.explanation}</p></> : null}<p className="status-explanation">{status.state === 'unavailable' ? reason === 'never' ? t.uncheckedExplanation : unknownHab && reason === 'unconfirmed' ? null : explanation : status.state === 'none' ? t.noneText : t.supplierInstructions}</p></div></div>
+    <dl>{source?.lastSuccessAt ? <DateRow label={lakeText.retrieved} value={source.lastSuccessAt} app language={language} zoneId={false} leader /> : <div className="date-row freshness-row"><dt><span className="freshness-label">{lakeText.retrieved}</span><span className="freshness-leader" aria-hidden="true" /></dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl>
+    <p className="quiet-note">{lakeText.retrievalMeaning}</p>
+    <div className="card-check-actions">{!sample && onRefresh ? <button className="primary" disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow}</button> : null}<a className="official-source-action official-list" href={SOURCES.ADEQ} target="_blank" rel="noreferrer">{t.officialSource}<span aria-hidden="true">↗</span></a></div>
+    <SupplierAlertHistory key={place.id} place={place} archive={archive} source={source} now={now} t={t} language={language} />
+    <SourceCheckHistory place={place} source={source} unavailable={status.state === 'unavailable'} t={t} language={language} compact />
+    <p className="quiet-note">{lakeText.scope}</p>
+    <details className="card-coverage supplier-section"><summary>{t.checkCoverageLake}<span className="disclosure-icon" aria-hidden="true" /></summary><CatalogCoverage placeId={place.id} t={t} /></details>
+    <button className="card-details-action" aria-label={`${status.state === 'active' ? t.understand : t.viewDetails} ${place.name}`} onClick={onView}>{status.state === 'active' ? t.understand : t.viewDetails}</button>
   </article>
 }

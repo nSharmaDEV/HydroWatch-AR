@@ -14,7 +14,7 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
 it('puts choices before collapsed coverage and keeps the concise safety qualification', () => {
   render(<Welcome t={en} onSearch={() => {}} onWell={() => {}} onSample={() => {}} />)
-  expect(screen.getByText('Check published water advisories for your Arkansas water supplier or lake.')).toBeVisible()
+  expect(screen.getByText(en.welcomeIntro)).toBeVisible()
   expect(screen.getByText('Published notices are not a water safety test.')).toBeVisible()
   expect(screen.getByText('About WAVE', { selector: 'summary' }).closest('details')).not.toHaveAttribute('open')
 })

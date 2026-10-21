@@ -43,14 +43,14 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     expect(screen.getByText(language === 'en' ? 'Not provided — record reads “N/A”' : 'No proporcionado — el registro indica “N/A”')).toBeVisible()
     expect(screen.queryByText(t.guidanceGap)).not.toBeInTheDocument()
   })
-  it(`keeps unknown home copy concise and preserves issued dates in place details for current HAB in ${language}`, async () => {
+  it(`keeps unknown home copy concise and preserves issued dates in advisory history for current HAB in ${language}`, async () => {
     const view = render(<StatusCard place={place} source={source} now={Date.parse(at)} t={t} language={language} onView={() => {}} />)
     expect(screen.getByRole('article')).toHaveClass('unavailable')
     expect(screen.queryByText(t.unknownLift)).not.toBeInTheDocument()
-    await userEvent.setup().click(screen.getByText(t.waterbodyHelp, { selector: 'summary' }))
-    expect(screen.getByText(language === 'en' ? /“N\/A” is excluded from ADEQ/ : /ADEQ excluye.*“N\/A”/)).toBeVisible()
+    expect(screen.getByText(language === 'en' ? 'Active/lifted status unconfirmed' : 'Estado activo o levantado sin confirmar')).toBeVisible()
     view.rerender(<StatusCard place={place} source={{ ...source, records: [{ ...notice, liftStatus: undefined }] }} now={Date.parse(at)} t={t} language={language} onView={() => {}} />)
     expect(screen.getByRole('article')).toHaveClass('hab')
+    await userEvent.setup().click(screen.getByRole('button', { name: language === 'en' ? 'Agency record' : 'Registro de la agencia' }))
     expect(screen.getByText('June 21, 2019')).toBeVisible()
   })
 }

@@ -1,4 +1,0 @@
-# Watershed Fieldbook service (local domain logic)
--r requirements-notices.txt
-fastapi==0.143.0
-uvicorn==0.52.4

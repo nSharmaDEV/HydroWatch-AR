@@ -10,3 +10,4 @@ test-results/
 .wrangler/
 .dev.vars
 .dev.vars.*
+.compiled-api-*/

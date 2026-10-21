@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it } from 'vitest'
 import App from '../src/App'
@@ -7,10 +7,28 @@ import { en } from '../src/strings'
 import type { Place } from '../src/domain'
 import { defaults, savePreferences } from '../src/storage'
 import { HelpGuide } from '../src/HelpGuide'
+import { helpGuideStrings } from '../src/help-guide-strings'
 
 const place: Place = { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' }
 const liveData = { places: [place], sources: [], archive: [], coverageStart: null }
 const now = Date.parse('2026-10-18T12:00:00Z')
+
+it.each(['en', 'es'] as const)('keeps every %s step and its navigation in one consistently labelled panel', async language => {
+  const user = userEvent.setup()
+  const t = helpGuideStrings[language]
+  render(<HelpGuide place={place} language={language} sample onBack={() => {}} />)
+  for (let step = 1; step <= 5; step++) {
+    const panel = screen.getByRole('region', { name: t.titles[step - 1] })
+    expect(panel).toHaveClass('panel', 'guide-step')
+    expect(within(panel).getByRole('heading', { level: 1, name: t.titles[step - 1] })).toHaveFocus()
+    expect(within(panel).getByText(t.step(step))).toBeVisible()
+    if (step === 1) await user.click(within(panel).getByRole('button', { name: t.service }))
+    if (step > 1) expect(within(panel).getByRole('button', { name: t.previous })).toBeVisible()
+    const action = within(panel).getByRole('button', { name: step === 5 ? t.done : t.next })
+    expect(action.closest('.guide-navigation')).not.toBeNull()
+    if (step < 5) await user.click(action)
+  }
+})
 
 // Hiding contact values behind icons or removing the direct guide entry must fail.
 it('keeps contact values in their collapsed section and help directly available', async () => {

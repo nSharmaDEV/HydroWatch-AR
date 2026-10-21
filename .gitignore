@@ -5,4 +5,11 @@ skill-observations/
 .env
 .DS_Store
 memory/
-fieldbook-data/
+.venv*/
+.openchamber/
+.opencode/
+node_modules/
+dist/
+test-results/
+playwright-report/
+.compiled-api-*/

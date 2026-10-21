@@ -52,45 +52,34 @@ it('does not erase device preferences or deletion credentials if server removal 
   } finally { vi.unstubAllGlobals() }
 })
 
-it('explains an ADEQ N/A status without displaying an active advisory or a lift', async () => {
-  const user = userEvent.setup()
+it('does not offer ADEQ records in supplier-only setup', async () => {
   const at = new Date().toISOString()
   const notice = { id: 'ADEQ:unknown-event', placeId: 'ADEQ:unknown-lake', name: 'Uncertain Lake', agency: 'ADEQ' as const, kind: 'hab' as const, area: 'Test area', county: 'Benton', issued: 'July 12, 2018', lifted: null, liftStatus: 'unknown' as const, reason: '', url: SOURCES.ADEQ }
   render(<App liveData={{ sources: EMPTY_SOURCES.map(s => s.agency === 'ADEQ' ? { ...s, records: [notice], lastSuccessAt: at, retrievedAt: at, error: null } : s), places: [{ id: notice.placeId, name: notice.name, kind: 'lake', county: notice.county }], archive: [notice], coverageStart: at }} />)
-  await user.click(screen.getByRole('button', { name: /A lake or waterbody/ }))
-  await user.click(screen.getByRole('button', { name: 'Select Uncertain Lake' }))
-  await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
-  await user.click(screen.getByText('Place details & help', { selector: 'summary' }))
-  expect(screen.getByText(/“N\/A” is excluded from ADEQ’s current table/)).toBeVisible()
+  expect(screen.queryByRole('button', { name: /A lake or waterbody/ })).not.toBeInTheDocument()
+  expect(screen.queryByText('Uncertain Lake')).not.toBeInTheDocument()
   expect(screen.queryByText('Harmful-algal-bloom advisory')).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'View details Uncertain Lake' }))
-  expect(screen.getByText(/ADEQ’s current-advisories table excludes records/)).toBeVisible()
 })
 
 describe('sample resident journey', () => {
-  it('opens sample waterbody guidance and never promises push', async () => {
+  it('keeps sample notifications disabled for supplier watches', async () => {
     const user = userEvent.setup()
     render(<App />)
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     expect(screen.getByRole('region', { name: 'Sample mode' })).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
-    await user.click(screen.getByRole('button', { name: 'View details Sample Cove Lake' }))
-    expect(screen.getByRole('heading', { name: 'Agency guidance' })).toBeVisible()
-    expect(screen.getByText(/A water body with no HAB advisory is not an indication that a bloom is not present/)).toBeVisible()
-    await user.click(screen.getByText('Review alert options', { selector: 'summary' }))
-    await user.click(screen.getByRole('button', { name: 'Notify when lifted' }))
+    await user.click(screen.getByRole('button', { name: 'Manage alerts' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Notify when the agency explicitly lifts a notice' }))
     expect(screen.getByText('Notifications are disabled in sample mode.')).toBeVisible()
     expect(screen.getByRole('checkbox', { name: 'Notify when the agency explicitly lifts a notice' })).toBeChecked()
   })
-  it('shows all three states without color-only communication', async () => {
+  it('shows supplier sample statuses without waterbody cards', async () => {
     const user = userEvent.setup(); render(<App />)
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
     expect(screen.getByText('Active boil-water notice')).toBeVisible()
     expect(screen.getAllByText('No active boil-water notice found').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Data unavailable').length).toBeGreaterThan(0)
-    await user.click(screen.getByText('Place details & help', { selector: 'summary' }))
-    expect(screen.getByText(/^Previously observed notice · current status unverified/)).toBeVisible()
+    expect(screen.queryByRole('heading', { name: 'Sample Cove Lake' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Exit sample' }))
     expect(screen.queryByRole('region', { name: 'Sample mode' })).not.toBeInTheDocument()
     expect(screen.queryByText('Sample Creek Water')).not.toBeInTheDocument()
@@ -106,11 +95,11 @@ describe('sample resident journey', () => {
     expect(screen.queryByRole('button', { name: 'Go to my water' })).not.toBeInTheDocument()
     expect(JSON.parse(localStorage.getItem('water-alert:sample:v1')!).watches).toEqual([])
   })
-  it('explains private wells and offers optional lake selection', async () => {
+  it('explains private-well exclusion without lake selection', async () => {
     const user = userEvent.setup(); render(<App />)
     await user.click(screen.getByRole('button', { name: "I'm on a private well" }))
-    expect(screen.getByText(/Private wells are not monitored/)).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Watch a lake instead' })).toBeVisible()
+    expect(screen.getByText(/Private wells are outside coverage/)).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Watch a lake instead' })).not.toBeInTheDocument()
   })
   it('translates the sample status and settings screens', async () => {
     const user = userEvent.setup(); render(<App />)

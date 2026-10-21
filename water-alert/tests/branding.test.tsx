@@ -61,7 +61,7 @@ it('uses the approved browser and installed-app identity without changing app sc
   expect(manifest).toMatchObject({ name, short_name: name, description: purpose, id: '/', start_url: '/', scope: '/' })
 })
 
-it('shares a sample notice under the approved name while preserving its sample warning', async () => {
+it('preserves the approved brand and sample warning without invoking sharing on sample cards', async () => {
   const share = vi.fn(async () => {})
   Object.defineProperty(navigator, 'share', { configurable: true, value: share })
   try {
@@ -69,9 +69,10 @@ it('shares a sample notice under the approved name while preserving its sample w
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
-    await user.click(screen.getByRole('button', { name: 'View details Sample Cove Lake' }))
-    await user.click(screen.getByRole('button', { name: 'Share notice' }))
-    expect(share).toHaveBeenCalledWith(expect.objectContaining({ title: name, text: expect.stringContaining('SAMPLE') }))
+    expect(screen.getByRole('button', { name })).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Sample mode' })).toBeVisible()
+    expect(screen.getByText('Fictional records. Not current agency data.')).toBeVisible()
+    expect(share).not.toHaveBeenCalled()
   } finally { Reflect.deleteProperty(navigator, 'share') }
 })
 

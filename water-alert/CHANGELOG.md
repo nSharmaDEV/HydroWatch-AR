@@ -3,9 +3,176 @@
 Notable website, backend and hosting-configuration changes for the isolated
 `water-alert/` app. This initial entry consolidates work completed locally on
 October 13, 2026; it is not a commit-by-commit history or a release announcement.
-The root `CHANGELOG.md` remains the history of the earlier HydroWatch apps.
+Earlier unrelated app history is preserved in an external local backup, not in
+the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
+
+### 2026-10-20 — Hold the finished opening logo (local only)
+
+- Keep the completed, filled logo visible for 700ms before its 240ms exit fade.
+  Drawing speed is unchanged; total normal-motion intro is now 2510ms. Preserve
+  the reduced-motion alternative and once-per-session behavior. Update README
+  and timing coverage.
+
+### 2026-10-20 — Shorten the opening to two seconds (local only)
+
+- Retime drawing, fill, hold and fade to finish at 2000ms; keep WAVE's longer
+  drawing sequence and the reduced-motion 650ms alternative. Match the independent
+  removal timer to the new duration. Update timing tests and README.
+
+### 2026-10-20 — Session-only SVG logo opening (local only)
+
+- Trace the existing PNG into SVG contours, including the wave and original
+  outlined lettering; retain the layout, teal/navy palette and larger WAVE word.
+  Draw contours using normalized stroke dashes, give WAVE a longer staggered
+  sequence, fill the completed outlines, hold, then fade out within 2.9 seconds.
+- Mount the website concurrently. Use sessionStorage to skip replay; respect
+  reduced motion with completed artwork and a short fade. Remove the overlay via
+  an independent cleanup timer, without capturing input or changing scroll styles.
+  Storage denial never blocks the page. Keep the existing header PNG unchanged.
+- Local verification: 462 unit/integration tests and the production build pass;
+  six focused synthetic Chromium checks cover drawing/fill, session reload,
+  reduced motion, responsive centering and post-intro clicks/scrolling. Full
+  browser suite not rerun. Nothing deployed; no live notifications sent.
+
+### 2026-10-20 — Focus the website on public-water suppliers (local only)
+
+- Remove waterbody entry points from setup, private-well guidance, place management
+  and sample mode. Exclude lake watches, HAB records, changes, history and linked
+  lake notices from the website; show supplier-only source/catalog coverage.
+- Filter new alert saves to supplier choices. Retain existing stored records and
+  preferences without deletion; legacy ADEQ backend ingestion and existing server
+  subscriptions are unchanged until users save alert choices or disable them.
+- Update English/Spanish scope copy, README guidance and affected interface tests.
+- Local verification: 457 unit/integration tests pass with two workers; production
+  build passes. Browser suite not rerun. Nothing deployed or sent.
+
+### 2026-10-20 — Clarify waterbody notices and feed dates (local only)
+
+- Lead ambiguous HAB records with the notice type and explicit unconfirmed
+  active/lifted status. Highlight the runtime ADEQ feed update date as feed-wide,
+  not a lake-record update, new advisory, sampling date or condition change.
+  Correct that label in notice details and check/history views in both languages.
+- Separate Agency record and WAVE check history disclosures; keep the original
+  issue date and published location in a simple fact list. Remove the redundant
+  place-help section and empty reason field. Preserve failure/staleness warnings,
+  source links, explicit lift semantics, coverage and the waterbody/tap-water
+  distinction. No live-data/schema migration or notification changes.
+- Local checks: 455 unit/integration tests passed (two workers), production build
+  passed, and 10 focused synthetic browser checks passed, including English and
+  Spanish at 1440/390/320px. Full browser suite not rerun; no deployment or real
+  notifications. README documents the feed-level date semantics.
+
+### 2026-10-20 — Shared waterbody advisory formatting (local only)
+
+- Use the supplier advisory-history layout for lakes/waterbodies, with HAB labels,
+  ADEQ issued/updated/lift fields and explicit missing-value labels. Keep unknown
+  lift status unconfirmed. Retain source checks separately in the compact activity
+  disclosure, including the latest attempt. Move repeated notice facts out of the
+  place-help section; preserve verified catalog-name matching and source wording.
+- Local verification: 453 unit/integration tests passed (two workers), build
+  passed, and 10 focused synthetic browser checks passed, including English and
+  Spanish advisory layouts at 1440, 390 and 320 pixels. Full browser suite not
+  rerun; no deployment or real notifications.
+
+### 2026-10-20 — Home card alignment (local only)
+
+- Remove the visible My Water heading, retaining its screen-reader heading.
+  Align the main card column with Add a place on desktop; keep Add a place
+  above the cards on phones. Build and six focused English/Spanish browser
+  checks at 1440px, 390px and 320px passed; not deployed.
+
+### 2026-10-20 — Larger warning icon (local only)
+
+- Increase the status-card warning icon from 48px to 72px, about three body-text
+  line heights, retaining the centered compact grouping. Build and 30 focused
+  synthetic browser layout checks passed in English/Spanish at desktop and
+  phone widths. The full browser suite was not rerun; not deployed.
+
+### 2026-10-20 — Consistent status summaries on every card (local only)
+
+- Apply the compact, centered status heading and explanation treatment to all
+  supplier and lake cards, including active, no active notice found, unavailable
+  and never-checked states. Keep agency-specific wording, status colors and
+  existing icon presence unchanged.
+- Build and 34 focused synthetic browser checks passed, covering supplier and
+  lake states in English/Spanish at 1440, 390 and 320 pixels. The full browser
+  suite was not rerun. No deployment or external sending.
+
+### 2026-10-20 — Compact centered boil-notice summary (local only)
+
+- Center the warning icon and notice text together, reduce the icon/text and
+  heading/details gaps, and size the square icon to two body-text line heights.
+  Preserve affected-area wording, reasons, provenance and other status layouts.
+- Build and 16 focused synthetic browser checks passed, including six new
+  centered-summary cases in English/Spanish at 1440, 390 and 320 pixels.
+  The full browser suite was not rerun. No deployment or notifications sent.
+
+### 2026-10-20 — Existing help-step formatting (local only; not deployed)
+
+- Keep the current five-step guide and its behavior; use one consistent existing
+  panel for each step's heading, content and navigation. Match the app's narrow
+  page width and spacing, and remove the draft editor's nested card treatment.
+- Align notice-checklist text and actions without dotted leader lines; stack
+  actions below their instructions on phones. Preserve manual progress, source
+  facts, contacts, draft edits, English/Spanish behavior and safety warnings.
+- Local checks: all 447 tests passed with `npm test -- --maxWorkers=2`, build
+  passed, and six new sample-only browser layout cases passed in English and
+  Spanish at 1440, 390 and 320 pixels. An initial default-worker test run hit an
+  unrelated compiled-API timeout; that test passed independently and in the
+  complete two-worker rerun. The full browser suite was not rerun. No deployment
+  or external sending.
+
+### 2026-10-20 — Lake card lower-section consistency (local only; not deployed)
+
+- Replace the lake card's nested lower menu with three independent disclosure
+  rows and a visible full-width details action. Match supplier row typography,
+  dividers, spacing and button treatment; retain lake-specific evidence, coverage,
+  uncertainty wording and keyboard focus indicators.
+- Keep the lake safety qualification inside its details disclosure, with the
+  page-level safety disclaimer unchanged. Extend synthetic layout checks to the
+  lower sections in English/Spanish at desktop and phone sizes.
+- Local verification: eight browser checks, 41 focused component tests and the
+  production build pass. No deployment or live notifications.
+
+### 2026-10-20 — Consistent home status cards (local only; not deployed)
+
+- Align lake and supplier headings, left-aligned status panels, freshness rows and
+  action buttons. Use a matching outlined official-source button, and stack both
+  cards' actions on narrow screens. Preserve agency-specific notices and details.
+- Match unavailable-status wording and avoid duplicate county suffixes in lake
+  headings without changing source records. Add synthetic English/Spanish desktop
+  and phone layout checks; no live retrieval, notifications or deployment.
+- Local verification: eight new browser checks, 44 focused component tests and
+  the production build pass. Full unit/integration run: 449 pass, three failures
+  in separate help/deletion work; this batch does not repair those paths.
+
+### 2026-10-20 — Withdraw Water Help redesign (local only)
+
+- Remove the local Water Help workspace and saved-communications implementation
+  at the user's request; restore the previous guide and preparation tools.
+  Preserve separate home-card formatting and repository-cleanup work. No deployment.
+- Rollback verification: all 445 unit/integration tests and the production build
+  pass; diff whitespace checks pass.
+
+### 2026-10-20 — WAVE-only repository cleanup (local only; not deployed)
+
+- Preserve older Python projects, their tests/dependencies and unrelated research
+  in a hash-verified backup outside the repository; remove them from the current
+  working tree. Preserve WAVE source, tests, research and deployment paths.
+- Replace the root overview and agent guidance with WAVE-only instructions.
+  Shorten the app README and retain its full dated evidence in
+  `IMPLEMENTATION-NOTES.md`. Exclude development captures and generated output
+  from tracked submission files.
+- No app behavior, data migration, Git-history rewrite, deployment or competition
+  submission is included in this cleanup.
+- Cleanup verification under Node 24.22.0: 445 unit/integration tests and the
+  TypeScript/Vite production build pass; local Markdown links and diff whitespace
+  checks pass. Full synthetic Playwright run: 78 pass, 22 fail on reference-card
+  geometry/element expectations and provider/help section-order expectations.
+  Runtime source, browser tests and deployment configuration are unchanged;
+  these failures were not repaired in the documentation/cleanup batch.
 
 ### 2026-10-19 — Supplier section order (local only; not deployed)
 

@@ -7,6 +7,7 @@ export interface Place { id: string; name: string; kind: 'system' | 'lake'; coun
 export interface Notice {
   id: string; placeId: string; name: string; agency: Agency; kind: 'boil' | 'hab';
   area: string; county: string; issued: string | null; lifted: string | null;
+  // ADEQ sourceUpdatedAt is the feed-wide `updated` value, not a notice update or water-test date.
   reason: string; url: string; sourceUpdatedAt?: string;
   firstObservedAt?: string; lastObservedAt?: string;
   guidance?: { quote: string; url: string; verifiedAt: string };
