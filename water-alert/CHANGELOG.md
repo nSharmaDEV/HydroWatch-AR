@@ -8,6 +8,16 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-21 — Deploy pushed Home and resident-help updates (production)
+
+- The Git push alone did not trigger deployment because this project has no Git
+  integration. Deployed the linked `water-alert` project with Vercel CLI after
+  verifying its project link. Deployment `BeSgponvYgM4oUH3LZxfnEa2MMaU` is Ready
+  at `https://water-alert-ne4zzwc57-nirmays06-3523s-projects.vercel.app` and
+  aliased to `https://water-alert-blond.vercel.app`. Hosted build passed, and the
+  production alias rendered the updated Home in fictional sample mode. No device
+  push delivery was verified.
+
 ### 2026-10-21 — Match Home action sizing and sidebar alignment (local implementation)
 
 - Match Add a place button typography, vertical padding, radius, and rendered

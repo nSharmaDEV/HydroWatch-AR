@@ -2,6 +2,19 @@
 
 ## Goal and current boundary
 
+### October 21 pushed WAVE UI production deployment
+
+- After confirming `.vercel/project.json` links this checkout to the existing
+  `water-alert` project (`prj_TChYrR6c4YBBt5pYGKzwEnJrWStW`), deployed the pushed
+  checkout with `vercel deploy --prod --yes`. Deployment
+  `BeSgponvYgM4oUH3LZxfnEa2MMaU` is Ready at
+  `https://water-alert-ne4zzwc57-nirmays06-3523s-projects.vercel.app`, aliased to
+  **https://water-alert-blond.vercel.app**. The hosted TypeScript/Vite build
+  passed. The production alias was opened and its sample-mode Home rendered the
+  updated sidebar and Add a place UI. No notification setup, scheduler or
+  production environment settings were changed; this was not a real-device or
+  notification-delivery test.
+
 ### October 20 logo intro and current checkout deployment
 
 - With explicit user approval, deployed app source at commit `f9e5966` to the
