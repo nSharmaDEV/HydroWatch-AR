@@ -19,12 +19,14 @@ it('puts choices before collapsed coverage and keeps the concise safety qualific
   expect(screen.getByText('About WAVE', { selector: 'summary' }).closest('details')).not.toHaveAttribute('open')
 })
 
-it('shows a readable name, successful check and official source before secondary tools', () => {
+it('shows a readable name and official source with check timing reserved for details', async () => {
   const at = '2026-10-18T12:00:00Z'
   render(<StatusCard place={place} source={{ agency: 'ADH', records: [], retrievedAt: at, lastSuccessAt: at, error: null }} now={Date.parse(at)} t={en} onView={() => {}} />)
   expect(screen.getByRole('heading', { name: 'Test Water System' })).toBeVisible()
-  expect(screen.getByText(/Last successful check/)).toBeVisible()
-  expect(screen.getAllByText(/7:00 AM CDT/).some(el => !el.closest('dialog'))).toBe(true)
+  expect(screen.queryByText(/Last successful check/)).not.toBeInTheDocument()
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAbout }))
+  expect(within(screen.getByRole('dialog')).getByText(/Last successful check/)).toBeVisible()
+  expect(within(screen.getByRole('dialog')).getByText(/7:00 AM CDT/)).toBeVisible()
   expect(screen.getByRole('link', { name: /View official source/ })).toHaveAttribute('href', SOURCES.ADH)
 })
 

@@ -18,6 +18,10 @@ published records, not testing water.
   separate from current advisory status.
 - Offers provider contacts, guided help and editable preparation drafts. Nothing
   is automatically called, emailed, filed or submitted by those tools.
+  Current active advisories use four tasks: Contact, Prepare, Send & record,
+  Follow up. Progress is resident-reported and lasts only in the open guide;
+  it is not agency status or verified delivery. Non-active/unavailable results
+  retain the five-step help guide.
 - Includes English/Spanish controls, an installable web app and clearly labeled
   fictional sample mode. Agency records and some reference text remain in English.
 

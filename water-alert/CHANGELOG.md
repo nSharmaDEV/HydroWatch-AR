@@ -8,6 +8,355 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-21 — Match Home action sizing and sidebar alignment (local implementation)
+
+- Match Add a place button typography, vertical padding, radius, and rendered
+  height to the card action buttons while retaining its aqua/navy styling and
+  full-width placement. Align Manage alerts with the Get water updates heading
+  text, below its bell icon.
+- Added responsive Playwright assertions; execution remains blocked by the
+  existing process occupying port 5194. Not deployed.
+
+### 2026-10-21 — Always-visible Home sidebar and notification switch (local implementation)
+
+- Align the full-width Add a place action with the main Home card and use aqua
+  `#46CDCD` with navy `#082F49`. Keep About these results expanded, with a
+  matching outlined information icon, heading typography and divider.
+- Replace the sidebar's off sentence with an accessible, keyboard-operable
+  notification switch. Enabling uses the existing permission, browser push and
+  server-registration flow; the switch turns on only after setup succeeds.
+  Blocked permission and setup failures leave it off and explain the next step.
+  Manage alerts remains available; delivery is not guaranteed or verified.
+- Local checks: 32 focused unit/integration tests and the production build pass.
+  Focused Playwright run could not start because the dedicated test port 5194 was
+  already occupied by an existing local process. Not deployed; device delivery
+  was not tested.
+
+### 2026-10-21 — Two-column help workspace (local implementation)
+
+- Give every active-notice and general-help step paired directions and task work.
+  Keep one mounted draft editor, per-template edits and selected historical
+  references while navigating; shorten repeated copy and disclose supplementary
+  guidance, sending options and privacy detail without clipping expanded content.
+- Offer opt-in exact-provider historical findings in both guides. Copy/download
+  output retains selected source citations, dates and historical limitations;
+  sample mode remains separate. No submissions or persistence were added.
+- Local checks: 27 targeted help unit tests and 24 targeted browser tests pass;
+  the latter cover all four pathways in both languages at 1280×700, mobile widths
+  and enlarged text. Production build passes. Full unit run: 483 pass, four fail
+  in annual-report historical-disclaimer and provider missing-email expectations
+  outside these help changes. Full browser suite not rerun. Not deployed.
+
+### 2026-10-21 — Trim annual report and profile disclosures (local implementation)
+
+- Remove the manual-review date and historical-compliance disclaimer from annual
+  report details, and remove the redundant monitoring safety note. Keep the
+  original PDF and ADH annual-report links directly after the findings.
+- Remove the ADH directory review-date and limitation paragraph from the supplier
+  profile while retaining its ADH profile link. Not deployed.
+
+### 2026-10-21 — Simplified Home sidebar (local implementation)
+
+- Make Add a place a full-sidebar-width teal button with white text. Remove the
+  white cards, rounded borders and shadows from Get water updates and About these
+  results; align their edges and separate them with a thin horizontal divider.
+- Keep the bell beside the heading, move device status before Manage alerts, and
+  use compact spacing and slightly smaller supporting text. Preserve notification
+  state logic, translated copy, expandable +/− disclosure and existing navigation.
+  This change does not modify main status-card sizing or layout rules.
+- Local checks: production build and six new synthetic sidebar browser checks pass
+  in English/Spanish at 1440/390/320px, including navigation and disclosure behavior.
+  Broader checks were not clean: the isolated Home run had 51 passes and three
+  failures outside the new sidebar checks while other worktree edits were ongoing;
+  unit/integration tests had 483 passes and one timeout (all 15 tests in that file
+  passed on retry). No deployment or real notification-delivery verification.
+
+### 2026-10-21 — Show only verified provider contact actions (local implementation)
+
+- Hide unavailable email actions and their fallback text; render the phone/email
+  button group only when at least one verified contact method exists. Keep
+  available actions right-aligned opposite the left-aligned service heading and
+  directory link, preserving the divider and help-button spacing. Not deployed.
+
+### 2026-10-21 — Spaced service-help button (local implementation)
+
+- Set a consistent 24px gap between the visible service-contact row and the
+  centered help button. The card grows naturally while retaining equal bottom,
+  left and right padding; existing button sizing and the service divider remain.
+- Updated synthetic browser layout assertions. Not deployed.
+
+### 2026-10-21 — Restored service-contact divider (local implementation)
+
+- Restore the full-width 1px divider between Advisory history and Service
+  questions, using the same border color as the provider/history divider.
+  Match the spacing below it to the history row's bottom padding (12px normally,
+  9px on short laptop screens). Contact details remain directly visible.
+- Synthetic browser checks compare divider width, border and spacing in both
+  languages. The added spacing can produce about 9px of natural document scrolling
+  at 1280×650; controls remain visible, and content is not clipped. Not deployed.
+
+### 2026-10-21 — Always-visible service contacts (local implementation)
+
+- Replace the Service questions disclosure with the heading, ADH directory
+  citation and verified phone/email actions directly visible in the same compact
+  row. Keep laptop rows within 48–50px; let narrow layouts wrap naturally without
+  clipping contact values. Preserve missing-contact warnings and exact destinations.
+- Local checks: 48 synthetic browser layout tests and production build passed,
+  including both languages at 1280×650, 1440×700 and mobile widths. Not deployed.
+
+### 2026-10-21 — Consistent header dimensions across tabs (local implementation)
+
+- Apply Home's compact header padding and logo sizing to every page, removing
+  the route-dependent jump in header height and logo dimensions.
+- Local checks: 42 synthetic browser layout tests and production build passed.
+  New checks compare header and logo geometry across Home, Places, History and
+  Settings in both languages at laptop and mobile sizes. Not deployed.
+
+### 2026-10-21 — Restored card width with responsive height (local implementation)
+
+- Restore the centered 1160px Home container and previous desktop horizontal
+  spacing. Let the carousel and provider card share available vertical space
+  through flexible layout rather than fixed heights or spacer elements.
+- Keep approximately 24px above the card and below its carousel controls.
+  The notice area absorbs spare height with centered text; typography, button
+  sizes and horizontal card spacing remain unchanged. Expanded and small-screen
+  content scrolls naturally, and the footer remains removed.
+- Local checks: 39 synthetic browser layout tests, including 1280×650,
+  1440×700, taller and mobile views, plus production build passed. Not deployed.
+
+### 2026-10-21 — Wider responsive Home card (local implementation)
+
+- Remove Home's page width cap and use 24px desktop / 16px mobile outer
+  padding. Increase desktop card padding to 24px for comfortable, content-led
+  height without stretching the card or adding empty space.
+- Preserve equal viewport gaps, natural expanded/mobile scrolling, the current
+  header, typography, colors and interactions. The footer remains removed.
+- Local checks: 39 synthetic browser layout tests, including 1280×650 and
+  1440×700 at normal zoom, plus production build passed. Not deployed.
+
+### 2026-10-21 — Centered Home without a bottom bar (local implementation)
+
+- Delete the footer container and its desktop/mobile styles. Keep the header
+  unchanged and share spare viewport height equally above and below Home using
+  a flexible column layout and automatic margins, without changing card internals.
+- Expanded or shorter views scroll naturally with equal 16px content padding;
+  retain only the clearance required by the existing fixed mobile navigation.
+- Local checks: 39 synthetic browser layout tests (including 1280×650,
+  1440×700, taller and mobile views), 484 unit/integration tests and production
+  build passed. Not deployed.
+
+### 2026-10-21 — Combined provider details without duplicate dividers (local implementation)
+
+- Remove the divider immediately below the supplier action buttons. Combine
+  water-source context and all six provider facts under the existing Provider
+  information toggle, without a nested More provider details disclosure.
+- Remove the repeated population sentence, duplicate directory/report links and
+  decorative section dividers. Retain distinct source citations, verification
+  dates, historical-report qualifications and English/Spanish content.
+- Local checks: 484 unit/integration tests, 37 synthetic browser layout tests
+  (including expanded laptop/mobile views) and production build passed. Not deployed.
+
+### 2026-10-21 — Matching provider actions and geometric title (local implementation)
+
+- Normalize the button/link pair's inline-flex alignment, 8px icon gap, padding,
+  border thickness and typography within the existing equal-width, 12px-gap grid.
+  Retain banner-edge alignment, narrow-screen stacking and original actions.
+- Use locally hosted Montserrat Bold for every supplier-card title, retaining
+  title case, navy and natural wrapping beside the information button. This is
+  an approximation: existing logo assets are raster/outlined, with no original
+  font supplied. Font provenance and the SIL license accompany the asset in
+  `public/fonts/` (no runtime third-party font requests).
+- Local synthetic Chromium checks cover normal-zoom laptop/mobile layouts,
+  English/Spanish, matching control metrics, font loading and long-title wrapping.
+  Not deployed.
+
+### 2026-10-21 — Balanced advisory-banner spacing (local implementation)
+
+- Use 16px above and below the supplier banner in all advisory states. Reset
+  text margins and group headline/supporting text with an 8px gap and equal
+  vertical padding; retain width, type sizes and natural growth when text wraps.
+  Short laptop screens use compact symmetric inner padding to preserve Home fit.
+- Local synthetic Chromium checks pass for English/Spanish across all three
+  states, laptop viewports, mobile wrapping and expanded sections (31 tests).
+  Production build passes. Not deployed.
+
+### 2026-10-21 — Undo the last two Home layout rounds (local implementation)
+
+- At the user's request, restore the footer, earlier header/card/sidebar spacing,
+  outlined Check now, filled help action and collapsed Service questions section.
+  Remove the extra qualification/source link from About these results. Preserve
+  earlier work, including the larger notice banner and popup-only check timestamp.
+  Restore the corresponding layout and disclosure regression expectations.
+  Not deployed.
+
+### 2026-10-21 — Larger notice banner (local implementation)
+
+- Remove the supplier card's standalone last-successful-check row; retain its
+  timestamp and empty-check state in the supplier details dialog.
+- Reuse the space for a roomier notice banner with 26px headings and 18px
+  explanatory text, preserving notice wording, source links and unavailable states.
+- Local checks: 13 synthetic Chromium layout tests (including 1280×650 and
+  1440×700, English/Spanish and expanded sections), 484 unit/integration tests,
+  and the production build pass. Not deployed.
+
+### 2026-10-21 — Compact Home with bottom carousel controls (local implementation)
+
+- Shorten the Home header with 6px vertical padding and a proportional 200px-wide
+  logo; tighten water-update card spacing and advisory/check/action gaps without
+  reducing text sizes. Preserve the dotted freshness leader and readable controls.
+- Use white, outlined teal Check now buttons. Put carousel controls outside and
+  below the provider card, with an 8–12px gap, left/right buttons and centered count.
+  Preserve the existing carousel interaction and mounted card state.
+- Keep the footer in document flow with 16px bottom padding. Height-based spacing
+  lets the collapsed Home, controls and footer fit at 1280×650 and 1440×700 at normal
+  browser zoom; expanded sections and smaller screens retain document scrolling.
+- Local synthetic Chromium coverage checks English/Spanish, active/no-notice cards,
+  expanded sections, footer visibility and reachable bottom controls. No deployment
+  or real notifications.
+
+### 2026-10-21 — Consistent supplier-card formatting (local implementation)
+
+- Give active boil notices the same centered headline/body layout and primary
+  Check now button as no-notice cards. Keep the warning color, source link and
+  advisory wording; use an inline 24px warning icon instead of an oversized icon.
+  Area and reason share a wrapping line with a separator, without hiding evidence.
+- Reduce the gap between Service questions and the help action from 24px to 8px
+  at taller viewport heights too; retain 16px card padding and readable text.
+- Local synthetic Chromium checks cover both states in English and Spanish at
+  1280×650, 1440×700 and 1440×900, plus expanded sections and smaller screens.
+  No deployment or real notifications.
+
+### 2026-10-21 — Home fits short laptop viewports (local implementation)
+
+- Move carousel navigation above the provider card. Use 16px below the header,
+  8px between navigation and card, and 16px card padding. Remove Home's inherited
+  minimum page height; compact secondary panels and let the footer follow content.
+- At desktop widths above 760px and viewport heights up to 750px, reduce header,
+  card and footer whitespace without shrinking text or scaling the page. Keep
+  primary actions, disclosure controls and carousel buttons at least 44px tall.
+  Expanded sections and smaller viewports retain normal document scrolling.
+- Local Node 24 checks: 484 unit/integration tests, production build and seven
+  isolated Chromium viewport tests pass. At 100% zoom, English and Spanish Home
+  fit 1280×650 and 1440×700 CSS pixels without vertical scrolling; expanded
+  provider information, history and service sections keep the help action
+  reachable. Also checked scrolling at 1280×480, 390×600 and 320×600, without
+  horizontal page overflow. Screenshots inspected locally; synthetic status
+  responses only, no live API writes, notifications or deployment.
+
+### 2026-10-21 — Watched-place carousel is button-driven (local implementation)
+
+- Remove gesture control from the watched-place carousel. Touch swiping,
+  trackpad scrolling, vertical wheel translation and mouse dragging no longer
+  move the cards; only Previous/Next and the arrow/Home/End keys do. Keyboard
+  navigation remains for accessibility, and the page scrolls normally over the
+  cards. Remove the wheel/drag/snap-state machinery and the now-unused
+  interaction styles; the track is clipped with `overflow: hidden`.
+- Card content, controls, expanded state, indicator, resizing behaviour and
+  reduced-motion handling are unchanged. Cards still animate between positions
+  when the buttons are used.
+- Local Node 24.22.0 checks: `npx tsc --noEmit`, 484 unit/integration tests and
+  the production build pass. Local Chromium checks against the running dev
+  server confirmed buttons and keyboard navigation, no card movement from
+  wheel, trackpad, mouse drag or a 390px CDP touch swipe, working card controls,
+  resize realignment and no horizontal page overflow at 1100/390/320px. Not
+  deployed.
+
+### 2026-10-20 — Watched-place carousel (local implementation)
+
+- Replace the vertically stacked watched-place cards with a one-at-a-time
+  horizontal carousel that keeps the existing supplier/lake cards, colours,
+  links, dialogs and expandable sections unchanged. Cards stay mounted, so
+  expanded provider information and other card state survive navigation.
+- Use native horizontal scrolling and CSS scroll snapping. Support trackpad
+  horizontal wheel, proportional vertical wheel, mouse drag and touch swipe;
+  disable snapping only while a custom gesture is active, then snap to the
+  nearest card. A plain click is never captured, so card buttons, links and
+  accordions keep working; vertical drags and text fields are left alone.
+  Previous/Next buttons, a "1 of N places" live indicator, arrow/Home/End keys
+  and reduced-motion handling are included; no automatic advance.
+- Clip neighbouring cards inside the carousel viewport without page-wide
+  horizontal overflow from 320px upward, and realign on resize. Page scrolling
+  remains available at the first and last cards.
+- Local Node 24.22.0 checks: `npx tsc --noEmit`, the production build and 487
+  unit/integration tests pass; one unrelated `tests/active-help.test.tsx` case
+  timed out once under full-suite load and passes in isolation. Local Chromium
+  checks against the running dev
+  server covered partial wheel/drag gestures, mid-gesture reversal, snapping,
+  390px CDP touch swipe, horizontal wheel, card clicks/expanded state, keyboard
+  navigation, resize realignment and no horizontal page overflow at
+  320/390/768/1024/1280px. Not deployed, and no hosted or real-device delivery
+  was verified.
+
+### 2026-10-20 — Four-step active-advisory help (local implementation)
+
+- Implement Contact, Prepare, Send & record and Follow up for fresh active ADH
+  supplier notices, with reversible resident task progress. Keep the original
+  five-step guide for no-active, unavailable/stale and historical contexts.
+  Official water-use and after-lift references stay available outside task counts.
+- Add optional exact-supplier reviewed historical report appendices to copied,
+  downloaded and email drafts, preserving dates/page/source/review provenance
+  without claiming current noncompliance or compensation entitlement. English/
+  Spanish controls remain; sample mode excludes real findings and contacts.
+- Record externally completed sending only after attestation and nonfuture-date
+  validation. Record resident response notes, follow-up date, closure/reopening
+  and deletion separately from advisory status and unverified agency processing.
+  Reply/follow-up drafts retain the recorded destination; warn against duplicate
+  complaints and replacement of the single sending record/response notes.
+- All draft/progress data remains open-guide memory, with loss warnings; no
+  server/browser persistence, uploads, automatic sends or reminders added.
+- Local Node 24.22.0 checks: 477 unit/integration tests and production build pass;
+  16 targeted help browser checks pass, including en/es at 1440/390/320px,
+  source-appendix downloads, sending guards, response versus closure, deletion,
+  reload reset and no external/API mutation requests. Correct scoped mobile
+  contact layout and prevent task navigation inheriting fixed app-nav styling.
+  Full browser suite not rerun; earlier unrelated failures remain unverified.
+  No deployment, real submission or device-delivery verification performed.
+
+### 2026-10-20 — Four combined help steps (wireframes only)
+
+- Consolidate the proposed help journey into Contact, Prepare, Send & record,
+  and Follow up, with a four-item progress bar. Combine recipients with contacts,
+  evidence with drafts, external handoff with recording, and responses with
+  follow-up. Guidelines remain accessible on every panel outside the task count.
+  Follow-up completes only through resident-controlled closure, not a response
+  or elapsed time. The actual app is unchanged; the preview remains synthetic
+  and page-memory only.
+
+### 2026-10-20 — Visible help checklist progress (wireframes only)
+
+- Add a seven-step progress bar to the proposed comparison panels, with
+  completed/to-do labels, step navigation, next unfinished step and reversible
+  checkmarks. Visiting a screen never completes it. Sending completion requires
+  the user-confirmed external-submission record and clears when that record is
+  deleted. Progress is page-memory only, separate from agency status; no actual
+  app behavior, persistent storage or delivery verification added.
+- Local Playwright checks passed for manual completion/undo, navigation retention,
+  sending confirmation, record deletion, all-complete and reload-reset states;
+  all 12 comparison screens fit 1440/390/320px viewports without page errors.
+
+### 2026-10-20 — Contact-first help wireframes (design only)
+
+- Reorder the proposed help comparison to put contacts, recipient selection,
+  evidence, drafting and follow-up before detailed guideline screens. Update
+  action destinations and tracking returns for the new order. Keep guidelines
+  directly accessible and retain the immediate official-notice reminder.
+  Actual app behavior and original-process comparison content are unchanged.
+
+### 2026-10-20 — Get Help comparison wireframes (design only)
+
+- Add a standalone fictional 12-screen current/proposed comparison under
+  `docs/wireframes/`: urgent guidance, recipient routing, opt-in dated report
+  citations, draft/response concepts and a self-reported progress log.
+- Tracking is page-memory simulation with deletion; no real sending, persistent
+  storage, agency status integration or notifications. Keep the no-advisory
+  wizard in the proposal and distinguish unavailable data. Avoid universal
+  duration/flushing assumptions. No app behavior changed or implementation
+  approval implied; no deployment or delivery verification performed.
+- Local synthetic Chromium checks passed for all 12 screens at 1440/390/320px,
+  citation selection, reply template, submission confirmation guard, text-safe
+  reference rendering, response recording, tracking deletion and no persistent
+  storage. No page errors or horizontal document overflow in those checks.
+
 ### 2026-10-20 — Approved production deployment
 
 - Deployed source `f9e5966` to the existing Vercel production alias after explicit

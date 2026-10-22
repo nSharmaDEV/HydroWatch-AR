@@ -5,7 +5,7 @@ import { SAMPLE_NOW, sampleArchive, samplePlaces, sampleSources } from './sample
 import { APP_NAME, en, es } from './strings'
 import { appTimestamp, DateRow, Icon, Panel, SourceLink, StatusCard } from './components'
 import { PushPanel } from './PushPanel'
-import { disablePush, pushDevice, pushSignature } from './push'
+import { disablePush, enablePush, pushDevice, pushSignature, supportsPush } from './push'
 import { ConfirmPlace, PrivateWell, SampleIntro, SearchPlace, Welcome } from './Journey'
 import { NoticeDetail } from './NoticeDetail'
 import { ObservedHistory } from './ObservedHistory'
@@ -15,6 +15,7 @@ import { RECOVERY_RESOURCES } from './recovery-resources'
 import { CDC_GUIDANCE_URL } from './BoilWaterGuidance'
 import { recoveryStrings } from './recovery-strings'
 import { HelpGuide } from './HelpGuide'
+import { ProviderCarousel } from './ProviderCarousel'
 
 type Page = 'home' | 'browse' | 'history' | 'settings' | 'setup' | 'search' | 'confirm' | 'well' | 'sampleIntro' | 'detail' | 'help' | 'alerts' | 'sources' | 'privacy' | 'installation'
 type RemovedPlace = { id: string; index: number; lifted: boolean }
@@ -34,6 +35,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
   const [selected, setSelected] = useState<string | null>(null)
   const [linkedId, setLinkedId] = useState<string | null>(() => new URLSearchParams(window.location.search).get('notice'))
   const [device, setDevice] = useState(pushDevice)
+  const [pushConfig, setPushConfig] = useState<{ state: 'loading' | 'ready' | 'unsupported' | 'unavailable' | 'error'; publicKey?: string }>({ state: 'loading' })
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -57,6 +59,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
   const source = sources.find(s => s.agency === (place?.kind === 'system' ? 'ADH' : 'ADEQ'))
   const selectedStatus = place ? statusFor(place.id, source, clock) : null
   const linkedNotice = linkedId && selected ? archive.find(n => n.id === linkedId && noticeMatchesPlace(selected, n)) : undefined
+  const activeHelp = selectedStatus?.state === 'active' && (!linkedId || !!linkedNotice && selectedStatus.records.some(n => n.id === linkedNotice.id))
   const recent = !sample ? (liveData.recentChanges ?? []).filter(e => e.notice.agency === 'ADH' && activeWatches.some(id => noticeMatchesPlace(id, e.notice)) && statusFor(e.notice.placeId, sources.find(s => s.agency === e.notice.agency), clock).state !== 'unavailable') : []
 
   useEffect(() => {
@@ -80,6 +83,17 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     return () => clearInterval(timer)
   }, [mode, prefs.checkOnOpen, onLiveOpen])
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30_000); return () => clearInterval(timer) }, [])
+  useEffect(() => {
+    if (!supportsPush()) { setPushConfig({ state: 'unsupported' }); return }
+    let cancelled = false
+    void fetch('/api/push/config').then(async response => {
+      if (!response.ok) throw new Error('Unavailable')
+      const value = await response.json()
+      if (value.enabled !== false && !(value.enabled === true && typeof value.publicKey === 'string' && value.publicKey.trim())) throw new Error('Invalid configuration')
+      if (!cancelled) setPushConfig(value.enabled ? { state: 'ready', publicKey: value.publicKey } : { state: 'unavailable' })
+    }).catch(() => { if (!cancelled) setPushConfig({ state: 'error' }) })
+    return () => { cancelled = true }
+  }, [])
   useEffect(() => { if (!savePreferences(mode, prefs)) setMessage(t.storageError) }, [mode, prefs, t.storageError])
   useLayoutEffect(() => {
     if (page === 'help') return
@@ -136,6 +150,23 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     setPrefs(defaults()); setMode('live'); setSelected(null); setCandidate(null); setRemoved(null); setLinkedId(null); setMessage(''); setPage('setup')
     setBusy(false)
   }
+  async function togglePush() {
+    if (busy || sample) return
+    if (device) {
+      setBusy(true); setMessage('')
+      try { await disablePush(); setDevice(null); setMessage(t.pushRemoved) }
+      catch { setMessage(t.pushFailed) }
+      finally { setBusy(false) }
+      return
+    }
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') { setMessage(t.pushPermissionDenied); return }
+    if (!prefs.watches.length) { setMessage(t.pushNeedsPlaces); return }
+    if (pushConfig.state !== 'ready' || !pushConfig.publicKey) { setMessage(pushConfig.state === 'unsupported' ? t.pushUnsupported : pushConfig.state === 'unavailable' ? t.pushUnavailable : t.pushSetupFailed); return }
+    setBusy(true); setMessage('')
+    try { await enablePush(mode, supplierPrefs, pushConfig.publicKey); setDevice(pushDevice()); setMessage(t.pushSaved) }
+    catch (error) { setMessage(typeof Notification !== 'undefined' && (Notification.permission === 'denied' || error instanceof Error && error.message.toLowerCase().includes('permission')) ? t.pushPermissionDenied : t.pushSetupFailed) }
+    finally { setBusy(false) }
+  }
   const navPage = ['alerts', 'sources', 'privacy', 'installation'].includes(page) ? 'settings' : page === 'detail' ? 'home' : ['search', 'confirm', 'well'].includes(page) ? 'browse' : page
   const nav = (['home', 'browse', 'history', 'settings'] as const).map(item => <button key={item} aria-current={navPage === item ? 'page' : undefined} onClick={() => navigate(item)}><Icon name={item} /><span>{t[item]}</span></button>)
   const settingsLinks = [
@@ -160,13 +191,13 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
       {page === 'sampleIntro' ? <SampleIntro t={t} onStart={() => search('system')} onList={sampleList} /> : null}
       {page === 'home' ? <>
         <h1 className="sr-only">{t.myWater}</h1>
-        <div className="home-layout"><button className="secondary add-place" onClick={() => navigate('setup')}>+ {t.add}</button><div className="home-main">
+        <div className="home-layout"><button className="primary add-place" onClick={() => navigate('setup')}>+ {t.add}</button><div className="home-main">
           {recent.length ? <Panel><h2>{t.sinceVisit}</h2><p>{t.sinceVisitInfo}</p>{recent.map(e => <div key={e.id} className="watched-row"><span>{e.notice.name} · {e.type === 'lifted' ? t.agencyLifted : t.active} · {appTimestamp(e.observedAt, prefs.language)}</span><button className="text-button" onClick={() => { setSelected(e.notice.placeId); navigate('detail'); setLinkedId(e.notice.id) }}>{t.view}</button></div>)}</Panel> : null}
-          {!prefs.watches.length ? <Panel><p>{t.noWatches}</p><button className="primary" onClick={() => navigate('setup')}>{t.setup}</button></Panel> : <div className="status-grid">{watched.map(p => <StatusCard key={p.id} place={p} archive={archive} source={sources.find(s => s.agency === (p.kind === 'system' ? 'ADH' : 'ADEQ'))} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onHelp={() => openHelp(p.id)} onView={() => { setSelected(p.id); navigate('detail') }} onViewNotice={id => { setSelected(p.id); navigate('detail'); setLinkedId(id) }} />)}{missingWatches.map(id => <Panel className="status-card unavailable" key={id}><p className="status-label"><span className="status-symbol" aria-hidden="true">?</span>{t.unavailable}</p><p>{t.missingPlace}</p><p className="quiet-note">{id}</p><button className="secondary" onClick={() => navigate('browse')}>{t.watched}</button></Panel>)}</div>}
-        </div><aside className="home-sidebar"><section className="home-alert-options"><h2><Icon name="bell" />{t.waterUpdates}</h2><button className="text-button" onClick={() => navigate('alerts')}>{t.manageAlerts}</button><p className="delivery-status">{sample ? t.disconnected : device ? device.signature !== pushSignature(prefs) ? t.pushDirty : t.pushSaved : t.deliveryOff}</p></section><section className="about-results"><details><summary>{t.aboutResults}<span className="disclosure-icon" aria-hidden="true" /></summary><p>{t.resultsSummary}</p><button className="text-button" onClick={() => navigate('sources')}>{t.sources}</button></details></section></aside></div>
+          {!prefs.watches.length ? <Panel><p>{t.noWatches}</p><button className="primary" onClick={() => navigate('setup')}>{t.setup}</button></Panel> : <ProviderCarousel language={prefs.language}>{[...watched.map(p => <StatusCard key={p.id} place={p} archive={archive} source={sources.find(s => s.agency === (p.kind === 'system' ? 'ADH' : 'ADEQ'))} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onHelp={() => openHelp(p.id)} onView={() => { setSelected(p.id); navigate('detail') }} onViewNotice={id => { setSelected(p.id); navigate('detail'); setLinkedId(id) }} />), ...missingWatches.map(id => <Panel className="status-card unavailable" key={`missing:${id}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">?</span>{t.unavailable}</p><p>{t.missingPlace}</p><p className="quiet-note">{id}</p><button className="secondary" onClick={() => navigate('browse')}>{t.watched}</button></Panel>)]}</ProviderCarousel>}
+        </div><aside className="home-sidebar"><section className="home-alert-options"><div className="sidebar-heading-row"><h2><Icon name="bell" />{t.waterUpdates}</h2><button type="button" role="switch" aria-label={t.waterUpdates} aria-checked={!sample && !!device} disabled={busy || sample} className="notification-switch" onClick={() => void togglePush()}><span aria-hidden="true" /></button></div>{sample || device ? <p className="delivery-status">{sample ? t.disconnected : device ? device.signature !== pushSignature(prefs) ? t.pushDirty : t.pushSaved : ''}</p> : null}<button className="text-button" onClick={() => navigate('alerts')}>{t.manageAlerts}</button></section><section className="about-results"><h2><Icon name="info" />{t.aboutResults}</h2><p>{t.resultsSummary}</p><button className="text-button" onClick={() => navigate('sources')}>{t.sources}</button></section></aside></div>
       </> : null}
       {page === 'detail' ? linkedId && !linkedNotice ? <Panel><p>{prefs.language === 'es' ? 'No se puede abrir este aviso guardado con los registros disponibles actualmente. No se ha sustituido por otro aviso.' : 'This saved notice cannot be opened from the currently available records. It has not been replaced with another notice.'}</p><button className="secondary" onClick={() => navigate('home')}>{t.back}</button></Panel> : place ? <NoticeDetail place={place} source={source} now={clock} linkedNotice={linkedNotice} t={t} language={prefs.language} sample={sample} onBack={() => navigate('home')} onShare={n => void share(n)} onAlerts={askLift} onHelp={() => openHelp(place.id)} /> : null : null}
-      {page === 'help' && place ? <HelpGuide key={`${mode}:${place.id}:${linkedId ?? selectedStatus?.records.map(n => n.id).sort().join('|')}:${prefs.language}`} place={place} notice={linkedNotice ?? (selectedStatus?.records.length === 1 ? selectedStatus.records[0] : undefined)} language={prefs.language} sample={sample} onBack={closeHelp} /> : null}
+      {page === 'help' && place ? <HelpGuide key={`${mode}:${place.id}:${linkedId ?? selectedStatus?.records.map(n => n.id).sort().join('|')}:${prefs.language}`} place={place} notice={linkedNotice ?? (selectedStatus?.records.length === 1 ? selectedStatus.records[0] : undefined)} active={activeHelp} language={prefs.language} sample={sample} onBack={closeHelp} /> : null}
       {page === 'browse' ? <div className="narrow-page"><div className="page-heading"><div><h1>{t.watched}</h1></div></div><Panel>
         {!activeWatches.length ? <p>{t.noWatches}</p> : null}
         {activeWatches.map(id => { const p = places.find(p => p.id === id); return <div className="place-row" key={id}><Icon name="browse" /><div><h2>{p?.name ?? id}</h2><p>{p ? `${p.county} · ADH` : t.missingPlace}</p></div><button className="text-button" aria-label={`${t.remove} ${p?.name ?? id}`} onClick={() => removeWatch(id)}>{t.remove}</button></div> })}
@@ -185,6 +216,6 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
         {page === 'privacy' ? <><h1>{t.privacy}</h1><Panel><h2>{t.storedDevice}</h2><p>{t.privacyDevice}</p><p>{recoveryStrings[prefs.language].privacy}</p><h2>{t.storedPush}</h2><p>{t.privacyPush}</p><h2>{t.retentionDeletion}</h2><p>{t.privacyRetention}</p><button className="danger full" disabled={busy} onClick={() => setConfirmDelete(true)}>{t.delete}</button>{confirmDelete ? <section aria-label={t.confirmRemoval}><p>{t.deletionText}</p><button className="danger" disabled={busy} onClick={() => void deleteDevice()}>{t.confirmRemoval}</button><button className="secondary" disabled={busy} onClick={() => setConfirmDelete(false)}>{t.cancel}</button></section> : null}</Panel></> : null}
         {page === 'installation' ? <><h1>{t.installation}</h1><Panel><p>{/iPad|iPhone|iPod/.test(navigator.userAgent) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 ? t.iOS : t.installationGeneral}</p><button className="text-button" onClick={() => navigate('alerts')}>{t.setupNotifications}</button></Panel></> : null}
       </div> : null}
-    </main><footer className="app-footer">ADH <span>{prefs.language === 'en' ? 'Published notices, not a safety assessment.' : 'Avisos publicados, no una evaluación de seguridad.'}</span></footer>
+    </main>
   </>
 }

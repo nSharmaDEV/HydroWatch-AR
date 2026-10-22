@@ -9,7 +9,7 @@ import { ANNUAL_REPORTS, type AnnualReport } from '../src/annual-reports'
 const place: Place = { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' }
 const pdf = 'https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025'
 
-it.each(['en', 'es'] as const)('shows the reviewed %s report before independently collapsed provider facts', async language => {
+it.each(['en', 'es'] as const)('shows the reviewed %s report before combined provider facts', async language => {
   const es = language === 'es'
   const user = userEvent.setup()
   render(<SupplierInformation place={place} language={language} sample={false} onView={() => {}} />)
@@ -22,10 +22,10 @@ it.each(['en', 'es'] as const)('shows the reviewed %s report before independentl
   expect(panel.querySelector('.report-summary-header')).toContainElement(toggle)
   expect(panel.querySelector('.report-summary-header')).toContainElement(screen.getByText(es ? '4 problemas de cumplimiento reportados' : '4 compliance issues reported'))
   expect(screen.queryByText('07/11/2025')).not.toBeVisible()
-  expect(screen.getByText('WELL #1')).not.toBeVisible()
+  expect(screen.getByText('WELL #1')).toBeVisible()
   expect(screen.getByText('Roubidoux Formation Aquifer')).toBeVisible()
   expect(screen.getByRole('link', { name: es ? /Ver informe original/ : /View original report/ })).toHaveAttribute('href', pdf)
-  expect(document.querySelector('.provider-more>summary .disclosure-icon')).not.toBeNull()
+  expect(document.querySelector('.provider-more')).toBeNull()
   await user.click(toggle)
   const issues = document.getElementById(toggle.getAttribute('aria-controls')!)!
   expect(panel).toContainElement(issues)
@@ -47,9 +47,8 @@ it.each(['en', 'es'] as const)('shows the reviewed %s report before independentl
   const links = within(issues).getAllByRole('link', { name: es ? /Informe, página 2/ : /Report, page 2/ })
   expect(links).toHaveLength(4)
   for (const link of links) expect(link).toHaveAttribute('href', `${pdf}#page=2`)
-  await user.click(screen.getByText(es ? 'Más detalles del proveedor' : 'More provider details'))
   expect(screen.getByText('WELL #1')).toBeVisible()
-  expect(screen.getByText(es ? /Directorio de ADH ·/ : /ADH directory ·/)).toBeVisible()
+  expect(screen.queryByText(es ? /Directorio de ADH ·/ : /ADH directory ·/)).toBeNull()
   expect(screen.getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
 })
 
@@ -66,7 +65,8 @@ it.each(['en', 'es'] as const)('keeps reviewed-empty, unreviewed and unavailable
   const select = screen.getByRole('combobox', { name: es ? 'Año' : 'Year' })
   expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['2025', '2024', '2023'])
   expect(screen.getByText(es ? 'No se reportaron infracciones' : 'No violations reported')).toBeVisible()
-  expect(screen.getByText(es ? /Informe histórico/ : /Historical report/)).toBeVisible()
+  expect(screen.queryByText(es ? /Informe histórico/ : /Historical report/)).toBeNull()
+  expect(screen.queryByText(es ? /Revisión manual de ADH/ : /ADH report manually reviewed/)).toBeNull()
   expect(screen.queryByRole('button')).toBeNull()
   await user.selectOptions(select, '2024')
   expect(screen.getByText(es ? 'Informe aún no revisado' : 'Report not yet reviewed')).toBeVisible()

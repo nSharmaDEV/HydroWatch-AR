@@ -7,11 +7,11 @@ import { AnnualWaterReport } from './AnnualWaterReport'
 import { ANNUAL_REPORTS } from './annual-reports'
 import { providerProfile } from './provider-profiles'
 
-function ProfileLinks({ place, language, sample, includeDirectory = true }: { place: Place; language: Language; sample: boolean; includeDirectory?: boolean }) {
+function ProfileLinks({ place, language, sample, includeDirectory = true, includeReports = true }: { place: Place; language: Language; sample: boolean; includeDirectory?: boolean; includeReports?: boolean }) {
   if (sample || place.kind !== 'system') return null
   const contact = Object.hasOwn(PROVIDER_CONTACTS, place.id) ? PROVIDER_CONTACTS[place.id] : undefined
   const es = language === 'es'
-  return <div className="profile-links">{contact && includeDirectory ? <SourceLink url={contact.sourceUrl}>{es ? 'Perfil de ADH' : 'ADH profile'}</SourceLink> : null}<SourceLink url={RECOVERY_RESOURCES.annualReports}>{es ? 'Informes anuales de calidad del agua' : 'Annual water-quality reports'}</SourceLink></div>
+  return <div className="profile-links">{contact && includeDirectory ? <SourceLink url={contact.sourceUrl}>{es ? 'Perfil de ADH' : 'ADH profile'}</SourceLink> : null}{includeReports ? <SourceLink url={RECOVERY_RESOURCES.annualReports}>{es ? 'Informes anuales de calidad del agua' : 'Annual water-quality reports'}</SourceLink> : null}</div>
 }
 
 export function SupplierInformation({ place, language, sample }: { place: Place; language: Language; sample: boolean; onView?: () => void }) {
@@ -27,14 +27,11 @@ export function SupplierInformation({ place, language, sample }: { place: Place;
           <h4>{language === 'es' ? 'De dónde viene tu agua' : 'Where your water comes from'}</h4>
           {profile ? <>
             <p>{profile.waterSummary.intro[language]} <span lang="en">{profile.waterSummary.name}</span>.</p>
-            <SourceLink url={profile.waterSummary.url}>{profile.waterSummary.label[language]}</SourceLink>
-            <p>{language === 'es' ? `Aproximadamente ${profile.population} personas atendidas (directorio de ADH).` : `About ${profile.population} people served (ADH directory).`}</p>
+            {profile.waterSummary.url !== profile.sourceUrl ? <SourceLink url={profile.waterSummary.url}>{profile.waterSummary.label[language]}</SourceLink> : null}
           </> : <p>{language === 'es' ? 'Aún no se ha verificado la fuente de agua de este proveedor.' : 'This provider’s water source has not yet been verified.'}</p>}
-        </section>
-        <details className="provider-more" key={place.id}><summary>{language === 'es' ? 'Más detalles del proveedor' : 'More provider details'}<span className="disclosure-icon" aria-hidden="true" /></summary>
           <SupplierProfile place={place} language={language} sample={sample} compact />
-          <ProfileLinks place={place} language={language} sample={sample} />
-        </details>
+          <ProfileLinks place={place} language={language} sample={sample} includeReports={false} />
+        </section>
       </> : null}
     </div>
   </section>
@@ -53,6 +50,5 @@ export function SupplierProfile({ place, language, sample, compact = false }: { 
       <div><dt>{es ? 'Última inspección registrada' : 'Last listed inspection'}</dt><dd>{profile.inspection[language]}</dd></div>
     </dl></> : <p>{es ? 'No se ha verificado un perfil detallado para este sistema.' : 'A detailed profile has not been verified for this system.'}</p>}
     {!compact ? <ProfileLinks place={place} language={language} sample={sample} /> : null}
-    <p className="quiet-note profile-limits">{profile ? <>{es ? 'Directorio de ADH · Revisado el ' : 'ADH directory · Checked '}<time dateTime={profile.verifiedOn}>{new Intl.DateTimeFormat(es ? 'es-US' : 'en-US', { timeZone: 'UTC', year: 'numeric', month: es ? 'long' : 'short', day: 'numeric' }).format(new Date(`${profile.verifiedOn}T00:00:00Z`))}</time>. </> : null}{es ? 'No son mediciones en vivo, resultados de inspección, conclusiones actuales de cumplimiento ni una calificación de seguridad. Para los informes anuales, confirma el sistema y el año.' : 'Not live readings, inspection results, current compliance findings, or a safety rating. For annual reports, confirm the system and year.'}</p>
   </section>
 }

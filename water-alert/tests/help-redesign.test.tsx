@@ -31,9 +31,9 @@ it.each(['en', 'es'] as const)('keeps every %s step and its navigation in one co
 })
 
 // Hiding contact values behind icons or removing the direct guide entry must fail.
-it('keeps contact values in their collapsed section and help directly available', async () => {
+it('keeps contact values and help directly available', async () => {
   render(<StatusCard place={place} now={now} t={en} onView={() => {}} onHelp={() => {}} />)
-  await userEvent.setup().click(document.querySelector('.supplier-contact-section>summary')!)
+  expect(document.querySelector('.supplier-contact-section .provider-contact')).toBeVisible()
   expect(screen.getByRole('link', { name: /Call.*479/ })).toHaveTextContent('(479) 549-2158')
   expect(screen.getByRole('link', { name: /LEISUREHILLSWATERCO@GMAIL.COM/ })).toHaveTextContent('LEISUREHILLSWATERCO@GMAIL.COM')
   expect(screen.getByRole('button', { name: 'Get help with a water issue' })).toBeVisible()
@@ -89,7 +89,7 @@ it.each(['Service or outage', 'Legal help'])('offers the scoped %s route and ret
   if (choice === 'Service or outage') expect(screen.getByRole('link', { name: /Call.*479/ })).toBeVisible()
   else expect(screen.getByRole('link', { name: /Legal-aid intake/ })).toHaveAttribute('href', 'https://aroi.legalserver.org/modules/matter/extern_intake.php?pid=38&h=757e8c&')
   await user.click(screen.getByRole('button', { name: 'Next' }))
-  const select = screen.getByRole('combobox')
+  const select = screen.getByRole('combobox', { name: 'What do you need help with?' })
   for (const kind of ['service', 'request', 'complaint', 'legal', 'followup']) {
     await user.selectOptions(select, kind)
     const body = screen.getByRole('textbox', { name: 'Draft body' })
@@ -122,6 +122,8 @@ it('warns about language loss then resets the guide in Spanish', async () => {
   await user.click(screen.getByRole('button', { name: 'Service or outage' }))
   await user.click(screen.getByRole('button', { name: 'Next' }))
   await user.click(screen.getByRole('button', { name: 'Next' }))
+  expect(screen.getByText('Copy or download before leaving. Drafts and progress are not saved.')).toBeVisible()
+  await user.click(screen.getByText('Privacy and session details', { selector: 'summary' }))
   expect(screen.getAllByText(/changing supplier, notice, mode or language/)[0]).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'ES' }))
   expect(screen.getByText('Paso 1 de 5')).toBeVisible()

@@ -23,13 +23,15 @@ export function ProviderContact({ place, language = 'en', sample = false }: { pl
   if (sample || place.kind !== 'system') return null
   const t = copy[language]
   const contact = Object.hasOwn(PROVIDER_CONTACTS, place.id) ? PROVIDER_CONTACTS[place.id] : undefined
+  const hasPhone = Boolean(contact?.phone && contact.dial)
+  const hasEmail = Boolean(contact?.email)
   return <section className="provider-contact" aria-labelledby={title}>
     <div className="contact-bar">
       <div className="contact-caption"><h3 id={title} aria-label={t.title}>{language === 'en' ? 'Service questions?' : '¿Preguntas del servicio?'}</h3>{contact ? <a className="contact-directory" href={contact.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={language === 'en' ? 'ADH directory contact (opens in a new tab)' : 'Contacto del directorio ADH (se abre en otra pestaña)'} title={`${t.checked}: ${contact.verifiedOn}. ${t.directory}`}>{language === 'en' ? 'ADH directory contact' : 'Contacto del directorio ADH'} <span aria-hidden="true">↗</span></a> : <p>{language === 'en' ? 'Check your water bill' : 'Consulte su factura'}</p>}</div>
-      {contact ? <div className="provider-contact-actions" title={t.opens}>
-        <a className="secondary" href={`tel:${contact.dial}`} aria-label={`${t.call} ${contact.phone}`}><ContactIcon name="phone" /><span className="contact-action-label">{contact.phone}</span></a>
-        {contact.email ? <a className="secondary" href={`mailto:${contact.email}`} aria-label={`${t.email}: ${contact.email}`}><ContactIcon name="mail" /><span className="contact-action-label">{contact.email}</span></a> : <p className="quiet-note missing-email">{language === 'en' ? 'No verified email address is available for this supplier.' : 'No hay un correo electrónico verificado para este proveedor.'}</p>}
-      </div> : null}
+       {hasPhone || hasEmail ? <div className="provider-contact-actions" title={t.opens}>
+         {hasPhone ? <a className="secondary" href={`tel:${contact!.dial}`} aria-label={`${t.call} ${contact!.phone}`}><ContactIcon name="phone" /><span className="contact-action-label">{contact!.phone}</span></a> : null}
+         {hasEmail ? <a className="secondary" href={`mailto:${contact!.email}`} aria-label={`${t.email}: ${contact!.email}`}><ContactIcon name="mail" /><span className="contact-action-label">{contact!.email}</span></a> : null}
+       </div> : null}
     </div>
     {!contact ? <p className="quiet-note">{t.missing}</p> : null}
   </section>

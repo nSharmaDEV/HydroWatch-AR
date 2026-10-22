@@ -28,7 +28,7 @@ it('puts selected recovery tools before supplier profile and incident details', 
   expect(screen.getByText('Community system')).toBeVisible()
   expect(tools.compareDocumentPosition(screen.getByRole('heading', { name: 'About this water system' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(screen.getByRole('link', { name: /Annual water-quality reports/ })).toHaveAttribute('href', 'https://health.arkansas.gov/eng/CCRSearch.aspx')
-  expect(screen.getByText(/Not live readings, inspection results/)).toBeVisible()
+  expect(screen.queryByText(/Not live readings, inspection results/)).toBeNull()
   expect(screen.getByText(/No agency lift date is published/)).toBeVisible()
 })
 

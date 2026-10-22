@@ -33,7 +33,11 @@ for (const language of ['en', 'es'] as const) {
     await userEvent.setup().click(screen.getByRole('button', { name: t.providerHelp }))
     expect(screen.getByRole('heading', { name: language === 'en' ? 'Where your water comes from' : 'De dónde viene tu agua' })).toBeVisible()
     expect(document.querySelector('.provider-water-source')).toHaveTextContent('Beaver Water District')
-    expect(document.querySelector('.provider-water-source a')).toHaveAttribute('href', suppliers.find(entry => entry.place.id === place.id)!.url)
+    const section = document.querySelector('.provider-water-source') as HTMLElement
+    const directoryUrl = suppliers.find(entry => entry.place.id === place.id)!.url
+    expect(section.querySelectorAll(`a[href="${directoryUrl}"]`)).toHaveLength(1)
+    expect(section.querySelector('.profile-facts')).toBeVisible()
+    expect(section).not.toHaveTextContent(language === 'en' ? 'people served' : 'personas atendidas')
     expect(screen.queryByText('Roubidoux Formation Aquifer')).toBeNull()
     const report = within(screen.getByRole('region', { name: language === 'en' ? 'Annual water-quality report' : 'Informe anual de calidad del agua' }))
     if (place.name.startsWith('SPRINGDALE')) {
@@ -53,11 +57,10 @@ for (const language of ['en', 'es'] as const) {
       const notice: Notice = { id: 'parity-synthetic', placeId: place.id, name: place.name, agency: 'ADH', kind: 'boil', county: place.county, area: 'Synthetic area', reason: 'Synthetic reason', issued: '10/19/2026', lifted: null, url: SOURCES.ADH }
       const source: SourceSnapshot = { agency: 'ADH', records: state === 'active' ? [notice] : [], retrievedAt: at, lastSuccessAt: at, error: state === 'unavailable' ? 'Synthetic failure' : null }
       render(<StatusCard place={place} source={source} now={Date.parse(at)} t={t} language={language} onHelp={help} onView={() => {}} />)
-      expect(document.querySelector('.supplier-contact-section summary')).toBeVisible()
+      expect(document.querySelector('.supplier-contact-section .contact-caption h3')).toBeVisible()
       expect(screen.getByRole('button', { name: t.supplierAlertHistory })).toBeVisible()
       await user.click(screen.getByRole('button', { name: t.providerHelp }))
       expect(screen.getByRole('heading', { name: language === 'en' ? 'Where your water comes from' : 'De dónde viene tu agua' })).toBeVisible()
-      await user.click(document.querySelector('.provider-more>summary')!)
       expect(screen.getByText(expected[suppliers.findIndex(entry => entry.place.id === place.id)][0])).toBeVisible()
       await user.click(screen.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua' }))
       expect(help).toHaveBeenCalledOnce()

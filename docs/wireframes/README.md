@@ -35,6 +35,32 @@ shown as written, never narrowed to an address.
 
 ## Screens in this set
 
+### Get Help process comparison (October 20, 2026)
+
+[`wave-help-process-comparison.html`](wave-help-process-comparison.html) compares
+eight current/proposed comparison screens, with **four combined task steps**:
+Contact (including recipient), Prepare (evidence and draft), Send & record,
+and Follow up (including responses and closing your log). Advisory entry,
+water-use guidelines, post-lift reference and status edges sit outside those
+four tasks. Guidelines remain directly accessible from every proposed panel;
+following official instructions never depends on completing contact steps.
+The proposed panels include a four-item checklist progress bar with explicit
+Done/Current/To do labels and revisitable steps. Contact and Prepare have manual,
+reversible completion; Follow up completes only when the resident closes the log,
+not when a response arrives. Guidelines are not counted as tasks.
+Sending is completed only through the confirmed external-submission record;
+deleting that record makes the sending step unfinished again. This is resident
+task progress, separate from agency status. All progress resets on reload.
+Current panels reconstruct source behavior, not pixel-exact screenshots.
+Proposed panels are unapproved wireframes, not shipped capabilities.
+All examples are fictional; contact/form actions are simulated. The English-only
+preview uses no persistent storage. Tracking resets on reload; draft edits reset
+on screen/template changes. Select a fictional historical finding, preview draft
+citations, and record a fictional submission to exercise tracking and deletion.
+Regulatory citations and non-advisory tracker scope remain undecided. Historical
+evidence is opt-in, separate from current compliance status.
+Serve using the command above, substituting this filename in the URL.
+
 ### Proposed advisory-help flow (October 14, 2026)
 
 [`advisory-help.html`](advisory-help.html) is a separate interactive, synthetic

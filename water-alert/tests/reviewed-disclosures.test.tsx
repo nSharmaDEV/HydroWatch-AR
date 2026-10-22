@@ -13,21 +13,21 @@ function card(language: 'en' | 'es' = 'en', archive: Notice[] = []) {
   render(<StatusCard place={place} archive={archive} now={Date.parse(at)} t={language === 'en' ? en : es} language={language} onView={() => {}} />)
 }
 
-// Contact content must start collapsed without losing verified destinations.
-it.each(['en', 'es'] as const)('keeps %s contact details behind its own title', async language => {
+// Contact actions must be available without an extra disclosure click.
+it.each(['en', 'es'] as const)('shows %s contact details directly in the service row', language => {
    card(language)
-   const disclosure = document.querySelector('.supplier-contact-section') as HTMLDetailsElement
-   expect(disclosure).not.toBeNull()
-   expect(disclosure.open).toBe(false)
-   await userEvent.setup().click(disclosure.querySelector('summary')!)
+   const row = document.querySelector('.supplier-contact-section')!
+   expect(row.tagName).not.toBe('DETAILS')
+   expect(row.querySelector('summary, .disclosure-icon')).toBeNull()
   const contact = within(screen.getByRole('region', { name: language === 'en' ? 'Contact water provider' : 'Contactar al proveedor de agua' }))
   expect(contact.getByRole('link', { name: language === 'en' ? /ADH directory contact/ : /Contacto del directorio ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
   expect(document.querySelector('.contact-provenance')).toBeNull()
-  expect(contact.getByRole('link', { name: /479/ })).toHaveAttribute('href', 'tel:+14795492158')
+   expect(contact.getByRole('link', { name: /479/ })).toHaveAttribute('href', 'tel:+14795492158')
+   expect(contact.getByRole('link', { name: /LEISUREHILLSWATERCO@GMAIL.COM/ })).toBeVisible()
 })
 
 // Header clutter or nesting links in the toggle must fail.
-it.each(['en', 'es'] as const)('keeps %s provider sources inside the six-fact disclosure', async language => {
+it.each(['en', 'es'] as const)('combines %s water sources and provider facts without nested disclosures or duplicate links', async language => {
   card(language)
   const toggle = screen.getByRole('button', { name: language === 'en' ? 'Provider information' : 'Información del proveedor' })
   const header = toggle.closest('.provider-info-header')!
@@ -38,15 +38,16 @@ it.each(['en', 'es'] as const)('keeps %s provider sources inside the six-fact di
   await userEvent.setup().click(toggle)
   const panel = document.getElementById(toggle.getAttribute('aria-controls')!)!
   expect(panel).toBeVisible()
-  const details = panel.querySelector('.provider-more') as HTMLDetailsElement
-  expect(details.open).toBe(false)
-  expect(within(details).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).not.toBeVisible()
+  expect(panel.querySelector('.provider-more')).toBeNull()
+  const details = panel.querySelector('.provider-water-source') as HTMLElement
+  expect(details.querySelectorAll('.profile-facts>div')).toHaveLength(6)
+  expect(details.querySelector('details')).toBeNull()
   expect(within(panel).getByRole('link', { name: language === 'en' ? /View original report/ : /Ver informe original/ })).toBeVisible()
-  await userEvent.setup().click(details.querySelector('summary')!)
   expect(within(details).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toBeVisible()
+  expect(within(details).queryByRole('link', { name: /Annual water-quality reports|Informes anuales de calidad del agua/ })).toBeNull()
   expect(panel.querySelectorAll('.profile-facts>div')).toHaveLength(6)
   expect(within(panel).getByText('WELL #1')).toHaveAttribute('lang', 'en')
-  expect(panel).toHaveTextContent(language === 'en' ? 'Not live readings' : 'No son mediciones en vivo')
+  expect(panel).not.toHaveTextContent(language === 'en' ? 'Not live readings' : 'No son mediciones en vivo')
   await userEvent.setup().click(toggle)
   expect(panel).not.toBeVisible()
    expect(within(panel).getAllByRole('link', { hidden: true })[0]).not.toBeVisible()

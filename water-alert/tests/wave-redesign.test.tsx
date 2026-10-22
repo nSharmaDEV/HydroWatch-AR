@@ -24,19 +24,21 @@ it('uses existing loading state to disable per-card checks', () => {
   expect(screen.getByRole('button', { name: en.refreshing })).toBeDisabled()
 })
 
-it('uses the approved unchecked wording only for an unchecked source', () => {
+it('uses the approved unchecked wording only for an unchecked source', async () => {
   render(<StatusCard place={place} now={Date.parse(at)} t={en} onView={() => {}} />)
   expect(screen.getByText('Advisory status unavailable')).toBeVisible()
   expect(screen.getByText('The source hasn’t been checked yet.')).toBeVisible()
-  expect(screen.getByText('No successful check yet')).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAbout }))
+  expect(within(screen.getByRole('dialog')).getByText('No successful check yet')).toBeVisible()
 })
 
-it.each(['failed', 'stale'] as const)('retains actual %s explanations and prior successful timestamp', state => {
+it.each(['failed', 'stale'] as const)('retains actual %s explanations and prior successful timestamp in details', async state => {
   render(<StatusCard place={place} source={{ ...source, error: state === 'failed' ? 'Timeout' : null }} now={Date.parse(at) + (state === 'stale' ? 900_000 : 0)} t={en} onView={() => {}} />)
   expect(screen.getByText(en.supplierUnavailable)).toBeVisible()
   expect(screen.getByText(state === 'failed' ? en.checkRetrievalFailed : en.checkStale)).toBeVisible()
   expect(screen.queryByText('The source hasn’t been checked yet.')).not.toBeInTheDocument()
-  expect(document.querySelector('article>dl time')).toHaveAttribute('datetime', at)
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAbout }))
+  expect(document.querySelector('.supplier-popup-check time')).toHaveAttribute('datetime', at)
 })
 
 it('keeps history and provider help closed initially and keyboard-operable', async () => {
@@ -63,7 +65,7 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
   const { container } = render(<StatusCard place={place} source={snapshot} now={Date.parse(at) + (state === 'stale' ? 900_000 : 0)} t={en} onView={() => {}} onRefresh={() => {}} />)
   const check = screen.getByRole('button', { name: en.checkNow })
   const official = screen.getByRole('link', { name: /View official source/ })
-  expect(check).toHaveClass(state === 'active' ? 'secondary' : 'primary')
+  expect(check).toHaveClass('secondary')
   expect(official).toHaveClass('official-source-action')
   expect(official).not.toHaveClass('primary', 'secondary')
   expect(container.querySelectorAll('.supplier-finding .warning-icon')).toHaveLength(state === 'active' ? 1 : 0)
@@ -72,7 +74,7 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
     expect(screen.getByText('No active notice was listed at the last successful check.')).toBeVisible()
     expect(container.querySelector('.supplier-finding svg, .supplier-finding .status-symbol')).toBeNull()
   } else if (state === 'active') {
-    expect(container.querySelector('.supplier-finding .status-explanation')).toHaveTextContent('Affected area: Synthetic test area Reason: Synthetic test')
+    expect(container.querySelector('.supplier-finding .status-explanation')).toHaveTextContent('Affected area: Synthetic test area · Reason: Synthetic test')
     expect(screen.getByRole('link', { name: en.activeBoil })).toHaveAttribute('href', `${SOURCES.ADH}#:~:text=${encodeURIComponent(notice.name)}`)
   } else {
     expect(screen.queryByText('No active boil-water notice found')).toBeNull()
@@ -80,14 +82,14 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
   }
   expect(screen.queryByText(en.cardQualification)).toBeNull()
   expect(container.querySelectorAll('.provider-contact-actions svg')).toHaveLength(0)
-  expect(screen.getByText(/Contact details have not been verified/)).not.toBeVisible()
-  expect(container.querySelector('.freshness-leader')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.getByText(/Contact details have not been verified/)).toBeVisible()
+  expect(container.querySelector('article>dl')).toBeNull()
 })
 
 it.each(['en', 'es'] as const)('shows visible missing email text instead of a disabled action (%s)', language => {
   const supplier = PLACE_CATALOG.find(entry => entry.place.name === 'FAYETTEVILLE WATERWORKS')!.place
   render(<StatusCard place={supplier} now={Date.parse(at)} t={language === 'en' ? en : es} language={language} onView={() => {}} />)
   const region = within(screen.getByRole('region', { name: language === 'en' ? 'Contact water provider' : 'Contactar al proveedor de agua' }))
-  expect(region.getByText(language === 'en' ? 'No verified email address is available for this supplier.' : 'No hay un correo electrónico verificado para este proveedor.')).not.toBeVisible()
+  expect(region.getByText(language === 'en' ? 'No verified email address is available for this supplier.' : 'No hay un correo electrónico verificado para este proveedor.')).toBeVisible()
   expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
 })

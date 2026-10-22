@@ -45,10 +45,12 @@ it('removes the supplier footer and redundant popup notes while retaining the no
   expect(screen.getByText(en.noNoticeExplanation)).toBeVisible()
   expect(container.querySelector('.supplier-info')).not.toHaveTextContent(en.supplierSafety)
 })
-it('uses one meaningful empty check field and never labels a failed check unattempted', () => {
+it('keeps check timing in supplier details, not below the notice banner', async () => {
   const { container } = render(<StatusCard place={place} source={{ ...source, lastSuccessAt: null, error: 'Timeout', records: [] }} now={Date.parse(at)} t={en} onView={() => {}} />)
   expect(screen.queryByText(en.uncheckedExplanation)).not.toBeInTheDocument()
-  expect(container.querySelector('article > dl')).toHaveTextContent('Last successful checkNo successful check yet')
+  expect(container.querySelector('article > dl')).toBeNull()
+  await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAbout }))
+  expect(container.querySelector('.supplier-popup-check')).toHaveTextContent('Last successful checkNo successful check yet')
 })
 it('keeps coverage details collapsed in supplier confirmation and search', () => {
   const { unmount } = render(<ConfirmPlace place={place} t={en} onConfirm={() => {}} onBack={() => {}} />)

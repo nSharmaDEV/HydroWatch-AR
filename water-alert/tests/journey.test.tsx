@@ -84,13 +84,29 @@ it('keeps agency dates verbatim and formats only app timestamps with language an
 
 it('describes feed retrieval and browser/server deletion accurately in both languages', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={data} />)
-  await user.click(screen.getByText('About these results', { selector: 'summary' }))
+  expect(screen.getByRole('heading', { name: 'About these results' })).toBeVisible()
   expect(screen.getByText(/WAVE checks ADH boil-water notices for public-water suppliers/)).toBeVisible()
   await user.click(nav('Settings'))
   await user.click(screen.getByRole('button', { name: /Privacy and stored data/ }))
   expect(screen.getByText(/Disable\/delete removes the server subscription and browser credential/)).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'ES' }))
   expect(screen.getByText(/Desactivar\/eliminar borra la suscripción del servidor y la credencial del navegador/)).toBeVisible()
+})
+
+it('keeps About these results permanently visible and exposes an accessible push switch', () => {
+  saved(); const { container } = render(<App liveData={data} />)
+  expect(container.querySelector('.about-results details')).toBeNull()
+  expect(screen.getByRole('switch', { name: 'Get water updates' })).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByRole('heading', { name: 'About these results' })).toBeVisible()
+})
+
+it('keeps the switch off and explains blocked permission when enable is attempted', async () => {
+  saved(); vi.stubGlobal('Notification', { permission: 'denied', requestPermission: vi.fn() })
+  const user = userEvent.setup(); render(<App liveData={data} />)
+  const toggle = screen.getByRole('switch', { name: 'Get water updates' })
+  await user.click(toggle)
+  expect(toggle).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByRole('status')).toHaveTextContent(/Notifications are blocked for this site/)
 })
 
 it('introduces a fictional sample journey and keeps removal/undo isolated from live preferences', async () => {

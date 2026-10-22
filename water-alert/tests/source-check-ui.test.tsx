@@ -99,7 +99,7 @@ it('keeps an active supplier advisory distinct without repeating historical find
   const active = { ...success, records: [notice] }
   card({ ...source, records: [notice], retrievedAt: at, error: null, checks: [active], lastSuccessfulCheck: active })
   expect(screen.getByText('Active boil-water notice')).toBeVisible()
-  expect(screen.getByText('Last successful check')).toBeVisible()
+  expect(screen.queryByText('Last successful check')).not.toBeInTheDocument()
   expect(screen.queryByText('No active boil-water notice found')).not.toBeInTheDocument()
   await openInfo()
   expect(screen.getByRole('link', { name: 'View notice' })).toBeVisible()

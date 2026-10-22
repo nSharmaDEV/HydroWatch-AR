@@ -43,6 +43,51 @@ checks**, involving card geometry/element and section-order expectations. App an
 test code were unchanged by cleanup; browser failures remain unresolved. See the
 [changelog](CHANGELOG.md) for details.
 
+## Advisory help
+
+Fresh active ADH supplier notices use **Contact → Prepare → Send & record →
+Follow up**, with reversible task progress and official water-use references
+available on every step. No-active, unavailable/stale and historical contexts
+retain the existing five-step guide. Guidelines never depend on contacting someone.
+
+Both guides pair directions on the left with the selected task/draft on the
+right. The default collapsed flow is checked at 1280×700 in both languages for
+all four issue pathways. Draft text scrolls within its editor; expanded guidance,
+mobile layouts and enlarged text use normal page scrolling. Copy/download stay
+primary; email, preparation packs and privacy explanations are under more draft
+options. Historical references are opt-in in both guides.
+
+Drafts offer optional exact-supplier historical report references, appended to
+copy/download/email output with report year, page, source and review date. These
+are dated document evidence, not current compliance findings or compensation
+entitlements. Sample mode never incorporates real supplier findings or contacts.
+Controls are English/Spanish; editable templates and source transcriptions remain
+identified as English.
+
+Sending must happen outside WAVE. Recording it requires an explicit attestation
+and valid nonfuture date; receipt and delivery remain unverified. Responses do not
+complete follow-up: only the resident closes their own log. There is one sending
+record per open guide; recording again replaces it and its response notes, with
+a warning. Follow-ups/replies retain that recorded destination and direct residents
+to their original reply channel, not duplicate complaints.
+
+Drafts, evidence choices, responses and progress are component memory only. Leaving,
+reloading, closing or changing the supplier/notice/mode/language/source-status
+context can discard them. Keep downloaded drafts and confirmations separately.
+Nothing is automatically submitted, uploaded, escalated or reminded.
+
+Local implementation check (October 20, 2026, Node 24.22.0): **477 unit/integration
+tests, production build and 16 targeted help browser checks pass**, including
+English/Spanish at 1440/390/320px. The full browser suite was not rerun for this
+change; the earlier cleanup results above are historical, not a claim that all
+browser journeys pass. No deployment or real submission/delivery verification.
+
+Workspace check (October 21, 2026): **27 targeted help unit tests, 24 targeted
+browser checks and production build pass**. Full unit run: 483 pass and four
+fail in report historical-disclaimer and missing-email expectations outside the
+help workspace. The full browser suite was not rerun. These are local synthetic
+checks, not production or device-delivery verification.
+
 ## Opening logo
 
 The supplied logo is traced as SVG outlines for a 2.51-second opening animation,

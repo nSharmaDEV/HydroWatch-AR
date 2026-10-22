@@ -15,7 +15,6 @@ export function AnnualWaterReport({ reports, language }: { reports: readonly Ann
       {report ? <div className="report-year"><label htmlFor={yearId}>{es ? 'Año' : 'Year'}</label><select id={yearId} value={report.year} onChange={e => setSelectedYear(Number(e.target.value))}>{reports.map(r => <option key={r.year} value={r.year}>{r.year}</option>)}</select></div> : null}
     </div>
     <ReportFindings key={report?.year ?? 'unknown'} report={report} language={language} />
-    <p className="quiet-note report-limits">{es ? 'Informe histórico; no es una evaluación actual de cumplimiento ni de seguridad.' : 'Historical report—not a current compliance or safety assessment.'}</p>
   </section>
 }
 
@@ -100,10 +99,8 @@ function ReportFindings({ report, language }: { report?: AnnualReport; language:
           <div><dt>{es ? 'Qué se reportó' : 'What was reported'}</dt><dd>{issue.title[language]}</dd></div>
           <div><dt>{issue.category === 'significantDeficiency' ? es ? 'Avance reportado' : 'Reported progress' : es ? 'Acción correctiva reportada' : 'Reported corrective action'}</dt><dd>{issue.action[language]}</dd></div></dl>
       </li>)}</ol>
-      <p className="quiet-note">{es ? 'La falta de monitoreo no demuestra contaminación ni confirma que el agua sea segura.' : 'Missing monitoring does not prove contamination or establish that the water is safe.'}</p>
     </div> : null}
     </div>
     <div className="report-sources"><SourceLink url={report.url}>{es ? 'Ver informe original (PDF)' : 'View original report (PDF)'}</SourceLink><SourceLink url={RECOVERY_RESOURCES.annualReports}>{es ? 'Informes anuales de calidad del agua en ADH' : 'Annual water-quality reports at ADH'}</SourceLink></div>
-    <p className="quiet-note">{es ? 'Revisión manual de ADH: ' : 'ADH report manually reviewed: '}<time dateTime={report.reviewedOn}>{report.reviewedOn}</time></p>
   </>
 }

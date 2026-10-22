@@ -1,7 +1,7 @@
 import type { Notice, Place } from './domain'
 import { RECOVERY_RESOURCES } from './recovery-resources'
 
-export type DraftKind = 'service' | 'request' | 'followup' | 'complaint' | 'legal'
+export type DraftKind = 'service' | 'request' | 'followup' | 'complaint' | 'legal' | 'response'
 export interface RecoveryDraft { subject: string; body: string }
 export interface DraftInput { place: Place; notice?: Notice; sample: boolean }
 
@@ -14,6 +14,7 @@ export function buildRecoveryDraft(input: DraftInput & { kind: DraftKind }): Rec
   const context = noticeContext(input)
   const ending = `\n\n${context}\n\n[YOUR NAME]\n[YOUR PREFERRED CONTACT]`
   switch (input.kind) {
+    case 'response': return { subject: 'Reply about water-service request [CASE NUMBER]', body: `Hello,\n\nThank you for your response: [EXACT RESPONSE / DATE].\nMy reference number: [CASE NUMBER OR NONE PROVIDED].\nMy clarification or additional facts: [YOUR OWN FACTS].\nDocuments I can provide separately: [COPIES OF RELEVANT RECORDS].\nMy remaining question or requested next step: [YOUR REQUEST].\n\nPlease confirm any applicable policy, deadline and next step in writing.${ending}` }
     case 'service': return { subject: 'Question about my water service', body: `Hello,\n\nPlease confirm whether my service address is affected by the published notice.\nMy service address: [YOUR SERVICE ADDRESS].\nMy question: [WHAT YOU NEED TO KNOW].\n\nPlease provide current incident-specific instructions and a reference number for this inquiry.${ending}` }
     case 'request': return { subject: 'Request to review water-service credit / documented expenses', body: `Hello,\n\nI am a customer/resident at [YOUR SERVICE ADDRESS].\nMy own description of the service problem: [WHAT YOU EXPERIENCED].\nMy affected dates: [START / END OR STILL UNKNOWN].\n\nPlease review a bill credit and/or reimbursement of $[ACTUAL AMOUNT] for [EXPENSES]. I can provide copies of [RECEIPTS / BILL / CORRESPONDENCE]. I am asking for review, not stating that compensation is automatically owed.\n\nPlease send the applicable policy, claim instructions, any deadline, a reference number and your decision in writing. Please also confirm whether my address is affected and any incident-specific instructions.${ending}` }
     case 'followup': return { subject: 'Follow-up on water-service review request [CASE NUMBER]', body: `Hello,\n\nI contacted you on [DATE / METHOD] about [YOUR SERVICE PROBLEM] and requested [RESOLUTION]. My reference number is [CASE NUMBER OR NONE PROVIDED].\nYour response so far: [EXACT RESPONSE OR NO RESPONSE AS OF DATE].\n\nPlease provide a written update, the applicable policy and a decision on my request. Documented expenses requested for review: $[ACTUAL AMOUNT]. Supporting copies available: [LIST].${ending}` }

@@ -1,5 +1,6 @@
 export const recoveryStrings = {
   en: {
+    response: 'Reply to a response',
     title: 'Drafts, forms & help', intro: 'Prepare a request or complaint using editable templates. Review every fact; nothing is sent or filed here.',
     prepare: 'What do you need help with?', choose: 'Choose an option', service: 'Ask about my service', request: 'Prepare a credit/reimbursement request', followup: 'Follow up on an existing request', complaint: 'Prepare a complaint', legal: 'Find assistance', subject: 'Subject', body: 'Draft body',
     english: 'Editable English template. Replace every bracketed field and verify all facts. This is preparation, not legal advice or a promise of compensation.',
@@ -13,6 +14,7 @@ export const recoveryStrings = {
     limitsText: 'First ask your provider or park management for the credit policy, claim deadline, reference number and a written decision. Keep copies of actual receipts and correspondence. The AG reviews jurisdiction and may mediate or refer; it is not your private attorney and does not guarantee payment. Complaints are shared with the business and may be public records. The AG does not mediate when a private attorney is retained or court action has started. Legal aid depends on eligibility and availability. Before court, verify the correct defendant, court, deadlines, fees, service and possible immunity. Do not withhold rent or utility payments based on this tool. An advisory alone proves neither personal loss nor liability.',
   },
   es: {
+    response: 'Contestar una respuesta',
     title: 'Borradores, formularios y ayuda', intro: 'Prepare una solicitud o queja con plantillas editables. Verifique cada hecho; aquí no se envía ni se presenta nada.',
     prepare: '¿Con qué necesita ayuda?', choose: 'Elija una opción', service: 'Preguntar por mi servicio', request: 'Preparar solicitud de crédito o reembolso', followup: 'Dar seguimiento a una solicitud', complaint: 'Preparar una queja', legal: 'Buscar asistencia', subject: 'Asunto', body: 'Texto del borrador',
     english: 'Plantilla editable en inglés. Sustituya los campos entre corchetes y verifique todos los hechos. Es preparación, no asesoría legal ni promesa de compensación.',

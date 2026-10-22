@@ -1,4 +1,5 @@
 // Curated references, checked 2026-10-14. Not live feeds or a jurisdiction decision.
+export const ADH_ENGINEERING_SOURCE = 'https://healthy.arkansas.gov/programs-services/licensing-military-member-licensure-permits-plan-reviews/drinking-water-plan-review'
 export const RECOVERY_RESOURCES = {
   complaint: 'https://arkansasag.gov/file-a-complaint/',
   englishForm: 'https://media.ark.org/ag/Consumer-Complaint-Form.pdf',

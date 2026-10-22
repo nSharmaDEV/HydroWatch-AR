@@ -79,7 +79,6 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
         : language === 'en' ? 'No violations reported' : 'No se reportaron infracciones', { exact: true })).toBeVisible()
       await expect(page.locator('.provider-water-source')).toContainText('Beaver Water District')
       await expect(page.locator('.provider-water-source a')).toHaveAttribute('href', entry.url)
-      await page.locator('.provider-more>summary').click()
       await expect(page.locator('.profile-facts')).toBeVisible()
       await expect(page.locator('.profile-facts')).not.toContainText('WELL #1')
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -203,10 +202,8 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await expect(report.locator('li').nth(2)).toContainText(language === 'en' ? 'None listed' : 'Ninguna indicada')
     expect(await toggle.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44)
     await expect(issues.first().locator('dd').first()).toHaveCSS('font-size', '16px')
-    await page.locator('.provider-more>summary').focus()
-    await page.keyboard.press('Enter')
     await expect(page.locator('.profile-facts')).toBeVisible()
-    await expect(page.locator('.provider-more').getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
+    await expect(page.locator('.provider-water-source').getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-expanded.png`), fullPage: true })
     if (test.info().project.name === 'phone-sized') {
@@ -420,7 +417,7 @@ for (const state of ['active', 'none', 'failed', 'stale', 'unchecked'] as const)
 
 test('WAVE hierarchy uses navy headings, readable text and full contact values at phone and laptop widths', async ({ page }) => {
   await watchSupplier(page)
-  await page.locator('.supplier-contact-section>summary').click()
+  await expect(page.locator('.supplier-contact-section .provider-contact')).toBeVisible()
   for (const width of [320, 390, 1366]) {
     await page.setViewportSize({ width, height: 900 })
     const card = page.locator('.supplier-card')
@@ -445,7 +442,7 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
     expect(geometry.titleSize).toBeGreaterThanOrEqual(24)
     expect(geometry.statusSize).toBeGreaterThanOrEqual(23)
     expect(geometry.actionSize).toBeGreaterThanOrEqual(16)
-    expect(await page.locator('.home-sidebar .delivery-status').evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(16)
+    expect(await page.locator('.home-sidebar h2').first().evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(20)
     expect(geometry.radius).toBe('16px')
     if (width < 761) expect(geometry.emailTop).toBeGreaterThanOrEqual(geometry.callTop + geometry.callHeight)
     if (width < 761) expect(geometry.callTop).toBeGreaterThanOrEqual(geometry.captionBottom)
@@ -485,7 +482,7 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
 
 test('source-first cards fit phone and laptop widths, with left-aligned facts and touch targets', async ({ page }) => {
   await watchSupplier(page)
-  await page.locator('.supplier-contact-section>summary').click()
+  await expect(page.locator('.supplier-contact-section .provider-contact')).toBeVisible()
   for (const width of [320, 390, 1366]) {
     await page.setViewportSize({ width, height: 768 })
     const card = page.locator('.supplier-card')
@@ -537,7 +534,7 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await expect(official).toHaveCSS('color', 'rgb(255, 255, 255)')
     await expect(official.locator('span')).toHaveCSS('color', 'rgb(255, 255, 255)')
     expect(await help.evaluate(el => el.previousElementSibling?.classList.contains('provider-information'))).toBe(true)
-    await card.locator('.supplier-contact-section>summary').click()
+    await expect(card.locator('.supplier-contact-section .provider-contact')).toBeVisible()
     await expect(email).toHaveText('LEISUREHILLSWATERCO@GMAIL.COM')
     const emailBounds = await email.boundingBox()
     expect(emailBounds!.width).toBeLessThan(width)
@@ -549,8 +546,6 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await expect(panel.locator('details')).toHaveCount(0)
     await expect(panel.getByRole('link', { name: language === 'en' ? /Open ADH notice list/ : /Abrir lista de avisos de ADH/ }).first()).toHaveAttribute('href', SOURCES.ADH)
     await card.getByRole('button', { name: t.providerHelp, exact: true }).click()
-    await expect(card.locator('.profile-facts')).not.toBeVisible()
-    await card.locator('.provider-more>summary').click()
     await expect(card.locator('.profile-facts')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: test.info().outputPath(`expanded-${language}-${width}.png`), fullPage: true })
@@ -559,7 +554,7 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     const next = language === 'en' ? 'Next' : 'Siguiente'
     await page.getByRole('button', { name: billing, exact: true }).click()
     await page.getByRole('button', { name: next, exact: true }).click()
-    await page.getByRole('button', { name: next, exact: true }).click()
+    await page.getByRole('combobox', { name: language === 'en' ? 'What do you need help with?' : '¿Con qué necesita ayuda?' }).selectOption('complaint')
     const body = page.getByRole('textbox', { name: language === 'en' ? 'Draft body' : 'Texto del borrador', exact: true })
     await body.fill('SYNTHETIC GUIDE REVIEW ONLY')
     await page.getByRole('button', { name: next, exact: true }).click()
