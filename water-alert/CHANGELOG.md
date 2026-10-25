@@ -8,6 +8,14 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-25 — Complete-app production deployment
+
+- Pushed app commit `140a511` and deployed to the existing Vercel production project
+  with explicit user approval, including approval of unresolved test failures.
+  Hosted build passed; production HTML, expected assets and help/push config GET
+  checks passed. Accounts/email remain disabled. See `VERCEL.md` for evidence.
+- No configuration, scheduler or database changes, migrations or real sends.
+
 ### 2026-10-25 — Approved current-app release preflight
 
 - Prepare the complete current app for the user's approved commit/push/Vercel

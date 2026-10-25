@@ -2,6 +2,23 @@
 
 ## Goal and current boundary
 
+### October 25 approved complete-app deployment
+
+- User approved committing/pushing the complete current app and proceeding despite
+  unresolved test failures. App commit `140a511` was pushed to `advisory-alert`.
+- Deployment `3v5FBckedo8zPL3Vau3hX3vL3Cx3` is Ready at
+  `https://water-alert-dsj7obmr8-nirmays06-3523s-projects.vercel.app`, aliased to
+  **https://water-alert-blond.vercel.app**. Hosted TypeScript/Vite build passed.
+- Read-only HTTPS checks returned 200 for HTML, the expected `index-DY-E8AG0.js`
+  and `index-BtGF0oGZ.css` assets, help session and push config. Help session reports
+  accounts/delivery disabled; push config remains enabled with a public key.
+- Initial full suite: 596 passed and 38 failed. Fixed the native ESM import failure
+  in the annual-report dependency chain; 21 focused API/security/Review tests and
+  Node 24 build then passed. The other 37 failures remain unresolved, with explicit
+  user approval to release. Existing bundle-size warning remains.
+- No environment, scheduler or database changes; no migrations or email/push sends.
+  Checks do not verify real-device delivery, authenticated accounts or email.
+
 The local saved-help/History implementation has separate account, migration,
 email-domain and webhook release gates in [HELP-REQUESTS.md](HELP-REQUESTS.md).
 The deployment records below do not verify or enable those capabilities.

@@ -1,6 +1,7 @@
 # Private help requests: setup and limits
 
-Local implementation, updated October 23, 2026. **Not deployed or verified with real email.**
+Deployed with the complete-app release October 25, 2026. **Accounts and email delivery
+remain disabled; not verified with real email.** See [VERCEL.md](VERCEL.md) for release checks.
 Default operation requires neither accounts nor email credentials: these services
 are unavailable until explicitly enabled. Do not enable them for a public demo
 without reviewing the gates below. No automatic agency filing or email alerts.
