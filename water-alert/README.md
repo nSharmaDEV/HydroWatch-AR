@@ -43,38 +43,240 @@ checks**, involving card geometry/element and section-order expectations. App an
 test code were unchanged by cleanup; browser failures remain unresolved. See the
 [changelog](CHANGELOG.md) for details.
 
+## Decorative water background
+
+The Home intro and two action cards retain their original spacing below the shared
+header/banner. The background fills the remaining viewport without a bottom strip;
+short screens and mobile can scroll naturally without hiding the actions.
+
+All pages share a light blue-to-white gradient with a background-only WebGL
+water effect below the header and any banners. The same canvas persists while
+navigating between pages. Cards, navigation and text are not distorted.
+Home retains full ripple visibility; other pages render the canvas at 18% opacity
+over the static gradient to keep attention on the content.
+Click/tap drops, throttled mouse movement and ambient drops never intercept controls
+or touch scrolling. Smooth circular wavefronts expand from the input point and
+fade completely; a lighter, spaced cursor wake and ambient drops at random
+positions every 1.1–1.5 seconds overlap softly for continuous background motion
+without input, starting after a brief 0.4-second delay.
+Automatic drops use the same strength and wave profile as click/tap drops.
+The WebGL renderer uses at most eight analytical waves rather than
+packed-height simulation buffers, avoiding accumulating background noise.
+Animation pauses in hidden tabs and uses bounded GPU resources.
+Reduced motion, unavailable WebGL and context loss retain a static gradient.
+
+## Home sources shortcut
+
+On Home, the card's info icon opens **Sources and coverage**, using the existing
+in-app coverage page. The separate sidebar shortcut is removed; Settings still
+offers that page. The desktop Add a place button starts level with the main card.
+Home's updates section contains only the heading and toggle, followed by About
+these results; notification details remain available through Settings.
+Short desktop layouts use tighter spacing to keep the collapsed Home carousel's
+Previous/Next controls visible, including the tested long-notice example at
+1280×650 and 1440×780. Expanded content and enlarged text can still scroll.
+When supplier phone/email details are unavailable, Service questions offers a
+right-aligned **Contact ADH** link to Safe Water Engineering instead of the
+missing-contact paragraph; verified supplier contacts remain unchanged.
+
+### Explicit ADH affected-area association
+
+ADH lists the October 14, 2026 Leisure Hills notice under **VILLAGE WATER LLC**
+and explicitly names **LEISURE HILLS MOBILE HOME PARK for the Entire System**
+in Area Impacted. A source-verified association (October 22) matches that exact
+system/area/Benton County combination to the saved Leisure Hills supplier in
+status and advisory history. It is not a general Village Water alias or inferred
+service boundary. Source record IDs, wording, dates and lift handling are unchanged;
+other affected-area wording requires separate verification. This does not replay
+past notification events or establish device delivery.
+
+## Observed supplier map
+
+**Map** opens the compact **Advisory map** workspace. Desktop keeps the
+Arkansas map beside one internally scrolling supplier-results panel; selecting a
+marker or row replaces that panel with the same supplier's advisory details.
+Back restores the list position, selection, filters and map view. Search matches
+supplier names or counties; My places / All places and Status filter both the
+map and results together. Mobile uses Map / List tabs and a modal details sheet
+with keyboard focus, dismissal and background-scroll handling. Home is unchanged.
+
+Only ADH suppliers represented in saved observations are included, using exact
+supplier IDs and the separately verified affected-area association described above.
+Colors use the existing current-status/freshness logic and app clock, not an old
+notice's presence in the archive. Unmapped suppliers remain listed with their
+current status, active ones first, labeled **Location unavailable** in the same
+results list. No-active is not a safety finding; disappearance
+is not an explicit lift. Failed, unknown and stale data never show an all-clear.
+
+`src/supplier-locations.ts` covers **all 31 suppliers in the local observed-history
+inventory reviewed October 21, 2026**. It also retains the previously reviewed
+Fayetteville point (32 catalog entries total); points appear only when their
+exact supplier IDs have saved observations. This is not all Arkansas suppliers
+or automatic coverage of suppliers observed in the future.
+
+For the 31 observed suppliers, 26 exact-name matches use historical centroids from
+the [Arkansas GIS public-water-systems layer](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Utilities/FeatureServer/15).
+Two additional GIS points have documented identity evidence: Brunner Hill's
+conversion to a public water authority and North Jackson's abbreviated name
+linked through official PWS ID 767. The GIS source has no PWS ID field; no fuzzy
+name matching or city/county placement is used. The other three points are
+explicitly labeled references: Salem's provider office, Riverside Resort's
+published property location, and the government Little Fir campground location.
+Their provider/Recreation.gov coordinates are linked to the corresponding ADH
+directory entries, not geocoded from a contact mailing address.
+
+Each catalog entry records the exact WAVE supplier ID, source name/URL, review
+date and point meaning; non-exact-name/site matches include identity-evidence
+links and a review note. The heading's info shortcut opens the existing **Sources
+and coverage limits** page, whose expandable map sources show point types and links
+in English/Spanish. These are **not current service boundaries, affected areas or
+water-system asset locations**. Future suppliers still require individually
+reviewed locations and otherwise remain labeled Location unavailable. Precise
+advisory-area mapping would additionally need official affected-area geometry.
+
+The bundled, simplified Arkansas outline in `src/arkansas-outline.ts` comes from
+the [U.S. Census Bureau generalized ACS2025 states layer](https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2025/State_County/MapServer/9)
+(`STATE='05'`; public domain; January 1, 2025 vintage). It is context only, not
+water-service geometry. Source attribution and point-review dates are available
+on Sources and coverage limits. The map keeps the visible warning: “Markers show
+supplier locations, not affected boundaries.” No map library, tile service, new
+polling or CSP exception is needed.
+Controls and warnings support English/Spanish, keyboard access and reduced motion.
+
+Local map validation (October 21, 2026): **16 map/coverage unit tests, 25 existing
+history/content tests, four synthetic desktop/phone browser checks and production
+build pass**. Full unit run with two workers: **505 passed, four failed**; the
+four report/contact-copy failures also reproduce against committed HEAD. An
+    earlier full run had two additional journey failures that pass in isolation and
+    the two-worker rerun. These checks do not verify production feeds or device
+    delivery. The map and current observed-history work were deployed together on
+    October 22, 2026; see the [deployment record](VERCEL.md). Device delivery is
+     not verified.
+
+The compact workspace redesign is a **local implementation on October 22, 2026**,
+not part of the deployment record above. Its intercepted, synthetic browser checks
+cover 1280×700, 1440×780, phone keyboard/modal behavior and enlarged text. Full unit
+run with two workers: **508 passed, nine failed** in existing notification,
+contact-copy and report expectations; production build passes. These checks do
+not verify production feeds or device delivery. Nothing deployed or sent.
+
 ## Advisory help
 
-Fresh active ADH supplier notices use **Contact → Prepare → Send & record →
-Follow up**, with reversible task progress and official water-use references
-available on every step. No-active, unavailable/stale and historical contexts
-retain the existing five-step guide. Guidelines never depend on contacting someone.
+Help uses the existing Map-aligned shell: **Choose issue → When and where →
+What did you observe? → Requested response → Review**. All categories retain five
+stages; billing details are on observations. Review is the final screen,
+with a header Send action only when supported for every selected recipient;
+otherwise the header offers Copy email. Download and official alternatives remain
+available, without another confirmation page. Every screen shares the same
+heading–leader–primary-action layout, with Back, progress and save status in one
+compact row. Middle screens use matching white, bordered panels with 24px desktop
+padding; choices are full bordered rows and writing prompts are rounded chips.
+The supplier stays visible, progress shows the actual **Step n of m**, and Back
+preserves answers and email edits. No relevant records means omitting that tool,
+not an all-clear claim. The typical advisory desktop path fits at 1280×800 without
+page scrolling at normal text size; optional expanded tools or larger records can
+need scrolling. Mobile and enlarged text use one column and natural page scrolling.
 
-Both guides pair directions on the left with the selected task/draft on the
-right. The default collapsed flow is checked at 1280×700 in both languages for
-all four issue pathways. Draft text scrolls within its editor; expanded guidance,
-mobile layouts and enlarged text use normal page scrolling. Copy/download stay
-primary; email, preparation packs and privacy explanations are under more draft
-options. Historical references are opt-in in both guides.
+Four large icon choices and a full-width Other issue choice show relevant questions.
+Service uses start/end dates and an explicit ongoing choice; only No enables
+the end date. The locations panel replaces the old area input without discarding
+previously saved area answers. Observation and requested-response suggestions are unselected
+until confirmed, editable through a small explicit Edit wording action, and omitted
+when unselected. Conditional service frequency, location clarification and optional
+prior-provider-contact questions never assume recurrence or contact outcomes.
+Billing separates short charge,
+period and amount answers from the multiline previous-attempt and desired-response
+answers. Dates/area have their own optional screen; attachments and relevant official
+guidance are visible on the split observations screen, not hidden behind a disclosure.
+Timing and resident-confirmed locations sit side by side; locations support manual
+wording, visible saved-supplier/catalog suggestions while typing and removable chips.
+Arrow keys and Enter select a suggestion; Escape dismisses it, and unmatched wording
+can be added manually. Invalid end-before-start dates block Continue until corrected.
+They are
+not verified addresses or inferred supplier boundaries. All confirmed locations
+enter generated prose and the first enters the subject. Writing prompts explain
+what to consider without inserting example text into the draft. Verified exact-ID
+supplier phone/email links on the observations screen open the resident’s native app;
+they do not place calls or send messages automatically. ADH contacts remain separate,
+and sample mode exposes no real supplier contacts. A large attachment button shows
+reading/ready status, filenames and removal within the existing upload limits.
+Exact-supplier agency facts stay separate from residents' experience, with a source
+beside each editable/removable fact. Multiple published problems remain distinct.
+Dated historical report findings are opt-in, never a current safety
+or compensation finding. Saved facts are labeled as not currently verified.
+Bounded previews are not exhaustive; check the linked original source.
 
-Drafts offer optional exact-supplier historical report references, appended to
-copy/download/email output with report year, page, source and review date. These
-are dated document evidence, not current compliance findings or compensation
-entitlements. Sample mode never incorporates real supplier findings or contacts.
-Controls are English/Spanish; editable templates and source transcriptions remain
-identified as English.
+Review uses a 35% information / 65% email layout inside the Map-aligned container.
+The left column’s “What you provided” table has two columns for supplied answers; a
+small ⓘ beside each answer opens its existing editor (with an accessible name). The official
+records remain in a separate compact table. Missing useful answers show “Not provided”
+with Add. “View source details” expands full wording; a separate icon-only trash button
+asks for confirmation before removing a record without rewriting manual email edits.
+Source wording and supporting detail are collapsed until requested. Attachments show
+a count and filenames; file limits are available when adding files. Name/reply contact
+remains optional and collapsed. The right column contains the recipient dropdown,
+subject, complete editable message, citations and update/download actions. At desktop
+sizes the panels align and the composer uses the available viewport height without
+page scrolling at 1280×800; the information column scrolls internally when needed.
+On mobile the information stacks above email and the page scrolls naturally without
+shrinking text.
+Recommendation stars and contact explanations stay inside the recipient selector.
+Expandable source details retain full attribution in accessible labels and record details.
+Only directory contacts are offered; an
+external-only selection blocks WAVE email sending rather than being silently omitted.
+Email uses natural paragraphs, with source-attributed agency information rather than
+internal form headings. Inline numbered citations correspond to clickable source links
+beside each record and in the composer. Numbered citations share each source URL once. Attachment
+names stay in the information column; source links appear there and beneath the message. Official
+records show agency, readable date, listed problem, published area and verification
+limits; full source wording expands for per-fact changes. Historical years stay explicit.
+Quotations retain their original wording unless explicitly edited. Long messages
+scroll inside the desktop editor; mobile uses natural page scrolling. Review has
+the shared Back control and reports the send outcome there. Sending requires configured
+delivery; sample sending stays disabled. Untouched subject/message fields update
+from changed answers, recipients and facts, including saved-record status on resume.
+Manually edited subject and message fields are protected independently, including
+intentionally blank fields and legacy drafts. Meaningful changes flag protected
+email as outdated; **Update draft from answers** confirms replacement of both fields.
+There is no Report tab. **Download report** derives a current resident issue report
+from the same confirmed answers, not an inspection or agency determination. Changing
+category clears incompatible answers and wording but retains locations. Optional name/reply
+contact is explicitly supplied. Download email preserves manual edits; Download
+report uses current answers. Text downloads do not bundle attachments.
+Language changes preserve edits. Citation metadata is saved with drafts and
+immutable outgoing copies.
 
-Sending must happen outside WAVE. Recording it requires an explicit attestation
-and valid nonfuture date; receipt and delivery remain unverified. Responses do not
-complete follow-up: only the resident closes their own log. There is one sending
-record per open guide; recording again replaces it and its response notes, with
-a warning. Follow-ups/replies retain that recorded destination and direct residents
-to their original reply channel, not duplicate complaints.
+**History** now contains private saved drafts and request conversations, not the
+advisory map. When accounts are not configured, live mode opens device-only drafts
+and History directly, with sending disabled. Otherwise, choose device-only drafts without an account or sign in
+for private account History; the two stores stay separate. Sample drafts also stay
+on the device and cannot send. Device-only live drafts are not submitted by WAVE;
+copy/download or use an official provider channel instead. Wait for **Saved on this
+device** before refreshing. Unsaved
+changes trigger a browser-leave warning where supported; failed saves retain text
+in the open editor with retry/download and same-account sign-in recovery. Do not
+reload unsaved text. Conflicting edits require keeping a copy and reloading.
 
-Drafts, evidence choices, responses and progress are component memory only. Leaving,
-reloading, closing or changing the supplier/notice/mode/language/source-status
-context can discard them. Keep downloaded drafts and confirmations separately.
-Nothing is automatically submitted, uploaded, escalated or reminded.
+Original issues and sent message/attachment snapshots are retained separately from
+editable drafts. Sent means the email service accepted a message, not delivery;
+signed delivery events and supported verified plaintext replies appear on the same
+conversation. A reply never resolves the issue: only the resident closes/reopens a
+request. Unknown outcomes use the same immutable send key within a bounded window,
+never a new send. Incoming attachments are not imported. Official complaint/legal
+forms stay external; opening or copying one never marks a message sent.
+
+Accounts and delivery default to unavailable. Existing Supabase accounts, enrollment
+and recovery, private hosted migration, Resend sender/inbound domains and signed
+webhooks are operator release gates. See [help request operations](HELP-REQUESTS.md)
+for configuration, API, limits and privacy/deletion. This redesign is local source
+work, not a deployment or real-delivery verification. October 24 confirmed-output
+checks: 89 targeted unit/integration tests, 84 isolated synthetic browser checks
+and the Node 24 production build pass
+(bundle-size warning remains). Full unit suite: 573 pass, nine known
+unrelated notification/contact/report expectations fail. Desktop/mobile captures
+were inspected, including the long final Review editor and 1280×800 viewport fit.
+The following older checks
+describe the retired guides at their recorded dates.
 
 Local implementation check (October 20, 2026, Node 24.22.0): **477 unit/integration
 tests, production build and 16 targeted help browser checks pass**, including

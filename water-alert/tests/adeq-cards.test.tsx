@@ -11,10 +11,11 @@ const at = '2026-10-14T12:21:00Z'
 const notice: Notice = { id: 'ADEQ:unknown', placeId: 'ADEQ:lake', name: 'Test Lake *', county: 'Crittenden County', agency: 'ADEQ', kind: 'hab', area: 'Published area', issued: 'June 21, 2019', lifted: null, liftStatus: 'unknown', reason: '', url: SOURCES.ADEQ, sourceUpdatedAt: 'September 28, 2026', firstObservedAt: '2026-10-13T12:00:00Z', lastObservedAt: at }
 const place = { id: notice.placeId, name: notice.name, county: notice.county, kind: 'lake' as const }
 const source: SourceSnapshot = { agency: 'ADEQ', records: [notice], retrievedAt: at, lastSuccessAt: at, error: null }
+const mapContext = { places: [place], sources: [source], now: Date.parse(at), onView: () => {} }
 
 for (const [language, t] of [['en', en], ['es', es]] as const) {
   it(`explains unknown lift semantics and preserves distinct history dates in ${language}`, async () => {
-    render(<ObservedHistory archive={[notice]} watches={[place.id]} coverageStart={null} t={t} language={language} />)
+    render(<NoticeDetail place={place} source={source} now={Date.parse(at)} t={t} language={language} onBack={() => {}} onShare={() => {}} onAlerts={() => {}} />)
     expect(screen.getByText(t.unknownLift)).toHaveTextContent(language === 'en' ? /current-advisories table excludes/ : /tabla de avisos actuales.*excluye/)
     expect(screen.getByText(t.unknownLift)).toHaveTextContent(language === 'en' ? /does not send new\/lifted alerts/ : /no envía avisos nuevos ni de levantamiento/)
     expect(screen.getByText(language === 'en' ? 'Not provided — record reads “N/A”' : 'No proporcionado — el registro indica “N/A”')).toBeVisible()
@@ -55,10 +56,11 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
   })
 }
 it('does not fabricate missing history provenance or counts and keeps guidance ADEQ-only', () => {
-  const view = render(<ObservedHistory archive={[{ ...notice, sourceUpdatedAt: undefined, firstObservedAt: undefined, lastObservedAt: undefined }]} watches={[place.id]} coverageStart={null} t={en} language="en" />)
+  const view = render(<ObservedHistory {...mapContext} archive={[{ ...notice, sourceUpdatedAt: undefined, firstObservedAt: undefined, lastObservedAt: undefined }]} watches={[place.id]} coverageStart={null} t={en} language="en" />)
   for (const label of [en.sourceUpdated, en.firstObserved, en.lastObserved]) expect(screen.queryByText(label)).not.toBeInTheDocument()
   expect(document.querySelectorAll('.history-event time[datetime]')).toHaveLength(0)
-  expect(document.querySelector('.adeq-guidance')).not.toBeNull()
-  view.rerender(<ObservedHistory archive={[{ ...notice, agency: 'ADH', kind: 'boil', liftStatus: undefined, url: SOURCES.ADH }]} watches={[place.id]} coverageStart={null} t={en} language="en" />)
+  expect(screen.queryByRole('button', { name: /Test Lake/ })).toBeNull()
+  expect(document.querySelector('.adeq-guidance')).toBeNull()
+  view.rerender(<ObservedHistory {...mapContext} archive={[{ ...notice, agency: 'ADH', kind: 'boil', liftStatus: undefined, url: SOURCES.ADH }]} watches={[place.id]} coverageStart={null} t={en} language="en" />)
   expect(document.querySelector('.adeq-guidance')).toBeNull()
 })

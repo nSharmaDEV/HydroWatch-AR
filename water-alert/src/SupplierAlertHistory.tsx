@@ -20,7 +20,7 @@ export function SupplierAlertHistory({ place, archive, source, now, t, language,
   const agency = lake ? 'ADEQ' : 'ADH'
   const sourceUrl = SOURCES[agency]
   // Only distinct saved official notices; checks never create advisory history.
-  const matches = (n: Notice) => (lake ? noticeMatchesPlace(place.id, n) : n.placeId === place.id) && n.agency === agency && n.kind === (lake ? 'hab' : 'boil') && n.url === sourceUrl
+  const matches = (n: Notice) => noticeMatchesPlace(place.id, n) && n.agency === agency && n.kind === (lake ? 'hab' : 'boil') && n.url === sourceUrl
   const evidence = lake ? [...archive, ...(source?.agency === agency ? source.records : [])] : archive
   const records = [...new Map(evidence.filter(matches).map(n => [n.id, n])).values()].sort((a, b) => issuedAt(b) - issuedAt(a))
   const status = statusFor(place.id, source?.agency === agency ? source : undefined, now)

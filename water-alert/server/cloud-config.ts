@@ -8,5 +8,5 @@ export function cloudConfig(env: NodeJS.ProcessEnv) {
   if (!['postgres:', 'postgresql:'].includes(database.protocol) || !database.hostname || !database.username || !database.pathname.slice(1)) throw new Error('Shared PostgreSQL database required')
   const cronSecret = env.CRON_SECRET ?? ''
   if (!/^[A-Za-z0-9_-]{32,128}$/.test(cronSecret)) throw new Error('Strong CRON_SECRET required')
-  return { origin: config.origin, databaseUrl, cronSecret, push: config.push }
+  return { origin: config.origin, databaseUrl, cronSecret, push: config.push, help: config.help }
 }

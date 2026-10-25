@@ -2,6 +2,36 @@
 
 ## Goal and current boundary
 
+The local saved-help/History implementation has separate account, migration,
+email-domain and webhook release gates in [HELP-REQUESTS.md](HELP-REQUESTS.md).
+The deployment records below do not verify or enable those capabilities.
+
+### October 22 push diagnostics production deployment
+
+- Following explicit user approval, deployed the Settings error-detail update.
+  Deployment `dpl_zBSRNjkRi6mYqezYLZgqNVeTucNL` is Ready at
+  `https://water-alert-cg61nh1de-nirmays06-3523s-projects.vercel.app`, aliased to
+  **https://water-alert-blond.vercel.app**. Hosted TypeScript/Vite build passed.
+- Read-only checks confirmed the production page responds and push config remains
+  enabled with a public key. The UI now preserves whether setup failed at the
+  service-worker, browser-subscription or server-enrollment stage. No environment,
+  scheduler, enrollment or delivery was changed or verified. User retry is needed
+  to observe which stage is failing.
+
+### October 22 current-checkout production deployment
+
+- Deployed the complete linked checkout with `npx vercel deploy --prod --yes`.
+  Deployment `dpl_8chB59BgZ2Vpj2yusbefVuY1PFZm` is Ready at
+  `https://water-alert-bt37fdevc-nirmays06-3523s-projects.vercel.app`, aliased to
+  **https://water-alert-blond.vercel.app**. Hosted TypeScript/Vite build passed.
+- The deployment includes the observed-supplier map/history work, the Home push
+  setup loading/failure guidance, and the current documentation/tests. Read-only
+  checks confirmed the production page responds and `/api/push/config` remains
+  enabled with a public key. No Vercel environment settings or Cloudflare scheduler
+  were changed. The full local suite reported 505 passing and four existing
+  report/contact-copy assertion failures; production source freshness and
+  real-device notification delivery were not verified.
+
 ### October 21 pushed WAVE UI production deployment
 
 - After confirming `.vercel/project.json` links this checkout to the existing
@@ -67,18 +97,19 @@
   local-only status, not its human/device/Spanish/legal-intake limitations. No
   Cloudflare deployment, scheduler/environment changes or Task 6 execution.
 
-**Current production status, October 17, 2026:** push is now enabled with separately
-approved operator contact and new production-only VAPID keys. Deployment
-`dpl_6LCVnamQNHzqwnxXmwbRSvi3kNoN` rebuilt the previous uploaded release, not
-the shared dirty checkout. At `2026-10-17T20:52:54Z`, HTML/worker/config/status,
-no-store, cron 401 and foreign-origin 403 checks passed; both sources were healthy
-and 453 seconds old. Verified-TLS inspection found zero production subscriptions
-before and after activation. No test send or manual authenticated cron occurred.
-Local `.env`, project link and existing UI asset references are unchanged.
-Production-device delivery, automatic advisory-to-push execution and day-long/quota
-gates remain open. Earlier disabled-push results below are historical, and
-`verify:hosting` still intentionally expects disabled push; use scoped enabled-push
-read-only verification instead. Full activation evidence: [PUSH-PLAN.md](PUSH-PLAN.md).
+**Production push status:** Push is enabled with the separately approved production
+VAPID key and operator contact. The October 17 activation snapshot below is
+historical; a later direct test was accepted by Apple and the user confirmed it
+arrived in Safari on their Mac (see [PUSH-PLAN.md](PUSH-PLAN.md)). On October 22,
+read-only checks found two enrolled devices and six retained events; none was newer
+than the latest enrollment, and no push attempts were recorded. Source checks and
+the push job had recent start times (`14:41:24Z` and `14:45:19Z` respectively).
+This is evidence of recent job activity, not verification of an automatic
+advisory-triggered device notification. No test notice or scheduler invocation was
+used in that audit. Day-long operation and quota gates remain open. Earlier
+disabled-push results below are historical, and `verify:hosting` still intentionally
+expects disabled push; use scoped enabled-push read-only verification instead.
+Full activation and test evidence: [PUSH-PLAN.md](PUSH-PLAN.md).
 
 The user selected a Vercel-native backend. The initial push-disabled production
 deployment is live at **https://water-alert-blond.vercel.app** as of October 14,

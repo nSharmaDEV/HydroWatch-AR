@@ -35,6 +35,16 @@ shown as written, never narrowed to an address.
 
 ## Screens in this set
 
+### Observation screen reflow (October 25, 2026)
+
+[`wave-observation-screen-wireframe.html`](wave-observation-screen-wireframe.html)
+is a static, synthetic reflow proposal for the crowded “What did you observe?”
+step. It groups observation choices, optional detail fields, supporting material,
+and provider contact into a compact, responsive order. The 911/official-instructions
+notice stays above the form. The preview has no saving, uploads, calls, email,
+or app behavior; provider details are placeholders. This is a wireframe only,
+not shipped UI or implementation approval.
+
 ### Get Help process comparison (October 20, 2026)
 
 [`wave-help-process-comparison.html`](wave-help-process-comparison.html) compares

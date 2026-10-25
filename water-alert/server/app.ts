@@ -4,9 +4,11 @@ import type { ObservationStore } from './store.js'
 import type { SourceRunner } from './sources.js'
 import type { PushStore } from './push.js'
 import { withPlaceCatalog } from '../src/place-catalog.js'
-export function createApp({ store, runner, pushes, origin, publicKey, drain, cron, limiter }: { store: ObservationStore; runner: Pick<SourceRunner, 'check'>; pushes: PushStore; origin: string; publicKey: string | null; drain: () => Promise<void>; cron?: { secret: string; run: () => Promise<void> }; limiter?: (req: Request) => Promise<boolean> }) {
+import { helpJson, helpRouter, helpWebhook, type HelpServices } from './help-api.js'
+export function createApp({ store, runner, pushes, origin, publicKey, drain, cron, limiter, help, geocodeFetch = fetch }: { store: ObservationStore; runner: Pick<SourceRunner, 'check'>; pushes: PushStore; origin: string; publicKey: string | null; drain: () => Promise<void>; cron?: { secret: string; run: () => Promise<void> }; limiter?: (req: Request) => Promise<boolean>; help?: HelpServices; geocodeFetch?: typeof fetch }) {
   const app = express()
   app.disable('x-powered-by')
+  if (help) app.post('/api/help/webhook', express.raw({ type: 'application/json', limit: '64kb' }), helpWebhook(help))
   const limits = new Map<string, { at: number; count: number }>()
   app.use('/api', async (req, res, next) => {
     res.setHeader('Cache-Control', 'no-store')
@@ -20,6 +22,10 @@ export function createApp({ store, runner, pushes, origin, publicKey, drain, cro
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     }
     if (req.method === 'OPTIONS') { res.sendStatus(204); return }
+    if (req.path === '/geocode-address' && req.method === 'POST') {
+      if (requestOrigin !== origin) { res.status(403).json({ error: 'Exact app origin required' }); return }
+      next(); return
+    }
     if (!['GET', 'HEAD'].includes(req.method)) {
       if (requestOrigin !== origin) { res.status(403).json({ error: 'Exact app origin required' }); return }
       if (limiter) {
@@ -34,7 +40,36 @@ export function createApp({ store, runner, pushes, origin, publicKey, drain, cro
     }
     next()
   })
+  if (help) app.use('/api/help', helpJson, helpRouter(help))
+  else app.get('/api/help/session', (_req, res) => { res.json({ enabled: false, user: null, delivery: false, accountUrl: null }) })
   app.use(express.json({ limit: '16kb' }))
+  const geocodeLimits = new Map<string, { at: number; count: number }>()
+  app.post('/api/geocode-address', async (req, res) => {
+    const address = typeof req.body?.address === 'string' ? req.body.address.trim() : ''
+    if (address.length < 8 || address.length > 200) { res.status(400).json({ error: 'Enter a street address between 8 and 200 characters.' }); return }
+    const now = Date.now()
+    for (const [key, value] of geocodeLimits) if (now - value.at > 60_000) geocodeLimits.delete(key)
+    const key = req.socket.remoteAddress ?? 'unknown'
+    const limit = geocodeLimits.get(key) ?? { at: now, count: 0 }; geocodeLimits.set(key, limit)
+    if (++limit.count > 20) { res.setHeader('Retry-After', '60'); res.status(429).json({ error: 'Address lookup limit reached. Try again in a minute.' }); return }
+    try {
+      const url = new URL('https://geocoding.geo.census.gov/geocoder/locations/onelineaddress')
+      url.searchParams.set('address', `${address}, Arkansas`)
+      url.searchParams.set('benchmark', 'Public_AR_Current')
+      url.searchParams.set('format', 'json')
+      const upstream = await geocodeFetch(url, { signal: AbortSignal.timeout(5000), headers: { Accept: 'application/json' } })
+      if (!upstream.ok) { res.status(502).json({ error: 'Address lookup is temporarily unavailable.' }); return }
+      const data: unknown = await upstream.json()
+      const matches = (data as { result?: { addressMatches?: unknown } })?.result?.addressMatches
+      const addresses = Array.isArray(matches) ? matches.flatMap(match => {
+        const item = match as { matchedAddress?: unknown; addressComponents?: { state?: unknown } }
+        return item.addressComponents?.state === 'AR' && typeof item.matchedAddress === 'string' ? [item.matchedAddress] : []
+      }).slice(0, 5) : []
+      res.json({ addresses })
+    } catch {
+      res.status(502).json({ error: 'Address lookup is temporarily unavailable.' })
+    }
+  })
   if (cron) app.get('/api/cron', async (req, res) => {
     const supplied = Buffer.from(req.get('Authorization') ?? '')
     const expected = Buffer.from(`Bearer ${cron.secret}`)

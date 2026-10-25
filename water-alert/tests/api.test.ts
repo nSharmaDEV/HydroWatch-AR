@@ -10,7 +10,7 @@ import { SourceRunner } from '../server/sources'
 import { PushStore } from '../server/push'
 const servers: Server[] = []; const dirs: string[] = []
 afterEach(async () => { await Promise.all(servers.splice(0).map(s => new Promise<void>(resolve => s.close(() => resolve())))); await Promise.all(dirs.splice(0).map(d => rm(d, { recursive: true, force: true }))) })
-async function setup(enabled = false, options: { cron?: { secret: string; run: () => Promise<void> }; limiter?: () => Promise<boolean> } = {}) {
+async function setup(enabled = false, options: { cron?: { secret: string; run: () => Promise<void> }; limiter?: () => Promise<boolean>; geocodeFetch?: typeof fetch } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'water-api-test-')); dirs.push(dir)
   const store = new ObservationStore(dir); const pushes = new PushStore(dir)
   const runner = new SourceRunner(store, async () => { throw new Error('offline') })
@@ -26,6 +26,30 @@ it('reports disabled push without collecting subscriptions or exposing secrets',
   expect(config.headers.get('cache-control')).toBe('no-store')
   const enroll = await fetch(`${base}/api/push/device`, { method: 'POST', headers: { Origin: 'http://localhost:5178', 'Content-Type': 'application/json' }, body: '{}' })
   expect(enroll.status).toBe(503)
+})
+it('returns only Arkansas address matches from the Census geocoder', async () => {
+  let called = ''
+  const base = await setup(false, { geocodeFetch: async input => {
+    called = String(input)
+    return Response.json({ result: { addressMatches: [
+      { matchedAddress: '123 MAIN ST, LITTLE ROCK, AR, 72201', addressComponents: { state: 'AR' } },
+      { matchedAddress: '123 MAIN ST, MEMPHIS, TN, 38103', addressComponents: { state: 'TN' } },
+    ] } })
+  } })
+  const response = await fetch(`${base}/api/geocode-address`, { method: 'POST', headers: { Origin: 'http://localhost:5178', 'Content-Type': 'application/json' }, body: JSON.stringify({ address: '123 Main St, Little Rock' }) })
+  expect(response.status).toBe(200)
+  expect(await response.json()).toEqual({ addresses: ['123 MAIN ST, LITTLE ROCK, AR, 72201'] })
+  const upstream = new URL(called)
+  expect(upstream.hostname).toBe('geocoding.geo.census.gov')
+  expect(upstream.searchParams.get('address')).toBe('123 Main St, Little Rock, Arkansas')
+})
+it('rejects short and oversized address lookups without calling the Census service', async () => {
+  let calls = 0
+  const base = await setup(false, { geocodeFetch: async () => { calls++; return Response.json({ result: { addressMatches: [] } }) } })
+  const post = (address: string) => fetch(`${base}/api/geocode-address`, { method: 'POST', headers: { Origin: 'http://localhost:5178', 'Content-Type': 'application/json' }, body: JSON.stringify({ address }) })
+  expect((await post('Main')).status).toBe(400)
+  expect((await post('x'.repeat(201))).status).toBe(400)
+  expect(calls).toBe(0)
 })
 it('exposes verified catalog places before any source observation without inventing records or checks', async () => {
   const base = await setup()

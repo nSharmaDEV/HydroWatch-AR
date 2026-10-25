@@ -9,6 +9,7 @@ test.beforeEach(async ({ page, context, baseURL }) => {
   await context.route('**/*', async route => {
     const url = new URL(route.request().url())
     if (url.origin !== baseURL) return route.abort()
+    if (url.pathname === '/api/push/config') return route.fulfill({ json: { enabled: false } })
     if (url.pathname.startsWith('/api/')) {
       expect(url.pathname).toBe('/api/status')
       expect(route.request().method()).toBe('GET')
@@ -45,7 +46,8 @@ for (const width of [1440, 390, 320]) {
       const aboutBox = (await about.boundingBox())!
       expect(addBox.width).toBeCloseTo(updatesBox.width, 1)
       expect(addBox.x).toBeCloseTo(updatesBox.x, 1)
-      expect(addBox.y).toBeCloseTo(cardBox.y, 1)
+      if (width > 760) expect(Math.abs(addBox.y - cardBox.y)).toBeLessThanOrEqual(0.5)
+      else expect(addBox.y + addBox.height).toBeLessThan(cardBox.y)
       expect(aboutBox.width).toBeCloseTo(updatesBox.width, 1)
       expect(aboutBox.x).toBeCloseTo(updatesBox.x, 1)
       for (const section of [updates, about]) {
@@ -61,15 +63,10 @@ for (const width of [1440, 390, 320]) {
       await expect(updates.locator('h2 svg')).toBeVisible()
       const toggle = updates.getByRole('switch', { name: t.waterUpdates })
       await expect(toggle).toHaveAttribute('aria-checked', 'false')
-      const manage = updates.getByRole('button', { name: t.manageAlerts, exact: true })
+      await expect(updates.locator('.delivery-status')).toHaveCount(0)
+      await expect(updates.getByRole('button', { name: t.manageAlerts, exact: true })).toHaveCount(0)
       expect((await toggle.boundingBox())!.x).toBeGreaterThan((await updates.locator('h2').boundingBox())!.x)
-      expect((await manage.boundingBox())!.y).toBeGreaterThan((await updates.locator('.sidebar-heading-row').boundingBox())!.y)
-      const headingText = await updates.locator('h2').evaluate(el => {
-        const range = document.createRange()
-        range.selectNodeContents(el)
-        return range.getBoundingClientRect()
-      })
-      expect((await manage.boundingBox())!.x).toBeCloseTo(headingText.x, 1)
+      expect(aboutBox.y - (updatesBox.y + updatesBox.height)).toBeLessThanOrEqual(16)
       const cardActions = card.locator('.card-check-actions')
       const checkNow = cardActions.locator('button')
       const officialSource = cardActions.locator('a')
@@ -83,14 +80,14 @@ for (const width of [1440, 390, 320]) {
       await expect(about.locator('details')).toHaveCount(0)
       await expect(about.locator('h2 svg')).toBeVisible()
       await expect(about.locator('p')).toHaveText(t.resultsSummary)
-      await expect(about.getByRole('button', { name: t.sources, exact: true })).toBeVisible()
+      await expect(about.getByRole('button')).toHaveCount(0)
+      const info = card.getByRole('button', { name: language === 'EN' ? 'Sources and coverage' : 'Fuentes y cobertura', exact: true })
+      await expect(info).toBeVisible()
       if (width > 760) expect(await card.boundingBox()).toEqual(before)
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
       await page.screenshot({ path: test.info().outputPath('home-sidebar.png'), fullPage: true })
-      await about.getByRole('button', { name: t.sources, exact: true }).click()
-      await expect(page.locator('.home-layout')).toHaveCount(0)
-      await page.locator('.app-header nav button').first().click()
-      await manage.click()
+      await info.click()
+      await expect(page.getByRole('heading', { level: 1, name: t.sources })).toBeVisible()
       await expect(page.locator('.home-layout')).toHaveCount(0)
       await page.locator('.app-header nav button').first().click()
       await add.click()
@@ -203,9 +200,10 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       const headerBox = (await page.locator('.app-header').boundingBox())!
       const uiBox = (await page.locator('.home-layout').boundingBox())!
       expect(headerBox.y).toBe(0)
-      expect(cardBox.y - headerBox.height).toBeCloseTo(26, 0)
+      const verticalPadding = viewport.height <= 750 ? 12 : 24
+      expect(cardBox.y - headerBox.height).toBeCloseTo(verticalPadding + 2, 0)
       const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
-      expect(documentHeight - controlsBox.y - controlsBox.height).toBeCloseTo(24, 0)
+      expect(documentHeight - controlsBox.y - controlsBox.height).toBeCloseTo(verticalPadding, 0)
       expect(uiBox.y - headerBox.height).toBeCloseTo(documentHeight - uiBox.y - uiBox.height, 0)
       for (const control of [controls.locator('button').last(), card.locator('.provider-info-toggle'), card.locator('.supplier-help-action')]) {
         expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44)

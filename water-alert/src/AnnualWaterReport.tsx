@@ -9,12 +9,15 @@ export function AnnualWaterReport({ reports, language }: { reports: readonly Ann
   const yearId = useId()
   const es = language === 'es'
   const report = reports.find(r => r.year === selectedYear) ?? reports[0]
-  return <section className="annual-report" aria-label={es ? 'Informe anual de calidad del agua' : 'Annual water-quality report'}>
-    <div className="annual-report-header">
+  const header = <div className="annual-report-header">
       <h4>{es ? 'Informe anual de calidad del agua' : 'Annual water-quality report'}</h4>
       {report ? <div className="report-year"><label htmlFor={yearId}>{es ? 'Año' : 'Year'}</label><select id={yearId} value={report.year} onChange={e => setSelectedYear(Number(e.target.value))}>{reports.map(r => <option key={r.year} value={r.year}>{r.year}</option>)}</select></div> : null}
     </div>
-    <ReportFindings key={report?.year ?? 'unknown'} report={report} language={language} />
+  return <section className="annual-report" aria-label={es ? 'Informe anual de calidad del agua' : 'Annual water-quality report'}>
+    <div className={report?.state === 'reviewed' ? `report-summary${report.issues.length ? ' report-summary-issues' : ''}` : undefined}>
+      {header}
+      <ReportFindings key={report?.year ?? 'unknown'} report={report} language={language} />
+    </div>
   </section>
 }
 
@@ -77,7 +80,6 @@ function ReportFindings({ report, language }: { report?: AnnualReport; language:
   }
   return <>
     {report.note ? <p className="report-review-note">{report.note[language]}</p> : null}
-    <div className={`report-summary${count ? ' report-summary-issues' : ''}`}>
       <div className="report-summary-header">
       <p className="report-finding"><strong>{hasConflict ? es ? `${count} hallazgos del informe; se requiere aclaración` : `${count} report findings; clarification needed` : count ? mixedFindings ? es ? `${count} ${noun} ${count === 1 ? 'reportado' : 'reportados'}` : `${count} ${noun} reported` : es ? `${count} ${noun} de cumplimiento ${count === 1 ? 'reportado' : 'reportados'}` : `${count} compliance ${noun} reported` : es ? 'No se reportaron infracciones' : 'No violations reported'}</strong></p>
       {count ? <button className="report-toggle" aria-controls={id} aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? mixedFindings ? es ? 'Ocultar hallazgos' : 'Hide findings' : es ? 'Ocultar problemas' : 'Hide issues' : es ? `Ver ${count} ${noun}` : `View ${count} ${noun}`}<span className="disclosure-icon" aria-hidden="true" /></button> : null}
@@ -100,7 +102,6 @@ function ReportFindings({ report, language }: { report?: AnnualReport; language:
           <div><dt>{issue.category === 'significantDeficiency' ? es ? 'Avance reportado' : 'Reported progress' : es ? 'Acción correctiva reportada' : 'Reported corrective action'}</dt><dd>{issue.action[language]}</dd></div></dl>
       </li>)}</ol>
     </div> : null}
-    </div>
     <div className="report-sources"><SourceLink url={report.url}>{es ? 'Ver informe original (PDF)' : 'View original report (PDF)'}</SourceLink><SourceLink url={RECOVERY_RESOURCES.annualReports}>{es ? 'Informes anuales de calidad del agua en ADH' : 'Annual water-quality reports at ADH'}</SourceLink></div>
   </>
 }

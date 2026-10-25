@@ -16,12 +16,13 @@ published records, not testing water.
   observed advisory history, and see changes since a previous visit.
 - Provides dated supplier facts and annual-report findings where reviewed,
   separate from current advisory status.
-- Offers provider contacts, guided help and editable preparation drafts. Nothing
-  is automatically called, emailed, filed or submitted by those tools.
-  Current active advisories use four tasks: Contact, Prepare, Send & record,
-  Follow up. Progress is resident-reported and lasts only in the open guide;
-  it is not agency status or verified delivery. Non-active/unavailable results
-  retain the five-step help guide.
+- Offers guided **Issue → Dates/area → Observations → Requested response → Review**
+  screens, with final send/copy/download on Review, relevant source records, saved drafts
+  and private request History. The observed advisory map has its own **Map** tab.
+  Account storage and email delivery require explicit operator configuration;
+  unconfigured services are unavailable, and sample drafts cannot send.
+  Only an explicit **Send message** action can email a supported verified contact;
+  official forms remain external and opening one is never recorded as sent.
 - Includes English/Spanish controls, an installable web app and clearly labeled
   fictional sample mode. Agency records and some reference text remain in English.
 
@@ -87,9 +88,12 @@ npm run test:e2e
 - Annual reports are historical documents, not current safety assessments.
   [Research provenance](water-alert/docs/research/adh-ccr-2025/README.md) preserves
   reviewed sources, mappings, hashes and unresolved findings.
-- Watch preferences are stored in the browser. Optional push enrollment stores
-  subscription and watch information on the server. Preparation drafts stay in
-  page memory and are lost when leaving or reloading; nothing is sent automatically.
+- Watch preferences and separate sample drafts are stored in the browser. Optional
+  push enrollment stores subscription/watch information on the server. Live Get help
+  drafts can stay only in browser storage without an account, or use private account
+  History when signed in; WAVE email sending remains account/configuration-gated.
+  Device-only drafts are cleared with device-data deletion. Sent copies cannot be
+  recalled. See [help setup and limits](water-alert/HELP-REQUESTS.md).
 - Web Push is implemented, but reliable deployed automatic advisory-to-device
   delivery remains unverified. Email alerts are not implemented. Local tests are
   not proof of production delivery. See [push status](water-alert/PUSH-PLAN.md).

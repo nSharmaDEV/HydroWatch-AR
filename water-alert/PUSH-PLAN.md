@@ -378,10 +378,38 @@ from activation alone.
   not an agency advisory, with production-home tap URL, returned Apple HTTP 201.
   Private mode-0600 receipt was claimed before transport; no automatic retry.
   No synthetic hosted record, source mutation, manual cron or advisory drain.
-- Approved production test budget is exhausted. User answered “yes” to confirmation
-  of arrival and tap-through opening WAVE Original. Locked/background state was
-  not separately established. No additional send is authorized. This remains
-  a direct transport test, not a deployed automatic advisory-pipeline test. Keep
+- The October 17 test was confirmed delivered and opened WAVE Original; locked/
+  background state was not separately established. No further send was authorized
+  at that time. This remains a direct transport test, not a deployed automatic
+  advisory-pipeline test. Keep
   day-long observation, quotas and remaining device/reliability gates open. The
   test environment also has newly saved subscriptions; do not assume it is empty
   or remove them without approval.
+
+### October 22 separately authorized Safari transport test
+
+- After the user confirmed enrollment on Safari, verified production device state
+  read-only. There were two Apple subscriptions; the newest enrollment matched the
+  user's current Safari setup. Revalidated the newest unexpired recipient, English
+  locale, one watch, and matching production VAPID key. The older subscription was
+  not contacted.
+- The user explicitly asked to test a notification. Sent exactly one direct
+  operator push to that newest Safari subscription, with title `WAVE test
+  notification` and body `This is a test notification, not a water advisory.`
+  Apple's push service returned HTTP 201 (accepted). No retry, fake advisory,
+  database mutation, cron invocation or advisory drain was used. A redacted,
+  mode-0600 receipt is retained at
+  `test-results/production-push-test-20261022T143731340Z.json` (ignored locally).
+- HTTP 201 alone did not establish display, but the user subsequently confirmed
+  the notification appeared on their Mac. Tap-through was not confirmed. No further
+  send is authorized by this one-test request; scheduled advisory delivery and
+  reliability gates remain open.
+
+- After the user confirmed the notification arrived on their Mac, a read-only
+  production snapshot on October 22 found six retained real events, none newer
+  than the newest enrollment and none within the preceding hour. No delivery
+  attempts were recorded. Both agency snapshots were successful; the `sources`
+  and `push` shared jobs had recently started. No cron/check endpoint was invoked.
+  Thus the deployment and direct transport are confirmed, but an actual
+  event-triggered production notification remains unverified. No synthetic event
+  or additional test send was authorized.

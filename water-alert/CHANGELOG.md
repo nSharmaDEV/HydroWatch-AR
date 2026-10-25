@@ -8,6 +8,786 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-25 — Approved current-app release preflight
+
+- Prepare the complete current app for the user's approved commit/push/Vercel
+  release, including the Review refinements and pending map, Home and saved-help work.
+- Fix native Node ESM imports in the annual-report evidence dependency chain.
+  Node 24 build and 21 focused API/security/Review tests pass. Initial full suite:
+  596 passed, 38 failed; the compiled-API failure then passed after the import fix.
+  User explicitly approved proceeding with the other 37 failures unresolved.
+- No production configuration changes, migrations or notification/email sends
+  are authorized as part of this release.
+
+### 2026-10-25 — Keep Review contact fields visible
+
+- Keep name and reply contact permanently expanded in Review, without a collapse
+  control. Preserve optional fields, heading styling and the section divider.
+  Local change only; not deployed.
+
+### 2026-10-25 — Align Review headings and table controls
+
+- Match the name/reply heading to What you provided and separate the contact
+  section with a divider and spacing. Keep information buttons visible beside
+  both completed and highlighted missing answers.
+- Put Source and Include in email into the source-record table's aligned rows,
+  preserving locked historical findings and existing source links.
+- Local checks: 34 focused tests and production build passed (existing bundle-size
+  warning remains). Not deployed; no messages sent.
+
+### 2026-10-25 — Simplify Review controls (local refinement)
+
+- Use labeled icon actions for updating/downloading, move citations into the email's
+  top-right information popup, and highlight clickable missing resident answers.
+- Move name/reply fields first, rename source records to Problems, remove source
+  detail/delete rows and empty file counts, and simplify the Copy email header.
+  Keep source citations in exported email and historical qualifiers in records.
+  Local implementation only; no deployment or messages sent.
+
+### 2026-10-25 — Taller Review cards (local refinement)
+
+- Reclaim 80px of unused desktop space beneath the Review cards and remove their
+  tall-screen height cap, giving the information list and email more room. Keep
+  the existing natural-height mobile layout. Not deployed.
+
+### 2026-10-25 — Include report findings without listed corrective action
+
+- Include exact-provider reviewed historical findings with no corrective action
+  listed across generated email categories, preserving report dates, page citations
+  and the distinction from current compliance or outage cause. Upgrade saved fact
+  selections without replacing manually edited email text.
+- Lock those source controls in Review and explain inclusion in English/Spanish.
+  Local implementation and tests only; no deployment or messages sent.
+
+### 2026-10-25 — Expand attachment button (local refinement)
+
+- Remove the visible file-types/limits disclosure from the observation screen and
+  let the upload button use the full card width. Existing file validation remains.
+  No deployment.
+
+### 2026-10-25 — Compact observation form (local refinement)
+
+- Combine observed issues and attachments, remove the observation-step provider/
+  safety panel and unused location/prior-contact controls, and expand the details
+  card with a full-width frequency field. Existing saved answers remain intact.
+- Local implementation only; no deployment.
+
+### 2026-10-25 — Move safety guidance below report details (local refinement)
+
+- Move urgent safety guidance above provider questions, removing the full-width
+  strip above the form. Keep it above attachments when provider contact is absent,
+  including sample mode. No deployment.
+
+### 2026-10-25 — Reflow resident observation step (local implementation)
+
+- Move urgent safety guidance above the observation form, separate issue choices
+  from report details, and place attachments and provider contact in a support row.
+- Keep the existing draft fields and controls, with the support panels stacked on
+  narrow screens. Local tests and build only; no deployment.
+
+### 2026-10-25 — Arkansas address lookup and location spacing (local implementation)
+
+- Add an opt-in Census Geocoder lookup for structured Arkansas street addresses,
+  disclose that the entered query is sent to Census, and keep manual place entry.
+- Improve location-panel spacing, field alignment, option-list height and mobile
+  action layout. Local API/unit verification only; no deployment.
+
+### 2026-10-25 — Quieter background away from Home
+
+- Keep Home's water effect unchanged; render ripple animation at 18% opacity on
+  every other page over the same static gradient, keeping page content primary.
+
+### 2026-10-25 — Shared water background on every page
+
+- Extend the existing water background across all app pages using one persistent
+  canvas behind the main content. Preserve page-specific layouts, opaque content
+  panels, header/banner separation, input handling and static motion fallback.
+
+### 2026-10-25 — Restore Home content position
+
+- Restore the intro and action cards to their previous top spacing at the user's
+  request, keeping the full-height background and bottom-strip removal.
+
+### 2026-10-25 — Center Home and remove bottom strip
+
+- Fill the remaining viewport below the shared header/banner with Home's water
+  background, removing the gray bottom gap. Center the intro and two-card group
+  vertically and horizontally, preserving mobile scrolling/navigation clearance.
+
+### 2026-10-25 — Ambient ripples match clicks
+
+- Give automatic ripples the same strength, wave profile and fade as click/tap
+  ripples, retaining the continuous cadence and random background positions.
+
+### 2026-10-25 — Subtle ambient visibility adjustment
+
+- Increase ambient wave strength by 25%, without changing the continuous cadence,
+  wave speed or fade, so the background is easier to see but stays secondary.
+
+### 2026-10-25 — Continuous, soft ambient water
+
+- Start ambient motion promptly and overlap softer drops every 1.1–1.5 seconds
+  instead of isolated stronger pulses. Keep reduced-motion and hidden-tab pauses.
+
+### 2026-10-25 — More apparent ambient ripples
+
+- Increase ambient drop strength and shorten its random interval to 1.8–3.6
+  seconds, keeping the smooth wave profile and stronger deliberate click response.
+
+### 2026-10-25 — Sporadic ambient Home ripples
+
+- Make background drops visible without pointer input, choosing positions across
+  the background and varying the interval from 2.4 to 5 seconds. Keep ambient
+  strength below deliberate clicks and preserve motion/visibility safeguards.
+
+### 2026-10-25 — Calmer, input-led Home ripples
+
+- Replace the noisy packed-height simulation with smooth WebGL wave packets:
+  circular crests expand at a consistent CSS-pixel speed from a click/tap, fade
+  completely, and leave the gradient clean. Limit overlapping waves to eight.
+- Space out the weaker cursor wake and ambient drops. Preserve background-only
+  rendering below the header, the three-pixel refraction cap, static reduced-motion
+  fallback, passive touch handling and cleanup on navigation.
+- Local checks: eight focused unit tests, ten desktop/mobile browser checks and
+  production build pass. Existing large-bundle warning remains. No deployment.
+
+### 2026-10-25 — Match Home card icon sizes (local implementation)
+
+- Normalize the visible Arkansas outline and droplet artwork to matching
+  dimensions within their heading rows. Not deployed.
+
+### 2026-10-25 — More visible Home water
+
+- Increase background ripple light/shadow contrast and pointer/ambient drop
+  strength at the user's request. Keep the three-pixel refraction cap, unchanged
+  content, reduced-motion fallback and input safeguards.
+
+### 2026-10-25 — Improve resident report dates and locations (local implementation)
+
+- Keep the end-date native calendar picker available even when ongoing status is
+  not specified; selecting “ongoing” still clears any saved end date.
+- Clarify that residents can report any Arkansas location, not only entries in
+  the limited water-place suggestion directory. No deployment performed.
+
+### 2026-10-25 — Align Home card leaders (local implementation)
+
+- Place each fine leader in the heading row between its title and icon, keeping
+  both endpoints clear of text and centering the line vertically. Not deployed.
+
+### 2026-10-25 — Enlarge help issue choices (local implementation)
+
+- Increase issue-choice text and icons for easier scanning, and let the five
+  choices use more of the available desktop height while retaining a readable,
+  single-column mobile layout. No deployment performed.
+
+### 2026-10-25 — Refine Home card markers (local implementation)
+
+- Attach the leader lines horizontally to the Arkansas and droplet icons, and
+  remove the inner exclamation mark from the droplet. Not deployed.
+
+### 2026-10-25 — Illustrated Home action cards (local implementation)
+
+- Add an Arkansas outline and water-issue droplet at the top-right of the two
+  Home action cards, connected toward each heading with a fine leader line. Markers
+  are decorative and hidden from assistive technology; not deployed.
+
+### 2026-10-25 — Isolated Home water background (local implementation)
+
+- Add a light blue-to-white, background-only WebGL water simulation below the
+  shared header. Keep existing cards, typography and navigation undistorted.
+- Bound simulation/render resolution, throttle pointer input, pause in hidden tabs,
+  and release resources on navigation. Use a static gradient for reduced motion,
+  unavailable WebGL or context loss; no new dependencies or deployment.
+- Local checks: 39 focused component/regression tests and eight synthetic
+  desktop/mobile browser checks pass, including touch, context loss and changing
+  motion preferences. Build passes with the existing chunk-size warning. This
+  is scoped verification, not a claim that the full repository suite is green.
+
+### 2026-10-25 — Remove Home ripple effect
+
+- Remove the Home ripple component and animation stylesheet from the running app
+  at the user's request after visual glitches. Keep the Home content unchanged.
+
+### 2026-10-25 — Full-background Home ripples (local implementation)
+
+- Replace the cursor-following masked patch with viewport-wide expanding/fading
+  teal rings. Add staggered rings on pointer presses and gentle spaced ambient
+  ripples; keep cards opaque and all controls interactive.
+- Bound active ripple layers, clean up timers/listeners on navigation, pause ambient
+  creation in hidden tabs, and disable the effect for reduced-motion preferences.
+- Clip waves below the shared header/marquee. Two component tests and two synthetic
+  desktop/mobile browser checks pass; build passes with the existing chunk-size warning.
+- Local UI only; no deployment or live notification/email actions.
+
+### 2026-10-25 — Home copy simplification
+
+- Remove the Home-only “About WAVE” paragraph and its attached divider in both
+  languages. Keep safety/source guidance elsewhere; ripple redesign is not yet implemented.
+
+### 2026-10-25 — Skip unavailable-account setup screen
+
+- Open device-only drafts and History directly when the session reports accounts
+  disabled, in both languages. Keep sending disabled and retain sign-in for configured
+  accounts and retry handling for account-check failures. Local implementation only.
+
+### 2026-10-25 — Compact provider contact copy
+
+- Remove the phone/email-app and separate-ADH explanatory paragraph from compact
+  provider contacts in both languages, as requested. Contact links are unchanged.
+
+### 2026-10-25 — Reload glyph visual sizing (local implementation)
+
+- Enlarge the `⟳` glyph to compensate for its smaller font rendering and visually
+  match the adjacent official-source arrow, keeping it inline and centered.
+- Apply an optical upward offset to align the reload glyph with the label rather
+  than its font's lower glyph position.
+
+### 2026-10-24 — Check-now icon alignment (local implementation)
+
+- Replace the card refresh SVG with `⟳` beside the label, using the same inline
+  treatment as the official-source arrow instead of absolute positioning.
+- Preserve checking/disabled behavior; no deployment or live refresh triggered.
+
+### 2026-10-24 — Make saved drafts easier to scan in History (local implementation)
+
+- Reformat History entries as compact, divided rows with the subject as the primary
+  title, supplier shown once, a distinct draft/status label and issue category, and a
+  consistently formatted saved date beside a prominent Resume draft action.
+- Match the supplied wide History wireframe: align Refresh History with the page
+  heading, place the explanation below, and separate the saved-draft count from the
+  compact list. Render each draft as a restrained rounded card consistent with Places.
+  Preserve local records and the existing resume callback; stack row actions on narrow
+  screens. Local checks only; not deployed.
+
+### 2026-10-24 — Add Check Now refresh icon (local implementation)
+
+- Add a decorative refresh icon to the existing Check Now buttons, aligned at the
+  right edge while keeping the label centered. Existing check behavior and accessible
+  button name remain unchanged; no deployment or agency retrieval was performed.
+
+### 2026-10-24 — Refine WAVE home ticker and pointer ripple (local implementation)
+
+- Move the WAVE meaning ticker below navigation and show it only on Home; use
+  logo-matched Montserrat, larger circular separators and a seamless continuous
+  loop that pauses on hover/focus and becomes readable static text for reduced motion.
+- Remove the welcome eyebrow and add a subtle expanding mouse-follow water ripple
+  on Home only, disabled for reduced-motion preferences. Local implementation only;
+  not deployed.
+
+### 2026-10-24 — Welcome Home and watched dashboard under Places (local implementation)
+
+- Make Home the WAVE welcome page with the requested advisory-map and water-issue
+  actions, bilingual safety limits and a pausable/reduced-motion identity marquee.
+  Move the existing watched-advisory dashboard to Places; retain watched-place
+  removal and addition under Settings.
+- Keep the existing help flow, map, history and settings destinations. Local checks
+  only; no deployment, notification, email or agency submission.
+
+### 2026-10-24 — Refreshed Get help with a water issue (local implementation)
+
+- Finish visible saved/catalog location autocomplete with arrow/Enter/Escape controls,
+  removable selections, manual entry and privacy/boundary reminders. Native optional
+  date controls explain browser formatting and reject end-before-start ranges;
+  ongoing clears and disables the end date.
+- Expose existing exact-ID verified supplier tel/mailto contacts on observations,
+  explain native-app behavior and keep ADH separate. Sample records expose no real
+  contacts. Add example placeholders without inserting them into draft values;
+  tighten attachment spacing and explain context-not-proof limits.
+- Keep Review’s two-column answer and official-record tables left aligned, with
+  accessible 44px edit/Add targets, explicit missing answers, source links and include
+  controls. Collapse full wording under “View source details”; confirm icon-only
+  deletion and preserve unrelated stored records and manual email edits.
+- Preserve edited source prose, dated historical details and labeled source URLs in
+  generated email. Retain all selected actions and stated frequency without inventing
+  full-day duration or a default requested action; ask about uncertain notice relevance
+  without inventing interruptions or asserting causation.
+- Fit all five stages at 1280×800 with the shared header; stack Review naturally on
+  narrow screens without overlapping subject, message or actions. Local checks:
+  70 focused help unit tests and 44 scoped synthetic Playwright journeys passed;
+  TypeScript/Vite build passed with the existing large-chunk warning. The full-suite
+  run had 578 passing and 32 failing tests, including stale Home-entry expectations
+  and existing notification/contact/report failures; it is not a green full-suite
+  result. Synthetic browser checks do not verify production delivery.
+- Local checks only; no deployment, commit, real email, notification or submission.
+
+### 2026-10-24 — Compact Review information (local refinement)
+
+- Show resident answers in a two-column table with adjacent ⓘ edit controls, and source-record metadata in a
+  separate two-column table. Collapse full source wording, details, and file limits;
+  summarize attachments without duplicating filenames.
+- Keep the 35/65 Review panels aligned with a viewport-sized composer without page
+  scrolling at 1280×800; stack them with natural page scrolling on mobile. Tighten
+  generated wording for confirmed intermittent/no-water observations and selected requests.
+- Put accessible circular Edit/Add information controls beside answers; keep email
+  subjects concise and specific to the selected supplier, with provider-team or neutral
+  multi-recipient greetings and clickable citations for included source records.
+- Local checks only; no deployment, real email, notification, or agency submission.
+
+### 2026-10-24 — Information-and-email Review (local implementation)
+
+- Split Review into approximately 35% confirmed information and 65% editable email,
+  stacking on mobile with natural vertical scrolling and readable editor text.
+  Edit/Add links return to the original answer steps without discarding the draft.
+- Separate resident answers, official record metadata, attachments and optional
+  signature. Keep original source links, include/remove controls and editable source
+  wording; mark saved/current-unverified and historical records explicitly.
+- Use readable dates, display-case supplier names and concern-specific subjects.
+  Ask whether a relevant notice relates to the reported experience without assuming
+  causation or current status. Preserve independent manual-edit protection and
+  explicit replacement through Update draft from answers.
+- Local synthetic checks only; verification is recorded in the implementation plan.
+  No deployment, real email, agency submission or delivery verification.
+
+### 2026-10-24 — Complaint-email-first review (local implementation)
+
+- Preserve five Map-aligned stages; replace the earlier Email/Report tabs with one
+  email composer, expandable source details and secondary report/email downloads.
+  Category changes clear incompatible details while retaining locations and identity.
+- Refresh untouched subject/body independently from current confirmed answers,
+  recipients, removed facts/files and saved-record status on resume. Protect manual
+  edits and legacy drafts; stale warnings and explicit regeneration remain available.
+- Use connected English/Spanish observations and selected requests, concern-specific
+  subjects, agency/provider or neutral multi-recipient greetings, and role-aware ADH
+  guidance requests. Preserve dated source quotations and historical/current limits;
+  no complaint filing, investigation, cause, safety or delivery outcome is inferred.
+- Local verification: 84 synthetic browser cases passed across categories, English/
+  Spanish, 1280×800 and 1440×780 panels, narrow screens and enlarged text. The broader
+  unit suite retains nine unrelated baseline failures; build and complaint-flow
+  regression checks are recorded in the implementation plan. No deployment or real
+  notification/email was performed.
+
+### 2026-10-24 — Confirmed answers, natural email and resident report (local implementation)
+
+- Keep five stages for every category and the approved bounded-panel layout. Add
+  approximate dates, relevant service frequency/location followups, optional prior
+  provider contact and billing details without inventing experiences or outcomes.
+- Keep selected choices stable until explicit Edit wording; use focus-only writing
+  prompts and genuine local-catalog states with manual location fallback.
+- Derive natural email and a separate structured resident report from one confirmed
+  model. Add Email/Report tabs, deliberate optional name/reply contact, distinct
+  fact/source counts and separate text downloads that do not bundle attachments.
+- Preserve manual email edits, flag meaningful answer/context changes and require
+  confirmation before replacing subject/message. Report stays current independently.
+  Preserve legacy source references and bounded metadata in existing JSON storage.
+- Recheck ADH general-contact instructions read-only; drafts are not filed complaints.
+  No deployment, provisioning, real messages, agency submissions or hosted migration.
+- Local checks: 89 focused help tests and 84 isolated English/Spanish browser checks
+  pass, including Email/Report tabs, saved edits, desktop fit and mobile reflow.
+  The Node 24 build passes with the
+  existing bundle-size warning; full unit suite: 573 pass and the same nine known
+  unrelated notification/contact/report failures. Local checks do not establish
+  deployed delivery.
+
+### 2026-10-24 — Bounded help panels and unified composer (local implementation)
+
+- Rebuild the shared help frame with compact Back/progress/save controls, consistent
+  heading/leader/action, matching white bordered panels, full-row observation/request
+  choices, pill prompts and a large attachment tile. Remove the duplicate area input
+  while retaining saved area answers.
+- Consolidate Review into one To/Subject/message/source/attachment surface. Keep
+  recipient explanations inside the selector, full accessible source attribution,
+  attachment removal and a short truthful Send/Copy status. Remove duplicate footer
+  navigation and long delivery notes; preserve all save/send and sample safeguards.
+- No deployment, provisioning, real messages, agency submissions or hosted migration.
+- Local checks: 79 focused help tests, 84 isolated English/Spanish browser checks
+  and the Node 24 production build pass. Browser checks include equal-height white
+  panels with 24px padding, unified composer geometry, 1280×800 desktop fit including
+  the sample banner, mobile and enlarged text. Desktop/mobile captures were inspected.
+  The existing bundle-size warning remains. These checks do not verify real delivery.
+  Full unit suite: 563 pass with the same nine known unrelated notification,
+  contact-copy and historical-report failures.
+
+### 2026-10-24 — Revised help wireframes (local implementation)
+
+- Share heading, leader and primary action across all help screens. Split timing
+  and optional locations, observations and description/uploads, and requested
+  actions and specific response into balanced desktop columns; stack on mobile.
+- Add explicitly selected multi-location descriptions, removable chips, existing
+  saved-supplier/catalog suggestions and manual fallback. Preserve bounded location
+  metadata in drafts and include confirmed locations in natural email prose/subject,
+  without treating descriptions as addresses or supplier boundaries.
+- Add safe writing prompts that never insert placeholders, visible calendar
+  affordances and a large attachment button with reading/ready status and removal.
+  Preserve custom wording, source attribution, historical dates and explicit regeneration.
+- Make final Review a composer with header Send only when all selected recipients
+  and configuration support it, otherwise Copy email. Preserve original save/auth/
+  immutable-send/history safeguards and live/sample isolation. No deployment,
+  provisioning, real messages, submissions or hosted migrations performed.
+- Local verification: 78 focused tests and 84 isolated English/Spanish browser checks
+  pass, including multi-location add/remove/prose, calendar affordances, normal
+  1280×800 desktop fit, mobile/enlarged text, attachments and preserved drafts.
+  Node 24 build passes with the existing >500 kB warning; full suite has 562 passing
+  tests and the same nine unrelated notification/contact/report failures.
+
+### 2026-10-23 — Five-screen help with final Review (local implementation)
+
+- Use Choose, optional dates/area (bill details for billing), observations, requested
+  response and final Review. Move chooser Continue beside the heading with a mobile-
+  hidden leader, remove the device-only sign-in footer, and make attachments and
+  relevant official guidance visible on observations.
+- Keep complete editable email, compact verified-recipient multiselect, starred
+  recommendation, sources, attachments, record controls, Send/Copy/Download together
+  on Review. Preserve saved edits and legacy drafts; report sending outcomes inline.
+- Review ADH's public contact instructions and distinguish an Engineering inquiry
+  from a formally submitted complaint. Apply ADH wording only to selected ADH routes;
+  do not invent an agency email, prior contact or investigation outcome.
+- Preserve the Map shell, source/historical distinctions, accountless/live/sample
+  isolation and disabled sample sending. No deployment, provisioning, migration,
+  real email or agency submission performed.
+- Local checks: 72 focused help tests and 84 isolated English/Spanish browser checks
+  pass, covering all issue paths, normal desktop fit, visible attachments/guidance,
+  mobile/enlarged text, saved edits and final-Review actions. The Node 24 build
+  passes with the existing bundle-size warning. Lake HAB context does not receive
+  tap-water boil instructions. Full unit suite: 556 pass with the same nine known
+  unrelated notification/contact/report failures. These checks do not verify
+  deployed delivery.
+
+### 2026-10-23 — Confirmed wording and recipient review (local implementation)
+
+- Replace the issue dropdown with four icon choices plus Other issue. Add service
+  date controls, ongoing/end-date behavior, optional area, editable observation and
+  requested-response choices. Only selected/supplied wording enters the email.
+- Show relevant exact-supplier supporting information with include/edit/remove and
+  per-fact sources; keep historical records optional and distinct from current status.
+  Generate sectioned emails with separate resident facts, WAVE records and requested
+  response, and concise numbered source URLs. Preserve manual edits until explicit
+  regeneration, including Back/resume.
+- Add directory-only multiple-recipient selection and primary recommendations.
+  External-only selections block email rather than being silently dropped. Retain
+  all resolved destinations in immutable send/retry snapshots and History; no new
+  agency addresses or automatic submissions. Preserve concurrent device-only drafts.
+- Keep the Map shell, sample banner, keyboard control focus and mobile reflow;
+  remove only programmatic heading outlines. Local synthetic checks do not establish
+  deployed delivery. No deployment, provisioning, migration or real messages sent.
+- Local checks: 69 focused help tests and 84 isolated English/Spanish browser checks
+  pass, including selected wording, sample-banner desktop fit, keyboard focus,
+  mobile/enlarged text, saved edits and long final-preview scrolling. Node 24 build
+  passes with the bundle-size warning. Full unit suite: 553 pass, the same nine
+  unrelated notification/contact/report expectations fail.
+
+### 2026-10-23 — Accountless live Get help drafts (local implementation)
+
+- Allow visitors to use live supplier/advisory context without signing in and keep
+  those drafts in a browser-storage key separate from fictional sample drafts and
+  account-backed History. Device-only drafts are not transferred or submitted by
+  WAVE; the existing copy/download and listed official-channel options remain.
+- Include the new live-local key in device-data deletion and explain local versus
+  account storage in the privacy screen and help documentation. WAVE-managed sending
+  and private account History remain account-only.
+- Targeted accountless help/History tests pass. No deployment, real email, agency
+  submission or production delivery verification.
+
+### 2026-10-23 — Short guided help flow (local implementation)
+
+- Replace the earlier three-screen/two-column help presentation with one task per
+  screen: issue choice, relevant experience, available WAVE records, editable email
+  and final confirmation. Billing adds a separate bill-details screen; other issues
+  need only a brief description. Supplier identity remains visible and Step n of m
+  counts the actual path, skipping absent records without implying an all-clear.
+- Keep exact-supplier facts separate from resident experience, with per-fact source,
+  editing and removal. Historical findings remain dated, grouped and opt-in; resumed
+  facts are saved/unverified, not new live-status checks. Bound initial previews
+  without truncating agency quotations. Preserve email edits on Back, fact changes,
+  language changes and resume; regeneration still requires confirmation.
+- Reuse Map's shell, existing styling, autosave, History, account recovery and send
+  safeguards. The typical advisory desktop path fits at 1280×800 with readable
+  controls; long final previews scroll internally. Mobile and enlarged text reflow
+  naturally. Optional tools expand in place, and sample mode stays visibly fictional
+  with sending disabled. Add compatible optional flow/fact JSON metadata and bounded
+  validation; no new database migration.
+- Local Node 24 build, 62 targeted tests and 84 isolated synthetic browser checks
+  pass, covering viewport fit, long preview, keyboard navigation, preserved edits
+  and sample-send gates; desktop/mobile captures were inspected. Full unit suite: 546 pass and
+  the same nine unrelated notification/contact/report expectations fail. No
+  deployment, provisioning, hosted migration or real messages/notifications sent.
+
+### 2026-10-23 — Approved two-column help hierarchy (local implementation)
+
+- Preserve the Map-aligned outer shell and Your issue → Review → Send stages;
+  split desktop content into roughly 40% details/references and 60% writing.
+  Stack details above writing on narrow screens and enlarged text, using normal
+  page scrolling without fixed help panels or internal preview scroll regions.
+- Restore the issue-type dropdown, keep short questions and editable/removable
+  source facts on the left, and enlarge experience, prior-attempt and email fields
+  on the right. Advisory facts start expanded; billing facts may start collapsed.
+- Keep recipient, supplied answers, attachments and citations beside the Review
+  editor, and sending details beside the full final email preview. Preserve saved
+  edits, explicit regeneration, historical opt-in and all existing send safeguards.
+- Local Node 24 build, 55 targeted unit/integration tests and 84 synthetic browser
+  checks pass; desktop/mobile captures were visually inspected. The build retains
+  its bundle-size warning. Full unit suite: 539 pass, with the same nine unrelated
+  notification/contact/report expectations failing. No deployment, provisioning
+  or real sending.
+
+### 2026-10-23 — Approved help wireframe follow-through (local implementation)
+
+- Complete billing follow-ups with the disputed-charge and prior-attempt fields,
+  using the existing answer keys and bilingual message generation.
+- Show multiple agency-listed advisory problems as separate concise points.
+  Identify each notice citation by available published date and affected area;
+  keep links outside the editable email and preserve exact supplier matching.
+- Use a neutral included-agency-details heading for saved/editable context, so a
+  newer advisory cannot relabel old draft details as current. Preserve existing
+  edited bodies, History, storage and unsupported/sample-send safeguards.
+- Local Node 24 build, 55 targeted unit/integration tests and 84 synthetic browser
+  checks pass; 1280×800 captures were visually inspected. Full suite: 539 pass,
+  the same nine unrelated notification/contact/report expectations fail. The build
+  retains its bundle-size warning. No deployment, provisioning or real sending.
+
+### 2026-10-23 — Supportive resident help (local implementation)
+
+- Keep the Map-aligned shell and center a readable task column. Replace the issue
+  selector with five compact choices, one main experience field and relevant short
+  questions; make the desired response optional and collapse dates/photos.
+- Generate natural English/Spanish messages from exact-supplier notices, preserving
+  original agency quotations and omitting missing facts. Keep per-notice official
+  links outside the email instead of raw URL/reference logs. Historical evidence
+  retains report year, page, published period/action and its non-current status.
+- Allow editing/removing included facts, preserve edited emails across back/resume,
+  and retain explicit confirmed regeneration. Store bounded optional citation
+  metadata in existing JSON drafts and immutable outgoing copies; no schema change.
+  Existing auth, ownership, autosave, delivery, replies and deletion paths remain.
+- Local Node 24 production build and 52 targeted unit/integration tests pass. All
+  84 synthetic help browser checks pass, including 1280×800 Map geometry, en/es,
+  narrow screens, enlarged text, fact edits/removal and saved-draft resume. Full unit
+  suite: 536 pass, the same nine unrelated notification/contact/report expectations
+  fail. Vite reports a bundle-size warning. No deployment, hosted migration,
+  provisioning, real email, notification or submission testing.
+
+### 2026-10-23 — Issue-specific help and Map-aligned layout (local implementation)
+
+- Match the existing Map workspace's outer width, alignment, margins and heading
+  scale. Retain three stages, readable controls and natural mobile/enlarged-text
+  scrolling; no new demo or unrelated page redesign.
+- Add advisory, billing/credit/expenses, interruption/low-pressure, water-quality
+  and other issue choices, retaining the existing legal route. Ask only relevant
+  optional questions and preserve answers, attachments and edited drafts.
+- Build new advisory references from all matching supplier notices, with separate
+  agency-reported problems, published areas/dates and source citations. Missing
+  facts are omitted; retained notices are not presented as current. Historical
+  report evidence remains exact-provider, dated and opt-in.
+- Generate issue-specific editable messages that separate resident facts from
+  agency references without generic compensation/policy boilerplate. Show the
+  complete Send preview openly, with source links and attachment review. Existing
+  drafts are preserved rather than silently rewritten; samples still cannot send.
+- Local Node 24 build and 46 targeted unit/integration tests pass. All 100 synthetic
+  help browser checks pass, including Map geometry at 1280×800, English/Spanish,
+  narrow screens, enlarged text and saved-draft resume. Full unit run: 530 pass,
+  nine existing notification/contact/report expectations fail. No deployment,
+  hosted migration, account provisioning or real email/submission testing.
+
+### 2026-10-22 — Saved help requests and separate Map (local implementation)
+
+- Add a single-column Your issue / Review / Send workspace, durable account-owned
+  drafts, editable messages, bounded optional attachments and opt-in historical
+  evidence. Sample drafts remain device-only and cannot send.
+- Separate Map from private History. History retains original issues, immutable
+  outbound copies, delivery events, supported verified replies, follow-ups and
+  resident-controlled close/reopen. Include per-request/all-history deletion.
+- Add opt-in Supabase account validation and Resend delivery adapters, private
+  storage, ownership enforcement, revision conflicts, stable send keys and signed
+  webhooks. Unconfigured accounts/delivery are explicitly unavailable. Official
+  external channels are never recorded as sent. Enrollment/recovery, mail-domain
+  setup and hosted migration remain operator gates; no deployment or real sends.
+- Preserve open edits through same-account reauthentication; wait for durable save
+  before navigation, warn on unsaved browser exit and offer retry/download on failure.
+  Document private storage/deletion, bounded retry and unsupported inbound files in
+  `HELP-REQUESTS.md`; update root/app usage and in-app privacy information.
+- Local Node 24 production build passes. The help browser matrix passes 68 synthetic
+  checks (English/Spanish, active/no-active contexts, four issue types, desktop,
+  mobile and enlarged text; saved sample reload/resume). Full unit suite: 525 pass,
+  nine existing notification/contact/report expectations fail; no removed copy
+  restored. Provider API/auth/webhook tests use injected fixtures, not real sends.
+
+### 2026-10-22 — Advisory map workspace (local implementation)
+
+- Replace History's stacked map/cards with a compact heading, shared supplier/county
+  search, My places / All places and Status filters, and a desktop 65/35 map/results
+  workspace. Keep unmapped suppliers in the same active-first list with Location
+  unavailable; never invent coordinates or affected boundaries.
+- Marker and row selection open the same local details panel. Back retains list
+  scroll, selection, filters and map position; visiting Sources also retains the
+  workspace. Move long map explanations and point attribution to the existing
+  Sources and coverage destination. Preserve geometry, reviewed coordinates,
+  agency wording/dates, freshness, historical uncertainty and bilingual warnings.
+- Mobile uses Map/List tabs and an accessible modal bottom sheet with focus
+  containment/restoration, Escape/back/close/backdrop dismissal and scroll handling.
+  Short or enlarged-text layouts can scroll naturally; shared header/nav unchanged.
+- Local checks under Node 24: 44 targeted unit/history tests and four intercepted
+  synthetic browser checks pass
+  (two desktop-only checks skipped in the phone project), production build passes.
+  Full two-worker unit suite: 508 pass, nine existing notification/contact/report
+  expectations fail. No removed copy restored; no deployment, live-state test writes
+  or real sends. README updated for the new workspace and Sources entry point.
+
+### 2026-10-22 — Home carousel clearance and ADH contact fallback (local implementation)
+
+- Tighten short-desktop Home spacing so the collapsed long affected-area example
+  retains fully visible Previous/Next controls at 1280×650 and 1440×780. Preserve
+  full notice wording, readable text and normal scrolling for expanded content.
+- Replace the missing-provider-contact paragraph with a right-aligned Contact ADH
+  link to the existing Safe Water Engineering reference. Keep verified supplier
+  phone/email actions and sample-mode separation unchanged.
+- Local checks: 22 targeted browser checks and production build pass. Targeted
+  unit run: 42 pass, two existing missing-email-copy expectations fail. Full suites
+  not rerun. Nothing deployed or sent.
+
+### 2026-10-22 — Leisure Hills explicit affected-area match (local implementation)
+
+- Fix a missed match when ADH lists VILLAGE WATER LLC in System but explicitly
+  names Leisure Hills Mobile Home Park in Area Impacted. Match only the verified
+  exact system/area/county/source combination; do not alias all Village Water
+  notices or infer service boundaries. Preserve original notice identity,
+  wording and dates. Use the same association in supplier advisory history.
+- Shared status/history/watch matching changes locally; no past events are
+  replayed, no real notifications sent and nothing deployed.
+- Local checks: 63 targeted tests and production build pass. Read-only local
+  API inspection confirms the ADH snapshot retains the unlifted source row.
+
+### 2026-10-22 — Unified annual-report card (local implementation)
+
+- Move the reviewed report title, year selector and source-link footer inside
+  the findings card, including the yellow issue card. Preserve expandable
+  findings, source destinations and distinct unavailable/unreviewed states.
+- Local checks: six annual-report tests and the production build pass. Not deployed.
+
+### 2026-10-22 — Laptop help workspace proportions (local implementation)
+
+- Keep the desktop help panel and navigation at a consistent viewport-relative
+  position across steps instead of shrinking short steps. Allow expanded content
+  to grow normally; retain stacked mobile layouts and account for the sample banner.
+- Increase the guided draft editor from 96px to at least 160px, growing with
+  available height. Group preparation actions and supplementary disclosures;
+  replace the full-width heading focus outline with a localized focus marker.
+- Local checks: 27 help unit tests and 32 workspace browser tests pass, covering
+  every pathway in both languages at 1280×700 and 1440×780, narrow widths and
+  enlarged text. Build passes. Six older formatting checks fail before entering
+  help because they expect the Home info icon to open the removed checklist
+  destination rather than Sources and coverage. Full suites not rerun. Not deployed.
+
+### 2026-10-22 — Compact Home updates section (local implementation)
+
+- Remove the notification-status paragraph and Manage alerts shortcut from the
+  Home sidebar. About these results now follows directly below the toggle row
+  with the existing section gap. Keep notification controls, feedback on use
+  and the full alert settings page unchanged. Local checks: 20 targeted unit
+  tests, six bilingual desktop/mobile browser checks and build pass. Not deployed.
+
+### 2026-10-22 — Home alignment and sources shortcut (local implementation)
+
+- Align the desktop Add a place button with the main card's top edge. Keep
+  existing colors, typography, card layout and stacked mobile placement.
+- Make the card info icon open the existing Sources and coverage destination,
+  using the same in-app navigation. Label it “Sources and coverage” (localized
+  in Spanish), and remove the separate sidebar text shortcut.
+- Local checks: 52 targeted unit tests, six bilingual desktop/mobile browser
+  checks and production build pass. Full unit run: 508 pass, four existing
+  annual-report disclaimer/provider missing-email failures. Not deployed.
+
+### 2026-10-22 — Record automatic push pipeline audit
+
+- Read production job, source, event and attempt summaries without invoking cron,
+  mutating state or sending notifications. Recent source/push job activity and
+  successful agency checks were observed, but there were no eligible post-enrollment
+  events or push attempts. Automatic event-triggered device delivery remains
+  unverified; operational evidence is recorded in `VERCEL.md`, `FREE-HOSTING.md`
+  and `PUSH-PLAN.md`.
+
+### 2026-10-22 — Send one authorized Safari push transport test
+
+- After read-only verification isolated the newest user-enrolled Safari
+  subscription from one older Apple subscription, sent one explicitly labeled
+  non-advisory test notification to the newest device only. Apple returned HTTP
+  201 (accepted); no retry, synthetic notice, cron, advisory drain or production
+  state mutation occurred. The user confirmed it appeared on their Mac. Tap-through
+  and scheduled advisory delivery remain unverified.
+
+### 2026-10-22 — Show push setup failure stage in Settings
+
+- Preserve the typed service-worker, browser-subscription and server-enrollment
+  failure details in Alert Options instead of collapsing all setup errors into a
+  generic message. Permission denial remains distinct; failed deletion keeps its
+  credential-preserving retry message. Deployed October 22 in deployment
+  `dpl_zBSRNjkRi6mYqezYLZgqNVeTucNL`; this surfaces the failing stage but is not
+  evidence of real-device delivery.
+
+### 2026-10-22 — Deploy push diagnostics to production
+
+- Deployed the Settings push-stage diagnostics to the existing production project.
+  Deployment `dpl_zBSRNjkRi6mYqezYLZgqNVeTucNL` is Ready at
+  `https://water-alert-cg61nh1de-nirmays06-3523s-projects.vercel.app`, aliased to
+  `https://water-alert-blond.vercel.app`. The hosted build passed; the production
+  page and enabled push config were checked read-only. No settings, scheduler,
+  enrollment or notification delivery was changed or verified.
+
+### 2026-10-22 — Deploy current WAVE checkout to production
+
+- Deployed the complete current checkout, including the observed-supplier map and
+  coverage catalog, observed-history navigation, Home push-setup guidance, and
+  accompanying documentation/tests. Vercel deployment
+  `dpl_8chB59BgZ2Vpj2yusbefVuY1PFZm` is Ready and aliased to
+  `https://water-alert-blond.vercel.app`.
+- Hosted TypeScript/Vite build passed. Read-only checks confirmed the production
+  page responds and `/api/push/config` reports `enabled: true` with a public key.
+  The full local test run had 505 passing and four existing report/contact-copy
+  assertion failures. No Cloudflare scheduler or Vercel environment settings were
+  changed; real-device enrollment and notification delivery remain unverified.
+
+### 2026-10-21 — Reference points for all currently observed suppliers (local)
+
+- Expand the reviewed exact-ID location catalog to cover all 31 suppliers in the
+  local observed-history inventory: 26 exact-name historical Arkansas GIS polygon
+  centroids, two documented name variants (Brunner Hill and North Jackson), and
+  three separately labeled office/site references (Salem, Riverside Resort and
+  Little Fir). Retain the earlier Fayetteville entry, for 32 catalog points total.
+- Record source names, point types, review dates, public identity evidence and
+  review notes. Disclose point types and source links in English/Spanish. These
+  points are not affected areas, current service boundaries or water-system assets.
+  Future suppliers still require location review and remain discoverable as
+  unmapped until then. No new feeds, geocoding, polling, dependencies or deployment.
+- Local validation: all 31 reviewed identities have points; 16 map/coverage tests
+  and 25 existing history/content tests pass, as do the production build and four
+  synthetic desktop/phone browser checks (including the populated catalog).
+  Full unit run with two workers: 505 passed/four failed, the same pre-existing
+  report/contact-copy failures documented below. No production-feed health or
+  device delivery was verified.
+
+### 2026-10-21 — Observed supplier map (local implementation)
+
+- Add Map/List views only under History → All observed places. Preserve the
+  existing history cards in List and My places, and leave the Home carousel/layout
+  untouched by this feature. Map markers and unmapped supplier buttons reuse
+  advisory details, including suppliers present only in saved observations;
+  Back returns to the map.
+- Use exact observed ADH supplier IDs and existing current-status/freshness logic,
+  source timestamps and app clock. Search supplier/county names; keep active
+  unmapped suppliers discoverable. Include English/Spanish labels, keyboard
+  controls, zoom/reset, reduced-motion handling and safety/coverage limitations.
+- Bundle the public-domain Census Arkansas outline and two provenance-backed
+  historical polygon-centroid reference points from Arkansas GIS/ADH (Bull
+  Shoals and Fayetteville). These are not affected areas or current service
+  boundaries; all other suppliers remain unmapped until coordinates are verified.
+  No new dependencies, external tiles, geocoding, polling or CSP changes.
+- Local validation: 13 new map tests and 25 existing history/content tests pass;
+  production build and two synthetic desktop/phone browser checks pass. Browser
+  checks used an isolated UI-only server on temporary port 5196 because 5194 was
+  already occupied, with external requests and API mutations blocked. Full unit
+  run with two workers: 502 passed/four failed; the same four report/contact-copy
+  failures reproduce against committed HEAD. Two additional journey failures in
+  an earlier full run pass in isolation and the two-worker rerun. This feature was
+  subsequently included in the October 22 production deployment; real source-health
+  or notification-delivery verification was not performed.
+
+### 2026-10-21 — Guard Home notification setup state (local implementation)
+
+- Keep the Home notification switch disabled while server push configuration is
+  loading, and show localized setup status instead of allowing an early click to
+  leave a misleading failure message behind.
+- Distinguish service-worker, browser-subscription and server-enrollment failures
+  while keeping the switch off unless setup succeeds. Local tests cover the
+  loading race and each failure stage. Subsequently included in the October 22
+  production deployment; device delivery remains unverified.
+
 ### 2026-10-21 — Deploy pushed Home and resident-help updates (production)
 
 - The Git push alone did not trigger deployment because this project has no Git

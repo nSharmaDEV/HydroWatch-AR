@@ -13,7 +13,10 @@ const source = { agency: 'ADH' as const, records: [], retrievedAt: at, lastSucce
 it('offers per-card checking through the supplied refresh handler without inventing a new result', async () => {
   const refresh = vi.fn()
   render(<StatusCard place={place} source={source} now={Date.parse(at)} t={en} onView={() => {}} onRefresh={refresh} />)
-  await userEvent.setup().click(screen.getByRole('button', { name: 'Check now' }))
+  const checkNow = screen.getByRole('button', { name: 'Check now' })
+  expect(checkNow.querySelector('span[aria-hidden="true"]')).toHaveTextContent('⟳')
+  expect(checkNow.querySelector('svg')).not.toBeInTheDocument()
+  await userEvent.setup().click(checkNow)
   expect(refresh).toHaveBeenCalledOnce()
   expect(screen.getByText('No active boil-water notice found')).toBeVisible()
   expect(screen.getByRole('link', { name: /View official source/ })).toHaveAttribute('href', SOURCES.ADH)
@@ -82,7 +85,8 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
   }
   expect(screen.queryByText(en.cardQualification)).toBeNull()
   expect(container.querySelectorAll('.provider-contact-actions svg')).toHaveLength(0)
-  expect(screen.getByText(/Contact details have not been verified/)).toBeVisible()
+  expect(screen.getByRole('link', { name: 'Contact ADH' })).toHaveAttribute('target', '_blank')
+  expect(screen.queryByText(/Contact details have not been verified/)).toBeNull()
   expect(container.querySelector('article>dl')).toBeNull()
 })
 

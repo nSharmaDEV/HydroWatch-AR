@@ -1,0 +1,26 @@
+import { useEffect, useState, type ReactNode } from 'react'
+import { helpApi, type HelpSession } from './help-client'
+export function HelpAccount({ language, children }: { language: 'en' | 'es'; children: (session: HelpSession) => ReactNode }) {
+  const [session, setSession] = useState<HelpSession | null>(null), [error, setError] = useState(false), [busy, setBusy] = useState(false)
+  const [renewed, setRenewed] = useState(false), [deviceOnly, setDeviceOnly] = useState(false)
+  const es = language === 'es'
+  async function load() { setError(false); try { setSession(await helpApi('/session')) } catch { setError(true) } }
+  useEffect(() => { void load() }, [])
+  if (session?.user) return <>{children(session)}<details className="request-account"><summary>{es ? 'Iniciar sesión de nuevo sin salir' : 'Sign in again without leaving'}</summary><p>{es ? 'Si la sesión caducó, confirma la misma cuenta y después reintenta guardar. No recargues el borrador sin guardar.' : 'If your session expired, confirm the same account, then retry saving. Do not reload an unsaved draft.'}</p><form onSubmit={async e => { e.preventDefault(); const form = new FormData(e.currentTarget); setBusy(true); setError(false); setRenewed(false); try { await helpApi('/session', { email: session.user!.email, password: form.get('password') }); const fresh = await helpApi<HelpSession>('/session'); if (fresh.user?.id !== session.user!.id) throw new Error('Account changed'); setRenewed(true) } catch { setError(true) } finally { setBusy(false) } }}><label>{es ? 'Correo electrónico' : 'Email'}<input type="email" value={session.user.email} readOnly autoComplete="username" /></label><label>{es ? 'Contraseña' : 'Password'}<input name="password" type="password" required maxLength={1024} autoComplete="current-password" /></label><button className="secondary" disabled={busy}>{es ? 'Iniciar sesión' : 'Sign in'}</button></form>{renewed ? <p role="status">{es ? 'Sesión renovada. Reintenta guardar el borrador.' : 'Session renewed. Retry saving your draft.'}</p> : null}{error ? <p role="alert">{es ? 'No se pudo renovar la sesión. El borrador sigue aquí.' : 'Could not renew the session. Your draft remains here.'}</p> : null}</details></>
+  if (deviceOnly || session?.enabled === false) return <>{children({ enabled: false, user: null, delivery: false, accountUrl: null })}</>
+  if (!session && !error) return <p role="status">{es ? 'Comprobando la cuenta…' : 'Checking account…'}</p>
+  return <section className="request-account">
+    <h2>{es ? 'Historial privado' : 'Private History'}</h2>
+    {session?.enabled ? <><p>{es ? 'Inicia sesión con tu cuenta confirmada para guardar borradores y conversaciones. Las notificaciones del dispositivo no son una cuenta.' : 'Sign in with your confirmed account to save drafts and conversations. Device notifications are not an account.'}</p>
+      <form onSubmit={async e => { e.preventDefault(); const form = new FormData(e.currentTarget); setBusy(true); setError(false); try { await helpApi('/session', { email: form.get('email'), password: form.get('password') }); await load() } catch { setError(true) } finally { setBusy(false) } }}>
+        <label>{es ? 'Correo electrónico' : 'Email'}<input type="email" name="email" autoComplete="username" required maxLength={320} /></label>
+        <label>{es ? 'Contraseña' : 'Password'}<input type="password" name="password" autoComplete="current-password" required maxLength={1024} /></label>
+        <button className="primary" disabled={busy}>{es ? 'Iniciar sesión' : 'Sign in'}</button>
+      </form><p>{es ? 'La sesión dura hasta una hora. Si caduca, vuelve a iniciar sesión; los borradores guardados permanecen en tu cuenta.' : 'Sessions last up to one hour. If yours expires, sign in again; saved drafts remain in your account.'}</p>
+      {session.accountUrl ? <a href={session.accountUrl} target="_blank" rel="noreferrer">{es ? 'Crear o recuperar cuenta (servicio externo)' : 'Create or recover account (external service)'}</a> : <p>{es ? 'La inscripción y recuperación de cuentas aún no están configuradas. No se enviarán correos desde aquí.' : 'Account enrollment and recovery are not configured yet. No emails will be sent from here.'}</p>}</> : <p>{session ? es ? 'Las cuentas y el envío no están configurados. No se guardaron datos personales. Puedes explorar el ejemplo desde Configuración.' : 'Accounts and sending are not configured. No personal details were saved. You can explore the sample from Settings.' : es ? 'Comprobando la cuenta…' : 'Checking account…'}</p>}
+    {error ? <p role="alert">{es ? 'No se pudo verificar la cuenta. Comprueba tus datos o vuelve a intentarlo.' : 'Could not verify your account. Check your details or try again.'}</p> : null}
+    {error ? <button className="secondary" onClick={() => void load()}>{es ? 'Reintentar' : 'Try again'}</button> : null}
+    <button className="secondary" onClick={() => setDeviceOnly(true)}>{es ? 'Continuar sin una cuenta' : 'Continue without an account'}</button>
+    <p className="quiet-note">{es ? 'El borrador se guarda solo en este dispositivo. No se envía desde WAVE.' : 'Your draft stays on this device. WAVE will not send it.'}</p>
+  </section>
+}

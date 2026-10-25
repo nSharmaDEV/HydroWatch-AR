@@ -26,8 +26,21 @@ export function withPlaceCatalog(observed: Place[]): Place[] {
 }
 
 const nameKey = (value: string) => value.normalize('NFKC').replace(/\s+/g, ' ').trim().replace(/\s*\*$/, '').toLowerCase()
+
+// ADH explicitly names this supplier in Area Impacted under a different System.
+// Verified against the source row on 2026-10-22. This is not an operator alias:
+// only this exact published system/area/county combination establishes the link.
+export const ADH_AREA_ASSOCIATIONS = [{
+  placeId: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf',
+  system: 'VILLAGE WATER LLC', area: 'LEISURE HILLS MOBILE HOME PARK for the Entire System', county: 'BENTON',
+  url: 'https://health.arkansas.gov/wa_engTraining/boilwaterorder.aspx', verifiedOn: '2026-10-22',
+}] as const
+
 export function noticeMatchesPlace(placeId: string, notice: Notice): boolean {
   if (placeId === notice.placeId) return true
+  if (notice.agency === 'ADH' && notice.kind === 'boil' && ADH_AREA_ASSOCIATIONS.some(link =>
+    link.placeId === placeId && link.url === notice.url && nameKey(link.system) === nameKey(notice.name)
+    && nameKey(link.area) === nameKey(notice.area) && nameKey(link.county) === nameKey(notice.county))) return true
   const entry = catalogEntry(placeId)
   // Exact verified waterbody names in ADEQ HAB records only. No fuzzy matches,
   // source-water/supplier inference, changed record IDs, or inferred lifts.

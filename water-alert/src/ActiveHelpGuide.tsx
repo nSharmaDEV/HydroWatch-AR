@@ -115,12 +115,11 @@ export function ActiveHelpGuide({ place, notice, language, sample, onBack }: { p
         <div hidden={step !== 1 && step !== 2}>
           <details className={`help-draft-review${step === 1 ? ' is-editing' : ''}`} open={step === 1}>
           <summary>{w.draft}</summary>
-          <RecoveryActions place={place} notice={notice} language={language} sample={sample} selectedKind={kind} onKindChange={chooseKind} appendix={appendix} onEdit={() => { setPrepared(false); setConfirmed(false) }} guided allowEmail={destination === 'provider'}>
+          <RecoveryActions place={place} notice={notice} language={language} sample={sample} selectedKind={kind} onKindChange={chooseKind} appendix={appendix} onEdit={() => { setPrepared(false); setConfirmed(false) }} guided allowEmail={destination === 'provider'} actions={step === 1 ? <button className="secondary" onClick={() => { setPrepared(value => !value); setMessage(t.changed) }}>{prepared ? t.undo : t.ready}</button> : null}>
           <HelpEvidence place={place} language={language} sample={sample} selected={selected} onChange={keys => { setSelected(keys); setPrepared(false); setConfirmed(false) }} />
           </RecoveryActions>
           </details>
         </div>
-        {step === 1 ? <button className="secondary" onClick={() => { setPrepared(value => !value); setMessage(t.changed) }}>{prepared ? t.undo : t.ready}</button> : null}
         <div hidden={step !== 2}>
           <div className="help-record-form">
             {record ? <p className="info">{t.replace}</p> : null}

@@ -1,9 +1,28 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import App from '../src/App'
 import { EMPTY_SOURCES, SOURCES } from '../src/domain'
 afterEach(() => window.history.replaceState(null, '', '/'))
+it('shows the welcome landing page at Home and keeps the watched advisory dashboard under Places', async () => {
+  localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: ['ADH:real'], liftWatches: [], language: 'en', checkOnOpen: false }))
+  const notice = { id: 'ADH:event', placeId: 'ADH:real', agency: 'ADH' as const, kind: 'boil' as const, name: 'Watched water', area: 'Agency area', county: 'Benton', issued: '10/13/2026', lifted: null, reason: '', url: SOURCES.ADH }
+  render(<App liveData={{ sources: EMPTY_SOURCES, places: [{ id: notice.placeId, name: notice.name, kind: 'system', county: notice.county }], archive: [notice], coverageStart: null }} />)
+  expect(screen.getByRole('heading', { name: 'Water information, made easier.' })).toBeVisible()
+  expect(document.querySelector('.wave-marquee')).toHaveAttribute('aria-label', 'WAVE: Water Awareness, Verification, and Empowerment')
+  expect(document.querySelector('.wave-marquee')).toHaveTextContent('WAVE: Water Awareness, Verification, and Empowerment●')
+  expect(document.querySelector('.wave-marquee-copy')?.textContent.match(/WAVE: Water Awareness, Verification, and Empowerment/g)).toHaveLength(6)
+  expect(screen.queryByText('Welcome to WAVE')).not.toBeInTheDocument()
+  const home = document.querySelector('.wave-home') as HTMLElement
+  fireEvent.mouseMove(home, { clientX: 120, clientY: 80 })
+  expect(home.style.getPropertyValue('--ripple-x')).toBe('120px')
+  expect(screen.queryByRole('heading', { name: 'What would you like to do?' })).not.toBeInTheDocument()
+  const user = userEvent.setup()
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+  expect(document.querySelector('.wave-marquee')).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'My Water' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Watched water' })).toBeVisible()
+})
 it('separates curated preparation references from live advisory feeds', async () => {
   render(<App />)
   const user = userEvent.setup()
@@ -17,6 +36,7 @@ it('shows changes only for watched live places, not sample or other suppliers', 
   const at = new Date().toISOString()
   const notice = { id: 'ADH:event', placeId: 'ADH:real', agency: 'ADH' as const, kind: 'boil' as const, name: 'Watched water', area: 'Agency area', county: 'Benton', issued: '10/13/2026', lifted: null, reason: '', url: SOURCES.ADH }
   render(<App liveData={{ sources: EMPTY_SOURCES.map(s => s.agency === 'ADH' ? { ...s, records: [notice], error: null, lastSuccessAt: at } : s), places: [{ id: notice.placeId, name: notice.name, kind: 'system', county: notice.county }], archive: [notice], coverageStart: at, recentChanges: [{ id: 'new:ADH:event', notice, type: 'new', observedAt: at }, { id: 'new:other', notice: { ...notice, id: 'ADH:other', placeId: 'ADH:other', name: 'Other supplier' }, type: 'new', observedAt: at }] }} />)
+  await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   expect(screen.getByRole('heading', { name: 'Changes since your previous visit' })).toBeVisible()
   expect(screen.queryByText(/Other supplier/)).not.toBeInTheDocument()
   await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
@@ -65,16 +85,19 @@ describe('sample resident journey', () => {
   it('keeps sample notifications disabled for supplier watches', async () => {
     const user = userEvent.setup()
     render(<App />)
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     expect(screen.getByRole('region', { name: 'Sample mode' })).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
-    await user.click(screen.getByRole('button', { name: 'Manage alerts' }))
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
+    await user.click(screen.getByRole('button', { name: /Alert Options/ }))
     await user.click(screen.getByRole('checkbox', { name: 'Notify when the agency explicitly lifts a notice' }))
     expect(screen.getByText('Notifications are disabled in sample mode.')).toBeVisible()
     expect(screen.getByRole('checkbox', { name: 'Notify when the agency explicitly lifts a notice' })).toBeChecked()
   })
   it('shows supplier sample statuses without waterbody cards', async () => {
     const user = userEvent.setup(); render(<App />)
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
     expect(screen.getByText('Active boil-water notice')).toBeVisible()
@@ -86,6 +109,7 @@ describe('sample resident journey', () => {
   })
   it('does not infer suppliers for a town search', async () => {
     const user = userEvent.setup(); render(<App />)
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Start sample journey' }))
     await user.type(screen.getByRole('searchbox'), 'Sample Creek')
@@ -97,12 +121,14 @@ describe('sample resident journey', () => {
   })
   it('explains private-well exclusion without lake selection', async () => {
     const user = userEvent.setup(); render(<App />)
+    await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
     await user.click(screen.getByRole('button', { name: "I'm on a private well" }))
     expect(screen.getByText(/Private wells are outside coverage/)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Watch a lake instead' })).not.toBeInTheDocument()
   })
   it('translates the sample status and settings screens', async () => {
     const user = userEvent.setup(); render(<App />)
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
     await user.click(screen.getByRole('button', { name: 'ES' }))

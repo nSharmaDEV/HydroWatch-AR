@@ -19,6 +19,10 @@ it.each(['en', 'es'] as const)('shows the reviewed %s report before combined pro
   const toggle = screen.getByRole('button', { name: es ? 'Ver 4 problemas' : 'View 4 issues' })
   expect(toggle).toHaveAttribute('aria-expanded', 'false')
   const panel = toggle.closest('.report-summary-issues')!
+  expect(panel).toContainElement(screen.getByRole('heading', { name: es ? 'Informe anual de calidad del agua' : 'Annual water-quality report' }))
+  expect(panel).toContainElement(screen.getByRole('combobox', { name: es ? 'Año' : 'Year' }))
+  expect(panel).toContainElement(screen.getByRole('link', { name: es ? /Ver informe original/ : /View original report/ }))
+  expect(panel).toContainElement(screen.getByRole('link', { name: es ? 'Informes anuales de calidad del agua en ADH' : 'Annual water-quality reports at ADH' }))
   expect(panel.querySelector('.report-summary-header')).toContainElement(toggle)
   expect(panel.querySelector('.report-summary-header')).toContainElement(screen.getByText(es ? '4 problemas de cumplimiento reportados' : '4 compliance issues reported'))
   expect(screen.queryByText('07/11/2025')).not.toBeVisible()

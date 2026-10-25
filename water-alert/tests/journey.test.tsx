@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import App from '../src/App'
@@ -50,11 +50,14 @@ it('removes and restores a watched place including its explicit-lift preference'
 it('filters observed history to watched places without treating disappearance as a lift', async () => {
   saved(); const user = userEvent.setup()
   render(<App liveData={{ ...data, archive: [notice, { ...notice, id: 'other', placeId: 'ADH:other', name: 'Other supplier', firstObservedAt: undefined }] }} />)
-  await user.click(nav('History'))
+  await user.click(nav('Map'))
+  await user.click(screen.getByRole('button', { name: 'My places' }))
   expect(screen.queryByText('Other supplier')).not.toBeInTheDocument()
-  expect(screen.getByText(/Previously observed/)).toBeVisible()
+  await user.click(screen.getByRole('region', { name: 'Supplier results' }).querySelector('button')!)
+  screen.getAllByText(/Previously observed/).forEach(el => expect(el).toBeVisible())
   expect(screen.queryByText('Agency explicitly lifted')).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'All observed places' }))
+  await user.click(screen.getByRole('button', { name: /Back to results/ }))
+  await user.click(screen.getByRole('button', { name: 'All places' }))
   expect(screen.getByText('Other supplier')).toBeVisible()
 })
 
@@ -98,6 +101,26 @@ it('keeps About these results permanently visible and exposes an accessible push
   expect(container.querySelector('.about-results details')).toBeNull()
   expect(screen.getByRole('switch', { name: 'Get water updates' })).toHaveAttribute('aria-checked', 'false')
   expect(screen.getByRole('heading', { name: 'About these results' })).toBeVisible()
+})
+
+it('keeps the Home notification switch disabled until server configuration is ready', async () => {
+  saved()
+  vi.stubGlobal('isSecureContext', true)
+  vi.stubGlobal('PushManager', class PushManager {})
+  vi.stubGlobal('Notification', { permission: 'default', requestPermission: vi.fn() })
+  const serviceWorkerDescriptor = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker')
+  Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: {} })
+  let resolveConfig!: (response: Response) => void
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { resolveConfig = resolve })))
+  const view = render(<App liveData={data} />)
+  const toggle = screen.getByRole('switch', { name: 'Get water updates' })
+  expect(toggle).toBeDisabled()
+  expect(screen.getByText('Checking notification setup…')).toBeVisible()
+  resolveConfig(new Response(JSON.stringify({ enabled: true, publicKey: 'test-public-key' }), { status: 200 }))
+  await waitFor(() => expect(toggle).toBeEnabled())
+  view.unmount()
+  if (serviceWorkerDescriptor) Object.defineProperty(navigator, 'serviceWorker', serviceWorkerDescriptor)
+  else Reflect.deleteProperty(navigator, 'serviceWorker')
 })
 
 it('keeps the switch off and explains blocked permission when enable is attempted', async () => {
@@ -164,13 +187,17 @@ it('does not present a lifted deep-linked record as the active notice for that p
   expect(screen.getByText('Oct 11, 2026')).toBeVisible()
 })
 
-it('orders history by known app observation times and progressively reveals records', async () => {
+it('groups supplier history in one result and orders its retained details by observation time', async () => {
   saved(); const user = userEvent.setup()
   const archive = Array.from({ length: 12 }, (_, i) => ({ ...notice, id: `record-${i}`, name: `Record ${i}`, lastObservedAt: new Date(Date.UTC(2026, 9, i + 1)).toISOString() }))
   render(<App liveData={{ ...data, archive }} />)
-  await user.click(nav('History'))
-  expect(screen.getAllByRole('heading', { level: 2 })[0]).toHaveTextContent('Record 11')
-  expect(screen.queryByRole('heading', { name: 'Record 0' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: /Show more records/ }))
-  expect(screen.getByRole('heading', { name: 'Record 0' })).toBeVisible()
+  await user.click(nav('Map'))
+  const results = within(screen.getByRole('region', { name: 'Supplier results' }))
+  expect(results.getAllByRole('button')).toHaveLength(1)
+  await user.click(results.getByRole('button'))
+  const records = document.querySelectorAll('.map-detail-record')
+  expect(records).toHaveLength(13) // Twelve retained records plus the distinct current snapshot record.
+  expect(records[0].querySelector(`time[datetime="${at}"]`)).not.toBeNull()
+  expect(records[1].querySelector('time[datetime="2026-10-12T00:00:00.000Z"]')).not.toBeNull()
+  expect(records[12].querySelector('time[datetime="2026-10-01T00:00:00.000Z"]')).not.toBeNull()
 })

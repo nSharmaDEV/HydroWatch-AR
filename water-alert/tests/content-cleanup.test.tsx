@@ -61,17 +61,18 @@ it('keeps coverage details collapsed in supplier confirmation and search', () =>
   expect(screen.getByText('Search for the supplier named on your water bill.')).toBeVisible()
   expect(screen.getByText('Coverage details', { selector: 'summary' }).closest('details')).not.toHaveAttribute('open')
 })
-it('keeps history issue, area and uncertainty visible but observations collapsed', () => {
-  render(<ObservedHistory archive={[notice, { ...notice, id: 'n2' }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
-  expect(screen.getByText('Notices saved by WAVE—not a complete agency archive. A missing notice does not mean it was lifted.')).toBeVisible()
+it('keeps rows concise and opens issue, area, uncertainty and observation dates in selected details', async () => {
+  render(<ObservedHistory places={[place]} sources={[source]} now={Date.parse(at)} onView={() => {}} archive={[notice, { ...notice, id: 'n2' }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
+  expect(screen.queryByText(notice.area)).toBeNull()
+  await userEvent.click(within(screen.getByRole('region', { name: 'Supplier results' })).getByRole('button'))
   expect(screen.getAllByText(notice.area)).toHaveLength(2)
   screen.getAllByText(en.historyPrevious).forEach(el => expect(el).toBeVisible())
-  const summaries = screen.getAllByText('Observation details', { selector: 'summary' })
-  expect(summaries).toHaveLength(2)
-  summaries.forEach(el => { expect(el.closest('details')).not.toHaveAttribute('open'); expect(within(el.closest('details')!).getByText(en.firstObserved)).toBeInTheDocument() })
+  expect(screen.getAllByText(en.firstObserved)).toHaveLength(2)
+  expect(screen.getAllByText(en.issued)).toHaveLength(2)
 })
-it('keeps an unknown issue date visible in history', () => {
-  render(<ObservedHistory archive={[{ ...notice, issued: null }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
+it('keeps an unknown issue date visible in selected history details', async () => {
+  render(<ObservedHistory places={[place]} sources={[{ ...source, records: [{ ...notice, issued: null }] }]} now={Date.parse(at)} archive={[{ ...notice, issued: null }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
+  await userEvent.click(within(screen.getByRole('region', { name: 'Supplier results' })).getByRole('button'))
   expect(screen.getByText(en.issued).closest('div')).toHaveTextContent(en.unknown)
 })
 it('keeps the official-source escape visible when supplier search has no match', () => {
@@ -142,7 +143,9 @@ it('does not repeat catalog coverage inside a lake notice detail', () => {
 it('keeps the notification footer without repeating the advisory safety paragraph', async () => {
   savePreferences('live', { ...defaults(), watches: [place.id] })
   render(<App liveData={{ sources: [source], places: [place], archive: [], coverageStart: at }} />)
-  await userEvent.setup().click(screen.getByRole('button', { name: en.manageAlerts }))
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: /Settings/ }))
+  await user.click(screen.getByRole('button', { name: new RegExp(en.alertOptions) }))
   expect(screen.queryByText(en.noSafety)).not.toBeInTheDocument()
   expect(screen.getByText(en.notificationFooter)).toBeVisible()
 })

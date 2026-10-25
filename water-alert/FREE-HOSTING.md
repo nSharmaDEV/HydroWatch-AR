@@ -56,7 +56,11 @@ backend. Current published limits: 500 MB database,
 backups or uptime SLA. It has no published monthly CU-hour allowance like Neon's.
 This is a prototype option, not an unlimited/free reliability guarantee. Verify
 pooler/TLS/custom-role behavior and private-schema permissions before deployment.
-No browser Supabase client, Auth account system or public Data API is needed.
+The observation/push baseline needs no browser Supabase client, Auth account
+system or public Data API. Optional private help History adds server-validated
+Supabase Auth and separately configured email delivery; see
+[HELP-REQUESTS.md](HELP-REQUESTS.md) for setup and release gates. Neither is
+enabled by this database-only setup.
 
 ## Supabase setup prepared locally
 
@@ -125,6 +129,13 @@ origin, retained private secret binding, `*/5 * * * *` schedule registered at
 17:50:58Z, and disabled public/preview URLs. All five scheduler tests pass; public
 push configuration remains disabled. Schedule registration is not proof of a
 successful authenticated run, laptop-off operation or sustained reliability.
+
+On October 22, read-only production checks found the `sources` job last started at
+`14:41:24Z` and the `push` job at `14:45:19Z`; neither held an active lease. Both
+agency snapshots were successful at `14:41:24Z`. This is recent runtime activity,
+but does not by itself attribute an invocation to the scheduled Worker or verify
+automatic notification arrival. No manual cron or check endpoint was called during
+this audit. See `PUSH-PLAN.md` for the device/event eligibility snapshot.
 
 Cloudflare Workers Free currently permits five cron triggers/account, 100,000
 requests/day and 10 ms CPU/invocation. One five-minute trigger is 288 daily

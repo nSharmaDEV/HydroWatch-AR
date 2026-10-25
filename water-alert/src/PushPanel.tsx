@@ -2,13 +2,13 @@ import type { Mode } from './domain'
 import type { Preferences } from './storage'
 import type { Strings } from './strings'
 import { useEffect, useState } from 'react'
-import { disablePush, enablePush, pushDevice, pushSignature, supportsPush } from './push'
+import { disablePush, enablePush, PushSetupError, pushDevice, pushSignature, supportsPush } from './push'
 export function PushPanel({ mode, prefs, t, onChange }: { mode: Mode; prefs: Preferences; t: Strings; onChange: () => void }) {
   const [config, setConfig] = useState<{ state: 'loading' | 'ready' | 'unsupported' | 'unavailable' | 'error'; publicKey?: string }>({ state: 'loading' })
   const [attempt, setAttempt] = useState(0)
   const [device, setDevice] = useState(pushDevice)
   const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState<'saved' | 'removed' | 'failed' | null>(null)
+  const [result, setResult] = useState<'saved' | 'removed' | 'failed' | 'failed-worker' | 'failed-subscription' | 'failed-server' | 'permission-denied' | null>(null)
   useEffect(() => {
     if (mode !== 'live') return
     if (!supportsPush()) { setConfig({ state: 'unsupported' }); return }
@@ -30,11 +30,16 @@ export function PushPanel({ mode, prefs, t, onChange }: { mode: Mode; prefs: Pre
     try {
       if (remove) await disablePush(); else await enablePush(mode, prefs, config!.publicKey!)
       setDevice(pushDevice()); setResult(remove ? 'removed' : 'saved'); onChange()
-    } catch { setResult('failed') } finally { setBusy(false) }
+    } catch (error) {
+      if (remove) setResult('failed')
+      else if (typeof Notification !== 'undefined' && (Notification.permission === 'denied' || error instanceof Error && error.message.toLowerCase().includes('permission'))) setResult('permission-denied')
+      else if (error instanceof PushSetupError) setResult(`failed-${error.stage}`)
+      else setResult('failed')
+    } finally { setBusy(false) }
   }
   const dirty = device && device.signature !== pushSignature(prefs)
   const spanish = prefs.language === 'es'
-  const status = result === 'failed' ? t.pushFailed : config.state === 'loading' ? t.pushChecking : config.state === 'unsupported' ? t.pushUnsupported : config.state === 'unavailable' ? t.pushUnavailable : config.state === 'error' ? t.pushSetupFailed : dirty ? t.pushDirty : result === 'removed' ? t.pushRemoved : device ? t.pushSaved : t.deliveryOff
+  const status = result === 'failed-worker' ? t.pushWorkerFailed : result === 'failed-subscription' ? t.pushSubscriptionFailed : result === 'failed-server' ? t.pushServerFailed : result === 'permission-denied' ? t.pushPermissionDenied : result === 'failed' ? t.pushFailed : config.state === 'loading' ? t.pushChecking : config.state === 'unsupported' ? t.pushUnsupported : config.state === 'unavailable' ? t.pushUnavailable : config.state === 'error' ? t.pushSetupFailed : dirty ? t.pushDirty : result === 'removed' ? t.pushRemoved : device ? t.pushSaved : t.deliveryOff
   return <div className="push-controls" data-testid="push-controls" data-state={config.state}>
     <p>{t.pushInfo}</p>
     <p className="info" role="status">{status}</p>

@@ -7,7 +7,10 @@ import { ObservationStore, emptyState } from './store.js'
 import { SourceRunner } from './sources.js'
 import { createApp } from './app.js'
 import webpush from 'web-push'
-export function createCloudApp(pool: SqlPool, config: ReturnType<typeof cloudConfig>, fetcher: typeof fetch = fetch, send?: PushSender, clock = Date.now) {
+import { HelpAuth, helpConfig } from './help-auth.js'
+import { HelpStore, emptyHelp } from './help-store.js'
+export function createCloudApp(pool: SqlPool, config: Omit<ReturnType<typeof cloudConfig>, 'help'> & Partial<Pick<ReturnType<typeof cloudConfig>, 'help'>>, fetcher: typeof fetch = fetch, send?: PushSender, clock = Date.now) {
+  const help = config.help ?? helpConfig({})
   const gate = new JobGate(pool, clock)
   const store = new ObservationStore(new PostgresCell(pool, 'observations', emptyState), async (agency, body, metadata) => {
     const client = await pool.connect()
@@ -32,6 +35,7 @@ export function createCloudApp(pool: SqlPool, config: ReturnType<typeof cloudCon
     } finally { await gate.release('push', token) }
   }
   return createApp({ store, pushes, origin: config.origin, publicKey: config.push?.publicKey ?? null,
+    help: { config: help, auth: help.auth ? new HelpAuth(help.auth, fetcher) : null, store: new HelpStore(new PostgresCell(pool, 'help', emptyHelp), clock), secure: true, fetcher },
     runner: { check: () => check(60000) }, drain,
     cron: { secret: config.cronSecret, run: async () => { await check(300000); await drain() } },
     limiter: async req => {

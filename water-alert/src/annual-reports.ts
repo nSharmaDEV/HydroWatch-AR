@@ -1,5 +1,5 @@
 import type { Language } from './domain'
-import { OBSERVED_SUPPLIER_REPORTS } from './observed-supplier-reports'
+import { OBSERVED_SUPPLIER_REPORTS } from './observed-supplier-reports.js'
 
 type Text = Record<Language, string>
 export interface AnnualReportIssue {

@@ -1,0 +1,7 @@
+.wave-home-action{padding-top:24px}
+.wave-home-card-heading{display:flex;align-items:center;gap:12px;width:100%}
+.wave-card-leader{flex:1 1 auto;min-width:14px;border-top:1.5px solid rgba(8,127,131,.65)}
+.wave-card-mark{position:static;flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;color:#087f83}
+.wave-card-mark svg{display:block;width:34px;height:34px;overflow:visible}
+.wave-card-mark-arkansas path{fill:rgba(8,127,131,.12);stroke:currentColor;stroke-width:8;stroke-linejoin:round}
+.wave-card-mark-issue svg path:first-child{fill:rgba(8,127,131,.12);stroke:currentColor;stroke-width:2.5;stroke-linejoin:round}

@@ -1,6 +1,13 @@
 import type { Mode } from './domain'
 import type { Preferences } from './storage'
 const KEY = 'water-alert:push-device:v1'
+export type PushSetupStage = 'worker' | 'subscription' | 'server'
+export class PushSetupError extends Error {
+  constructor(readonly stage: PushSetupStage, cause: unknown) {
+    super(cause instanceof Error ? cause.message : 'Push setup failed', { cause })
+    this.name = 'PushSetupError'
+  }
+}
 export function pushSignature(prefs: Preferences): string { return JSON.stringify({ watches: [...prefs.watches].sort(), liftWatches: [...prefs.liftWatches].filter(id => prefs.watches.includes(id)).sort(), language: prefs.language }) }
 export function pushDevice(): { token: string; signature: string } | null {
   try { const value = JSON.parse(localStorage.getItem(KEY) ?? 'null'); return value && /^[A-Za-z0-9_-]{43}$/.test(value.token) && typeof value.signature === 'string' ? value : null } catch { return null }
@@ -20,13 +27,19 @@ export async function enablePush(mode: Mode, prefs: Preferences, publicKey: stri
   const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission()
   if (permission !== 'granted') throw new Error('Notification permission not granted')
   localStorage.setItem(KEY + ':probe', '1'); localStorage.removeItem(KEY + ':probe') // Fail before enrollment if durable device deletion credentials cannot be saved.
-  const registration = await readyWorker()
-  let subscription = await registration.pushManager.getSubscription()
+  let registration: ServiceWorkerRegistration
+  try { registration = await readyWorker() }
+  catch (error) { throw new PushSetupError('worker', error) }
+  let subscription: PushSubscription | null
+  try { subscription = await registration.pushManager.getSubscription() }
+  catch (error) { throw new PushSetupError('subscription', error) }
   const existing = !!subscription
   if (!subscription) {
-    const decoded = atob(publicKey.replace(/-/g, '+').replace(/_/g, '/'))
-    const key = new Uint8Array(decoded.length); for (let i = 0; i < decoded.length; i++) key[i] = decoded.charCodeAt(i)
-    subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
+    try {
+      const decoded = atob(publicKey.replace(/-/g, '+').replace(/_/g, '/'))
+      const key = new Uint8Array(decoded.length); for (let i = 0; i < decoded.length; i++) key[i] = decoded.charCodeAt(i)
+      subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
+    } catch (error) { throw new PushSetupError('subscription', error) }
   }
   const device = pushDevice()
   let acceptedToken: string | null = null
@@ -40,7 +53,7 @@ export async function enablePush(mode: Mode, prefs: Preferences, publicKey: stri
   } catch (error) {
     if (!existing) await subscription.unsubscribe().catch(() => {})
     if (acceptedToken) await fetch('/api/push/device', { method: 'DELETE', headers: { Authorization: `Bearer ${acceptedToken}` }, signal: AbortSignal.timeout(15_000) }).catch(() => {})
-    throw error
+    throw new PushSetupError('server', error)
   }
 }
 export async function disablePush(): Promise<void> {

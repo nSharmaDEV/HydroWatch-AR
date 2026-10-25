@@ -1,3 +1,4 @@
+import { helpConfig } from './help-auth.js'
 export function runtimeConfig(env: NodeJS.ProcessEnv) {
   const origin = env.WATER_ALERT_ORIGIN ?? 'http://localhost:5178'
   const url = new URL(origin)
@@ -10,5 +11,5 @@ export function runtimeConfig(env: NodeJS.ProcessEnv) {
     if (!publicKey || !privateKey || !subject || !/^(mailto:[^\s@]+@[^\s@]+|https:\/\/[^\s]+)$/.test(subject)) throw new Error('Push requires VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and a real VAPID_SUBJECT contact')
     push = { publicKey, privateKey, subject }
   }
-  return { origin, port, host: env.HOST ?? '127.0.0.1', dataDirectory: env.WATER_ALERT_DATA_DIR, push }
+  return { origin, port, host: env.HOST ?? '127.0.0.1', dataDirectory: env.WATER_ALERT_DATA_DIR, push, help: helpConfig(env) }
 }

@@ -35,6 +35,22 @@ it('cleans up a rejected new browser subscription instead of claiming enrollment
   await expect(enablePush('live', prefs, 'AQ')).rejects.toThrow()
   expect(pushDevice()).toBeNull(); expect(unsubscribe).toHaveBeenCalledOnce()
 })
+it('identifies service-worker setup failures separately', async () => {
+  browser()
+  Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { register: vi.fn(async () => { throw new Error('registration failed') }), ready: Promise.resolve({}) } })
+  await expect(enablePush('live', prefs, 'AQ')).rejects.toMatchObject({ name: 'PushSetupError', stage: 'worker' })
+})
+it('identifies browser subscription failures separately', async () => {
+  browser()
+  const registration = { pushManager: { getSubscription: vi.fn(async () => null), subscribe: vi.fn(async () => { throw new Error('subscription failed') }) } }
+  Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: { register: vi.fn(async () => registration), ready: Promise.resolve(registration) } })
+  await expect(enablePush('live', prefs, 'AQ')).rejects.toMatchObject({ name: 'PushSetupError', stage: 'subscription' })
+})
+it('identifies server enrollment failures separately', async () => {
+  const { fetcher } = browser()
+  fetcher.mockImplementation(async () => new Response('{}', { status: 503 }))
+  await expect(enablePush('live', prefs, 'AQ')).rejects.toMatchObject({ name: 'PushSetupError', stage: 'server' })
+})
 it('unsubscribes locally, deletes the server device, and retains credentials on server failure for retry', async () => {
   const { fetcher, unsubscribe } = browser()
   await enablePush('live', prefs, 'AQ')

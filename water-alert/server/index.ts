@@ -8,6 +8,8 @@ import { createApp } from './app'
 import { runtimeConfig } from './config'
 import { PushStore } from './push'
 import { existsSync } from 'node:fs'
+import { HelpAuth } from './help-auth'
+import { HelpStore } from './help-store'
 
 const config = runtimeConfig(process.env)
 const directory = config.dataDirectory ?? fileURLToPath(new URL('../data/live/', import.meta.url))
@@ -21,7 +23,7 @@ function drain(): Promise<void> {
   draining = (config.push ? store.read().then(state => pushes.drain(state, (subscription, payload) => webpush.sendNotification(subscription, payload, { TTL: 300, timeout: 10_000, urgency: 'normal' }))) : pushes.prune()).finally(() => { draining = null })
   return draining
 }
-const app = createApp({ store, runner, pushes, origin: config.origin, publicKey: config.push?.publicKey ?? null, drain })
+const app = createApp({ store, runner, pushes, origin: config.origin, publicKey: config.push?.publicKey ?? null, drain, help: { config: config.help, auth: config.help.auth ? new HelpAuth(config.help.auth) : null, store: new HelpStore(directory), secure: config.origin.startsWith('https:') } })
 const dist = fileURLToPath(new URL('../dist/', import.meta.url))
 if (existsSync(dist)) {
   app.use((_req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy', 'no-referrer'); res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'"); next() })

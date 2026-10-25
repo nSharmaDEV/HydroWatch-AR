@@ -6,6 +6,7 @@ import type { Notice, Place } from '../src/domain'
 import { LEISURE_HILLS_ID } from '../src/annual-reports'
 import App from '../src/App'
 import { defaults, savePreferences } from '../src/storage'
+import { helpFixture } from './help-fixture'
 
 const place: Place = { id: LEISURE_HILLS_ID, name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' }
 const notice: Notice = { id: 'test-notice', placeId: place.id, name: place.name, county: place.county, agency: 'ADH', kind: 'boil', area: 'Exact published area', reason: 'Main break', issued: '2026-10-19', lifted: null, url: 'https://health.arkansas.gov/wa_engTraining/boilwaterorder.aspx' }
@@ -168,7 +169,8 @@ it('does not route a quality inquiry email to the billing provider', async () =>
   expect(screen.queryByRole('link', { name: 'Open email draft' })).not.toBeInTheDocument()
 })
 
-it.each(['active', 'none', 'failed', 'stale', 'future', 'historical'] as const)('selects the correct app guide for %s source context', async state => {
+it.each(['active', 'none', 'failed', 'stale', 'future', 'historical'] as const)('uses guided tasks without treating %s source context as an all-clear', async state => {
+  helpFixture()
   const user = userEvent.setup()
   savePreferences('live', { ...defaults(), watches: [place.id] })
   const lastSuccessAt = new Date(Date.now() + (state === 'stale' ? -900_001 : state === 'future' ? 60_000 : 0)).toISOString()
@@ -177,7 +179,15 @@ it.each(['active', 'none', 'failed', 'stale', 'future', 'historical'] as const)(
   try {
     render(<App liveData={{ places: [place], sources: [{ agency: 'ADH', records: state === 'none' ? [] : [notice], lastSuccessAt, retrievedAt: lastSuccessAt, error: state === 'failed' ? 'Offline' : null }], archive: [notice, historical], coverageStart: null }} />)
     await user.click(screen.getByRole('button', { name: 'Get help with a water issue' }))
-    expect(screen.getByText(state === 'active' ? 'Step 1 of 4' : 'Step 1 of 5')).toBeVisible()
-    if (state === 'active') expect(screen.getByRole('progressbar')).toHaveAttribute('value', '0')
+    expect(await screen.findByRole('heading', { name: 'What do you need help with?' })).toBeVisible()
+    expect(screen.getByText(/Step 1 of [56]/)).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Current advisory' }))
+     await user.click(screen.getByRole('button', { name: 'Continue' }))
+     await user.click(screen.getByRole('button', { name: 'Continue' }))
+     await user.type(screen.getByLabelText('Describe what happened (optional if selected above)'), 'Please clarify the notice')
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+     await user.click(screen.getByRole('button', { name: 'Review message' }))
+     if (state === 'active') expect(screen.getByText('Verified in source check for this draft')).toBeVisible()
+    else expect(screen.queryByText('Current status verified in the source check for this draft. This is not a water-safety assessment.')).not.toBeInTheDocument()
   } finally { window.history.replaceState(null, '', '/') }
 })

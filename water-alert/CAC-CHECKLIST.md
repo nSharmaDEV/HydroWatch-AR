@@ -284,6 +284,21 @@ limitations: [PUSH-PLAN.md](PUSH-PLAN.md).
 - [ ] Direct transport is not deployed scheduled advisory-to-push verification.
   Day-long observation, quota review and remaining device/reliability gates remain open.
 
+### October 22 — separately authorized Safari transport test
+
+- [x] After the user confirmed a new Safari enrollment, verified production state
+  read-only. Two Apple subscriptions existed: one older enrollment and the newest
+  one matching the user's current Safari setup. Revalidated the newest recipient,
+  expiry, locale, watch count and production VAPID key; did not target the older
+  subscription.
+- [x] User explicitly requested a notification test. Sent exactly one direct
+  operator push to the newest Safari subscription, labeled `WAVE test notification`
+  and explicitly stating it was not a water advisory. Apple returned HTTP 201.
+  No retry, synthetic notice, database mutation, cron or advisory drain occurred.
+- [x] User confirmed the notification appeared on their Mac. Tap-through was not
+  confirmed; scheduled advisory delivery and remaining reliability gates are still
+  unverified. This one-send authorization does not approve another.
+
 ## Task 5 — UI/accessibility/privacy (guided review, October 17, 2026)
 
 Session: `ses_eb438bd34ffed1axtWPc78JE3B`. User approved starting with a

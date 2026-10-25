@@ -1,0 +1,10 @@
+/* Shared full-width background below chrome; page content keeps its own layout. */
+#root:has(>main>.home-water){display:flex;flex-direction:column;min-height:100dvh}
+#root:has(>main>.home-water)>:is(.app-header,.wave-marquee,.sample-banner){flex-shrink:0}
+main:has(>.home-water){position:relative;isolation:isolate;flex:1 0 auto;width:100%;min-height:0;margin:0 auto}
+.home-water{position:absolute;top:0;bottom:0;left:calc(50% - 50vw);width:100vw;z-index:-1;overflow:hidden;pointer-events:none;background:linear-gradient(#f0f7ff,#fff)}
+.home-water canvas{display:block;width:100%;height:100%;pointer-events:none}
+main:not(:has(>.wave-home))>.home-water canvas{opacity:.18}
+.home-water canvas[hidden]{display:none}
+main>.wave-home{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){.home-water canvas{display:none}}

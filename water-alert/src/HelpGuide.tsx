@@ -49,7 +49,7 @@ function StandardHelpGuide({ place, notice, language, sample, onBack }: { place:
       <p className="quiet-note">{t.checked}</p>
     </> : null}
     {/* Keep one editor mounted: step navigation and per-template edits share the existing engine. */}
-    {issue ? <div hidden={step !== 3 && step !== 4}><RecoveryActions key={issue} place={place} notice={notice} language={language} sample={sample} initialKind={issue === 'billing' ? 'complaint' : issue === 'quality' ? 'service' : issue} appendix={reportAppendix(place, sample, selected)} guided /><HelpEvidence place={place} language={language} sample={sample} selected={selected} onChange={setSelected} /></div> : null}
+     {issue ? <div hidden={step !== 3 && step !== 4}><RecoveryActions key={issue} place={place} notice={notice} language={language} sample={sample} initialKind={issue === 'billing' ? 'complaint' : issue === 'quality' ? 'service' : issue} appendix={reportAppendix(place, sample, selected)} guided><HelpEvidence place={place} language={language} sample={sample} selected={selected} onChange={setSelected} /></RecoveryActions></div> : null}
     {step === 5 ? <><h2>{w.confirmation}</h2><ul>{w.confirmationItems.map(item => <li key={item}>{item}</li>)}</ul><div className="guide-handoff"><SourceLink url={links.legalHelp}>{t.legalLink}</SourceLink><SourceLink url={links.intake}>{t.intake}</SourceLink><SourceLink url={links.court}>{t.court}</SourceLink></div></> : null}
     </HelpWorkspace>
     <HelpSessionNote language={language} />
