@@ -57,9 +57,9 @@ over the static gradient to keep attention on the content.
 Click/tap drops, throttled mouse movement and ambient drops never intercept controls
 or touch scrolling. Smooth circular wavefronts expand from the input point and
 fade completely; a lighter, spaced cursor wake and ambient drops at random
-positions every 1.1–1.5 seconds overlap softly for continuous background motion
-without input, starting after a brief 0.4-second delay.
-Automatic drops use the same strength and wave profile as click/tap drops.
+positions every 1–2 seconds overlap softly for continuous background motion
+without input, starting after the same randomized 1–2-second delay.
+Automatic and click/tap drops use half their previous strength, with the same wave profile.
 The WebGL renderer uses at most eight analytical waves rather than
 packed-height simulation buffers, avoiding accumulating background noise.
 Animation pauses in hidden tabs and uses bounded GPU resources.

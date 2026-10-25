@@ -8,6 +8,12 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-10-25 — Softer water background
+
+- Halve automatic and click/tap ripple strength. Create one automatic drop every
+  randomized 1–2 seconds, including the initial delay; retain reduced-motion and
+  hidden-tab handling. Local change only; not deployed.
+
 ### 2026-10-25 — Complete-app production deployment
 
 - Pushed app commit `140a511` and deployed to the existing Vercel production project

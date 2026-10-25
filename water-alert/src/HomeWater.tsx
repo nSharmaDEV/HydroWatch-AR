@@ -23,7 +23,7 @@ export function HomeWater() {
       let lastMove = 0
       let lastPoint: { x: number; y: number } | undefined
       let nextAmbient = 0
-      const ambientDelay = () => 1100 + Math.random() * 400
+      const ambientDelay = () => 1000 + Math.random() * 1000
       const resize = () => {
         const box = host.getBoundingClientRect()
         try { surface.resize(box.width, box.height) }
@@ -32,9 +32,9 @@ export function HomeWater() {
       const animate = (now: number) => {
         if (document.hidden) return
         // Low-amplitude drops, not DOM layers, with no catch-up burst on return.
-        if (!nextAmbient) nextAmbient = now + 400
+        if (!nextAmbient) nextAmbient = now + ambientDelay()
         if (now >= nextAmbient) {
-          surface.drop(.08 + Math.random() * .84, .08 + Math.random() * .84, .01)
+          surface.drop(.08 + Math.random() * .84, .08 + Math.random() * .84, .005)
           nextAmbient = now + ambientDelay()
         }
         surface.frame(now)
@@ -49,7 +49,7 @@ export function HomeWater() {
         if (document.hidden || !event.isPrimary || event.button > 0) return
         const box = host.getBoundingClientRect()
         if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return
-        surface.drop((event.clientX - box.left) / box.width, 1 - (event.clientY - box.top) / box.height, .01)
+        surface.drop((event.clientX - box.left) / box.width, 1 - (event.clientY - box.top) / box.height, .005)
       }
       const move = (event: PointerEvent) => {
         if (event.pointerType !== 'mouse' || event.timeStamp - lastMove < 180) return
