@@ -12,7 +12,10 @@ the current WAVE-only project tree.
 
 - Halve automatic and click/tap ripple strength. Create one automatic drop every
   randomized 1–2 seconds, including the initial delay; retain reduced-motion and
-  hidden-tab handling. Local change only; not deployed.
+  hidden-tab handling. Eleven focused tests and local/hosted builds pass.
+- With user approval, pushed app commit `82a39b6` and deployed to the existing
+  Vercel production app. Production HTML and expected assets return 200. No
+  environment, scheduler, database or notification changes. See `VERCEL.md`.
 
 ### 2026-10-25 — Complete-app production deployment
 

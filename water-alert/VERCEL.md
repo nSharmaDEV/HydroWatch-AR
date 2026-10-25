@@ -2,6 +2,20 @@
 
 ## Goal and current boundary
 
+### October 25 softer-ripple production deployment
+
+- With explicit user approval, pushed app commit `82a39b6` to `advisory-alert`
+  and deployed to the existing `water-alert` project using explicit team scope
+  `nirmays06-3523s-projects` (the unscoped attempt was not authorized).
+- Deployment `6VUceuTgXD4z86jUEHnHFTbWLpzo` is Ready at
+  `https://water-alert-rgibtogay-nirmays06-3523s-projects.vercel.app`, aliased to
+  **https://water-alert-blond.vercel.app**. Local and hosted builds pass; 11 focused
+  ripple tests pass. The full suite was not rerun; prior known failures below
+  remain unresolved. The existing bundle-size warning remains.
+- Read-only HTTPS checks returned 200 for production HTML referencing
+  `index-C_Y7eWt8.js`, that JavaScript asset and `index-BtGF0oGZ.css`.
+  No environment, scheduler or database changes, migrations or real sends.
+
 ### October 25 approved complete-app deployment
 
 - User approved committing/pushing the complete current app and proceeding despite
