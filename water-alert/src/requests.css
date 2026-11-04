@@ -218,6 +218,7 @@ body:has(.sample-banner) .request-screen-review .request-composer .request-messa
 main:has(.request-screen-review) { padding-bottom: 12px; }
 @media (min-width: 901px) {
   main:has(.request-screen-experience) { padding-bottom: 4px; }
+  .request-screen-experience .request-split > .request-panel { padding-block: 20px; }
 }
 .request-workspace .request-screen-review { gap: .25rem; }
 .request-composer-options { display: flex; align-items: center; gap: .75rem; border-bottom: 1px solid #dce3e9; min-height: 44px; }
@@ -288,7 +289,7 @@ body:has(.sample-banner) .request-composer .request-attachment-strip { padding-b
 
 /* Compact desktop Review fits below the Map-aligned workspace heading. The
    information column may scroll independently; the composer keeps its actions visible. */
-.request-review-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 13fr); grid-template-rows: minmax(0, 1fr); gap: 24px; align-items: stretch; height: max(400px, calc(100dvh - 278px)); min-height: 0; overflow: hidden; contain: layout paint; }
+.request-review-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 13fr); grid-template-rows: minmax(0, 1fr); gap: 24px; align-items: stretch; height: max(400px, calc(100dvh - 310px)); min-height: 0; overflow: hidden; contain: layout paint; }
 .request-review-information, .request-review-email { min-width: 0; min-height: 0; padding: 20px 24px; background: white; border: 1px solid #cbdce3; border-radius: 12px; }
 .request-review-information { overflow-y: auto; }
 .request-review-email { display: flex; flex-direction: column; }

@@ -76,8 +76,10 @@ test('prior contact details and service followups appear only after the resident
   expect(screen.getByLabelText('Contact method (optional)')).toBeInTheDocument()
 })
 test('unavailable catalog leaves manual entry available instead of claiming verified addresses', () => {
-  render(<RequestLocations draft={blankRequest(samplePlaces[0])} places={[]} sample es={false} edit={() => {}} />)
-  expect(screen.getByText('Search unavailable; add a location manually.')).toBeVisible()
+  let patch: Partial<ReturnType<typeof blankRequest>> = {}
+  render(<RequestLocations draft={blankRequest(samplePlaces[0])} places={[]} sample es={false} edit={next => { patch = next }} />)
+  expect(screen.getByText('The limited water-place directory is unavailable; you can add any location manually.')).toBeVisible()
   fireEvent.change(screen.getByRole('combobox', { name: 'Enter any affected location in Arkansas' }), { target: { value: 'My street' } })
-  expect(screen.getByRole('button', { name: 'Add this location' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Add this location' }))
+  expect(patch.locations).toEqual(['My street'])
 })

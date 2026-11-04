@@ -79,8 +79,10 @@ test('map and results share filters and selection without leaving the workspace'
   await expect(page.getByText('No suppliers match this search.')).toBeVisible()
   await page.getByRole('searchbox').fill('')
   await page.getByRole('combobox', { name: 'Status', exact: true }).selectOption('none')
-  await expect(results.getByRole('button')).toHaveCount(0)
-  await expect(page.locator('.supplier-marker')).toHaveCount(0)
+  // Checked catalog suppliers with no notice remain listed as "none"; active suppliers are excluded.
+  await expect(results.getByRole('button', { name: /FAYETTEVILLE WATERWORKS/ })).toBeVisible()
+  await expect(results.getByRole('button', { name: /BULL SHOALS/ })).toHaveCount(0)
+  await expect(page.locator('.supplier-marker')).toHaveCount(1)
   await page.getByRole('combobox').selectOption('all')
   await page.getByRole('button', { name: 'Sources and coverage limits', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Sources and coverage limits' })).toBeVisible()

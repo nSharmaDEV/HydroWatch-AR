@@ -8,6 +8,161 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-03 — Click-only home water ripples
+
+- The decorative home water surface no longer creates a ripple while the mouse
+  merely moves across the page. Drops still appear on a physical pointer press
+  and from the existing low-amplitude ambient random drops.
+- No change to reduced-motion fallback, WebGL loss handling, accessibility
+  behavior or page content.
+
+### 2026-11-03 — Advisory map reference points
+
+- The map now includes verified catalog suppliers that have reviewed reference
+  coordinates, even before a feed check has produced observations. It does not
+  infer locations or service areas; only exact reviewed map points appear.
+- Verified directory identities without reviewed coordinates remain in supplier
+  results with an unavailable location label. Live checks, notifications and
+  delivery were not run by this change.
+
+### 2026-11-03 — Bounded-fix regression verification
+
+- Focused sample-export, language and carousel checks: 34 unit cases and 12
+  EN/ES browser cases passed, with no failures, skips or retries.
+- Full Node 24.22.1 unit suite after the bounded fixes: 651 passed, zero failed
+  or pending. TypeScript/production UI build passed with the existing chunk-size
+  warning. Checks ran sequentially, without real transport or deployment.
+- Split browser output/language checks from the existing saved-help/layout
+  journey instead of extending its deadline. All original checks remain.
+- Headless macOS Chromium did not commit native select choices with keyboard
+  input even outside the carousel. Browser checks verify uncancelled key events,
+  explicit selection and retained state; they do not certify OS/device behavior.
+
+### 2026-11-03 — Carousel keyboard and offscreen focus
+
+- Limit arrow/Home/End carousel shortcuts to the focused carousel region, not
+  bubbled events from native inputs, selects, links or card actions.
+- Keep inactive cards mounted but inert and hidden from the accessibility tree;
+  only the current card participates in keyboard focus. Card expansion state,
+  native report-year selection, EN/ES controls and reduced-motion behavior remain.
+
+### 2026-11-03 — Draft language switching without data loss
+
+- Switching EN/ES refreshes known-generated subject/message templates through
+  the existing save queue. Manual or legacy email fields, confirmed resident
+  wording, dates, locations, attachments and source evidence are not translated
+  or cleared. No remount, automatic send or new storage/schema format.
+- A language-only change retains an already accepted message's send lock;
+  synthetic acceptance tests cover both legacy and generated drafts.
+
+### 2026-11-03 — Durable sample exports
+
+- Complete isolated browser recovery verified: 420 passed, zero failed or flaky;
+  two pre-existing phone-project skips cover desktop-only map geometry.
+- Label copied sample email, downloaded email/report and unsaved-text fallback
+  at the export boundary in English/Spanish, including resumed/manual drafts.
+  Sample filenames carry `sample-`; live text and resident edits are unchanged.
+  No real sends, deployments or device-delivery checks.
+
+### 2026-11-03 — Browser recovery: current navigation and Review contracts
+
+- Correct confirmed tablet header overflow with five navigation entries; keep
+  the language controls and at-least-44px targets inside the header.
+- Reserve room for Review validation text in the desktop split-panel height;
+  the 1280×800 regression previously overflowed the document by 18px.
+- Keep the billing experience editor within a 780px desktop viewport without
+  hiding fields; return missing saved-notice links to Places, as the Back label promises.
+- Route supplier dashboard checks through Places, retain current Sources navigation,
+  and exercise the current five-step help flow rather than restoring removed UI.
+- Update Review checks to cited-source popups and optional inclusion controls while
+  preserving original agency wording, saved/manual message text and historical rules.
+- Recognize compact timing-panel layout and available native end-date controls.
+  Retained-component checks still cover lake/tap separation and the older resident log.
+  Browser recovery is in progress; no retries, timeout increases or guardrail skips.
+- Complete full browser baseline: 329 passed, 91 failed, two existing phone-project
+  skips for desktop-only map geometry, zero flaky cases. Most remaining failures
+  are legacy viewport spacing/navigation contracts and missing disabled-session
+  mocks; retain strict blocking of other API requests and external traffic.
+- Focused recovery verification: 112 browser cases passed, zero failed, skipped
+  or flaky. Complete isolated-suite verification remains pending.
+
+### 2026-11-03 — Retained-component browser fixtures
+
+- Added a test-only Vite fixture for retained lake/status and four-step resident-log components, separate from the shipped supplier-only app. Fixtures use synthetic, intercepted reads only; no API writes or delivery verification.
+
+### 2026-11-03 — Test recovery: supported-runtime verification
+
+- Reproduce the original 599 passed / 37 failed Vitest baseline on Node 24.22.1;
+  failures were not solely caused by the previous unsupported Node runtime.
+- After recovery and `npm ci --ignore-scripts --no-audit --no-fund`, two isolated
+  full runs (`npm test -- --maxWorkers=2 --cache=false`) each passed all 637 tests,
+  with zero failures or pending cases. No test skips, retries or timeout increases.
+  A separate default-worker run (`npm test -- --cache=false`) also passed 637/637;
+  leave worker defaults unchanged.
+- A preceding run overlapped build/browser work and passed 633/637, including
+  three five-second deadlines and one draft-loading wait failure. Do not treat
+  bounded-worker passes as proof that resource-sensitive behavior is resolved.
+- The corrected active-notice Playwright file passed all 12 EN/ES viewport cases
+  with zero retries/flaky cases. Broader browser recovery remains unfinished;
+  the bounded baseline below is not a complete browser-suite result.
+- Local build passed with the existing large-chunk warning. These are synthetic
+  checks, not production, notification-delivery or device verification.
+
+### 2026-11-03 — Test recovery: browser baseline and documentation
+
+- Correct README navigation, required-versus-optional historical inclusion and
+  current Review citation/include controls; preserve the approved product policy.
+- Start the isolated UI-only Playwright harness through its npm script so Vite
+  is on PATH. The bounded baseline stopped at 12 failures (410 cases not run),
+  including obsolete Home-card, legacy lake-card and removed active-help paths.
+  This is not a green browser-suite claim; no guardrail cases were skipped in code.
+- Move active-notice layout checks to Places with an intercepted, disabled push
+  configuration read. Preserve centering, compactness and overflow checks while
+  recognizing the documented October 21 24px inline warning-icon layout rather
+  than the superseded oversized side icon. All other API paths/external requests
+  remain blocked.
+  No backend, live storage, scheduler, device delivery or deployment was tested.
+
+### 2026-11-03 — Test recovery: current Review controls
+
+- Exercise the approved citation popup and optional include-in-email controls
+  instead of removed per-fact edit/delete UI. Retain original agency wording,
+  source destinations, saved-not-current status, manual-email persistence and
+  explicit regeneration-cancellation protection. No restoration of removed UI.
+- Navigation/isolation/report batch: 148 local Vitest tests passed on Node 24.22.1.
+  This is synthetic local verification, not deployed or device delivery evidence.
+
+### 2026-11-03 — Test recovery: help and contact expectations
+
+- Preserve the approved October 25 required no-action-listed historical findings
+  behavior, with optional findings still opt-in and resumed prose never promoted
+  to live verification. Align tests rather than reverse that policy.
+- Retain all six help freshness/status cases; recognize the Home action's full
+  accessible label. Test EN/ES ADH fallback destinations for unknown identities,
+  verified phone-only contacts without invented email, and actual manual-location
+  addition when the directory is unavailable. All fixtures remain synthetic.
+
+### 2026-11-03 — Test recovery: current navigation contracts
+
+- Move setup, watched-card, source-info and sample-mode assertions to their
+  existing Home → setup, Places and Settings entry points. Retain EN/ES
+  no-water-testing disclosures, exact supplier confirmation, lake/tap separation,
+  sample isolation and polling cessation checks. Replace the obsolete CSS ripple
+  coordinate assertion with the landing-page contract; dedicated GPU water and
+  reduced-motion coverage remains in place. No navigation/product redesign.
+
+### 2026-11-03 — Test recovery: isolation and historical qualification
+
+- Restore a visible, dated EN/ES historical/not-current-compliance-or-safety
+  qualification for annual reports, including reviewed-empty and unavailable years.
+  Preserve original findings, source pages and review states.
+- Restore journey-test browser globals and service-worker descriptors in teardown,
+  including after failed assertions; update current Places/setup/Settings paths.
+  Keep deletion failure/retry credentials and explicit supplier confirmation checks.
+- Reproduced missing historical qualifications and order-dependent deletion failure
+  on Node 24.22.1 before changes. Local verification results are recorded above as
+  recovery progresses; no deployment, live-data/configuration changes or real sends.
+
 ### 2026-10-25 — Softer water background
 
 - Halve automatic and click/tap ripple strength. Create one automatic drop every

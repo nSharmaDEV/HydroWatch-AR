@@ -13,10 +13,10 @@ test('lake HAB context does not display tap-water boil instructions', async () =
   expect(screen.getByRole('button', { name: /Add a photo or document/ })).toBeVisible()
   expect(screen.queryByRole('link', { name: /CDC boil-water/ })).not.toBeInTheDocument()
 })
-test('explicit send reports acceptance on final Review without navigating or sending twice', async () => {
+test.each([false, true])('explicit send reports acceptance without navigating or sending twice (generated=%s)', async generated => {
   const { blankRequest } = await import('../src/help-requests')
   const place = { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' as const }
-  const draft = { ...blankRequest(place), stage: 3 as const, flowStep: 'confirm' as const, description: 'Synthetic service issue', subject: 'Synthetic subject', body: 'Frozen resident edits' }
+  const draft = { ...blankRequest(place), stage: 3 as const, flowStep: 'confirm' as const, description: 'Synthetic service issue', subject: 'Synthetic subject', body: 'Frozen resident edits', ...(generated ? { subjectEdited: false, bodyEdited: false } : {}) }
   let record = { id: draft.id, draft, revision: 1, owner: 'alice', messages: [], events: [], status: 'open', updatedAt: Date.now(), replyToken: 'synthetic' }
   const sends: string[] = [], onHistory = vi.fn()
   vi.stubGlobal('fetch', async (url: string, init?: RequestInit) => {
@@ -25,15 +25,19 @@ test('explicit send reports acceptance on final Review without navigating or sen
     if (init?.method === 'POST') { const data = JSON.parse(String(init.body)); record = { ...record, draft: data.draft, revision: data.revision + 1 }; return Response.json(record) }
     return Response.json([record])
   })
-  render(<RequestWorkspace place={place} language="en" sample={false} onBack={() => {}} onHistory={onHistory} />)
-  expect(await screen.findByLabelText('Message')).toHaveValue('Frozen resident edits')
+  const view = render(<RequestWorkspace place={place} language="en" sample={false} onBack={() => {}} onHistory={onHistory} />)
+  const before = (await screen.findByLabelText<HTMLTextAreaElement>('Message')).value
+  if (!generated) expect(before).toBe('Frozen resident edits')
   expect(screen.getByRole('heading', { name: 'Review your complaint email' })).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Send message' }))
   expect(await screen.findByText(/Message accepted by the email processor/)).toBeVisible()
-  expect(screen.getByLabelText('Message')).toHaveValue('Frozen resident edits')
+  expect(screen.getByLabelText('Message')).toHaveValue(before)
   expect(screen.getByRole('button', { name: 'Send message' })).toBeDisabled()
   expect(sends).toHaveLength(1)
   expect(onHistory).not.toHaveBeenCalled()
+  view.rerender(<RequestWorkspace place={place} language="es" sample={false} onBack={() => {}} onHistory={onHistory} />)
+  expect(await screen.findByRole('button', { name: 'Enviar mensaje' })).toBeDisabled()
+  expect(sends).toHaveLength(1)
 })
 test('billing follow-ups stay scoped and complete editable message is visible in Review and Send', async () => {
   render(<RequestWorkspace place={samplePlaces[0]} language="en" sample onBack={() => {}} onHistory={() => {}} />)
@@ -150,7 +154,7 @@ test('simple choices and optional dates/files disclosure keep the first step foc
    expect(screen.getByRole('button', { name: /Add a photo or document/ })).toBeVisible()
   expect(screen.getAllByRole('textbox').filter(e => e.tagName === 'TEXTAREA')).toHaveLength(1)
 })
-test('included notice facts can be edited or removed before generation and persist without rewriting the email', async () => {
+test('notice citations retain original wording and inclusion choices persist without rewriting a manually edited email', async () => {
   const p = samplePlaces[0], notice = { id: 'sample-notice', placeId: p.id, name: p.name, county: p.county, agency: 'ADH' as const, kind: 'boil' as const, area: 'Fictional north area', issued: '2026-10-20', lifted: null, reason: 'Fictional pressure loss', url: 'https://example.test/notice' }
   const props = { place: p, notices: [notice], currentAdvisory: true, language: 'en' as const, sample: true, onBack: () => {}, onHistory: () => {} }
   const view = render(<RequestWorkspace {...props} />)
@@ -159,25 +163,29 @@ test('included notice facts can be edited or removed before generation and persi
    fireEvent.change(screen.getByLabelText('Describe what happened (optional if selected above)'), { target: { value: 'I need clarification.' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
    fireEvent.click(screen.getByRole('button', { name: 'Review message' }))
-     fireEvent.click(screen.getAllByText('View source details')[0])
-  fireEvent.click(screen.getByText('Edit source wording'))
-   fireEvent.change(screen.getByLabelText('Source wording'), { target: { value: 'The notice mentions pressure loss.' } })
-   vi.spyOn(window, 'confirm').mockReturnValue(true)
-    fireEvent.click(screen.getByRole('button', { name: 'Update draft from answers' }))
-    expect((await screen.findByLabelText<HTMLTextAreaElement>('Message')).value).toContain('The notice mentions pressure loss.')
-    expect(screen.getByLabelText<HTMLTextAreaElement>('Message').value).toContain('Fictional pressure loss')
+   fireEvent.click(screen.getByRole('button', { name: 'Cited sources' }))
+   expect(screen.getByRole('dialog', { name: 'Cited sources' })).toHaveTextContent('Fictional pressure loss')
+   expect(screen.getByLabelText<HTMLTextAreaElement>('Message').value).toContain('Fictional pressure loss')
   expect(screen.getByLabelText<HTMLTextAreaElement>('Message').value).toContain('https://example.test/notice')
   expect(screen.getAllByRole('link', { name: /ADH/ })[0]).toHaveAttribute('href', notice.url)
   fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'My final edited email.' } })
    await waitFor(() => expect(screen.getByText('Saved on this device')).toBeVisible(), { timeout: 3000 })
   view.unmount(); render(<RequestWorkspace {...props} />)
   expect(await screen.findByLabelText('Message')).toHaveValue('My final edited email.')
-     fireEvent.click(screen.getAllByText('View source details')[0])
-  fireEvent.click(screen.getByText('Edit source wording'))
-   expect(screen.getByLabelText('Source wording')).toHaveValue('The notice mentions pressure loss.')
-    fireEvent.click(screen.getByRole('button', { name: 'Remove source record' }))
-  expect(await screen.findByLabelText('Message')).toHaveValue('My final edited email.')
-  expect(screen.queryByRole('link', { name: /ADH ·/ })).not.toBeInTheDocument()
+   const included = screen.getAllByRole('checkbox', { name: 'Include in email' })
+   included.forEach(checkbox => { if ((checkbox as HTMLInputElement).checked) fireEvent.click(checkbox) })
+   expect(await screen.findByLabelText('Message')).toHaveValue('My final edited email.')
+   expect(screen.getAllByRole('checkbox', { name: 'Include in email' }).every(checkbox => !(checkbox as HTMLInputElement).checked)).toBe(true)
+   await waitFor(() => expect(screen.getByText('Saved on this device')).toBeVisible(), { timeout: 3000 })
+   cleanup(); render(<RequestWorkspace {...props} />)
+   expect(await screen.findByLabelText('Message')).toHaveValue('My final edited email.')
+   expect(screen.getAllByRole('checkbox', { name: 'Include in email' }).every(checkbox => !(checkbox as HTMLInputElement).checked)).toBe(true)
+   // Regeneration requires confirmation before it can replace a resident's edits.
+   const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+   fireEvent.click(screen.getByRole('button', { name: 'Update draft from answers' }))
+   expect(confirm).toHaveBeenCalled()
+   expect(screen.getByLabelText('Message')).toHaveValue('My final edited email.')
+   confirm.mockRestore()
 })
 test('saved notice details do not acquire a current-status heading when a newer advisory exists', async () => {
   const p = samplePlaces[0]
@@ -192,8 +200,8 @@ test('saved notice details do not acquire a current-status heading when a newer 
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
    fireEvent.click(screen.getByRole('button', { name: 'Review message' }))
    expect(screen.getByText('Not verified')).toBeVisible()
-    fireEvent.click(screen.getByText('View source details'))
-   expect(screen.getByText(context, { selector: '.request-fact-summary' })).toBeVisible()
+   fireEvent.click(screen.getByRole('button', { name: 'Cited sources' }))
+   expect(screen.getByRole('dialog', { name: 'Cited sources' })).toHaveTextContent(context)
   expect(screen.queryByText('WAVE found a current notice')).not.toBeInTheDocument()
 })
 test('Spanish billing questions capture the disputed charge and prior attempts without service questions', async () => {

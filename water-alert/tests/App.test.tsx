@@ -13,9 +13,8 @@ it('shows the welcome landing page at Home and keeps the watched advisory dashbo
   expect(document.querySelector('.wave-marquee')).toHaveTextContent('WAVE: Water Awareness, Verification, and Empowerment●')
   expect(document.querySelector('.wave-marquee-copy')?.textContent.match(/WAVE: Water Awareness, Verification, and Empowerment/g)).toHaveLength(6)
   expect(screen.queryByText('Welcome to WAVE')).not.toBeInTheDocument()
-  const home = document.querySelector('.wave-home') as HTMLElement
-  fireEvent.mouseMove(home, { clientX: 120, clientY: 80 })
-  expect(home.style.getPropertyValue('--ripple-x')).toBe('120px')
+  // GPU water interaction and reduced-motion behavior have dedicated HomeWater tests.
+  expect(document.querySelector('.wave-home')).toBeVisible()
   expect(screen.queryByRole('heading', { name: 'What would you like to do?' })).not.toBeInTheDocument()
   const user = userEvent.setup()
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))

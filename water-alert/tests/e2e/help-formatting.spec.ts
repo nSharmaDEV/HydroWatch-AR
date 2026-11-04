@@ -5,7 +5,7 @@ import { activeHelpStrings } from '../../src/active-help-strings'
 // Sample-only layout checks: prohibit API calls and external handoffs.
 for (const language of ['en', 'es'] as const) {
   for (const width of [1440, 390, 320]) {
-    test(`four-step help aligns (${language}, ${width}px)`, async ({ page, context, baseURL }) => {
+    test(`retained four-step component aligns (${language}, ${width}px)`, async ({ page, context, baseURL }) => {
       const unexpected: string[] = []
       const errors: string[] = []
       page.on('pageerror', error => errors.push(error.message))
@@ -21,7 +21,7 @@ for (const language of ['en', 'es'] as const) {
         return route.continue()
       })
       await page.setViewportSize({ width, height: 900 })
-      await page.goto('/')
+      await page.goto('/tests/e2e/components.html?mode=help')
       await page.locator('.supplier-info-button').click()
       const checklist = page.locator('.notice-checklist')
       await expect(checklist).toBeVisible()

@@ -22,7 +22,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
         if (url.pathname.startsWith('/api/')) return route.abort()
         return route.continue()
       })
-      await page.goto('/')
+      await page.goto('/tests/e2e/components.html?mode=cards')
       const cards = page.locator('.status-card')
       await expect(cards).toHaveCount(2)
       await expect(cards.nth(1).locator('.supplier-heading > p')).toHaveText(language === 'en' ? 'Lawrence County · Arkansas Division of Environmental Quality' : 'Condado de Lawrence · Arkansas Division of Environmental Quality')
@@ -31,7 +31,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
       }
       const formats = await cards.evaluateAll(cards => cards.map(card => {
         const top = card.getBoundingClientRect().top
-        return ['h2', '.supplier-finding', '.status-label', '.status-explanation', '.date-row', '.card-check-actions', '.official-list'].map(selector => {
+        return ['h2', '.supplier-finding', '.status-label', '.status-explanation', '.card-check-actions', '.official-list'].map(selector => {
           const el = card.querySelector(selector)!
           const box = el.getBoundingClientRect()
           const style = getComputedStyle(el)
@@ -40,11 +40,18 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
       }))
        // Lake retrieval copy and separate agency/check disclosures intentionally differ;
        // the heading and finding still use the shared visual system.
-       expect(formats[0].slice(0, 4)).toEqual(formats[1].slice(0, 4))
+        // Shared heading/status typography; differing agency explanations wrap independently.
+        for (const index of [0, 2]) {
+          const { top: _a, height: _b, font: supplierFont, ...supplier } = formats[0][index]
+          const { top: _c, height: _d, font: lakeFont, ...lake } = formats[1][index]
+          expect(supplier).toEqual(lake)
+          expect(Number.parseFloat(supplierFont)).toBeGreaterThanOrEqual(23)
+          expect(Number.parseFloat(lakeFont)).toBeGreaterThanOrEqual(23)
+        }
        await expect(cards.nth(1).locator(':scope > details')).toHaveCount(1)
        await expect(cards.nth(1).getByRole('button', { name: lakeCardStrings[language].record })).toHaveAttribute('aria-expanded', 'false')
       for (const card of await cards.all()) {
-        await expect(card.locator(':scope > .card-details-action, :scope > .supplier-help-action')).toBeVisible()
+        await expect(card.locator('.official-list')).toBeVisible()
       }
       const lowerFormats = await cards.evaluateAll(cards => cards.map(card => {
         return [...card.querySelectorAll('.provider-info-toggle, .supplier-actions > .alert-toggle, :scope > details > summary, :scope > .card-details-action, :scope > .supplier-help-action')].map(el => {
@@ -53,7 +60,12 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
           return { width: Math.round(box.width), font: style.fontSize, weight: style.fontWeight, color: style.color, background: style.backgroundColor, minHeight: style.minHeight, marginTop: style.marginTop }
         })
       }))
-       for (const format of lowerFormats[1]) expect(lowerFormats[0]).toContainEqual(format)
+       // Lake details is a primary action, not a supplier disclosure.
+       for (const format of lowerFormats[1].filter(format => format.background === 'rgba(0, 0, 0, 0)')) expect(lowerFormats[0]).toContainEqual(format)
+       for (const format of lowerFormats.flat()) {
+         expect(Number.parseFloat(format.minHeight)).toBeGreaterThanOrEqual(44)
+         expect(Number.parseFloat(format.font)).toBeGreaterThanOrEqual(16)
+       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
       await page.screenshot({ path: test.info().outputPath('aligned-cards.png'), fullPage: true })
     })

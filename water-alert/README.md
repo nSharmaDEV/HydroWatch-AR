@@ -37,7 +37,28 @@ Install Chromium once with `npx playwright install chromium` before browser test
 Those tests intercept API requests and block external requests/service workers;
 they do not verify real agency retrieval or notification delivery.
 
-Latest cleanup check (October 20, 2026, Node 24.22.0): **445 unit/integration tests
+Browser tests distinguish shipped-app journeys from retained-component checks.
+`tests/e2e/components.html` mounts the retained status-card and four-step help
+components for lake/tap separation, agency wording, dates and local-output checks.
+It is a test-only Vite fixture, not an application route or evidence that the
+current supplier-only app exposes lake cards or the older help flow. Current
+five-step help and Places navigation are tested through the application itself.
+
+Test recovery check (November 3, 2026, Node 24.22.1): **651 unit/integration tests
+pass**, with zero failures or pending cases, using
+`npm test -- --maxWorkers=2 --cache=false`. Locked dependencies were reinstalled
+with scripts disabled. Run heavy build/browser checks separately: an overlapping
+run hit test deadlines; no timeouts or retries were increased. The build passes
+with the existing chunk-size warning.
+
+Before the sample-export, language and carousel fixes, the complete isolated
+browser suite passed 420 cases with zero failures or flaky cases and two existing
+phone-project skips for desktop-only map geometry. The three bounded fixes also
+pass 12 focused EN/ES browser cases across both projects. These are synthetic
+checks, not production retrieval, real delivery or device certification.
+See [CHANGELOG.md](CHANGELOG.md) for dated scope and verification evidence.
+
+Historical cleanup check (October 20, 2026, Node 24.22.0): **445 unit/integration tests
 and production build pass**. The full browser suite has **78 passing and 22 failing
 checks**, involving card geometry/element and section-order expectations. App and
 test code were unchanged by cleanup; browser failures remain unresolved. See the
@@ -65,16 +86,15 @@ packed-height simulation buffers, avoiding accumulating background noise.
 Animation pauses in hidden tabs and uses bounded GPU resources.
 Reduced motion, unavailable WebGL and context loss retain a static gradient.
 
-## Home sources shortcut
+## Places sources shortcut
 
-On Home, the card's info icon opens **Sources and coverage**, using the existing
+On Places, the card's info icon opens **Sources and coverage**, using the existing
 in-app coverage page. The separate sidebar shortcut is removed; Settings still
 offers that page. The desktop Add a place button starts level with the main card.
-Home's updates section contains only the heading and toggle, followed by About
+The Places updates section contains only the heading and toggle, followed by About
 these results; notification details remain available through Settings.
-Short desktop layouts use tighter spacing to keep the collapsed Home carousel's
-Previous/Next controls visible, including the tested long-notice example at
-1280×650 and 1440×780. Expanded content and enlarged text can still scroll.
+The earlier Home-dashboard layout checks are historical evidence, not verification
+of the current Places layout. Expanded content and enlarged text can still scroll.
 When supplier phone/email details are unavailable, Service questions offers a
 right-aligned **Contact ADH** link to Safe Water Engineering instead of the
 missing-contact paragraph; verified supplier contacts remain unchanged.
@@ -200,19 +220,22 @@ supplier phone/email links on the observations screen open the resident’s nati
 they do not place calls or send messages automatically. ADH contacts remain separate,
 and sample mode exposes no real supplier contacts. A large attachment button shows
 reading/ready status, filenames and removal within the existing upload limits.
-Exact-supplier agency facts stay separate from residents' experience, with a source
-beside each editable/removable fact. Multiple published problems remain distinct.
-Dated historical report findings are opt-in, never a current safety
-or compensation finding. Saved facts are labeled as not currently verified.
+Exact-supplier agency facts stay separate from residents' experience, with source
+links beside each record. Multiple published problems remain distinct.
+Dated historical report findings with no action listed are required in the email
+across issue categories; other historical findings are opt-in. Neither is a current
+safety or compensation finding. Required findings stay historical, including on
+resume; saved advisory facts are labeled as not currently verified.
 Bounded previews are not exhaustive; check the linked original source.
 
 Review uses a 35% information / 65% email layout inside the Map-aligned container.
 The left column’s “What you provided” table has two columns for supplied answers; a
 small ⓘ beside each answer opens its existing editor (with an accessible name). The official
 records remain in a separate compact table. Missing useful answers show “Not provided”
-with Add. “View source details” expands full wording; a separate icon-only trash button
-asks for confirmation before removing a record without rewriting manual email edits.
-Source wording and supporting detail are collapsed until requested. Attachments show
+with Add. Optional records have “Include in email” checkboxes; required historical
+findings cannot be unchecked. The “Cited sources” popup shows full source wording
+and links. Per-record wording editors and delete buttons are no longer offered.
+Inclusion changes do not overwrite manually edited email text. Attachments show
 a count and filenames; file limits are available when adding files. Name/reply contact
 remains optional and collapsed. The right column contains the recipient dropdown,
 subject, complete editable message, citations and update/download actions. At desktop
@@ -221,7 +244,7 @@ page scrolling at 1280×800; the information column scrolls internally when need
 On mobile the information stacks above email and the page scrolls naturally without
 shrinking text.
 Recommendation stars and contact explanations stay inside the recipient selector.
-Expandable source details retain full attribution in accessible labels and record details.
+The citation popup retains full attribution alongside record details.
 Only directory contacts are offered; an
 external-only selection blocks WAVE email sending rather than being silently omitted.
 Email uses natural paragraphs, with source-attributed agency information rather than
@@ -229,8 +252,8 @@ internal form headings. Inline numbered citations correspond to clickable source
 beside each record and in the composer. Numbered citations share each source URL once. Attachment
 names stay in the information column; source links appear there and beneath the message. Official
 records show agency, readable date, listed problem, published area and verification
-limits; full source wording expands for per-fact changes. Historical years stay explicit.
-Quotations retain their original wording unless explicitly edited. Long messages
+limits; full source wording is available in the citation popup. Historical years stay explicit.
+Agency quotations retain their original wording; the email remains editable. Long messages
 scroll inside the desktop editor; mobile uses natural page scrolling. Review has
 the shared Back control and reports the send outcome there. Sending requires configured
 delivery; sample sending stays disabled. Untouched subject/message fields update
@@ -238,6 +261,21 @@ from changed answers, recipients and facts, including saved-record status on res
 Manually edited subject and message fields are protected independently, including
 intentionally blank fields and legacy drafts. Meaningful changes flag protected
 email as outdated; **Update draft from answers** confirms replacement of both fields.
+The Places carousel supports arrows/Home/End when the carousel itself is focused.
+Native controls within a card keep their own keyboard behavior. Inactive cards
+stay mounted to retain state but are excluded from keyboard focus and the
+accessibility tree until selected with Previous/Next or the carousel shortcuts.
+
+Switching EN/ES updates untouched generated email templates without clearing
+answers or attachments. Manual/legacy subject or message text, confirmed resident
+wording and original source evidence stay unchanged; this is not automatic
+translation of resident or agency text.
+
+Sample email copies and email/report downloads include an English/Spanish
+fictional-sample label outside the editable draft, even after manual edits or
+resume. Sample download filenames start with `sample-`; the unsaved-text fallback
+is labeled too. Live exports are not relabeled, and no export sends a request.
+
 There is no Report tab. **Download report** derives a current resident issue report
 from the same confirmed answers, not an inspection or agency determination. Changing
 category clears incompatible answers and wording but retains locations. Optional name/reply

@@ -21,16 +21,21 @@ test('initial fact previews stay within draft bounds without truncating agency w
   expect(factPatch(facts).context.length).toBeLessThanOrEqual(16000)
   expect(facts.every(f => f.text.includes(reason.trim()))).toBe(true)
 })
-test('historical findings require opt-in and resumed facts never acquire a live status', () => {
+test('required no-action-listed findings remain historical; optional findings need opt-in and resumed prose is preserved', () => {
   const place = { id: LEISURE_HILLS_ID, name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' as const }
   const facts = initialFacts(place, [], false, false, 'en')
   expect(facts.length).toBeGreaterThan(0)
-  expect(facts.every(f => f.kind === 'historical' && !f.included && f.text.includes('2025') && f.sources[0].url.startsWith('https:'))).toBe(true)
-  expect(factPatch(facts).context).toBe('')
+  const requiredIds = ['2025:2', '2025:3']
+  expect(facts.every(f => f.kind === 'historical' && f.included === requiredIds.includes(f.id) && f.text.includes('2025') && f.sources[0].url.startsWith('https:'))).toBe(true)
+  expect(facts.filter(f => f.included).map(f => f.id)).toEqual(requiredIds)
+  expect(factPatch(facts).context).toContain('2025')
+  expect(factPatch(facts.filter(f => !requiredIds.includes(f.id))).context).toBe('')
   expect(factPatch([{ ...facts[0], included: true }]).sources).toEqual(facts[0].sources)
-  const draft = { ...blankRequest(place), body: 'My edited message', facts: [{ ...facts[0], kind: 'active' as const, included: true, text: 'My edited source fact' }] }
+  const optional = facts.find(f => !requiredIds.includes(f.id))!
+  const draft = { ...blankRequest(place), body: 'My edited message', facts: [{ ...optional, kind: 'active' as const, included: true, text: 'My edited source fact' }] }
   const resumed = savedFacts(draft, false, 'en')
   expect(resumed[0]).toEqual({ ...draft.facts[0], kind: 'saved' })
+  expect(resumed.filter(f => requiredIds.includes(f.id)).every(f => f.kind === 'historical' && f.included)).toBe(true)
   expect(draft.body).toBe('My edited message')
 })
 test('separate advisory facts retain exact-supplier source, dates, area and status', () => {

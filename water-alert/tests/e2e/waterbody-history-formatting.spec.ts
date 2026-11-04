@@ -27,7 +27,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
         if (url.pathname === '/api/status') return route.fulfill({ json: { places, archive: notices, coverageStart: at, sources: ['ADH', 'ADEQ'].map(agency => ({ agency, records: notices.filter(n => n.agency === agency), retrievedAt: at, lastSuccessAt: at, error: null, checks: [], historyStartedAt: at })) } })
         return route.continue()
       })
-      await page.goto('/')
+      await page.goto('/tests/e2e/components.html?mode=cards')
       const cards = page.locator('.status-card')
       await expect(cards).toHaveCount(2)
        await cards.nth(0).getByRole('button', { name: t.supplierAlertHistory }).click()

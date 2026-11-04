@@ -90,10 +90,11 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
   expect(container.querySelector('article>dl')).toBeNull()
 })
 
-it.each(['en', 'es'] as const)('shows visible missing email text instead of a disabled action (%s)', language => {
+it.each(['en', 'es'] as const)('offers the verified phone without inventing an email action (%s)', language => {
   const supplier = PLACE_CATALOG.find(entry => entry.place.name === 'FAYETTEVILLE WATERWORKS')!.place
   render(<StatusCard place={supplier} now={Date.parse(at)} t={language === 'en' ? en : es} language={language} onView={() => {}} />)
   const region = within(screen.getByRole('region', { name: language === 'en' ? 'Contact water provider' : 'Contactar al proveedor de agua' }))
-  expect(region.getByText(language === 'en' ? 'No verified email address is available for this supplier.' : 'No hay un correo electrónico verificado para este proveedor.')).toBeVisible()
+  expect(region.getByRole('link', { name: language === 'en' ? /Call/ : /Llamar/ })).toHaveAttribute('href', 'tel:+14795758386')
+  expect(region.queryByRole('button', { name: /email|correo/i })).not.toBeInTheDocument()
   expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
 })

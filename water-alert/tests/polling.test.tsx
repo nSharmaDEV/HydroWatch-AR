@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import App from '../src/App'
 
@@ -10,6 +10,7 @@ it('reloads live observations every thirty seconds and stops in sample mode', as
   expect(reads).toBe(1)
   await act(() => vi.advanceTimersByTimeAsync(30_000))
   expect(reads).toBe(2)
+  fireEvent.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
   fireEvent.click(screen.getByRole('button', { name: 'Try sample mode' }))
   await act(() => vi.advanceTimersByTimeAsync(60_000))
   expect(reads).toBe(2)

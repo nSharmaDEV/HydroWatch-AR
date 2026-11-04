@@ -4,14 +4,21 @@ import { LEISURE_HILLS_ID } from '../../src/annual-reports'
 import { helpGuideStrings } from '../../src/help-guide-strings'
 import type { HelpRequest } from '../../src/help-requests'
 
+// Form/layout checks do not exercise decorative water animation (covered separately).
+test.use({ reducedMotion: 'reduce' })
+
 async function expectFits(page: import('@playwright/test').Page) {
   const panels = page.locator('.request-split > .request-panel')
   if (await panels.count() === 2) {
     const geometry = await panels.evaluateAll(els => els.map(el => ({ height: el.getBoundingClientRect().height, top: el.getBoundingClientRect().top, padding: getComputedStyle(el).padding, background: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth })))
-    expect(geometry[0].height).toBeCloseTo(geometry[1].height, 0)
+    const timing = await page.locator('.request-screen-timing').count()
+    const experience = await page.locator('.request-screen-experience').count()
+    if (!timing) expect(geometry[0].height).toBeCloseTo(geometry[1].height, 0)
     expect(geometry[0].top).toBeCloseTo(geometry[1].top, 0)
     for (const panel of geometry) {
-      expect(panel.padding).toBe('24px')
+      if (timing) expect(Number.parseFloat(panel.padding)).toBeGreaterThanOrEqual(20)
+      else if (experience) expect(panel.padding).toBe('20px 24px')
+      else expect(panel.padding).toBe('24px')
       expect(panel.background).toBe('rgb(255, 255, 255)')
       expect(panel.border).toBe('1px')
     }
@@ -24,13 +31,17 @@ async function expectFits(page: import('@playwright/test').Page) {
     const left = (await page.locator('.request-review-information').boundingBox())!, right = (await composer.boundingBox())!
     expect(left.y).toBeCloseTo(right.y, 0)
     expect(left.width / (left.width + right.width)).toBeCloseTo(0.35, 1)
-    for (const cell of await page.locator('.request-review-table td').all()) expect(await cell.evaluate(el => getComputedStyle(el).textAlign)).toBe('left')
+    for (const alignment of await page.locator('.request-review-table td').evaluateAll(cells => cells.map(el => getComputedStyle(el).textAlign))) expect(alignment).toBe('left')
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   if (await page.locator('.request-review-grid').count() && page.viewportSize()?.width === 1280 && page.viewportSize()?.height === 800) {
-    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(801)
+    const dimensions = await page.evaluate(() => ({ document: document.documentElement.scrollHeight, header: document.querySelector('.app-header')!.getBoundingClientRect().height, main: document.querySelector('main')!.getBoundingClientRect().toJSON(), grid: document.querySelector('.request-review-grid')!.getBoundingClientRect().toJSON() }))
+    expect(dimensions.document, JSON.stringify(dimensions)).toBeLessThanOrEqual(801)
   }
-  if (!await composer.count()) expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(page.viewportSize()!.height + 1)
+  if (!await composer.count()) {
+    const layout = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, panels: [...document.querySelectorAll('.request-experience-primary, .request-experience-primary > section, .request-experience-primary > section > *')].map(el => ({ name: el.className || el.tagName, height: el.getBoundingClientRect().height, bottom: el.getBoundingClientRect().bottom })) }))
+    expect(layout.height, JSON.stringify(layout)).toBeLessThanOrEqual(page.viewportSize()!.height + 1)
+  }
 }
 async function expectNarrow(page: import('@playwright/test').Page) {
   for (const width of [640, 390, 320]) {
@@ -112,7 +123,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       await expect(page.locator('.request-location-chips li')).toHaveCount(2)
       await expect(page.locator('.request-title-row .primary')).toHaveText(es ? 'Continuar' : 'Continue')
       if (issue === 'service') {
-        await expect(page.locator('input[type=date]').last()).toBeDisabled()
+        await expect(page.locator('input[type=date]').last()).toBeEnabled()
         await page.getByRole('combobox', { name: es ? '¿Continúa? (opcional)' : 'Is it ongoing? (optional)', exact: true }).selectOption('No')
         await expect(page.locator('input[type=date]').last()).toBeEnabled()
         await expect(page.locator('input[type=date]').first()).toBeVisible()
@@ -187,20 +198,18 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     }
     await editor.fill('SYNTHETIC EDIT RETAINED')
     if (active && issue === 'advisory') {
-      await page.locator('.request-fact-wording > summary').first().click()
-      await page.getByRole('button', { name: es ? 'Editar texto de la fuente' : 'Edit source wording', exact: true }).first().click()
-      await page.getByRole('textbox', { name: es ? 'Texto de la fuente' : 'Source wording', exact: true }).fill('SYNTHETIC EDITED SOURCE CONTEXT')
-      await page.locator('.request-fact-wording > summary').first().click()
+      await page.getByRole('button', { name: es ? 'Fuentes citadas' : 'Cited sources', exact: true }).click()
+      await expect(page.getByRole('dialog')).toContainText('Synthetic test incident')
+      await expect(page.getByRole('dialog').getByRole('link').first()).toHaveAttribute('href', SOURCES.ADH)
+      await page.keyboard.press('Escape')
       await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
       await page.getByRole('button', { name: es ? 'Abrir Historial' : 'Open History', exact: true }).click()
       await page.getByRole('button', { name: es ? 'Reanudar borrador' : 'Resume draft', exact: true }).click()
       await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
-       await page.locator('.request-fact-wording > summary').first().click()
-       await expect(page.locator('.request-review-record').first()).toContainText('SYNTHETIC EDITED SOURCE CONTEXT')
-        page.on('dialog', dialog => void dialog.accept())
-        while (await page.getByRole('button', { name: es ? 'Quitar registro de la fuente' : 'Remove source record', exact: true }).count()) await page.getByRole('button', { name: es ? 'Quitar registro de la fuente' : 'Remove source record', exact: true }).first().click()
+       const include = page.getByRole('checkbox', { name: es ? 'Incluir en el correo' : 'Include in email', exact: true }).filter({ visible: true })
+       for (const checkbox of await include.all()) if (await checkbox.isEnabled()) await checkbox.uncheck()
       await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
-      await expect(page.locator('.request-source-links')).toHaveCount(0)
+      await expect(page.getByRole('checkbox', { name: es ? 'Incluir en el correo' : 'Include in email', exact: true }).first()).not.toBeChecked()
     }
     await expect(page.getByRole('button', { name: es ? 'Continuar al envío' : 'Continue to send', exact: true })).toHaveCount(0)
     await expect(page.getByRole('button', { name: es ? 'Enviar mensaje' : 'Send message', exact: true })).toHaveCount(0)

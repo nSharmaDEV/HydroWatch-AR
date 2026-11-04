@@ -8,7 +8,8 @@ import { blankRequest, generateMessage, type HelpDraft, type HelpRequest, type H
 import { downloadText, helpApi, listRequests, saveRequest } from './help-client'
 import './requests.css'
 import { answerFingerprint } from './help-outputs'
-import { updateDraft } from './help-draft'
+import { localizeDraft, updateDraft } from './help-draft'
+import { exportedText } from './help-exports'
 interface Props { place: Place; places?: Place[]; notice?: Notice; notices?: Notice[]; language: Language; sample: boolean; requestId?: string; currentAdvisory?: boolean; registerLeave?: (handler: (() => Promise<boolean>) | null) => void; onBack: () => void; onHistory: (id: string) => void }
 export function RequestWorkspace(props: Props) {
   return <div className="request-workspace">{props.sample ? <Workspace {...props} delivery={false} deviceOnly={false} /> : <HelpAccount language={props.language}>{s => <Workspace {...props} delivery={s.delivery} deviceOnly={!s.user} />}</HelpAccount>}</div>
@@ -17,6 +18,7 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
   const es = language === 'es', [draft, setDraft] = useState<HelpDraft | null>(null), [saving, setSaving] = useState<'loading' | 'saving' | 'saved' | 'error'>('loading'), [sending, setSending] = useState(false), [error, setError] = useState('')
   const current = useRef<HelpDraft | null>(null), revision = useRef(0), queue = useRef<Promise<unknown>>(Promise.resolve()), timer = useRef<ReturnType<typeof setTimeout> | null>(null), alive = useRef(true), heading = useRef<HTMLHeadingElement>(null)
   const savedSnapshot = useRef<HelpDraft | null>(null), savedRecord = useRef<HelpRequest | null>(null)
+  const draftLanguage = useRef(language)
   const [sent, setSent] = useState(false)
   const [readingFiles, setReadingFiles] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
@@ -44,6 +46,12 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
     }).catch(() => { if (!cancelled) setSaving('error') })
     return () => { cancelled = true; alive.current = false; if (timer.current) void persist().catch(() => {}) }
    }, [sample, deviceOnly, place.id, requestId])
+  useEffect(() => {
+    if (!current.current || draftLanguage.current === language) return
+    draftLanguage.current = language
+    const next = localizeDraft(current.current, language)
+    if (next !== current.current) commit(next)
+  }, [language, draft?.id])
   useEffect(() => { heading.current?.focus(); window.scrollTo?.(0, 0) }, [draft?.stage, draft?.flowStep])
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => { if (current.current && current.current !== savedSnapshot.current) { event.preventDefault(); event.returnValue = '' } }
@@ -58,7 +66,8 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
     try { await persist(); next() }
     catch { setError(say('Could not save. Keep this page open, retry saving or download your text before leaving.', 'No se pudo guardar. Mantén esta página abierta, reintenta guardar o descarga el texto antes de salir.')) }
   }
-  function edit(patch: Partial<HelpDraft>) { setSent(false); const next = updateDraft(current.current!, patch, language); current.current = next; setDraft(next); setSaving('saving'); if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => { void persist().catch(() => {}) }, 1200) }
+  function commit(next: HelpDraft) { current.current = next; setDraft(next); setSaving('saving'); if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => { void persist().catch(() => {}) }, 1200) }
+  function edit(patch: Partial<HelpDraft>) { setSent(false); commit(updateDraft(current.current!, patch, language)) }
   async function stage(value: HelpStep) {
     if (!draft) return
     let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' ? 2 : 1 }
@@ -103,6 +112,6 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
       <GuidedHelp topLine={topLine} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} edit={edit} changeFacts={facts => edit(factPatch(facts))} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
     {sent ? <p role="status">{say('Message accepted by the email processor, not confirmed delivered or resolved. Open History for updates.', 'Mensaje aceptado por el procesador, no confirma entrega ni solución. Abre Historial para ver actualizaciones.')}</p> : null}
     {error ? <p role="alert">{error}</p> : null}
-    {saving === 'error' ? <div className="request-actions"><button className="secondary" onClick={() => { queue.current = Promise.resolve(); void persist().catch(() => {}) }}>{say('Retry save', 'Reintentar guardar')}</button><button className="text-button" onClick={() => downloadText('unsaved-water-request.txt', `${draft.description}\n${draft.dates}\n\n${draft.subject}\n\n${draft.body}`)}>{say('Download unsaved text', 'Descargar texto sin guardar')}</button></div> : null}
+    {saving === 'error' ? <div className="request-actions"><button className="secondary" onClick={() => { queue.current = Promise.resolve(); void persist().catch(() => {}) }}>{say('Retry save', 'Reintentar guardar')}</button><button className="text-button" onClick={() => downloadText(`${sample ? 'sample-' : ''}unsaved-water-request.txt`, exportedText(`${draft.description}\n${draft.dates}\n\n${draft.subject}\n\n${draft.body}`, language, sample))}>{say('Download unsaved text', 'Descargar texto sin guardar')}</button></div> : null}
   </section>
 }

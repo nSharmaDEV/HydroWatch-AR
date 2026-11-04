@@ -34,6 +34,7 @@ it('links matching PNG favicon and install icons with the existing app identity'
 it('introduces the approved name and purpose without implying water testing', async () => {
   render(<App />)
   expect(screen.getByRole('button', { name })).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: /Get help with a water issue/ }))
   expect(screen.getByText('Published notices are not a water safety test.')).toBeVisible()
   await userEvent.setup().click(screen.getByText('About WAVE', { selector: 'summary' }))
   expect(screen.getByText(purpose)).toBeVisible()
@@ -47,6 +48,7 @@ it('introduces the approved name and purpose without implying water testing', as
 it('retains saved watches without repeating the product pitch in settings', async () => {
   localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: ['ADH:real'], liftWatches: [], language: 'en', checkOnOpen: false }))
   render(<App />)
+  await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   expect(screen.getByRole('heading', { name: 'My Water' })).toBeVisible()
   await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
   expect(screen.queryByText(purpose)).not.toBeInTheDocument()
@@ -67,6 +69,7 @@ it('preserves the approved brand and sample warning without invoking sharing on 
   try {
     render(<App />)
     const user = userEvent.setup()
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
     await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
     expect(screen.getByRole('button', { name })).toBeVisible()

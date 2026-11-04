@@ -178,7 +178,7 @@ it.each(['active', 'none', 'failed', 'stale', 'future', 'historical'] as const)(
   if (state === 'historical') window.history.replaceState(null, '', '?notice=old-notice')
   try {
     render(<App liveData={{ places: [place], sources: [{ agency: 'ADH', records: state === 'none' ? [] : [notice], lastSuccessAt, retrievedAt: lastSuccessAt, error: state === 'failed' ? 'Offline' : null }], archive: [notice, historical], coverageStart: null }} />)
-    await user.click(screen.getByRole('button', { name: 'Get help with a water issue' }))
+    await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
     expect(await screen.findByRole('heading', { name: 'What do you need help with?' })).toBeVisible()
     expect(screen.getByText(/Step 1 of [56]/)).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Current advisory' }))

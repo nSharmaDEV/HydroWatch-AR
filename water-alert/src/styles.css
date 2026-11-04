@@ -458,6 +458,8 @@ main:has(.home-layout){display:flex;flex-direction:column;flex:1 0 auto;width:10
 /* Keep the compact Home header dimensions consistent across every page. */
 .app-header .header-inner{padding-top:6px;padding-bottom:6px}
 .app-header .brand-logo{width:200px;max-width:50vw;height:auto}
+/* Five navigation entries must leave room for language controls on tablets. */
+@media(min-width:761px) and (max-width:1000px){.app-header .header-inner{padding-left:16px;padding-right:16px;gap:12px}.app-header .brand-logo{width:150px}.app-header nav{gap:0}.app-header nav button{flex-direction:column;gap:2px;padding:6px;min-width:44px;font-size:.85rem}.app-header .lang-switch{flex-shrink:0}}
 .home-layout .status-card .supplier-finding{margin-bottom:16px}
 .home-layout .status-card>dl{margin-bottom:8px}
 .home-layout .status-card>dl .date-row{margin:0}

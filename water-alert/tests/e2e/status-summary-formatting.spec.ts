@@ -28,7 +28,7 @@ for (const language of ['en', 'es'] as const) {
           return route.continue()
         })
         await page.setViewportSize({ width, height: 900 })
-        await page.goto('/')
+        await page.goto('/tests/e2e/components.html?mode=cards')
         await expect(page.locator('.status-card')).toHaveCount(2)
         for (const card of await page.locator('.status-card').all()) {
           await expect(card).toHaveClass(new RegExp(state === 'active' ? 'boil|hab' : state === 'none' ? 'none' : 'unavailable'))
@@ -38,7 +38,7 @@ for (const language of ['en', 'es'] as const) {
             const details = element.querySelector('.status-explanation')!
             const box = element.getBoundingClientRect()
             const icon = element.querySelector('.warning-icon')
-            const start = (icon ?? copy).getBoundingClientRect().left
+            const start = copy.getBoundingClientRect().left
             return {
               offset: Math.abs((start + copy.getBoundingClientRect().right) / 2 - (box.left + box.right) / 2),
               headingAlign: getComputedStyle(heading).textAlign,
@@ -49,7 +49,7 @@ for (const language of ['en', 'es'] as const) {
           expect(format.offset).toBeLessThanOrEqual(1)
           expect(format.headingAlign).toBe('center')
           expect(format.copyAlign).toBe('center')
-          expect(format.gap).toBe(4)
+          expect(format.gap).toBe(await card.evaluate(el => el.classList.contains('supplier-card') ? 0 : 4))
         }
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
         expect(unexpected).toEqual([])

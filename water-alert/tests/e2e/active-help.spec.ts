@@ -28,7 +28,7 @@ for (const language of ['en', 'es'] as const) {
       if (url.pathname === '/api/status') return route.fulfill({ json: { sources: [{ agency: 'ADH', records: [notice], lastSuccessAt: at, retrievedAt: at, error: null }, { agency: 'ADEQ', records: [], lastSuccessAt: at, retrievedAt: at, error: null }], archive: [notice], places: [place], coverageStart: at } })
       return route.continue()
     })
-    await page.goto('/')
+    await page.goto('/tests/e2e/components.html?mode=help')
     await page.getByRole('button', { name: h.entry, exact: true }).click()
     const task = (index: number) => page.getByRole('navigation', { name: t.nav }).getByRole('button').nth(index)
     await page.getByRole('button', { name: t.recipientDone, exact: true }).click()

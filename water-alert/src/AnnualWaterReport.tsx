@@ -16,6 +16,7 @@ export function AnnualWaterReport({ reports, language }: { reports: readonly Ann
   return <section className="annual-report" aria-label={es ? 'Informe anual de calidad del agua' : 'Annual water-quality report'}>
     <div className={report?.state === 'reviewed' ? `report-summary${report.issues.length ? ' report-summary-issues' : ''}` : undefined}>
       {header}
+      {report ? <p className="quiet-note">{es ? `Informe histórico (${report.year}): no es una evaluación actual de cumplimiento ni de seguridad del agua.` : `Historical report (${report.year}): not a current compliance or water-safety assessment.`}</p> : null}
       <ReportFindings key={report?.year ?? 'unknown'} report={report} language={language} />
     </div>
   </section>

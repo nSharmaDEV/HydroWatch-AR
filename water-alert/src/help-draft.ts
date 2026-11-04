@@ -27,3 +27,13 @@ export function updateDraft(previous: HelpDraft, patch: Partial<HelpDraft>, lang
   }
   return next
 }
+
+/** Translate only known-generated template fields, never resident/source text. */
+export function localizeDraft(previous: HelpDraft, language: Language): HelpDraft {
+  if (previous.subjectEdited !== false && previous.bodyEdited !== false) return previous
+  const generated = generateMessage(previous, language)
+  const subject = previous.subjectEdited === false ? generated.subject : previous.subject
+  const body = previous.bodyEdited === false ? generated.body : previous.body
+  if (subject === previous.subject && body === previous.body) return previous
+  return { ...previous, subject, body, ...(previous.subjectEdited === false && previous.bodyEdited === false ? { generatedFrom: answerFingerprint(previous) } : {}) }
+}

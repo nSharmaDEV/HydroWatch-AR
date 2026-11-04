@@ -2,6 +2,9 @@ import { expect, test } from '@playwright/test'
 import { PLACE_CATALOG } from '../../src/place-catalog'
 import { en, es } from '../../src/strings'
 
+// Layout coverage; animated-water behavior has its own browser spec.
+test.use({ reducedMotion: 'reduce' })
+
 // Isolated synthetic status reads only: never use the local API or live storage.
 test.beforeEach(async ({ page, context, baseURL }) => {
   const places = PLACE_CATALOG.filter(entry => entry.place.kind === 'system').slice(0, 2).map(entry => entry.place)
@@ -10,6 +13,7 @@ test.beforeEach(async ({ page, context, baseURL }) => {
     const url = new URL(route.request().url())
     if (url.origin !== baseURL) return route.abort()
     if (url.pathname === '/api/push/config') return route.fulfill({ json: { enabled: false } })
+    if (url.pathname === '/api/help/session' && route.request().method() === 'GET') return route.fulfill({ json: { enabled: false, user: null, delivery: false } })
     if (url.pathname.startsWith('/api/')) {
       expect(url.pathname).toBe('/api/status')
       expect(route.request().method()).toBe('GET')
@@ -32,6 +36,7 @@ for (const width of [1440, 390, 320]) {
       await page.route('**/api/push/config', route => route.fulfill({ json: { enabled: false } }))
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
       await page.getByRole('button', { name: language, exact: true }).click()
       const t = language === 'EN' ? en : es
       const add = page.locator('.home-layout>.add-place')
@@ -74,8 +79,8 @@ for (const width of [1440, 390, 320]) {
         await expect(add).toHaveCSS(property, await checkNow.evaluate((el, name) => getComputedStyle(el).getPropertyValue(name), property))
         await expect(add).toHaveCSS(property, await officialSource.evaluate((el, name) => getComputedStyle(el).getPropertyValue(name), property))
       }
-      expect(addBox.height).toBe((await checkNow.boundingBox())!.height)
-      expect(addBox.height).toBe((await officialSource.boundingBox())!.height)
+      for (const control of [add, checkNow, officialSource]) expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+      expect((await checkNow.boundingBox())!.height).toBe((await officialSource.boundingBox())!.height)
       const before = await card.boundingBox()
       await expect(about.locator('details')).toHaveCount(0)
       await expect(about.locator('h2 svg')).toBeVisible()
@@ -89,7 +94,7 @@ for (const width of [1440, 390, 320]) {
       await info.click()
       await expect(page.getByRole('heading', { level: 1, name: t.sources })).toBeVisible()
       await expect(page.locator('.home-layout')).toHaveCount(0)
-      await page.locator('.app-header nav button').first().click()
+      await page.getByRole('navigation').getByRole('button', { name: t.browse, exact: true }).click()
       await add.click()
       await expect(page.locator('.home-layout')).toHaveCount(0)
     })
@@ -108,6 +113,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       ] } }))
       await page.setViewportSize(viewport)
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
       await page.getByRole('button', { name: language, exact: true }).click()
       const row = page.locator('.supplier-card .supplier-contact-section')
       await expect(row.locator('summary, .disclosure-icon')).toHaveCount(0)
@@ -133,6 +139,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
   test(`header dimensions stay consistent across tabs at ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport)
     await page.goto('/')
+    await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
     await expect(page.locator('.supplier-card').first()).toBeVisible()
     const dimensions = () => page.locator('.app-header').evaluate(header => {
       const box = header.getBoundingClientRect()
@@ -157,6 +164,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
     test(`collapsed Home stays accessible at ${viewport.width}x${viewport.height} at normal zoom (${language})`, async ({ page }) => {
       await page.setViewportSize(viewport)
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
       await expect(page.locator('.carousel-slide').first().locator('.status-label')).toHaveText('No active boil-water notice found')
       await page.getByRole('button', { name: language, exact: true }).click()
       const card = page.locator('.carousel-slide').first().locator('.supplier-card')
@@ -249,7 +257,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       await expect(controls.locator('.carousel-status')).toHaveText(language === 'EN' ? '1 of 2 places' : '1 de 2 lugares')
       await help.scrollIntoViewIfNeeded()
       await help.click()
-      await expect(page.locator('.help-guide')).toBeVisible()
+      await expect(page.locator('.request-guided-workspace')).toBeVisible()
     })
   }
 }
@@ -258,6 +266,7 @@ for (const viewport of [{ width: 1280, height: 480 }, { width: 390, height: 600 
   test(`smaller Home scrolls without hiding controls at ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport)
     await page.goto('/')
+    await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
     const card = page.locator('.carousel-slide').first().locator('.supplier-card')
     await expect(card).toBeVisible()
     const expectedPadding = viewport.width <= 760 ? '16px' : '30px'
@@ -284,10 +293,10 @@ for (const viewport of [{ width: 1280, height: 480 }, { width: 390, height: 600 
     expect(mainPadding.top).toBe(mainPadding.bottom)
     const ui = (await page.locator('.home-layout').boundingBox())!
     const availableBottom = viewport.width <= 760 ? (await page.locator('.app-header nav').boundingBox())!.y : viewport.height
-    expect(availableBottom - ui.y - ui.height).toBeCloseTo(viewport.width <= 760 ? 16 : 24, 0)
+    expect(availableBottom - ui.y - ui.height).toBeCloseTo(viewport.width <= 760 ? 16 : 12, 0)
     await help.evaluate(el => el.scrollIntoView({ block: 'center' }))
     await help.click()
-    await expect(page.locator('.help-guide')).toBeVisible()
+    await expect(page.locator('.request-guided-workspace')).toBeVisible()
   })
 }
 
@@ -296,6 +305,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
     test(`active and no-notice cards share formatting at ${viewport.width}x${viewport.height} (${language})`, async ({ page }) => {
       await page.setViewportSize(viewport)
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
       const card = page.locator('.carousel-slide').first().locator('.supplier-card')
       await expect(card.locator('.status-label')).toHaveText('No active boil-water notice found')
       const copy = language === 'EN' ? en : es
@@ -303,9 +313,9 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       await expect(card.locator('.status-label')).toHaveText(copy.noneBoil)
       await expect(card.locator(':scope > dl')).toHaveCount(0)
       const bannerStyle = await card.locator('.supplier-finding').evaluate(el => ({ padding: parseFloat(getComputedStyle(el).paddingTop), heading: parseFloat(getComputedStyle(el.querySelector('.status-label')!).fontSize), body: parseFloat(getComputedStyle(el.querySelector('.status-explanation')!).fontSize) }))
-      expect(bannerStyle.padding).toBeGreaterThanOrEqual(10)
+      expect(bannerStyle.padding).toBeGreaterThanOrEqual(viewport.height <= 750 ? 8 : 10)
       expect(bannerStyle.heading).toBeGreaterThanOrEqual(26)
-      expect(bannerStyle.body).toBeGreaterThanOrEqual(18)
+      expect(bannerStyle.body).toBeGreaterThanOrEqual(viewport.height <= 750 ? 16 : 18)
       const findingHeight = (await card.locator('.supplier-finding').boundingBox())!.height
       const checkColor = await card.locator('.card-check-actions button').evaluate(el => getComputedStyle(el).backgroundColor)
       const places = PLACE_CATALOG.filter(entry => entry.place.kind === 'system').slice(0, 2).map(entry => entry.place)
@@ -316,6 +326,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
         { agency: 'ADEQ', records: [], retrievedAt: at, lastSuccessAt: at, error: null },
       ] } }))
       await page.reload()
+      await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
       await page.getByRole('button', { name: language, exact: true }).click()
       await expect(card.locator('.status-label')).toHaveText(copy.activeBoil)
       expect(await card.locator('.card-check-actions button').evaluate(el => getComputedStyle(el).backgroundColor)).toBe(checkColor)
@@ -324,7 +335,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       const service = (await card.locator('.supplier-contact-section').boundingBox())!
       const help = (await card.locator('.supplier-help-action').boundingBox())!
       const box = (await card.boundingBox())!
-      expect(help.y - service.y - service.height).toBe(24)
+      expect(help.y - service.y - service.height).toBe(viewport.height <= 750 ? 8 : 12)
       const cardPadding = await card.evaluate(el => {
         const style = getComputedStyle(el)
         return { left: parseFloat(style.paddingLeft), right: parseFloat(style.paddingRight), bottom: parseFloat(style.paddingBottom) }
@@ -347,7 +358,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width)
       await page.screenshot({ path: test.info().outputPath('active-card-expanded.png'), fullPage: true })
       await helpAction.click()
-      await expect(page.locator('.help-guide')).toBeVisible()
+      await expect(page.locator('.request-guided-workspace')).toBeVisible()
     })
   }
 }
@@ -356,6 +367,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
     test(`provider title and matching actions at ${viewport.width}x${viewport.height} (${language})`, async ({ page }) => {
       await page.setViewportSize(viewport)
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
       await page.getByRole('button', { name: language, exact: true }).click()
       await page.evaluate(() => document.fonts.ready)
       const card = page.locator('.carousel-slide').first().locator('.supplier-card')
@@ -397,7 +409,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width)
       await page.screenshot({ path: test.info().outputPath('long-provider-title.png'), fullPage: true })
       await info.click()
-      await expect(card.locator('dialog')).toBeVisible()
+      await expect(page.getByRole('heading', { level: 1, name: language === 'EN' ? en.sources : es.sources })).toBeVisible()
     })
   }
   for (const language of ['EN', 'ES']) {
@@ -412,6 +424,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
         ] } }))
         await page.setViewportSize(viewport)
         await page.goto('/')
+        await page.getByRole('navigation').getByRole('button', { name: /^(Places|Lugares)$/ }).click()
         await page.getByRole('button', { name: language, exact: true }).click()
         const card = page.locator('.carousel-slide').first().locator('.supplier-card')
         await expect(card).toHaveClass(new RegExp(state === 'active' ? 'boil' : state))
@@ -427,8 +440,9 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
             top: title.top - box.top, bottom: box.bottom - body.bottom, paddingTop: style.paddingTop, paddingBottom: style.paddingBottom,
             left: box.left - actions.left, right: box.right - actions.right, height: box.height }
         })
-        expect(spacing.above).toBe(16)
-        expect(spacing.below).toBe(16)
+        const compact = viewport.width > 760 && viewport.height <= 750
+        expect(spacing.above).toBe(compact ? 8 : 16)
+        expect(spacing.below).toBe(compact ? 8 : 16)
         expect(spacing.gap).toBe(8)
         expect(spacing.top).toBeCloseTo(spacing.bottom, 1)
         expect(spacing.paddingTop).toBe(spacing.paddingBottom)

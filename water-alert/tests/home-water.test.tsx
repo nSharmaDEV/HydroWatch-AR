@@ -88,6 +88,25 @@ it('pauses hidden tabs and leaves touch scrolling and controls alone', () => {
   expect(surface.dispose).toHaveBeenCalledTimes(1)
 })
 
+it('drops only on a physical press, never while the mouse merely moves', () => {
+  motion()
+  const surface = { resize: vi.fn(), drop: vi.fn(), frame: vi.fn(), dispose: vi.fn() }
+  vi.mocked(createWaterSurface).mockReturnValue(surface)
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 100, top: 100, left: 0, right: 1000, bottom: 800, width: 1000, height: 700, toJSON() {} })
+  render(<main><HomeWater /></main>)
+  for (const [x, y] of [[100, 200], [400, 300], [700, 500]] as const) {
+    const move = new Event('pointermove', { bubbles: true, cancelable: true })
+    Object.assign(move, { pointerType: 'mouse', clientX: x, clientY: y, isPrimary: true })
+    document.querySelector('main')!.dispatchEvent(move)
+  }
+  expect(surface.drop).not.toHaveBeenCalled()
+  const press = new Event('pointerdown', { bubbles: true, cancelable: true })
+  Object.assign(press, { pointerType: 'mouse', clientX: 400, clientY: 300, isPrimary: true, button: 0 })
+  document.querySelector('main')!.dispatchEvent(press)
+  expect(surface.drop).toHaveBeenCalledTimes(1)
+  expect(surface.drop).toHaveBeenCalledWith(.4, 1 - 200 / 700, .005)
+})
+
 it.each([0, .5, 1])('creates one softer ambient drop every 1–2 seconds (random=%s)', random => {
   motion()
   const surface = { resize: vi.fn(), drop: vi.fn(), frame: vi.fn(), dispose: vi.fn() }

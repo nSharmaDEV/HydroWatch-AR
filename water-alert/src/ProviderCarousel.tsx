@@ -76,6 +76,8 @@ export function ProviderCarousel({ children, language = 'en' }: { children: Reac
   }, [count, showIndex])
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    // Descendant controls own their native text, select and disclosure keys.
+    if (event.target !== event.currentTarget) return
     if (event.altKey || event.metaKey || event.ctrlKey) return
     if (event.key === 'ArrowRight') { event.preventDefault(); showIndex(indexRef.current + 1) }
     else if (event.key === 'ArrowLeft') { event.preventDefault(); showIndex(indexRef.current - 1) }
@@ -94,7 +96,7 @@ export function ProviderCarousel({ children, language = 'en' }: { children: Reac
         tabIndex={0}
         onKeyDown={onKeyDown}
       >
-        {slides.map((slide, i) => <div className="carousel-slide" key={(slide as { key?: string | null }).key ?? i} role="group" aria-roledescription={language === 'en' ? 'slide' : 'diapositiva'} aria-label={strings.slide(i, count)}>{slide}</div>)}
+        {slides.map((slide, i) => <div className="carousel-slide" key={(slide as { key?: string | null }).key ?? i} role="group" aria-roledescription={language === 'en' ? 'slide' : 'diapositiva'} aria-label={strings.slide(i, count)} inert={i !== index} aria-hidden={i !== index ? true : undefined}>{slide}</div>)}
       </div>
     </div>
     {count > 1 ? <div className="carousel-controls">

@@ -102,6 +102,31 @@ it('uses keyboard arrows, Home and End', () => {
   expect(screen.getByText('1 of 3 places')).toBeVisible()
 })
 
+it('does not intercept navigation keys from native controls inside a card', () => {
+  render(<ProviderCarousel><article><input aria-label="Resident input" /><textarea aria-label="Resident text" /><select aria-label="Report year"><option>2025</option><option>2024</option></select><button>Card action</button><a href="#source">Source</a></article><article>Second place</article></ProviderCarousel>)
+  for (const control of ['Resident input', 'Resident text', 'Report year']) for (const key of ['ArrowRight', 'ArrowLeft', 'Home', 'End']) {
+    expect(fireEvent.keyDown(screen.getByLabelText(control), { key })).toBe(true)
+    expect(screen.getByText('1 of 2 places')).toBeVisible()
+  }
+  for (const control of [screen.getByRole('button', { name: 'Card action' }), screen.getByRole('link', { name: 'Source' })]) {
+    expect(fireEvent.keyDown(control, { key: 'End' })).toBe(true)
+    expect(screen.getByText('1 of 2 places')).toBeVisible()
+  }
+})
+
+it('exposes only the active slide while keeping inactive state mounted', () => {
+  render(<ProviderCarousel><article><button>First action</button></article><article><button>Second action</button></article></ProviderCarousel>)
+  const second = screen.getByText('Second action').closest('.carousel-slide')!
+  expect(second).toHaveAttribute('inert')
+  expect(second).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.queryByRole('button', { name: 'Second action' })).not.toBeInTheDocument()
+  fireEvent.keyDown(track(), { key: 'ArrowRight' })
+  expect(second).not.toHaveAttribute('inert')
+  expect(second).not.toHaveAttribute('aria-hidden', 'true')
+  expect(screen.getByRole('button', { name: 'Second action' })).toBeInTheDocument()
+  expect(screen.getByText('First action').closest('.carousel-slide')).toHaveAttribute('inert')
+})
+
 it('omits controls for a single place and localizes the indicator', () => {
   const { rerender } = render(<ProviderCarousel><article>Only place</article></ProviderCarousel>)
   expect(screen.queryByRole('button', { name: 'Next place' })).not.toBeInTheDocument()

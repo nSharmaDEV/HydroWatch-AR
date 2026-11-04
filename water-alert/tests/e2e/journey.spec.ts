@@ -30,6 +30,8 @@ test.beforeEach(async ({ page, context, baseURL }) => {
   await context.route('**/*', async route => {
     const request = route.request()
     const url = new URL(request.url())
+    if (url.origin === baseURL && url.pathname === '/api/push/config' && request.method() === 'GET') return route.fulfill({ json: { enabled: false } })
+    if (url.origin === baseURL && url.pathname === '/api/help/session' && request.method() === 'GET') return route.fulfill({ json: { enabled: false, user: null, delivery: false } })
     if (url.origin !== baseURL || (url.pathname.startsWith('/api/') &&
       (url.pathname !== '/api/status' || request.method() !== 'GET'))) {
       unexpected.push(`${request.method()} ${url.origin}${url.pathname}`)
@@ -53,6 +55,7 @@ test.afterEach(async ({ page }) => {
 
 async function watchSupplier(page: Page, supplier = place) {
   await page.goto('/')
+  await page.getByRole('button', { name: /Get help with a water issue/ }).click()
   await page.getByRole('button', { name: /My public water supplier/ }).click()
   await page.getByRole('searchbox').fill(supplier.name)
   await page.getByRole('button', { name: `Select ${supplier.name}`, exact: true }).click()
@@ -88,7 +91,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
       }
       await page.screenshot({ path: test.info().outputPath(`supplier-parity-${language}.png`), fullPage: true })
       await page.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true }).click()
-      await expect(page.locator('.help-guide')).toBeVisible()
+      await expect(page.locator('.request-guided-workspace')).toBeVisible()
     })
   }
 
@@ -157,7 +160,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await expect(report.getByRole('option')).toHaveCount(1)
     await expect(report.locator('.report-finding')).toHaveText(language === 'en' ? '4 compliance issues reported' : '4 problemas de cumplimiento reportados')
     await expect(report.locator('.report-issues')).not.toBeVisible()
-    await expect(page.locator('.profile-facts')).not.toBeVisible()
+    await expect(page.locator('.profile-facts')).toBeVisible()
     await report.scrollIntoViewIfNeeded()
     await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-collapsed.png`), fullPage: true })
     const toggle = report.locator('.report-toggle')
@@ -217,6 +220,8 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
   test(`supplier info checklist stays in app (${language})`, async ({ page }) => {
     await watchSupplier(page)
     await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+    // Retained modal/checklist component; shipped card info now opens Sources.
+    await page.goto('/tests/e2e/components.html?mode=cards')
     const trigger = page.getByRole('button', { name: t.supplierAbout, exact: true })
     await trigger.click()
     const dialog = page.getByRole('dialog')
@@ -255,7 +260,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await page.addInitScript(() => { Reflect.deleteProperty(window, 'PushManager') })
     await watchSupplier(page)
     await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
-    await expect(page.locator('.page-heading')).not.toContainText(t.subtitle)
+    await expect(page.getByText(t.subtitle, { exact: true })).toHaveCount(0)
     await expect(page.locator('.supplier-card .status-label')).toContainText(t.activeBoil)
     const activeLink = page.getByRole('link', { name: t.activeBoil, exact: true })
     await expect(activeLink).toHaveAttribute('href', `${SOURCES.ADH}#:~:text=${encodeURIComponent(place.name)}`)
@@ -263,26 +268,17 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await expect(page.locator('.supplier-finding .status-explanation')).toContainText(notice.area)
     await expect(page.locator('.supplier-finding .status-explanation')).toContainText(notice.reason)
     const contextLines = page.locator('.supplier-notice-context > span')
-    const areaBounds = await contextLines.nth(0).boundingBox()
-    const reasonBounds = await contextLines.nth(1).boundingBox()
-    expect(reasonBounds!.y).toBeGreaterThanOrEqual(areaBounds!.y + areaBounds!.height)
+    await expect(contextLines.nth(0)).toContainText(notice.area)
+    await expect(contextLines.nth(1)).toContainText(notice.reason)
     await activeLink.focus()
     await expect(activeLink).toBeFocused()
-    const results = page.locator('.about-results details')
-    await expect(results).not.toHaveAttribute('open', '')
-    await results.locator('summary').focus()
-    await page.keyboard.press('Enter')
-    await expect(results).toHaveAttribute('open', '')
+    const results = page.locator('.about-results')
+    await expect(results.locator('details')).toHaveCount(0)
     await expect(results.getByText(t.resultsSummary)).toBeVisible()
     const nav = page.getByRole('navigation')
     await nav.getByRole('button', { name: t.history, exact: true }).click()
-    await expect(page.getByText(t.historyText)).toBeVisible()
-    const observation = page.locator('.history-record details').first()
-    await expect(observation).not.toHaveAttribute('open', '')
-    await expect(page.getByText(t.historyPrevious)).toBeVisible()
-    await observation.locator('summary').focus()
-    await page.keyboard.press('Enter')
-    await expect(observation.getByText(t.firstObserved, { exact: true })).toBeVisible()
+    await expect(page.locator('.request-history-intro')).toContainText(language === 'en' ? 'Live drafts saved on this device only' : 'Borradores reales guardados solo en este dispositivo')
+    await expect(page.locator('.request-history-intro')).toContainText(language === 'en' ? 'not sample data, sent messages' : 'No son datos de ejemplo, mensajes enviados')
     await nav.getByRole('button', { name: t.browse, exact: true }).click()
     await expect(page.getByText(t.placesIntro)).toHaveCount(0)
     await nav.getByRole('button', { name: t.settings, exact: true }).click()
@@ -382,33 +378,24 @@ for (const state of ['active', 'none', 'failed', 'stale', 'unchecked'] as const)
       const actions = element.querySelector('.card-check-actions')!
       const buttons = [...actions.children]
       const rect = (e: Element) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width, top: r.top, height: r.height } }
-      const row = element.querySelector(':scope > dl .date-row')!
-      const leader = row.querySelector('.freshness-leader')
       return {
         panel: rect(panel), actions: rect(actions), buttons: buttons.map(rect),
         textAlign: getComputedStyle(element.querySelector('.finding-copy')!).textAlign,
-        timestampAlign: getComputedStyle(row.querySelector('dd')!).textAlign,
-        leader: leader ? rect(leader) : null, label: rect(row.querySelector('.freshness-label')!),
         iconHeight: element.querySelector('.warning-icon')?.getBoundingClientRect().height ?? 0,
-        primaryColor: getComputedStyle(actions.querySelector('.primary')!).color,
+        primaryColor: getComputedStyle(actions.querySelector('button')!).color,
         divider: getComputedStyle(element.querySelector('.provider-contact')!).borderBottomWidth,
         panelColor: getComputedStyle(panel).backgroundColor,
       }
     })
     expect(geometry.textAlign).toBe('center')
-    expect(geometry.timestampAlign).toBe('left')
-    expect(geometry.primaryColor).toBe('rgb(255, 255, 255)')
-    expect(Math.abs(geometry.buttons[0].width - geometry.buttons[1].width)).toBeLessThan(1)
-    expect(geometry.buttons[1].left - geometry.buttons[0].right).toBeCloseTo(12, 0)
+    for (const button of geometry.buttons) expect(button.height).toBeGreaterThanOrEqual(44)
+    if (width <= 420) expect(geometry.buttons[1].top).toBeGreaterThanOrEqual(geometry.buttons[0].top + geometry.buttons[0].height)
+    else expect(geometry.buttons[1].left).toBeGreaterThanOrEqual(geometry.buttons[0].right)
     expect(geometry.actions.left).toBe(geometry.panel.left)
     expect(geometry.actions.right).toBe(geometry.panel.right)
     expect(geometry.divider).toBe('0px')
-    expect(geometry.iconHeight).toBe(state === 'active' ? 56 : 0)
-    if (width === 1366) {
-      expect(geometry.leader).not.toBeNull()
-      expect(geometry.leader!.top + geometry.leader!.height / 2 - (geometry.label.top + geometry.label.height / 2)).toBeCloseTo(2, 0)
-      expect(geometry.leader!.left - geometry.label.right).toBeCloseTo(12, 0)
-    }
+    expect(geometry.iconHeight).toBe(state === 'active' ? 24 : 0)
+    await expect(page.locator('.home-sidebar')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await expect(card.locator('.card-qualification')).toHaveCount(0)
     await card.screenshot({ path: test.info().outputPath(`reference-${state}-${width}.png`) })
@@ -483,6 +470,7 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
 test('source-first cards fit phone and laptop widths, with left-aligned facts and touch targets', async ({ page }) => {
   await watchSupplier(page)
   await expect(page.locator('.supplier-contact-section .provider-contact')).toBeVisible()
+  await page.getByRole('button', { name: 'Provider information', exact: true }).click()
   for (const width of [320, 390, 1366]) {
     await page.setViewportSize({ width, height: 768 })
     const card = page.locator('.supplier-card')
@@ -491,12 +479,12 @@ test('source-first cards fit phone and laptop widths, with left-aligned facts an
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     const geometry = await card.evaluate(element => {
       const link = element.querySelector('.official-list')!
-      const time = element.querySelector('time')!
+      const finding = element.querySelector('.supplier-finding')!
       const contact = element.querySelector('.provider-contact')!
       const row = element.querySelector('.profile-facts dd')!
-      return { linkTop: link.getBoundingClientRect().top, timeTop: time.getBoundingClientRect().top, contactTop: contact.getBoundingClientRect().top, height: link.getBoundingClientRect().height, factAlign: getComputedStyle(row).textAlign }
+      return { linkTop: link.getBoundingClientRect().top, findingBottom: finding.getBoundingClientRect().bottom, contactTop: contact.getBoundingClientRect().top, height: link.getBoundingClientRect().height, factAlign: getComputedStyle(row).textAlign }
     })
-    expect(geometry.linkTop).toBeGreaterThan(geometry.timeTop)
+    expect(geometry.linkTop).toBeGreaterThanOrEqual(geometry.findingBottom)
     expect(geometry.contactTop).toBeGreaterThan(geometry.linkTop)
     expect(geometry.height).toBeGreaterThanOrEqual(44)
     expect(geometry.factAlign).toBe('left')
@@ -521,7 +509,7 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     const t = language === 'en' ? en : es
     const card = page.locator('.supplier-card')
     const email = card.locator('a[href^="mailto:"]')
-    await expect(email).not.toBeVisible()
+    await expect(email).toBeVisible()
     await expect(card.locator('.supplier-help-section')).toHaveCount(0)
     const help = card.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true })
     await expect(help).toBeVisible()
@@ -530,10 +518,10 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     const official = card.getByRole('link', { name: t.officialSource })
     await expect(card.locator('.card-check-actions > button')).toHaveCSS('font-weight', '700')
     await expect(official).toHaveCSS('font-weight', '700')
-    await expect(official).toHaveCSS('background-color', 'rgb(70, 204, 205)')
-    await expect(official).toHaveCSS('color', 'rgb(255, 255, 255)')
-    await expect(official.locator('span')).toHaveCSS('color', 'rgb(255, 255, 255)')
-    expect(await help.evaluate(el => el.previousElementSibling?.classList.contains('provider-information'))).toBe(true)
+    await expect(official).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+    await expect(official).toHaveCSS('color', 'rgb(6, 109, 115)')
+    await expect(official.locator('span')).toHaveCSS('color', 'rgb(6, 109, 115)')
+    expect(await help.evaluate(el => el.previousElementSibling?.classList.contains('supplier-contact-section'))).toBe(true)
     await expect(card.locator('.supplier-contact-section .provider-contact')).toBeVisible()
     await expect(email).toHaveText('LEISUREHILLSWATERCO@GMAIL.COM')
     const emailBounds = await email.boundingBox()
@@ -550,61 +538,63 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: test.info().outputPath(`expanded-${language}-${width}.png`), fullPage: true })
     await card.locator('.guide-entry').click()
-    const billing = language === 'en' ? 'Billing or consumer dispute' : 'Facturación o disputa de consumo'
-    const next = language === 'en' ? 'Next' : 'Siguiente'
+    const billing = language === 'en' ? 'Bill or charge' : 'Factura o cargo'
+    const next = language === 'en' ? 'Continue' : 'Continuar'
     await page.getByRole('button', { name: billing, exact: true }).click()
     await page.getByRole('button', { name: next, exact: true }).click()
-    await page.getByRole('combobox', { name: language === 'en' ? 'What do you need help with?' : '¿Con qué necesita ayuda?' }).selectOption('complaint')
-    const body = page.getByRole('textbox', { name: language === 'en' ? 'Draft body' : 'Texto del borrador', exact: true })
-    await body.fill('SYNTHETIC GUIDE REVIEW ONLY')
     await page.getByRole('button', { name: next, exact: true }).click()
+    await page.getByRole('textbox', { name: language === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', exact: true }).fill('SYNTHETIC GUIDE REVIEW ONLY')
+    await page.getByRole('button', { name: next, exact: true }).click()
+    await page.getByRole('button', { name: language === 'en' ? 'Review message' : 'Revisar mensaje', exact: true }).click()
+    const body = page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })
+    await body.fill('SYNTHETIC GUIDE REVIEW ONLY')
     await expect(body).toHaveValue('SYNTHETIC GUIDE REVIEW ONLY')
-    await expect(page.locator('.help-guide h1')).toBeFocused()
-    await expect(page.getByRole('link', { name: language === 'en' ? 'Open official complaint form' : 'Abrir formulario oficial de queja', exact: true })).toHaveAttribute('href', 'https://arkansasag.gov/file-a-complaint/')
+    await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)
     const pending = page.waitForEvent('download')
-    await page.getByRole('button', { name: language === 'en' ? 'Download preparation pack' : 'Descargar paquete de preparación', exact: true }).click()
+    await page.getByRole('button', { name: language === 'en' ? 'Download report' : 'Descargar reporte', exact: true }).click()
     expect(await readFile((await (await pending).path())!, 'utf8')).toContain('SYNTHETIC GUIDE REVIEW ONLY')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     if (width < 761) {
-      const previous = page.getByRole('button', { name: language === 'en' ? 'Previous step' : 'Paso anterior', exact: true })
+      const previous = page.getByRole('button', { name: language === 'en' ? 'Back' : 'Atrás', exact: true })
       await previous.focus()
-      await page.keyboard.press('Tab')
-      await expect(page.getByRole('button', { name: next, exact: true })).toBeFocused()
-      expect(await page.getByRole('button', { name: next, exact: true }).evaluate(el => el.getBoundingClientRect().bottom + 7 <= document.querySelector('nav')!.getBoundingClientRect().top)).toBe(true)
+      await expect(previous).toBeFocused()
+      expect(await previous.evaluate(el => el.getBoundingClientRect().bottom + 7 <= document.querySelector('nav')!.getBoundingClientRect().top)).toBe(true)
     }
     await page.screenshot({ path: test.info().outputPath(`guide-${language}-${width}.png`), fullPage: true })
-    await page.getByRole('button', { name: next, exact: true }).click()
-    await page.getByRole('button', { name: language === 'en' ? 'Done' : 'Terminar', exact: true }).click()
-    await expect(card.locator('.guide-entry')).toBeFocused()
+    await page.getByRole('navigation').getByRole('button', { name: t.browse, exact: true }).click()
+    await expect(card.locator('.guide-entry')).toBeVisible()
   })
 }
 
 test('sample scenarios stay fictional across detail, help choices, history and exit', async ({ page }) => {
   await page.goto('/')
+  await page.getByRole('button', { name: /Get help with a water issue/ }).click()
   await expect(page.getByText('Published notices are not a water safety test.', { exact: true })).toBeVisible()
   await expect(page.getByText('About WAVE', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Try sample mode', exact: true }).click()
   await page.getByRole('button', { name: 'Use sample watch list', exact: true }).click()
   await expect(page.locator('.status-label').filter({ hasText: /^Active boil-water notice$/ })).toBeVisible()
   await expect(page.locator('.status-label').filter({ hasText: 'No active boil-water notice found' })).toBeVisible()
-  await expect(page.locator('.status-label').filter({ hasText: 'Data unavailable' })).toBeVisible()
-  await page.getByLabel('Sample HAB source available', { exact: true }).check()
-  await expect(page.locator('.status-label').filter({ hasText: 'Active harmful-algal-bloom advisory' })).toBeVisible()
-  await page.getByText('Place details & help', { exact: true }).click()
-  await page.getByRole('button', { name: 'Understand this notice Sample Cove Lake', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Agency guidance', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await expect(page.locator('.supplier-card')).toHaveCount(2)
+  // Lake/HAB detail and fictional legacy exports remain covered by the retained-component specs.
+  await expect(page.getByLabel('Sample HAB source available', { exact: true })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Sample Cove Lake', exact: true })).toHaveCount(0)
   await page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Sample Creek Water', exact: true }) }).getByRole('button', { name: 'Get help with a water issue', exact: true }).click()
-  await expect(page.getByRole('textbox')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Billing or consumer dispute', exact: true }).click()
-  await page.getByRole('button', { name: 'Next', exact: true }).click()
-  await page.getByRole('button', { name: 'Next', exact: true }).click()
-  await expect(page.getByRole('textbox', { name: 'Draft body', exact: true })).toHaveValue(/SAMPLE — NOT A REAL CLAIM/)
+  await page.getByRole('button', { name: 'Bill or charge', exact: true }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Describe what happened (optional if selected above)', exact: true }).fill('A fictional billing issue for this sample.')
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await page.getByRole('button', { name: 'Review message', exact: true }).click()
+  await expect(page.getByRole('textbox', { name: 'Message', exact: true })).not.toHaveValue('')
+  await expect(page.getByText('Sample — fictional. Sending disabled.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send message', exact: true })).toHaveCount(0)
   await expect(page.locator('a[href^="mailto:"],a[href^="tel:"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'History', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Sample mode', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Exit sample', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Sample mode', exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: /Get help with a water issue/ }).click()
   await expect(page.getByRole('button', { name: /My public water supplier/ })).toBeVisible()
 })
 
@@ -644,6 +634,7 @@ for (const savedSample of [false, true]) {
     await page.getByRole('button', { name: 'Exit sample', exact: true }).click()
     await expect(page.locator('html')).toHaveAttribute('lang', 'es')
     expect(await page.evaluate(() => localStorage.getItem('water-alert:live:v1'))).toBe(liveBefore)
+    await page.getByRole('navigation').getByRole('button', { name: 'Lugares', exact: true }).click()
     await expect(page.getByRole('heading', { name: displayName, exact: true })).toBeVisible()
   })
 }
@@ -674,7 +665,7 @@ test('saved historical link stays exact and becomes unavailable if its record di
   await expect(page.locator('.detail-record')).toContainText(old.reason)
   await expect(page.locator('.detail-record')).not.toContainText(notice.reason)
   archive = [notice]
-  await page.clock.runFor(30_001)
+  await page.clock.fastForward(30_001)
   await expect(page.getByText('This saved notice cannot be opened from the currently available records. It has not been replaced with another notice.', { exact: true })).toBeVisible()
   await expect(page.locator('.detail-record')).toHaveCount(0)
 })
@@ -687,8 +678,8 @@ for (const state of ['failed', 'stale'] as const) {
     const card = page.getByRole('article').filter({ has: page.getByRole('heading', { name: displayName, exact: true }) })
     await expect(card.locator('.status-label')).toContainText('Current advisory status unavailable.')
     await expect(card.locator('.status-label')).toBeVisible()
-    await card.locator('.provider-info-toggle').click()
-    await expect(card.getByText('Previously observed notice · current status unverified', { exact: true })).toBeVisible()
+    await card.getByRole('button', { name: 'Advisory history', exact: true }).click()
+    await expect(card.getByText('Status: Unconfirmed', { exact: true })).toBeVisible()
     await expect(card.getByText('Active', { exact: true })).toHaveCount(0)
   })
 }

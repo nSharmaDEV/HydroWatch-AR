@@ -9,6 +9,7 @@ import { readableDate } from './help-format'
 import { RequestRecipients } from './RequestRecipients'
 import { RequestSources } from './RequestSources'
 import { downloadText } from './help-client'
+import { exportedText } from './help-exports'
 
 function ReviewActionIcon({ kind }: { kind: 'refresh' | 'email' | 'report' }) {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{kind === 'refresh' ? <><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 5" /></> : kind === 'email' ? <><rect x="3" y="3" width="18" height="13" rx="2" /><path d="m3 5 9 6 9-6M12 17v5m-3-3 3 3 3-3" /></> : <><path d="M14 2H5v20h14V7ZM14 2v5h5M8 11h8M8 15h4m5 1v6m-3-3 3 3 3-3" /></>}</svg>
@@ -92,7 +93,7 @@ export function ReviewEmail({ draft, language, sample = false, extras, edit, cha
         <label><span className="sr-only">{say('Message', 'Mensaje')}</span><textarea ref={editor} className="request-message-editor" rows={18} value={draft.body} maxLength={24000} onChange={e => edit({ body: e.target.value })} /></label>
       </div>
       <div className="request-review-update"><p className="quiet-note">{say('Replaces your subject and message, including manual edits.', 'Reemplaza el asunto y el mensaje, incluidos los cambios manuales.')}</p><button className="request-icon-action" aria-label={say('Update draft from answers', 'Actualizar borrador desde las respuestas')} title={say('Update draft', 'Actualizar borrador')} onClick={regenerate}><ReviewActionIcon kind="refresh" /></button>
-        <div className="request-review-downloads"><button className="request-icon-action" aria-label={say('Download email', 'Descargar correo')} title={say('Download email', 'Descargar correo')} onClick={() => downloadText('water-email.txt', `${draft.subject}\n\n${draft.body}`)}><ReviewActionIcon kind="email" /></button><button className="request-icon-action" aria-label={say('Download report', 'Descargar reporte')} title={say('Download report', 'Descargar reporte')} onClick={() => downloadText('water-report.txt', generateReport(draft, language))}><ReviewActionIcon kind="report" /></button>{copy ? <button className="text-button" onClick={copy}>{say('Copy email', 'Copiar correo')}</button> : null}</div>
+        <div className="request-review-downloads"><button className="request-icon-action" aria-label={say('Download email', 'Descargar correo')} title={say('Download email', 'Descargar correo')} onClick={() => downloadText(`${sample ? 'sample-' : ''}water-email.txt`, exportedText(`${draft.subject}\n\n${draft.body}`, language, sample))}><ReviewActionIcon kind="email" /></button><button className="request-icon-action" aria-label={say('Download report', 'Descargar reporte')} title={say('Download report', 'Descargar reporte')} onClick={() => downloadText(`${sample ? 'sample-' : ''}water-report.txt`, exportedText(generateReport(draft, language), language, sample))}><ReviewActionIcon kind="report" /></button>{copy ? <button className="text-button" onClick={copy}>{say('Copy email', 'Copiar correo')}</button> : null}</div>
       </div>
     </section>
   </div>

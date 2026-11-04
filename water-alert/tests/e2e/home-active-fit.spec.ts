@@ -28,6 +28,7 @@ for (const language of ['en', 'es']) {
       }, { watches: places.map(place => place.id), language })
       await page.setViewportSize(viewport)
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: language === 'en' ? 'Places' : 'Lugares', exact: true }).click()
       const card = page.locator('.supplier-card').first()
       await expect(card.locator('.supplier-notice-context')).toContainText(area)
       const row = card.locator('.supplier-contact-section')

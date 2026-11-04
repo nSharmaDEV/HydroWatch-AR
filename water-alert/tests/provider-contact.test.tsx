@@ -6,6 +6,7 @@ import { NoticeDetail } from '../src/NoticeDetail'
 import { en, es } from '../src/strings'
 import { PLACE_CATALOG } from '../src/place-catalog'
 import type { Place } from '../src/domain'
+import { ADH_ENGINEERING_SOURCE } from '../src/recovery-resources'
 
 const leisure: Place = { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' }
 const now = Date.parse('2026-10-14T20:00:00Z')
@@ -26,12 +27,12 @@ it('offers verified Leisure Hills call and email directly on an unavailable supp
   expect(document.querySelector('.contact-provenance')).toBeNull()
 })
 
-it('does not guess contacts from a similar name or shared county', async () => {
-  card({ ...leisure, id: 'ADH:unknown' })
-  expect(screen.getByText(/Contact details have not been verified/, { selector: 'p' })).toBeVisible()
+it.each(['en', 'es'] as const)('uses only the ADH fallback, not guessed similar-name or county contacts (%s)', language => {
+  card({ ...leisure, id: 'ADH:unknown' }, false, language)
+  expect(screen.getByRole('link', { name: language === 'en' ? 'Contact ADH' : 'Contactar a ADH' })).toHaveAttribute('href', ADH_ENGINEERING_SOURCE)
   expect(document.querySelector('a[href^="tel:"], a[href^="mailto:"]')).toBeNull()
   expect(document.querySelector('.provider-contact-actions')).toBeNull()
-  expect(screen.getByText(/water bill or contact park management/, { selector: 'p' })).toBeVisible()
+  expect(screen.queryByRole('link', { name: /ADH directory contact|Contacto del directorio ADH/ })).not.toBeInTheDocument()
 })
 
 it('does not direct sample users to a real provider', () => {

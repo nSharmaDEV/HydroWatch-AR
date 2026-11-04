@@ -1,6 +1,6 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from '../src/App'
 import { EMPTY_SOURCES, SOURCES, type Notice } from '../src/domain'
 import { DateRow } from '../src/components'
@@ -11,10 +11,21 @@ const notice: Notice = { id: 'ADH:record', placeId: place.id, name: place.name, 
 const data = { sources: EMPTY_SOURCES.map(s => s.agency === 'ADH' ? { ...s, records: [notice], retrievedAt: at, lastSuccessAt: at, error: null } : s), places: [place], archive: [notice], coverageStart: at }
 function saved() { localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: [place.id], liftWatches: [place.id], language: 'en', checkOnOpen: false })) }
 function nav(name: string) { return within(screen.getByRole('navigation')).getByRole('button', { name }) }
-afterEach(() => window.history.replaceState(null, '', '/'))
+let serviceWorkerDescriptor: PropertyDescriptor | undefined
+beforeEach(() => { serviceWorkerDescriptor = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker') })
+afterEach(() => {
+  // Unmount before restoring browser capabilities, even when an assertion fails.
+  cleanup()
+  if (serviceWorkerDescriptor) Object.defineProperty(navigator, 'serviceWorker', serviceWorkerDescriptor)
+  else Reflect.deleteProperty(navigator, 'serviceWorker')
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+  window.history.replaceState(null, '', '/')
+})
 
 it('requires confirmation before saving an exact supplier and supports choosing another place', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
+  await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
   await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   expect(screen.getByRole('heading', { name: 'Find your public water supplier' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Select Real supplier' }))
@@ -29,6 +40,7 @@ it('requires confirmation before saving an exact supplier and supports choosing 
 
 it('shows a supplier no-match warning with edit search and an official-source escape', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
+  await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
   await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   await user.type(screen.getByRole('searchbox'), 'Springfield')
   expect(screen.getByRole('heading', { name: 'No matching supplier' })).toBeVisible()
@@ -40,7 +52,8 @@ it('shows a supplier no-match warning with edit search and an official-source es
 
 it('removes and restores a watched place including its explicit-lift preference', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={data} />)
-  await user.click(nav('Places'))
+  await user.click(nav('Settings'))
+  await user.click(screen.getByRole('button', { name: /Your Places/ }))
   await user.click(screen.getByRole('button', { name: 'Remove Real supplier' }))
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
   await user.click(screen.getByRole('button', { name: 'Undo' }))
@@ -63,6 +76,7 @@ it('filters observed history to watched places without treating disappearance as
 
 it('labels retained failed-source notices as previous observations, with unavailable status', async () => {
   saved(); const user = userEvent.setup(); const view = render(<App liveData={{ ...data, sources: data.sources.map(s => ({ ...s, error: 'Failed' })) }} />)
+  await user.click(nav('Places'))
   const card = screen.getByRole('article')
   expect(card).toHaveClass('unavailable')
   expect(within(card).queryByText('No active boil-water notice found')).not.toBeInTheDocument()
@@ -87,6 +101,7 @@ it('keeps agency dates verbatim and formats only app timestamps with language an
 
 it('describes feed retrieval and browser/server deletion accurately in both languages', async () => {
   saved(); const user = userEvent.setup(); render(<App liveData={data} />)
+  await user.click(nav('Places'))
   expect(screen.getByRole('heading', { name: 'About these results' })).toBeVisible()
   expect(screen.getByText(/WAVE checks ADH boil-water notices for public-water suppliers/)).toBeVisible()
   await user.click(nav('Settings'))
@@ -96,36 +111,37 @@ it('describes feed retrieval and browser/server deletion accurately in both lang
   expect(screen.getByText(/Desactivar\/eliminar borra la suscripción del servidor y la credencial del navegador/)).toBeVisible()
 })
 
-it('keeps About these results permanently visible and exposes an accessible push switch', () => {
+it('keeps About these results permanently visible in Places and exposes an accessible push switch', async () => {
   saved(); const { container } = render(<App liveData={data} />)
+  await userEvent.setup().click(nav('Places'))
   expect(container.querySelector('.about-results details')).toBeNull()
   expect(screen.getByRole('switch', { name: 'Get water updates' })).toHaveAttribute('aria-checked', 'false')
   expect(screen.getByRole('heading', { name: 'About these results' })).toBeVisible()
 })
 
-it('keeps the Home notification switch disabled until server configuration is ready', async () => {
+it('keeps the Places notification switch disabled until server configuration is ready', async () => {
   saved()
   vi.stubGlobal('isSecureContext', true)
   vi.stubGlobal('PushManager', class PushManager {})
   vi.stubGlobal('Notification', { permission: 'default', requestPermission: vi.fn() })
-  const serviceWorkerDescriptor = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker')
   Object.defineProperty(navigator, 'serviceWorker', { configurable: true, value: {} })
   let resolveConfig!: (response: Response) => void
   vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { resolveConfig = resolve })))
   const view = render(<App liveData={data} />)
+  await userEvent.setup().click(nav('Places'))
   const toggle = screen.getByRole('switch', { name: 'Get water updates' })
   expect(toggle).toBeDisabled()
-  expect(screen.getByText('Checking notification setup…')).toBeVisible()
+  expect(Notification.requestPermission).not.toHaveBeenCalled()
   resolveConfig(new Response(JSON.stringify({ enabled: true, publicKey: 'test-public-key' }), { status: 200 }))
   await waitFor(() => expect(toggle).toBeEnabled())
+  expect(Notification.requestPermission).not.toHaveBeenCalled()
   view.unmount()
-  if (serviceWorkerDescriptor) Object.defineProperty(navigator, 'serviceWorker', serviceWorkerDescriptor)
-  else Reflect.deleteProperty(navigator, 'serviceWorker')
 })
 
 it('keeps the switch off and explains blocked permission when enable is attempted', async () => {
   saved(); vi.stubGlobal('Notification', { permission: 'denied', requestPermission: vi.fn() })
   const user = userEvent.setup(); render(<App liveData={data} />)
+  await user.click(nav('Places'))
   const toggle = screen.getByRole('switch', { name: 'Get water updates' })
   await user.click(toggle)
   expect(toggle).toHaveAttribute('aria-checked', 'false')
@@ -140,7 +156,9 @@ it('introduces a fictional sample journey and keeps removal/undo isolated from l
   await user.click(screen.getByRole('button', { name: 'Start sample journey' }))
   await user.click(screen.getByRole('button', { name: 'Select Sample Creek Water' }))
   await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
-  await user.click(nav('Places')); await user.click(screen.getByRole('button', { name: 'Remove Sample Creek Water' }))
+  await user.click(nav('Settings'))
+  await user.click(screen.getByRole('button', { name: /Your Places/ }))
+  await user.click(screen.getByRole('button', { name: 'Remove Sample Creek Water' }))
   await user.click(screen.getByRole('button', { name: 'Exit sample' }))
   expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!)).toEqual(JSON.parse(before!))
@@ -167,6 +185,8 @@ it('retains deletion credentials and choices until server removal succeeds on re
 
 it('allows keyboard-only entry to supplier selection and confirmation', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
+  screen.getByRole('button', { name: /Get help with a water issue/ }).focus()
+  await user.keyboard('{Enter}')
   screen.getByRole('button', { name: /My public water supplier/ }).focus()
   await user.keyboard('{Enter}')
   screen.getByRole('button', { name: 'Select Real supplier' }).focus()
@@ -193,8 +213,11 @@ it('groups supplier history in one result and orders its retained details by obs
   render(<App liveData={{ ...data, archive }} />)
   await user.click(nav('Map'))
   const results = within(screen.getByRole('region', { name: 'Supplier results' }))
-  expect(results.getAllByRole('button')).toHaveLength(1)
-  await user.click(results.getByRole('button'))
+  // Directory reference-point suppliers may also be listed under All places;
+  // this supplier's twelve retained records must still group into one result.
+  const grouped = results.getAllByRole('button').filter(button => button.textContent?.includes('Real supplier'))
+  expect(grouped).toHaveLength(1)
+  await user.click(grouped[0])
   const records = document.querySelectorAll('.map-detail-record')
   expect(records).toHaveLength(13) // Twelve retained records plus the distinct current snapshot record.
   expect(records[0].querySelector(`time[datetime="${at}"]`)).not.toBeNull()

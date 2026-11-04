@@ -40,10 +40,11 @@ it('preserves explicit lifts and unavailable/stale states for the associated row
   expect(statusFor(leisure, snapshot, Date.parse(at) + 900_000).state).toBe('unavailable')
 })
 
-it('shows the associated notice on Home and in the supplier advisory history', async () => {
+it('shows the associated notice in Places and in the supplier advisory history', async () => {
   const current = new Date().toISOString()
   localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: [leisure], liftWatches: [], language: 'en', checkOnOpen: false }))
   render(<App liveData={{ sources: [{ ...snapshot, retrievedAt: current, lastSuccessAt: current }], places: [{ id: leisure, name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' }], archive: [notice], coverageStart: current }} />)
+  await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   expect(screen.getByText('Active boil-water notice')).toBeVisible()
   expect(screen.queryByText('No active boil-water notice found')).toBeNull()
   await userEvent.setup().click(screen.getByRole('button', { name: 'Advisory history' }))

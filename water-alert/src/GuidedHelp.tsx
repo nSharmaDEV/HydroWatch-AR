@@ -11,6 +11,7 @@ import { helpPath, helpStep } from './help-flow'
 import { Icon } from './components'
 import { ConfirmedWording } from './ConfirmedWording'
 import { ReviewEmail } from './ReviewEmail'
+import { exportedText } from './help-exports'
 import { IssueQuestions, invalidHelpDateRange } from './IssueQuestions'
 import type { ReactNode } from 'react'
 
@@ -36,7 +37,7 @@ export function GuidedHelp({ draft, place, places = [], topLine, language, sampl
   async function copy() {
     try {
       if (!navigator.clipboard) throw new Error('Clipboard unavailable')
-      await navigator.clipboard.writeText(`${draft.subject}\n\n${draft.body}`)
+      await navigator.clipboard.writeText(exportedText(`${draft.subject}\n\n${draft.body}`, language, sample))
       setCopyStatus(say('Copied. Nothing was sent.', 'Copiado. No se envió nada.'))
     } catch { setCopyStatus(say('Copy unavailable. Select the preview text or download it.', 'No se pudo copiar. Selecciona el texto de la vista previa o descárgalo.')) }
   }

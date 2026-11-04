@@ -20,8 +20,6 @@ export function HomeWater() {
       if (!surface) return
       canvas.hidden = false
       let frame = 0
-      let lastMove = 0
-      let lastPoint: { x: number; y: number } | undefined
       let nextAmbient = 0
       const ambientDelay = () => 1000 + Math.random() * 1000
       const resize = () => {
@@ -51,22 +49,11 @@ export function HomeWater() {
         if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return
         surface.drop((event.clientX - box.left) / box.width, 1 - (event.clientY - box.top) / box.height, .005)
       }
-      const move = (event: PointerEvent) => {
-        if (event.pointerType !== 'mouse' || event.timeStamp - lastMove < 180) return
-        if (lastPoint && Math.hypot(event.clientX - lastPoint.x, event.clientY - lastPoint.y) < 28) return
-        lastMove = event.timeStamp
-        lastPoint = { x: event.clientX, y: event.clientY }
-        const box = host.getBoundingClientRect()
-        if (!document.hidden && event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom) {
-          surface.drop((event.clientX - box.left) / box.width, 1 - (event.clientY - box.top) / box.height, .002)
-        }
-      }
       const lost = () => { stop(); canvas.hidden = true }
       const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize)
       observer?.observe(main)
       window.addEventListener('resize', resize)
       main.addEventListener('pointerdown', drop, { passive: true })
-      main.addEventListener('pointermove', move, { passive: true })
       document.addEventListener('visibilitychange', visibility)
       canvas.addEventListener('webglcontextlost', lost)
       stop = () => {
@@ -74,7 +61,6 @@ export function HomeWater() {
         observer?.disconnect()
         window.removeEventListener('resize', resize)
         main.removeEventListener('pointerdown', drop)
-        main.removeEventListener('pointermove', move)
         document.removeEventListener('visibilitychange', visibility)
         canvas.removeEventListener('webglcontextlost', lost)
         surface.dispose()

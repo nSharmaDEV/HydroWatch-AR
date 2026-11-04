@@ -38,6 +38,7 @@ export function ObservedSupplierMap({ archive, watches, places, sources, now, t,
   const checkExplanation = { offline: t.checkOffline, never: t.checkNever, format: t.checkFormatFailed, failed: t.checkRetrievalFailed, stale: t.checkStale, unconfirmed: t.checkUnconfirmed }[reason]
   const observed = new Map<string, Place>()
   const directory = new Map(places.map(p => [p.id, p]))
+  for (const p of places) if (p.kind === 'system' && locations.has(p.id)) observed.set(p.id, p)
   for (const n of archive) {
     if (n.agency !== 'ADH' || n.kind !== 'boil') continue
     // A verified exact affected-area association may identify a different supplier than the agency System cell.

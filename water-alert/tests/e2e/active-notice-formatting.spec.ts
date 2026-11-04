@@ -12,6 +12,9 @@ for (const language of ['en', 'es'] as const) {
       }, { place, language })
       await context.route('**/*', route => {
         const url = new URL(route.request().url())
+        if (url.origin === baseURL && url.pathname === '/api/push/config' && route.request().method() === 'GET') {
+          return route.fulfill({ json: { enabled: false } })
+        }
         if (url.origin === baseURL && url.pathname === '/api/status' && route.request().method() === 'GET') {
           return route.fulfill({ json: { places: [place], archive: [], coverageStart: null, sources: ['ADH', 'ADEQ'].map(agency => ({
             agency, retrievedAt: at, lastSuccessAt: at, error: null,
@@ -23,6 +26,7 @@ for (const language of ['en', 'es'] as const) {
       })
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/')
+      await page.getByRole('navigation').getByRole('button', { name: language === 'en' ? 'Places' : 'Lugares', exact: true }).click()
       const finding = page.locator('.boil .supplier-finding')
       await expect(finding).toBeVisible()
       await expect(page.locator('main > h1')).toHaveClass('sr-only')
@@ -38,24 +42,19 @@ for (const language of ['en', 'es'] as const) {
         const details = element.querySelector('.status-explanation')!
         return {
           center: (box.left + box.right) / 2,
-          groupCenter: (icon.left + copy.right) / 2,
-          iconCenter: (icon.top + icon.bottom) / 2,
-          copyCenter: (copy.top + copy.bottom) / 2,
+          copyCenter: (copy.left + copy.right) / 2,
+          inlineIcon: element.querySelector('.status-label')!.contains(element.querySelector('.warning-icon')),
           iconWidth: icon.width, iconHeight: icon.height,
-          threeLines: Number.parseFloat(getComputedStyle(details).lineHeight) * 3,
-          gap: copy.left - icon.right,
-          detailsGap: Number.parseFloat(getComputedStyle(details).marginTop),
           visibleDetailsGap: details.getBoundingClientRect().top - element.querySelector('.status-label')!.getBoundingClientRect().bottom,
           headingAlign: getComputedStyle(element.querySelector('.status-label')!).textAlign,
         }
       })
-      expect(Math.abs(geometry.groupCenter - geometry.center)).toBeLessThanOrEqual(1)
-      expect(Math.abs(geometry.iconCenter - geometry.copyCenter)).toBeLessThanOrEqual(1)
-      expect(geometry.iconWidth).toBe(geometry.threeLines)
-      expect(geometry.iconHeight).toBe(geometry.threeLines)
-      expect(geometry.gap).toBeLessThanOrEqual(10)
-      expect(geometry.detailsGap).toBe(4)
-      expect(geometry.visibleDetailsGap).toBeLessThanOrEqual(4)
+      // October 21 replaced the oversized side icon with a 24px inline warning.
+      expect(Math.abs(geometry.copyCenter - geometry.center)).toBeLessThanOrEqual(1)
+      expect(geometry.inlineIcon).toBe(true)
+      expect(geometry.iconWidth).toBe(24)
+      expect(geometry.iconHeight).toBe(24)
+      expect(geometry.visibleDetailsGap).toBe(8)
       expect(geometry.headingAlign).toBe('center')
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
       expect(unexpected).toEqual([])

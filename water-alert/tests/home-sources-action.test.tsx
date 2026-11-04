@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it } from 'vitest'
 import App from '../src/App'
@@ -10,6 +10,7 @@ it.each(['en', 'es'] as const)('opens existing sources coverage from the %s card
   localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: [place.id], language, liftWatches: [], checkOnOpen: false }))
   render(<App liveData={{ places: [place], sources: EMPTY_SOURCES, archive: [], coverageStart: null }} />)
   const t = language === 'en' ? en : es
+  await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: t.browse }))
   expect(document.querySelector('.home-alert-options .delivery-status')).toBeNull()
   expect(screen.queryByRole('button', { name: t.manageAlerts })).not.toBeInTheDocument()
   expect(screen.getByRole('switch', { name: t.waterUpdates })).toBeVisible()

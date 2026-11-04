@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test'
-for (const language of ['en', 'es'] as const) test(`saved guided help, Map and History (${language})`, async ({ page, context, baseURL }) => {
+import { readFile } from 'node:fs/promises'
+for (const language of ['en', 'es'] as const) for (const outputs of [false, true]) test(`${outputs ? 'sample outputs and language' : 'saved guided help, Map and History'} (${language})`, async ({ page, context, baseURL }) => {
   const unexpected: string[] = [], errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
   await context.addInitScript(language => {
     sessionStorage.setItem('wave:logo-intro:v1', 'seen')
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (text: string) => { sessionStorage.setItem('test:copied', text) } } })
     localStorage.setItem('water-alert:mode', 'sample')
     if (!localStorage.getItem('water-alert:sample:v1')) localStorage.setItem('water-alert:sample:v1', JSON.stringify({ watches: ['ADH:sample-creek'], liftWatches: [], language, checkOnOpen: false }))
   }, language)
@@ -17,6 +19,7 @@ for (const language of ['en', 'es'] as const) test(`saved guided help, Map and H
   })
   await page.setViewportSize({ width: 1280, height: 800 })
   const fits = async () => {
+    if (outputs) return
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     if (await page.locator('.request-review-grid').count()) {
       const left = (await page.locator('.request-review-information').boundingBox())!, right = (await page.locator('.request-review-email').boundingBox())!
@@ -27,18 +30,30 @@ for (const language of ['en', 'es'] as const) test(`saved guided help, Map and H
   await page.goto('/')
   await page.getByRole('button', { name: language === 'en' ? 'Places' : 'Lugares', exact: true }).click()
   await page.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true }).first().click()
-   await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 5' : 'Paso 1 de 5')
-   await fits()
-    await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-    await fits()
-    await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 5' : 'Paso 1 de 5')
+  await fits()
+  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+  await fits()
+  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
   await page.getByLabel(language === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', { exact: true }).fill('Synthetic resident issue — no service on Monday')
-   await fits()
-   await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-   await fits()
-   await page.getByRole('button', { name: language === 'en' ? 'Review message' : 'Revisar mensaje', exact: true }).click()
-   await fits()
-  await page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true }).fill('SYNTHETIC EDIT RETAINED')
+  const other = language === 'en' ? 'es' : 'en'
+  if (outputs) {
+    await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
+    await expect(page.getByRole('textbox', { name: other === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', exact: true })).toHaveValue('Synthetic resident issue — no service on Monday')
+    await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+  }
+  await fits()
+  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+  await fits()
+  await page.getByRole('button', { name: language === 'en' ? 'Review message' : 'Revisar mensaje', exact: true }).click()
+  await fits()
+  if (outputs) {
+    await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
+    await expect(page.getByRole('textbox', { name: other === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue(new RegExp(other === 'en' ? 'I’m writing' : 'Le escribo'))
+    await page.getByRole('textbox', { name: other === 'en' ? 'Message' : 'Mensaje', exact: true }).fill('SYNTHETIC EDIT RETAINED')
+    await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+    await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
+  } else await page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true }).fill('SYNTHETIC EDIT RETAINED')
   await expect(page.locator('.request-topline [role=status]')).toHaveText(language === 'en' ? 'Saved on this device' : 'Guardado en este dispositivo')
   await page.getByRole('button', { name: language === 'en' ? 'Open History' : 'Abrir Historial', exact: true }).click()
   await page.reload()
@@ -46,17 +61,31 @@ for (const language of ['en', 'es'] as const) test(`saved guided help, Map and H
   await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
   await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true })).toBeEnabled()
-  await fits()
-  for (const width of [390, 320, 1280]) {
-    await page.setViewportSize({ width, height: 700 })
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    await page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true }).scrollIntoViewIfNeeded()
+  if (outputs) {
+    await page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true }).click()
+    const marker = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
+    expect(await page.evaluate(() => sessionStorage.getItem('test:copied'))).toContain(marker)
+    for (const [label, filename] of [[language === 'en' ? 'Download email' : 'Descargar correo', 'sample-water-email.txt'], [language === 'en' ? 'Download report' : 'Descargar reporte', 'sample-water-report.txt']]) {
+      const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: label, exact: true }).click()])
+      expect(download.suggestedFilename()).toBe(filename)
+      const content = await readFile((await download.path())!, 'utf8')
+      expect(content).toContain(marker)
+      if (filename.includes('email')) expect(content).toContain('SYNTHETIC EDIT RETAINED')
+    }
   }
-  await page.evaluate(() => { document.documentElement.style.fontSize = '32px' })
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  await page.getByRole('button', { name: language === 'en' ? 'Map' : 'Mapa', exact: true }).click()
-  await expect(page.locator('.advisory-map-page')).toBeVisible()
-  await page.getByRole('button', { name: language === 'en' ? 'History' : 'Historial', exact: true }).click()
-  await expect(page.locator('.advisory-map-page')).toBeHidden()
+  if (!outputs) {
+    await fits()
+    for (const width of [390, 320, 1280]) {
+      await page.setViewportSize({ width, height: 700 })
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true }).scrollIntoViewIfNeeded()
+    }
+    await page.evaluate(() => { document.documentElement.style.fontSize = '32px' })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.getByRole('button', { name: language === 'en' ? 'Map' : 'Mapa', exact: true }).click()
+    await expect(page.locator('.advisory-map-page')).toBeVisible()
+    await page.getByRole('button', { name: language === 'en' ? 'History' : 'Historial', exact: true }).click()
+    await expect(page.locator('.advisory-map-page')).toBeHidden()
+  }
   expect(unexpected).toEqual([]); expect(errors).toEqual([])
 })
