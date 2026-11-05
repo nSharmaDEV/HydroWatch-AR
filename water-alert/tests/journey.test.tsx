@@ -25,7 +25,8 @@ afterEach(() => {
 
 it('requires confirmation before saving an exact supplier and supports choosing another place', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
-  await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+  await user.click(screen.getByRole('button', { name: /Add a place/ }))
   await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   expect(screen.getByRole('heading', { name: 'Find your public water supplier' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Select Real supplier' }))
@@ -40,7 +41,8 @@ it('requires confirmation before saving an exact supplier and supports choosing 
 
 it('shows a supplier no-match warning with edit search and an official-source escape', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
-  await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+  await user.click(screen.getByRole('button', { name: /Add a place/ }))
   await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   await user.type(screen.getByRole('searchbox'), 'Springfield')
   expect(screen.getByRole('heading', { name: 'No matching supplier' })).toBeVisible()
@@ -185,7 +187,9 @@ it('retains deletion credentials and choices until server removal succeeds on re
 
 it('allows keyboard-only entry to supplier selection and confirmation', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
-  screen.getByRole('button', { name: /Get help with a water issue/ }).focus()
+  within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }).focus()
+  await user.keyboard('{Enter}')
+  screen.getByRole('button', { name: /Add a place/ }).focus()
   await user.keyboard('{Enter}')
   screen.getByRole('button', { name: /My public water supplier/ }).focus()
   await user.keyboard('{Enter}')

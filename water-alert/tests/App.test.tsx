@@ -120,7 +120,8 @@ describe('sample resident journey', () => {
   })
   it('explains private-well exclusion without lake selection', async () => {
     const user = userEvent.setup(); render(<App />)
-    await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+    await user.click(screen.getByRole('button', { name: /Add a place/ }))
     await user.click(screen.getByRole('button', { name: "I'm on a private well" }))
     expect(screen.getByText(/Private wells are outside coverage/)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Watch a lake instead' })).not.toBeInTheDocument()

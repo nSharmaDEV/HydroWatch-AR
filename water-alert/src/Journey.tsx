@@ -14,7 +14,7 @@ export function Welcome({ t, onSearch, onWell, onSample }: { t: Strings; onSearc
   </Panel>
 }
 
-export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack }: { kind: Place['kind']; places: Place[]; query: string; t: Strings; onQuery: (q: string) => void; onSelect: (p: Place) => void; onBack: () => void }) {
+export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack, heading, intro }: { kind: Place['kind']; places: Place[]; query: string; t: Strings; onQuery: (q: string) => void; onSelect: (p: Place) => void; onBack: () => void; heading?: string; intro?: string }) {
   const [limit, setLimit] = useState(5)
   const input = useRef<HTMLInputElement>(null)
   const system = kind === 'system'
@@ -22,8 +22,8 @@ export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack 
   const noMatch = !!query.trim() && !matches.length
   return <Panel className="journey-panel">
     <button className="back" onClick={onBack}>‹ {t.backStep}</button>
-    <h1>{noMatch ? system ? t.noSupplier : t.noLake : system ? t.findSupplier : t.findLake}</h1>
-    <p>{system ? t.supplierIntro : t.lakeIntro}</p>
+    <h1>{noMatch ? system ? t.noSupplier : t.noLake : heading ?? (system ? t.findSupplier : t.findLake)}</h1>
+    <p>{intro ?? (system ? t.supplierIntro : t.lakeIntro)}</p>
     <label className="sr-only" htmlFor="place-search">{system ? t.supplierSearch : t.lakeSearch}</label>
     <div className="search-field"><Icon name="search" /><input ref={input} id="place-search" name="place-search" type="search" autoComplete="off" value={query} placeholder={system ? t.supplierSearch : t.lakeSearch} onChange={e => { setLimit(5); onQuery(e.target.value) }} /></div>
     {query && system && matches.length > 1 ? <p className="info">{t.ambiguous}</p> : null}

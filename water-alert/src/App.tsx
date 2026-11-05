@@ -42,6 +42,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<Place['kind']>('system')
   const [candidate, setCandidate] = useState<Place | null>(null)
+  const [helpIntent, setHelpIntent] = useState(false)
   const [removed, setRemoved] = useState<RemovedPlace | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [linkedId, setLinkedId] = useState<string | null>(() => new URLSearchParams(window.location.search).get('notice'))
@@ -119,7 +120,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
 
   function commitNavigation(next: Page) { if (next === 'map') setMapVisited(true); if (next === 'detail') detailReturn.current = page === 'map' ? 'map' : page === 'browse' ? 'browse' : 'home'; setRequestId(undefined); setResumingRequest(null); window.history.replaceState(null, '', window.location.pathname + window.location.search); setPage(next); setLinkedId(null); setMessage(''); setConfirmDelete(false) }
   function navigate(next: Page) { if (page === 'help' && leaveHelp.current) { void leaveHelp.current().then(saved => { if (saved) commitNavigation(next) }); return }; commitNavigation(next) }
-  function openHelp(id: string) { helpReturn.current = { page, noticeId: linkedId }; setRequestId(undefined); setResumingRequest(null); setSelected(id); setPage('help'); setMessage('') }
+  function openHelp(id: string, returnTo: Page = page) { helpReturn.current = { page: returnTo, noticeId: linkedId }; setHelpIntent(false); setRequestId(undefined); setResumingRequest(null); setSelected(id); setPage('help'); setMessage('') }
   function openRequestHistory(id: string) { setRequestId(id); setPage('history'); window.history.replaceState(null, '', `#request=${id}`) }
   function resumeRequest(request: HelpRequest) { helpReturn.current = { page: 'history', noticeId: null }; setRequestId(request.id); setResumingRequest(request); setSelected(request.draft.place.id); setPage('help'); window.history.replaceState(null, '', `#request=${request.id}`) }
   function closeHelp() { restoreHelpFocus.current = true; setPage(helpReturn.current.page); setLinkedId(helpReturn.current.noticeId) }
@@ -134,7 +135,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     commitNavigation(next === 'sample' ? 'sampleIntro' : 'home')
     try { localStorage.setItem('water-alert:mode', next) } catch { setMessage(t.storageError) }
   }
-  function search(kind: Place['kind']) { setKind(kind); setQuery(''); setCandidate(null); navigate('search') }
+  function search(kind: Place['kind'], forHelp = false) { setHelpIntent(forHelp); setKind(kind); setQuery(''); setCandidate(null); navigate('search') }
   function confirmWatch() {
     if (!candidate) return
     setPrefs(p => ({ ...p, watches: p.watches.includes(candidate.id) ? p.watches : [...p.watches, candidate.id] }))
@@ -206,7 +207,12 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
       <div role="status" className={message ? 'message' : 'sr-only'}>{message}</div>
       {!sample && page !== 'home' && page !== 'alerts' && device && device.signature !== pushSignature(prefs) ? <p className="info">{t.pushDirty} <button className="text-button" onClick={() => navigate('alerts')}>{t.alertOptions}</button></p> : null}
       {page === 'setup' ? <Welcome t={t} onSearch={search} onWell={() => navigate('well')} onSample={() => sample ? navigate('sampleIntro') : changeMode('sample')} /> : null}
-      {page === 'search' ? <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={setQuery} t={t} onBack={() => navigate('setup')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
+      {page === 'search' ? helpIntent
+        ? <SearchPlace key={`${mode}:${kind}:help`} kind={kind} places={places} query={query} onQuery={setQuery} t={t}
+            heading={prefs.language === 'es' ? 'Elige tu proveedor de agua' : 'Choose your water provider'}
+            intro={prefs.language === 'es' ? 'Elige el proveedor sobre el que quieres escribir. Te ayudaremos a preparar un mensaje que puedes revisar y copiar. No tienes que seguir a este proveedor.' : 'Pick the provider your message is about. We’ll help you prepare a message you can review and copy. You don’t have to follow this provider.'}
+            onBack={() => { setHelpIntent(false); navigate('home') }} onSelect={p => openHelp(p.id, 'home')} />
+        : <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={setQuery} t={t} onBack={() => navigate('setup')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
       {page === 'confirm' && candidate ? <ConfirmPlace place={candidate} t={t} onConfirm={confirmWatch} onBack={() => navigate('search')} /> : null}
       {page === 'well' ? <PrivateWell t={t} onBack={() => navigate('setup')} /> : null}
       {page === 'sampleIntro' ? <SampleIntro t={t} onStart={() => search('system')} onList={sampleList} /> : null}
@@ -214,7 +220,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
         <div className="wave-home-intro"><h1>{prefs.language === 'es' ? 'Información sobre el agua, más fácil.' : 'Water information, made easier.'}</h1><p>{prefs.language === 'es' ? 'Encuentra avisos públicos sobre el agua, entiende de dónde viene la información y comunícate con tu proveedor de agua.' : 'Find public water advisories, understand where the information comes from, and contact your water provider about a concern.'}</p></div>
         <div className="wave-home-actions">
           <button className="wave-home-action" onClick={() => navigate('map')}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Consultar avisos de agua' : 'Check water advisories'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-arkansas" aria-hidden="true"><svg viewBox="0 0 620 620"><path d={ARKANSAS_OUTLINE} /></svg></span></span><span>{prefs.language === 'es' ? 'Explora el mapa y consulta avisos de fuentes oficiales.' : 'Explore the map and view notices from official sources.'}</span><b>{prefs.language === 'es' ? 'Abrir el mapa' : 'Open the map'} <span aria-hidden="true">→</span></b></button>
-          <button className="wave-home-action" onClick={() => watched[0] ? openHelp(watched[0].id) : navigate('setup')}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Obtener ayuda con un problema de agua' : 'Get help with a water issue'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-issue" aria-hidden="true"><svg viewBox="0 0 48 56"><path d="M24 3C18 14 4 26 4 36a20 14 0 0 0 40 0C44 26 30 14 24 3Z" /></svg></span></span><span>{prefs.language === 'es' ? 'Describe lo que ocurre y prepara un mensaje para tu proveedor.' : 'Describe what you’re experiencing and prepare a message to your provider.'}</span><b>{prefs.language === 'es' ? 'Iniciar un informe' : 'Start a report'} <span aria-hidden="true">→</span></b></button>
+          <button className="wave-home-action" onClick={() => watched[0] ? openHelp(watched[0].id) : search('system', true)}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Obtener ayuda con un problema de agua' : 'Get help with a water issue'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-issue" aria-hidden="true"><svg viewBox="0 0 48 56"><path d="M24 3C18 14 4 26 4 36a20 14 0 0 0 40 0C44 26 30 14 24 3Z" /></svg></span></span><span>{prefs.language === 'es' ? 'Describe lo que ocurre y prepara un mensaje para tu proveedor.' : 'Describe what you’re experiencing and prepare a message to your provider.'}</span><b>{prefs.language === 'es' ? 'Iniciar un informe' : 'Start a report'} <span aria-hidden="true">→</span></b></button>
         </div>
       </section> : null}
       {page === 'browse' ? <>

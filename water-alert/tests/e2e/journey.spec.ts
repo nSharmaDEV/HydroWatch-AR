@@ -55,7 +55,8 @@ test.afterEach(async ({ page }) => {
 
 async function watchSupplier(page: Page, supplier = place) {
   await page.goto('/')
-  await page.getByRole('button', { name: /Get help with a water issue/ }).click()
+  await page.getByRole('navigation').getByRole('button', { name: 'Places', exact: true }).click()
+  await page.getByRole('button', { name: /Add a place/ }).click()
   await page.getByRole('button', { name: /My public water supplier/ }).click()
   await page.getByRole('searchbox').fill(supplier.name)
   await page.getByRole('button', { name: `Select ${supplier.name}`, exact: true }).click()

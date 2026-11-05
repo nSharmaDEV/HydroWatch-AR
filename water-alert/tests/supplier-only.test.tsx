@@ -19,7 +19,8 @@ it('hides waterbody entry points and previously saved waterbodies without erasin
 it('offers only suppliers at setup and in sample mode', async () => {
   render(<App />)
   const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+  await user.click(screen.getByRole('button', { name: /Add a place/ }))
   expect(screen.getByRole('button', { name: /My public water supplier/ })).toBeVisible()
   expect(screen.queryByRole('button', { name: /A lake or waterbody/ })).not.toBeInTheDocument()
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))

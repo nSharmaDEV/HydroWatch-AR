@@ -34,7 +34,9 @@ it('links matching PNG favicon and install icons with the existing app identity'
 it('introduces the approved name and purpose without implying water testing', async () => {
   render(<App />)
   expect(screen.getByRole('button', { name })).toBeVisible()
-  await userEvent.setup().click(screen.getByRole('button', { name: /Get help with a water issue/ }))
+  const user = userEvent.setup()
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+  await user.click(screen.getByRole('button', { name: /Add a place/ }))
   expect(screen.getByText('Published notices are not a water safety test.')).toBeVisible()
   await userEvent.setup().click(screen.getByText('About WAVE', { selector: 'summary' }))
   expect(screen.getByText(purpose)).toBeVisible()
