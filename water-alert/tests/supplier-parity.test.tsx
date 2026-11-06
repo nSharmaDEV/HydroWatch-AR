@@ -4,10 +4,13 @@ import { expect, it, vi } from 'vitest'
 import { StatusCard } from '../src/components'
 import { SupplierInformation, SupplierProfile } from '../src/SupplierProfile'
 import { PLACE_CATALOG } from '../src/place-catalog'
+import { LEISURE_HILLS_ID } from '../src/annual-reports'
 import { en, es } from '../src/strings'
 import { SOURCES, type Notice, type SourceSnapshot } from '../src/domain'
 
-const suppliers = PLACE_CATALOG.filter(entry => entry.place.kind === 'system')
+// The purchased-water city suppliers share this fact set. Leisure Hills has a
+// separate groundwater profile and is covered by its own report/contact tests.
+const suppliers = PLACE_CATALOG.filter(entry => entry.place.kind === 'system' && entry.place.id !== LEISURE_HILLS_ID)
 const at = '2026-10-19T12:00:00Z'
 const expected = [
   ['569', '116398', 'Nov 30, 2022'],

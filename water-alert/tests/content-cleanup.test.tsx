@@ -61,19 +61,28 @@ it('keeps coverage details collapsed in supplier confirmation and search', () =>
   expect(screen.getByText('Search for the supplier named on your water bill.')).toBeVisible()
   expect(screen.getByText('Coverage details', { selector: 'summary' }).closest('details')).not.toHaveAttribute('open')
 })
-it('keeps rows concise and opens issue, area, uncertainty and observation dates in selected details', async () => {
-  render(<ObservedHistory places={[place]} sources={[source]} now={Date.parse(at)} onView={() => {}} archive={[notice, { ...notice, id: 'n2' }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
+it('shows the latest facts once and keeps issue, area, uncertainty and observation dates in a closed disclosure', async () => {
+  const { container } = render(<ObservedHistory places={[place]} sources={[source]} now={Date.parse(at)} onView={() => {}} archive={[notice, { ...notice, id: 'n2' }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
   expect(screen.queryByText(notice.area)).toBeNull()
   await userEvent.click(within(screen.getByRole('region', { name: 'Supplier results' })).getByRole('button'))
-  expect(screen.getAllByText(notice.area)).toHaveLength(2)
-  screen.getAllByText(en.historyPrevious).forEach(el => expect(el).toBeVisible())
-  expect(screen.getAllByText(en.firstObserved)).toHaveLength(2)
-  expect(screen.getAllByText(en.issued)).toHaveLength(2)
+  const summary = container.querySelector('.map-advisory-summary') as HTMLElement
+  expect(within(summary).getByText(notice.area)).toBeVisible()
+  expect(within(summary).getByText(notice.reason)).toBeVisible()
+  const historySummary = screen.getByText(/Observation history · 2 records/, { selector: 'summary' })
+  const history = historySummary.closest('details')!
+  expect(history).not.toHaveAttribute('open')
+  expect(within(history as HTMLElement).getAllByText(en.firstObserved)).toHaveLength(2)
+  expect(within(history as HTMLElement).getAllByText(en.firstObserved)[0]).not.toBeVisible()
+  await userEvent.click(historySummary)
+  within(history as HTMLElement).getAllByText(en.firstObserved).forEach(el => expect(el).toBeVisible())
+  within(history as HTMLElement).getAllByText(en.historyPrevious).forEach(el => expect(el).toBeVisible())
+  expect(within(history as HTMLElement).getAllByText(en.issued)).toHaveLength(2)
 })
-it('keeps an unknown issue date visible in selected history details', async () => {
-  render(<ObservedHistory places={[place]} sources={[{ ...source, records: [{ ...notice, issued: null }] }]} now={Date.parse(at)} archive={[{ ...notice, issued: null }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
+it('keeps an unknown issue date visible in the latest summary and history', async () => {
+  const { container } = render(<ObservedHistory places={[place]} sources={[{ ...source, records: [{ ...notice, issued: null }] }]} now={Date.parse(at)} archive={[{ ...notice, issued: null }]} watches={[place.id]} coverageStart={at} t={en} language="en" />)
   await userEvent.click(within(screen.getByRole('region', { name: 'Supplier results' })).getByRole('button'))
-  expect(screen.getByText(en.issued).closest('div')).toHaveTextContent(en.unknown)
+  const summary = container.querySelector('.map-advisory-summary') as HTMLElement
+  expect(within(summary).getByText(en.issued).closest('tr')).toHaveTextContent(en.unknown)
 })
 it('keeps the official-source escape visible when supplier search has no match', () => {
   render(<SearchPlace kind="system" places={[place]} query="No match" t={en} onQuery={() => {}} onSelect={() => {}} onBack={() => {}} />)
@@ -116,7 +125,9 @@ it.each([['en', en], ['es', es]] as const)('organizes Sources, Privacy and platf
   await user.click(screen.getByRole('button', { name: new RegExp(t.sources) }))
   for (const name of [t.advisorySources, t.coverageHeading, t.cannotTell]) expect(screen.getByRole('heading', { name })).toBeVisible()
   expect(screen.getByText(t.limits)).toBeVisible()
-  expect(screen.queryByText(t.verificationLimit)).not.toBeInTheDocument()
+  // About WAVE moved here from the welcome screen: shown once, not duplicated.
+  expect(screen.getAllByText(t.verificationLimit)).toHaveLength(1)
+  expect(screen.getByText(t.verificationLimit).closest('.about-wave')).toContainElement(screen.getByRole('heading', { name: t.aboutWave }))
   await user.click(screen.getAllByRole('button', { name: new RegExp(t.settings) }).at(-1)!)
   await user.click(screen.getByRole('button', { name: new RegExp(t.privacy) }))
   for (const name of [t.storedDevice, t.storedPush, t.retentionDeletion]) expect(screen.getByRole('heading', { name })).toBeVisible()

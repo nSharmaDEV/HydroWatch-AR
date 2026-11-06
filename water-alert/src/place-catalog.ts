@@ -10,6 +10,9 @@ export const PLACE_CATALOG: { place: Place; url: string; verifiedOn: string; not
   { place: { id: 'ADH:053f9d9a4da2a01c88521af3b90956c809eb8a96e3df0304ab4cfa8956163140', name: 'SPRINGDALE WATER UTILITIES', kind: 'system', county: 'Washington' }, url: 'https://health.arkansas.gov/Eng/WS.aspx?ID=575', verifiedOn: '2026-10-13' },
   { place: { id: 'ADH:ee7fdb65f65842e938d8b03b2ad2316ae23a827ee37db5e36728540a52bf09b7', name: 'ROGERS WATER UTILITIES', kind: 'system', county: 'Benton' }, url: 'https://health.arkansas.gov/Eng/WS.aspx?ID=055', verifiedOn: '2026-10-13' },
   { place: { id: 'ADH:cb08f1d6d339ab0c908178b44da1deb36c8fddcf607f91025bcfef4d84b681bb', name: 'BENTONVILLE WATER UTILITIES', kind: 'system', county: 'Benton' }, url: 'https://health.arkansas.gov/Eng/WS.aspx?ID=041', verifiedOn: '2026-10-13' },
+  // Directory identity checked 2026-10-14 alongside the verified contact and
+  // provider profile. This is an identity link, not a live service-area claim.
+  { place: { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'LEISURE HILLS MOBILE HOME PARK', kind: 'system', county: 'Benton' }, url: 'https://health.arkansas.gov/Eng/WS.aspx?ID=747', verifiedOn: '2026-10-14' },
 ]
 
 export function catalogEntry(placeId: string) { return PLACE_CATALOG.find(entry => entry.place.id === placeId) }

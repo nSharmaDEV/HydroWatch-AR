@@ -20,6 +20,6 @@ describe('advisory map supplier reference points', () => {
       active
       onSources={vi.fn()}
     />)
-    expect(document.querySelector('.map-count')).toHaveTextContent('1 / 1')
+    expect(document.querySelector('.map-count')).toHaveTextContent('2 / 2')
   })
 })

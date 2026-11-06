@@ -51,6 +51,7 @@ main{max-width:1160px;padding:40px 30px 30px;margin:auto;min-height:calc(100vh -
 .supplier-title-row{display:flex;align-items:center;gap:12px;min-width:0}
 /* The logo is raster/outlined artwork: Montserrat Bold is an approximation. */
 @font-face{font-family:Montserrat;src:url('/fonts/montserrat-latin-700-normal.woff2') format('woff2');font-style:normal;font-weight:700;font-display:swap}
+@font-face{font-family:Montserrat;src:url('/fonts/montserrat-latin-500-normal.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap}
 .supplier-title-row h2{font-family:Montserrat,"Avenir Next",Avenir,sans-serif;font-weight:700;font-size:1.3125rem;line-height:1.35;margin:0;flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
 .supplier-info-button{display:grid;place-items:center;flex:0 0 44px;min-height:44px;color:var(--teal);border-radius:50%;padding:8px}
 .supplier-heading>p{color:var(--muted);font-size:.9375rem;margin:6px 0 0;overflow-wrap:anywhere}

@@ -571,7 +571,7 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await page.goto('/')
   await page.getByRole('button', { name: /Get help with a water issue/ }).click()
   await expect(page.getByText('Published notices are not a water safety test.', { exact: true })).toBeVisible()
-  await expect(page.getByText('About WAVE', { exact: true })).toBeVisible()
+  await expect(page.getByText('Choose your water source to find relevant notices and guidance.', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Try sample mode', exact: true }).click()
   await page.getByRole('button', { name: 'Use sample watch list', exact: true }).click()
   await expect(page.locator('.status-label').filter({ hasText: /^Active boil-water notice$/ })).toBeVisible()

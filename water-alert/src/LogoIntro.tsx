@@ -8,6 +8,16 @@ function shouldShowIntro() {
   try { return sessionStorage.getItem(sessionKey) !== 'seen' } catch { return true }
 }
 
+// Captured once at page load (before React writes 'seen') so other screens can wait for the overlay.
+const introThisLoad = shouldShowIntro()
+const loadedAt = performance.now()
+const introMs = 2510
+
+/** Milliseconds until the full-screen intro is gone on this page load; 0 when it is not playing. */
+export function introRemainingMs() {
+  return introThisLoad ? Math.max(0, introMs - (performance.now() - loadedAt)) : 0
+}
+
 export default function LogoIntro() {
   const [visible, setVisible] = useState(shouldShowIntro)
   const [reduced, setReduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
@@ -19,7 +29,7 @@ export default function LogoIntro() {
     const update = () => setReduced(media?.matches ?? false)
     media?.addEventListener('change', update)
     // Independent of animationend: removal still happens if CSS animations are disabled.
-    const timer = window.setTimeout(() => setVisible(false), reduced ? 650 : 2510)
+    const timer = window.setTimeout(() => setVisible(false), reduced ? 650 : introMs)
     return () => { window.clearTimeout(timer); media?.removeEventListener('change', update) }
   }, [visible, reduced])
 

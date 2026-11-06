@@ -12,6 +12,8 @@ export const mapEn = {
   mapSources: 'Map sources and limitations', mapOutline: 'Outline: U.S. Census Bureau (public domain)', mapPoints: 'Reference points: Arkansas GIS / ADH',
   mapVerified: 'Location reviewed', mapNoPoints: 'No verified reference points for the suppliers shown. Use the supplier buttons below or switch to List.',
   mapCount: 'verified reference points shown', mapView: 'Open supplier details', mapZoomIn: 'Zoom in', mapZoomOut: 'Zoom out', mapReset: 'Reset map',
+  mapCurrentRecord: 'Current advisory', mapObservedRecord: 'Previously observed advisory',
+  mapObservationHistory: 'Observation history', mapObservation: 'Observation', mapRecord: 'record', mapRecords: 'records',
 }
 export const mapEs: typeof mapEn = {
   heading: 'Mapa de avisos', allPlaces: 'Todos los lugares', status: 'Estado', allStatuses: 'Todos los estados', results: 'Resultados de proveedores', suppliers: 'proveedores', back: 'Volver a resultados', close: 'Cerrar detalles del proveedor', locationUnavailable: 'Ubicación no disponible', boundary: 'Los marcadores indican ubicaciones de proveedores, no límites de las áreas afectadas.', pan: 'Arrastre el mapa o enfóquelo y use las flechas para moverlo.', view: 'Vista', legend: 'Leyenda',
@@ -27,4 +29,6 @@ export const mapEs: typeof mapEn = {
   mapSources: 'Fuentes y limitaciones del mapa', mapOutline: 'Contorno: Oficina del Censo de EE. UU. (dominio público)', mapPoints: 'Puntos de referencia: Arkansas GIS / ADH',
   mapVerified: 'Ubicación revisada', mapNoPoints: 'No hay puntos de referencia verificados para los proveedores mostrados. Use los botones de proveedores o cambie a Lista.',
   mapCount: 'puntos de referencia verificados mostrados', mapView: 'Abrir detalles del proveedor', mapZoomIn: 'Acercar', mapZoomOut: 'Alejar', mapReset: 'Restablecer mapa',
+  mapCurrentRecord: 'Aviso actual', mapObservedRecord: 'Aviso observado anteriormente',
+  mapObservationHistory: 'Historial de observaciones', mapObservation: 'Observación', mapRecord: 'registro', mapRecords: 'registros',
 }

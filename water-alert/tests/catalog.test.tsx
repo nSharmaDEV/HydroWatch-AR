@@ -20,12 +20,15 @@ it('does not offer waterbodies in supplier search', async () => {
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
 })
 
-it('offers all four ADH-verified suppliers without an observed notice and does not guess a supplier from a lake', async () => {
+it('offers every ADH-verified supplier in the initial coverage without an observed notice and does not guess a supplier from a lake', async () => {
   const user = userEvent.setup(); render(<App />)
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
   await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
-  for (const name of ['FAYETTEVILLE WATERWORKS', 'SPRINGDALE WATER UTILITIES', 'ROGERS WATER UTILITIES', 'BENTONVILLE WATER UTILITIES']) expect(screen.getByRole('button', { name: `Select ${name}` })).toBeVisible()
+  for (const name of ['FAYETTEVILLE WATERWORKS', 'SPRINGDALE WATER UTILITIES', 'ROGERS WATER UTILITIES', 'BENTONVILLE WATER UTILITIES', 'LEISURE HILLS MOBILE HOME PARK']) expect(screen.getByRole('button', { name: `Select ${name}` })).toBeVisible()
+  await user.type(screen.getByRole('searchbox'), 'Leisure Hills')
+  expect(screen.getByRole('button', { name: 'Select LEISURE HILLS MOBILE HOME PARK' })).toBeVisible()
+  await user.clear(screen.getByRole('searchbox'))
   await user.type(screen.getByRole('searchbox'), 'Beaver Lake')
   expect(screen.getByRole('heading', { name: 'No matching supplier' })).toBeVisible()
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])

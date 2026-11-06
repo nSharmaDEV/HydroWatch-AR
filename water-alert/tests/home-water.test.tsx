@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
-import { HomeWater } from '../src/HomeWater'
+import { HomeWater, WATER_RIPPLE_EVENT } from '../src/HomeWater'
 import { createWaterSurface } from '../src/water-surface'
 
 vi.mock('../src/water-surface', () => ({ createWaterSurface: vi.fn() }))
@@ -51,6 +51,21 @@ it('cleans up GPU resources on navigation and on a changed motion preference', (
   expect(document.querySelector('canvas')).not.toBeVisible()
   unmount()
   expect(surface.dispose).toHaveBeenCalledTimes(1)
+})
+
+it('stops and hides the ripples while paused (the welcome screen), then resumes', () => {
+  motion()
+  const surface = { resize: vi.fn(), drop: vi.fn(), frame: vi.fn(), dispose: vi.fn() }
+  vi.mocked(createWaterSurface).mockClear().mockReturnValue(surface)
+  const { rerender } = render(<main><HomeWater /></main>)
+  expect(document.querySelector('canvas')).toBeVisible()
+  rerender(<main><HomeWater paused /></main>)
+  expect(surface.dispose).toHaveBeenCalledTimes(1)
+  expect(document.querySelector('canvas')).not.toBeVisible()
+  expect(createWaterSurface).toHaveBeenCalledTimes(1)
+  rerender(<main><HomeWater /></main>)
+  expect(createWaterSurface).toHaveBeenCalledTimes(2)
+  expect(document.querySelector('canvas')).toBeVisible()
 })
 
 it('pauses hidden tabs and leaves touch scrolling and controls alone', () => {
@@ -105,6 +120,34 @@ it('drops only on a physical press, never while the mouse merely moves', () => {
   document.querySelector('main')!.dispatchEvent(press)
   expect(surface.drop).toHaveBeenCalledTimes(1)
   expect(surface.drop).toHaveBeenCalledWith(.4, 1 - 200 / 700, .005)
+})
+
+it('turns a ripple request into one soft drop where it was asked for, and ignores it once stopped', () => {
+  const media = motion()
+  const surface = { resize: vi.fn(), drop: vi.fn(), frame: vi.fn(), dispose: vi.fn() }
+  vi.mocked(createWaterSurface).mockReturnValue(surface)
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 100, top: 100, left: 0, right: 1000, bottom: 800, width: 1000, height: 700, toJSON() {} })
+  render(<main><HomeWater /></main>)
+  act(() => { window.dispatchEvent(new CustomEvent(WATER_RIPPLE_EVENT, { detail: { x: 500, y: 240 } })) })
+  expect(surface.drop).toHaveBeenCalledTimes(1)
+  expect(surface.drop).toHaveBeenCalledWith(.5, 1 - 140 / 700, .012)
+  // Malformed or off-page requests are ignored.
+  act(() => { window.dispatchEvent(new CustomEvent(WATER_RIPPLE_EVENT, { detail: { x: 'a', y: 240 } })) })
+  act(() => { window.dispatchEvent(new CustomEvent(WATER_RIPPLE_EVENT, { detail: { x: 500, y: 20 } })) })
+  expect(surface.drop).toHaveBeenCalledTimes(1)
+  // Reduced motion switched on: the surface is gone and requests do nothing.
+  Object.assign(media, { matches: true })
+  act(() => { media.dispatchEvent(new Event('change')) })
+  act(() => { window.dispatchEvent(new CustomEvent(WATER_RIPPLE_EVENT, { detail: { x: 500, y: 240 } })) })
+  expect(surface.drop).toHaveBeenCalledTimes(1)
+})
+
+it('never draws a requested ripple under reduced motion', () => {
+  motion(true)
+  vi.mocked(createWaterSurface).mockClear()
+  render(<main><HomeWater /></main>)
+  window.dispatchEvent(new CustomEvent(WATER_RIPPLE_EVENT, { detail: { x: 500, y: 240 } }))
+  expect(createWaterSurface).not.toHaveBeenCalled()
 })
 
 it.each([0, .5, 1])('creates one softer ambient drop every 1–2 seconds (random=%s)', random => {

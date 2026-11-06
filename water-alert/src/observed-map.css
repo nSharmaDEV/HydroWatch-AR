@@ -67,7 +67,24 @@ main:has(.advisory-map-page:not([hidden])) { max-width: 1440px; padding: 18px 32
 .map-detail-status.active { color: #a42332; }
 .map-detail-content .date-row { display: block; font-size: .8rem; margin-bottom: 8px; }
 .map-detail-content .date-row dd { text-align: left; }
+.map-advisory-summary { margin: 14px 0 4px; padding: 12px; border: 1px solid #dce3e9; border-radius: 8px; background: #f7fafb; }
+.map-summary-heading, .map-record-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px 12px; }
+.map-summary-heading { margin-bottom: 8px; }
+.map-summary-heading h3, .map-record-heading h4 { margin: 0; font-size: .88rem; line-height: 1.35; }
+.map-record-state { flex: 0 1 auto; font-size: .72rem; line-height: 1.35; color: #526678; text-align: right; }
+.map-record-state.lifted { color: #465769; }
+.map-record-state.unconfirmed { color: #8a5a10; }
+.map-record-state.current { color: #06686e; }
+.map-fact-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .8rem; line-height: 1.4; }
+.map-fact-table th { width: 42%; padding: 5px 8px 5px 0; text-align: left; vertical-align: top; color: #526678; font-weight: 500; }
+.map-fact-table td { padding: 5px 0; vertical-align: top; overflow-wrap: anywhere; }
+.map-fact-table tr + tr { border-top: 1px solid #e3e9ee; }
+.map-observation-history { margin-top: 14px; }
+.map-observation-history > summary { font-size: .85rem; }
+.map-observation-history[open] > summary { margin-bottom: 10px; }
 .map-detail-record { border-top: 1px solid #dce3e9; margin-top: 18px; padding-top: 16px; }
+.map-observation-history .map-detail-record { margin-top: 14px; padding-top: 12px; }
+.map-observation-history .map-record-heading { margin-bottom: 6px; }
 .map-detail-record blockquote { margin: 12px 0; border-left: 2px solid #8aa6af; padding-left: 12px; }
 .map-boundary-note { margin: 10px 0 2px; font-size: .8rem; color: #102e43; }
 .map-safety-note { margin: 0; font-size: .75rem; color: #526678; }

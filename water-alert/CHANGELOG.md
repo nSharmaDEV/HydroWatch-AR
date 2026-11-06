@@ -8,6 +8,39 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-05 — Welcome screen: flowing two-band wave strip and centred card
+
+- The water-source screen (Places → Add a place) is now one centred frosted
+  card with the heading, a new subtitle ("Choose your water source to find
+  relevant notices and guidance." / "Elige tu fuente de agua para ver avisos y
+  orientación relevantes."), the same three buttons with unchanged text and
+  behaviour, and the safety note. The WAVE glossary, its entrance animation and
+  the logo swooshes were removed from this screen.
+- Behind the card, the WAVE logo's teal and aqua bands (no navy band) run as
+  one continuous full-width strip that flows right to left. Every wave has the
+  logo's shallow first crest, deep dip and taller second crest, and new waves
+  vary slightly in width and height (`src/welcome-strip.ts`). It draws once and
+  stays still under reduced motion, and pauses in hidden tabs. The card has a
+  translucent tint and a light blur so the strip stays softly visible.
+- The page water ripples are paused and hidden on this screen only
+  (`HomeWater` `paused` prop).
+- The About WAVE text (purpose, verification limit, setup and coverage
+  paragraphs, English and Spanish) moved from the welcome screen to a new
+  About WAVE panel on Settings → Sources and coverage limits.
+- Tested locally only (unit, build, Playwright and a browser check of layout,
+  frame rate and reduced motion); not deployed.
+
+### 2026-11-05 — Leisure Hills supplier search restored
+
+- Added Leisure Hills Mobile Home Park (ADH PWS 747, exact parser ID) to the
+  verified supplier catalog. It was present in provider profiles, contacts,
+  annual reports and map reference points, but absent from `PLACE_CATALOG`, so
+  local and fresh-deployment searches returned "No matching supplier" until a
+  notice happened to be observed.
+- The entry is an identity link only, not a service-area or current-condition
+  claim. Supplier search, confirmation, provider information, contacts, annual
+  report and map reference point now resolve without an active notice.
+
 ### 2026-11-03 — Click-only home water ripples
 
 - The decorative home water surface no longer creates a ripple while the mouse

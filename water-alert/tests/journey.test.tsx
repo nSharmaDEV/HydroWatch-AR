@@ -69,7 +69,7 @@ it('filters observed history to watched places without treating disappearance as
   await user.click(screen.getByRole('button', { name: 'My places' }))
   expect(screen.queryByText('Other supplier')).not.toBeInTheDocument()
   await user.click(screen.getByRole('region', { name: 'Supplier results' }).querySelector('button')!)
-  screen.getAllByText(/Previously observed/).forEach(el => expect(el).toBeVisible())
+  expect(screen.getByText('Previously observed advisory')).toBeVisible()
   expect(screen.queryByText('Agency explicitly lifted')).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /Back to results/ }))
   await user.click(screen.getByRole('button', { name: 'All places' }))
@@ -181,7 +181,7 @@ it('retains deletion credentials and choices until server removal succeeds on re
     await user.click(screen.getByRole('button', { name: 'Confirm removal' }))
     expect(localStorage.getItem('water-alert:push-device:v1')).toBeNull()
     expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
-    expect(screen.getByRole('heading', { name: 'Follow water notices for your places.' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'How do you get your water?' })).toBeVisible()
   } finally { vi.unstubAllGlobals() }
 })
 

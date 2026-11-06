@@ -1,0 +1,131 @@
+/* Welcome landing: one centred frosted-glass card (question, subtitle, the three choices, the
+   safety note) over a full-width strip of the WAVE logo's teal and aqua bands that flows right
+   to left. Light-only. The page fills the viewport below the header; the card is centred in that
+   space and scales with viewport width and height. Nothing has a fixed height: if the content
+   can't fit, the page scrolls naturally. */
+#root:has(> main .welcome-stage) { display: flex; flex-direction: column; min-height: 100dvh; overflow-x: clip; }
+#root:has(> main .welcome-stage) > .app-header { flex-shrink: 0; }
+main:has(.welcome-stage) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  /* Equal top and bottom space, so the card sits at the true centre below the header. */
+  padding: clamp(16px, 3vh, 40px) clamp(16px, 2.4vw, 30px);
+}
+
+.welcome-stage {
+  --welcome-space: clamp(20px, min(2.4vw, 4vh), 44px);
+  --welcome-step: clamp(8px, min(1vw, 1.6vh), 16px);
+  /* Height of the wave strip (the bands use the middle ~70% of it). */
+  --strip-h: clamp(210px, 58vh, 980px);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: auto 0;
+}
+
+/* The strip spans the whole area below the header (main is the positioned ancestor) and is
+   clipped to it, so it never runs under the header or causes scrolling. z-index 0, under the
+   card (z-index 1); decoration only. */
+.welcome-strip {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* Never narrower than ~2.4× its height, so on narrow screens the motifs keep the logo's
+   proportions (a centred slice of the strip shows) instead of being squeezed. */
+.welcome-strip svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, calc(var(--strip-h) * 2.4));
+  height: var(--strip-h);
+  transform: translate(-50%, -50%);
+  opacity: .64;
+}
+
+/* Glass: a translucent pale-aqua tint and a light blur, so the waves stay softly visible
+   behind the card while the text keeps its contrast. */
+.panel.welcome {
+  position: relative;
+  z-index: 1;
+  width: min(100%, clamp(560px, 44vw, 760px));
+  padding: var(--welcome-space);
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(250, 255, 255, .78), rgba(234, 249, 250, .62));
+  -webkit-backdrop-filter: blur(6px) saturate(1.3);
+  backdrop-filter: blur(6px) saturate(1.3);
+  box-shadow: 0 22px 60px rgba(24, 83, 104, .16), inset 0 1px 0 rgba(255, 255, 255, .95);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel.welcome { background: rgba(250, 255, 255, .94); }
+}
+
+.welcome-title {
+  margin: 0 auto calc(var(--welcome-step) * .9);
+  font-size: clamp(1.75rem, min(3vw, 5.2vh), 3rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -.02em;
+  color: var(--navy);
+  text-align: center;
+  text-wrap: balance;
+}
+.welcome-subtitle {
+  max-width: 46ch;
+  margin: 0 auto calc(var(--welcome-step) * 2);
+  font-size: clamp(1rem, min(1.25vw, 2.2vh), 1.25rem);
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.welcome-options { display: grid; gap: clamp(8px, 1.4vh, 14px); }
+.welcome-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: clamp(48px, 7vh, 60px);
+  padding: clamp(8px, 1.4vh, 14px) clamp(14px, 1.5vw, 22px);
+  border-radius: 12px;
+  text-align: left;
+  font-size: clamp(1rem, min(1.1vw, 1.9vh), 1.0625rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.welcome-option-text { flex: 1; min-width: 0; }
+.welcome-option-text b { display: block; font-weight: 600; }
+.welcome-option-text small { display: block; margin-top: 3px; font-weight: 400; }
+.welcome-option-arrow { font-size: 1.6rem; line-height: 1; }
+.welcome-option--primary { min-height: clamp(60px, 9vh, 76px); background: var(--teal); border: 1px solid var(--teal); color: #fff; }
+.welcome-option-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .16);
+}
+.welcome-option--secondary { background: #fff; border: 1.5px solid var(--teal); color: var(--teal); }
+.welcome-option--sample { background: rgba(255, 255, 255, .7); border: 1.5px dashed #8fa3b1; color: var(--navy); }
+.panel.welcome .quiet-note { margin: var(--welcome-step) 0 0; }
+
+@media (max-width: 760px) {
+  main:has(.welcome-stage) { padding: 16px; }
+  .welcome-stage { --welcome-space: clamp(18px, 5vw, 28px); --welcome-step: 12px; --strip-h: clamp(200px, 52vh, 420px); }
+  .panel.welcome { border-radius: 22px; }
+  .welcome-title { font-size: clamp(1.6rem, 7vw, 2.25rem); }
+  .welcome-option { min-height: 52px; }
+  .welcome-option--primary { min-height: 64px; }
+}

@@ -1,4 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import './welcome.css'
+import { STRIP_HEIGHT, STRIP_MAX_STEP_MS, STRIP_SPEED, STRIP_WIDTH, stripPaths } from './welcome-strip'
 import { SOURCES, resolvePlaces, type Place } from './domain'
 import { CatalogCoverage, Icon, Panel, SourceLink } from './components'
 import type { Strings } from './strings'
@@ -6,12 +8,67 @@ import { supplierCounty } from './supplier-display'
 import { catalogEntry } from './place-catalog'
 
 export function Welcome({ t, onSearch, onWell, onSample }: { t: Strings; onSearch: (kind: Place['kind']) => void; onWell: () => void; onSample: () => void }) {
-  return <Panel className="journey-panel"><h1>{t.welcome}</h1><p>{t.welcomeIntro}</p>
-    <button className="choice" onClick={() => onSearch('system')}><span className="choice-icon"><Icon name="water" /></span><span><b>{t.supplierChoice}</b><small>{t.supplierHelp}</small></span><span aria-hidden="true">›</span></button>
-    <div className="choice-links"><button onClick={onWell}>{t.privateWell}<span aria-hidden="true">›</span></button><button onClick={onSample}>{t.trySample}<span aria-hidden="true">›</span></button></div>
-    <p className="quiet-note">{t.shortLimit}</p>
-    <details><summary>{t.aboutWave}<span className="disclosure-icon" aria-hidden="true" /></summary><p>{t.purpose}</p><p>{t.verificationLimit}</p><p>{t.setupIntro}</p><p>{t.coverage}</p></details>
-  </Panel>
+  // One centred column: question, subtitle, the three choices, then the safety note. The wave
+  // strip runs full width behind the frosted card and is decoration only.
+  return <div className="welcome-stage">
+    <WelcomeStrip />
+    <Panel className="welcome">
+      <h1 className="welcome-title">{t.welcome}</h1>
+      <p className="welcome-subtitle">{t.welcomeSubtitle}</p>
+      <div className="welcome-options">
+        <button className="welcome-option welcome-option--primary" onClick={() => onSearch('system')}><span className="welcome-option-icon"><Icon name="water" /></span><span className="welcome-option-text"><b>{t.supplierChoice}</b><small>{t.supplierHelp}</small></span><span className="welcome-option-arrow" aria-hidden="true">›</span></button>
+        <button className="welcome-option welcome-option--secondary" onClick={onWell}><span className="welcome-option-text">{t.privateWell}</span><span className="welcome-option-arrow" aria-hidden="true">›</span></button>
+        <button className="welcome-option welcome-option--sample" onClick={onSample}><span className="welcome-option-text">{t.trySample}</span><span className="welcome-option-arrow" aria-hidden="true">›</span></button>
+      </div>
+      <p className="quiet-note">{t.shortLimit}</p>
+    </Panel>
+  </div>
+}
+
+// The WAVE logo's teal and aqua bands as one continuous strip flowing right to left (geometry in
+// welcome-strip.ts). Paths are updated through refs each frame, not React state. Under reduced
+// motion (or if it changes to reduced) the strip is drawn once and stays still.
+function WelcomeStrip() {
+  const id = useId().replace(/:/g, '')
+  const aqua = useRef<SVGPathElement>(null)
+  const teal = useRef<SVGPathElement>(null)
+  useEffect(() => {
+    const seed = Math.floor(Math.random() * 0x100000000)
+    let offset = 0, previous: number | undefined, frame = 0
+    const draw = () => {
+      const paths = stripPaths(offset, seed)
+      aqua.current?.setAttribute('d', paths.aqua)
+      teal.current?.setAttribute('d', paths.teal)
+    }
+    const animate = (now: number) => {
+      if (previous !== undefined) offset += Math.min(now - previous, STRIP_MAX_STEP_MS) * STRIP_SPEED
+      previous = now
+      draw()
+      frame = requestAnimationFrame(animate)
+    }
+    const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+    const sync = () => {
+      cancelAnimationFrame(frame)
+      previous = undefined
+      // Unknown motion preference or reduced motion: a still strip.
+      if (motion && !motion.matches && !document.hidden) frame = requestAnimationFrame(animate)
+    }
+    draw()
+    sync()
+    motion?.addEventListener('change', sync)
+    document.addEventListener('visibilitychange', sync)
+    return () => { cancelAnimationFrame(frame); motion?.removeEventListener('change', sync); document.removeEventListener('visibilitychange', sync) }
+  }, [])
+  return <div className="welcome-strip" aria-hidden="true">
+    <svg viewBox={`0 0 ${STRIP_WIDTH} ${STRIP_HEIGHT}`} preserveAspectRatio="none" focusable="false">
+      <defs>
+        <linearGradient id={`${id}-teal`} x2="0" y2="1"><stop stopColor="#009eae" /><stop offset="1" stopColor="#00647e" /></linearGradient>
+        <linearGradient id={`${id}-aqua`} x2="0" y2="1"><stop stopColor="#57ffea" /><stop offset="1" stopColor="#00c8ce" /></linearGradient>
+      </defs>
+      <path ref={aqua} className="welcome-band welcome-band--aqua" fill={`url(#${id}-aqua)`} />
+      <path ref={teal} className="welcome-band welcome-band--teal" fill={`url(#${id}-teal)`} />
+    </svg>
+  </div>
 }
 
 export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack, heading, intro }: { kind: Place['kind']; places: Place[]; query: string; t: Strings; onQuery: (q: string) => void; onSelect: (p: Place) => void; onBack: () => void; heading?: string; intro?: string }) {
