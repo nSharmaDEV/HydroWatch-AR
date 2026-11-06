@@ -48,7 +48,6 @@ it('keeps the normal follow-onboarding search unchanged after a help visit', asy
   await user.click(screen.getByRole('button', { name: /Get help with a water issue/ }))
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
-  await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   expect(screen.getByRole('heading', { name: 'Find your public water supplier' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: `Select ${supplier.name}` }))
   expect(screen.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()

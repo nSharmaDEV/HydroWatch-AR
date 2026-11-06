@@ -1,32 +1,6 @@
-/* Welcome landing: one centred frosted-glass card (question, subtitle, the three choices, the
-   safety note) over a full-width strip of the WAVE logo's teal and aqua bands that flows right
-   to left. Light-only. The page fills the viewport below the header; the card is centred in that
-   space and scales with viewport width and height. Nothing has a fixed height: if the content
-   can't fit, the page scrolls naturally. */
-#root:has(> main .welcome-stage) { display: flex; flex-direction: column; min-height: 100dvh; overflow-x: clip; }
-#root:has(> main .welcome-stage) > .app-header { flex-shrink: 0; }
-main:has(.welcome-stage) {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0 auto;
-  width: 100%;
-  max-width: none;
-  min-height: 0;
-  margin: 0;
-  /* Equal top and bottom space, so the card sits at the true centre below the header. */
-  padding: clamp(16px, 3vh, 40px) clamp(16px, 2.4vw, 30px);
-}
-
-.welcome-stage {
-  --welcome-space: clamp(20px, min(2.4vw, 4vh), 44px);
-  --welcome-step: clamp(8px, min(1vw, 1.6vh), 16px);
-  /* Height of the wave strip (the bands use the middle ~70% of it). */
-  --strip-h: clamp(210px, 58vh, 980px);
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin: auto 0;
-}
+/* The WAVE logo's teal and aqua bands as a full-width strip flowing right to left behind the
+   frosted supplier search and confirm cards, plus the shared teal option-button styles (used by
+   Home's "Check your supplier" link). Light-only; decoration only. */
 
 /* The strip spans the whole area below the header (main is the positioned ancestor) and is
    clipped to it, so it never runs under the header or causes scrolling. z-index 0, under the
@@ -49,47 +23,9 @@ main:has(.welcome-stage) {
   transform: translate(-50%, -50%);
   opacity: .64;
 }
+/* Settings: a still strip at about half the strength, so the controls lead. */
+.welcome-strip--still svg { opacity: .32; }
 
-/* Glass: a translucent pale-aqua tint and a light blur, so the waves stay softly visible
-   behind the card while the text keeps its contrast. */
-.panel.welcome {
-  position: relative;
-  z-index: 1;
-  width: min(100%, clamp(560px, 44vw, 760px));
-  padding: var(--welcome-space);
-  margin: 0;
-  border: 1px solid rgba(255, 255, 255, .9);
-  border-radius: 28px;
-  background: linear-gradient(145deg, rgba(250, 255, 255, .78), rgba(234, 249, 250, .62));
-  -webkit-backdrop-filter: blur(6px) saturate(1.3);
-  backdrop-filter: blur(6px) saturate(1.3);
-  box-shadow: 0 22px 60px rgba(24, 83, 104, .16), inset 0 1px 0 rgba(255, 255, 255, .95);
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .panel.welcome { background: rgba(250, 255, 255, .94); }
-}
-
-.welcome-title {
-  margin: 0 auto calc(var(--welcome-step) * .9);
-  font-size: clamp(1.75rem, min(3vw, 5.2vh), 3rem);
-  font-weight: 800;
-  line-height: 1.06;
-  letter-spacing: -.02em;
-  color: var(--navy);
-  text-align: center;
-  text-wrap: balance;
-}
-.welcome-subtitle {
-  max-width: 46ch;
-  margin: 0 auto calc(var(--welcome-step) * 2);
-  font-size: clamp(1rem, min(1.25vw, 2.2vh), 1.25rem);
-  line-height: 1.45;
-  color: var(--muted);
-  text-align: center;
-  text-wrap: balance;
-}
-
-.welcome-options { display: grid; gap: clamp(8px, 1.4vh, 14px); }
 .welcome-option {
   display: flex;
   align-items: center;
@@ -117,15 +53,66 @@ main:has(.welcome-stage) {
   border-radius: 8px;
   background: rgba(255, 255, 255, .16);
 }
-.welcome-option--secondary { background: #fff; border: 1.5px solid var(--teal); color: var(--teal); }
-.welcome-option--sample { background: rgba(255, 255, 255, .7); border: 1.5px dashed #8fa3b1; color: var(--navy); }
-.panel.welcome .quiet-note { margin: var(--welcome-step) 0 0; }
+
+/* Supplier search and confirm steps: the strip behind a frosted card. The card keeps its normal
+   top-aligned position and width; main goes full width so the strip spans the viewport. Search
+   shows at most three matches, so the card fits without scrolling. */
+#root:has(> main .search-stage) { display: flex; flex-direction: column; min-height: 100dvh; overflow-x: clip; }
+#root:has(> main .search-stage) > .app-header { flex-shrink: 0; }
+/* main fills the space below the header and the card is centred vertically in it (equal space
+   above and below); the stage's auto margins absorb the free space. */
+main:has(.search-stage) { display: flex; flex-direction: column; flex: 1 0 auto; width: 100%; max-width: none; margin: 0; padding-block: clamp(12px, 3vh, 40px); }
+.search-stage { width: 100%; margin-block: auto; }
+.panel.search-glass.journey-panel { margin: 0 auto; }
+.search-stage { --strip-h: clamp(210px, 58vh, 980px); }
+.search-stage .welcome-strip svg { top: min(50%, 50vh); }
+.panel.search-glass, .panel.settings-glass {
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(250, 255, 255, .84), rgba(234, 249, 250, .72));
+  -webkit-backdrop-filter: blur(6px) saturate(1.3);
+  backdrop-filter: blur(6px) saturate(1.3);
+  box-shadow: 0 22px 60px rgba(24, 83, 104, .16), inset 0 1px 0 rgba(255, 255, 255, .95);
+}
+.search-glass .search-field { background: rgba(255, 255, 255, .92); }
+/* No rule between the matches and Coverage details: drop the last row's divider and the
+   summary's top border. */
+.search-glass .place-row:last-child { border-bottom: 0; }
+.search-glass details > summary { border-top: 0; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel.search-glass, .panel.settings-glass { background: rgba(250, 255, 255, .95); }
+}
+
+/* Settings: the same strip and frosted card, holding the heading, the settings links and the
+   page's other controls. Wider than search to fit the link descriptions; the page scrolls when
+   the card is taller than the viewport. */
+.panel.settings-glass { max-width: 720px; margin: 0 auto; padding: clamp(24px, 3vw, 36px); }
+.settings-glass h1 { margin: 0 0 8px; }
+.settings-glass .settings-menu { padding: 0; }
+.settings-glass .checkbox-row { margin-top: 8px; }
+.settings-glass .settings-menu .choice { background: transparent; }
+.settings-glass > :last-child { margin-bottom: 0; }
 
 @media (max-width: 760px) {
-  main:has(.welcome-stage) { padding: 16px; }
-  .welcome-stage { --welcome-space: clamp(18px, 5vw, 28px); --welcome-step: 12px; --strip-h: clamp(200px, 52vh, 420px); }
-  .panel.welcome { border-radius: 22px; }
-  .welcome-title { font-size: clamp(1.6rem, 7vw, 2.25rem); }
+  .search-stage { --strip-h: clamp(200px, 52vh, 420px); }
+  .panel.search-glass, .panel.settings-glass { border-radius: 22px; }
+  .panel.settings-glass { padding: 18px 18px 22px; }
+  /* Compact phone layout so the three matches and Coverage details fit above the bottom nav
+     without scrolling. Touch targets stay at least 44px. */
+  /* #root already reserves room for the fixed bottom nav, so equal padding keeps the card
+     centred in the visible area. */
+  main:has(.search-stage) { padding: 10px 14px; }
+  .panel.search-glass.journey-panel { padding: 12px 18px 4px; margin: 0 auto; }
+  .search-glass .back { padding: 0; }
+  .search-glass h1 { margin: 2px 0 6px; font-size: 1.4rem; line-height: 1.15; }
+  .search-glass > p { margin: 0 0 10px; font-size: .9rem; }
+  .search-glass .info { margin: 8px 0 0; padding: 8px 12px; font-size: .8rem; }
+  .search-glass .search-results { margin: 4px 0 4px; }
+  .search-glass .place-row { padding: 10px 0; }
+  .search-glass details { padding: 4px 0; }
+  .panel.confirm-glass.journey-panel { padding-bottom: 18px; }
   .welcome-option { min-height: 52px; }
   .welcome-option--primary { min-height: 64px; }
 }

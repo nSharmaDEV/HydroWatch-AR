@@ -8,6 +8,119 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-06 — Still, quieter wave strip on Settings
+
+- `WelcomeStrip` takes a `still` prop: the strip is drawn once and never
+  animates, whatever the motion preference, and gets `.welcome-strip--still`
+  (SVG opacity .32, half the usual .64). Settings uses it so its controls lead;
+  the supplier search and confirm pages keep the flowing strip.
+- Local only: new unit test for the still strip; 658 unit tests and build pass.
+  In the browser at 1440×900, the Settings strip did not move over 600 ms at
+  opacity .32, while the search strip still moved at .64, with no console
+  errors. E2E not rerun. Not pushed or deployed.
+
+### 2026-11-06 — Settings page in the search page's frosted card and wave strip
+
+- Settings (`src/App.tsx`) now uses the supplier search page's layout: the
+  flowing teal/aqua `WelcomeStrip` (now exported from `src/Journey.tsx`) runs
+  behind a centred frosted-glass card (`.panel.settings-glass`, sharing the
+  `.search-glass` styles in `src/welcome.css`, max 720px wide). The "Settings"
+  heading, the five settings links, auto-refresh, sample mode, Remove saved data
+  and its confirmation all sit inside the card. The links no longer have their
+  own bordered panel. The page scrolls when the card is taller than the
+  viewport. The faint shared Home water background stays as before.
+- Local only: 657 unit tests and build pass. `home-water` and `logo-intro` e2e
+  passed 20/20. `journey.spec.ts` showed only its known failures (Leisure Hills
+  en/es and the sample-scenarios test, each on desktop and phone). In the
+  browser at 1440×900, 1440×1250 and 390×844 (EN and ES), the card is centred
+  with no horizontal scroll. Remove saved data shows its confirmation, links
+  still open their pages, and there were no console errors. Not pushed or
+  deployed.
+
+### 2026-11-06 — Home "Check your supplier" button goes straight to supplier search
+
+- Home (`src/App.tsx`) has a full-width teal "Check your supplier / Find
+  official water notices for your area" link (ES: "Consulta tu proveedor /
+  Encuentra avisos oficiales sobre el agua para tu zona") between the intro and
+  the two cards (`.wave-home-supplier` in `src/home-card-marks.css`). It opens
+  the supplier search directly (`#search`) and adds one browser-history entry,
+  so browser Back returns to Home.
+- Removed the "How do you get your water?" source-choice screen (`Welcome`) and
+  the private-well page it linked to. "+ Add a place", the no-places panel and
+  the search Back button now go to supplier search or Home; removing saved
+  data returns to Home. Sample mode stays in Settings, and the Sources page
+  still says private wells are outside coverage. Old `#setup` links open search.
+- Search card: removed the "Choose your supplier explicitly…" line (string
+  dropped in EN/ES) and the divider above Coverage details. Desktop spacing
+  above and below the card now scales with viewport height, so three matches
+  and Coverage details fit without scrolling at 1280×720 as well.
+- The confirm step ("Confirm your public water supplier") now has the same
+  flowing wave strip and frosted card as search.
+- The search and confirm cards are now centred vertically in the space below
+  the header (`src/welcome.css`). On phones the search page no longer adds
+  bottom-nav padding on top of `#root`'s, so the card centres in the visible
+  area above the nav. Browser check at 1440×900, 1000×1100, 1280×720 and
+  390×844: equal space above and below (within 1px), no page scroll.
+- Tests: the welcome-screen unit tests were replaced with search/confirm checks.
+  Flows that clicked "My public water supplier" now go straight to search.
+  `home-water.spec.ts` compares document-relative card positions because the
+  taller phone Home can scroll during element screenshots.
+- Local only: 657 unit tests and build pass. In the browser (1440×900,
+  1280×720, 390×844, EN and ES): three matches, no page scroll, no divider,
+  waves behind confirm, Back to Home, no console errors. `npm run test:e2e`:
+  423 passed and 9 failed. Eight were already failing:
+  `journey.spec.ts:69` Leisure Hills en/es, `journey.spec.ts:569` (still
+  expects the old Get help → welcome flow) and `observed-map.spec.ts:30`, each
+  on desktop and phone. The ninth, `home-water.spec.ts:16` (phone), was fixed
+  as above; that spec file then passed 28/28 on its own. The full e2e suite was
+  not rerun. Not pushed or deployed.
+
+### 2026-11-06 — Search page shows three results without scrolling
+
+- `SearchPlace` (`src/Journey.tsx`) now shows at most three matching suppliers
+  or lakes (`SEARCH_RESULT_LIMIT = 3`); the "Show more" button is removed, so
+  people type to narrow results. The limited-catalog note moved into Coverage
+  details at the bottom, and the "no notice is not proof of safety" note shows
+  only when nothing matches. Tighter phone spacing in `src/welcome.css`.
+- Local only: 659 unit tests and build pass; checked in the browser with no page
+  scroll at desktop 1440×900 and phone 390×844 (EN and ES). Not pushed or
+  deployed.
+
+### 2026-11-05 — Wave strip on the supplier/lake search page
+
+- `SearchPlace` (`src/Journey.tsx`) now renders the same flowing teal/aqua
+  `WelcomeStrip` behind a frosted-glass search card (`.search-stage`,
+  `.search-glass` in `src/welcome.css`); main spans full width so the strip runs
+  edge to edge, the card stays top-aligned and the page still scrolls. Applies to
+  both the follow-setup and Get help provider searches. Home ripples are paused on
+  the search page as on the welcome screen. Reduced motion keeps the strip still.
+- Local only: 659 unit tests and build pass; e2e 424 pass with the same 8 known
+  failures; checked in the browser at desktop 1440×900 and phone 390×844. Not
+  pushed or deployed.
+
+### 2026-11-05 — Vercel GitHub auto-deploy connected
+
+- Connected the Vercel project to `nSharmaDEV/HydroWatch-AR` with Root
+  Directory `water-alert`, then (at the user's request) fast-forwarded `main` to
+  `9cbb37c` and made `main` the production branch. Pushes to `main` now deploy to
+  production; other branches get previews. The first Git-built production
+  deployment (`dpl_AUj3ndSXTQvhno8oMmk5gX8zwMXd`) is Ready and serves the same
+  assets as the prior CLI deploy.
+
+### 2026-11-05 — Production deployment of commit `9cbb37c`
+
+- With explicit user approval, deployed the linked checkout (app commit
+  `9cbb37c`; only untracked `tsconfig.tsbuildinfo` differed) using
+  `npx vercel deploy --prod --yes --scope nirmays06-3523s-projects`. Deployment
+  `dpl_Dj4ePkHyCvKLDpmtvkAQc1r88h2T` is Ready, aliased to
+  https://water-alert-blond.vercel.app. Hosted build passed (existing bundle-size
+  warning remains).
+- Read-only checks: HTML, `index-Bl3v9oAa.js`, `index-BTyCFcgw.css` and
+  `/api/push/config` returned 200; production Home and Map rendered, with
+  Leisure Hills listed. The welcome wave strip was not separately checked in
+  production. Local e2e still has 8 known failures. No environment, scheduler or
+  database changes; no notification sends.
+
 ### 2026-11-05 — Welcome screen: flowing two-band wave strip and centred card
 
 - The water-source screen (Places → Add a place) is now one centred frosted

@@ -36,8 +36,6 @@ it('introduces the approved name and purpose without implying water testing', as
   expect(screen.getByRole('button', { name })).toBeVisible()
   const user = userEvent.setup()
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
-  await user.click(screen.getByRole('button', { name: /Add a place/ }))
-  expect(screen.getByText('Published notices are not a water safety test.')).toBeVisible()
   // The purpose and verification limit live in an About WAVE panel on the Sources page.
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
   await user.click(screen.getByRole("button", { name: /Sources and coverage limits/ }))

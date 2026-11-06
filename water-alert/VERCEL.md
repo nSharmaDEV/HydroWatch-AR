@@ -2,6 +2,41 @@
 
 ## Goal and current boundary
 
+### November 5 GitHub auto-deploy connection
+
+- At the user's request, connected the `water-alert` project to GitHub repo
+  `nSharmaDEV/HydroWatch-AR` (`vercel git connect`), set the production branch to
+  `advisory-alert` and Root Directory to `water-alert` via the Vercel project API.
+- From now on, every push to `advisory-alert` publishes to
+  **https://water-alert-blond.vercel.app**; pushes to other branches (including
+  `main`, which holds only the old prototype commit) create preview deployments only.
+  Pushing `advisory-alert` is therefore a production release and needs the same
+  explicit approval as `vercel --prod`.
+- No deployment was triggered by the connection itself.
+- **Update (same day):** at the user's request `main` became the production
+  branch. `main` (old prototype commit `ae4fb24`, an ancestor) was fast-forwarded
+  to `9cbb37c` without history rewrite, and the Vercel production branch was
+  switched to `main`. The push triggered Git-built deployment
+  `dpl_AUj3ndSXTQvhno8oMmk5gX8zwMXd` (Ready, production, aliased to
+  water-alert-blond); the alias serves the same `index-Bl3v9oAa.js` /
+  `index-BTyCFcgw.css` assets, and HTML and `/api/push/config` return 200.
+  **Pushes to `main` now publish to production**; `advisory-alert` and other
+  branches get previews. With Root Directory set, CLI deploys may need to run from
+  the repository root rather than `water-alert/` [NEEDS: verify CLI path].
+
+### November 5 welcome-strip production deployment
+
+- With explicit user approval, deployed app commit `9cbb37c` (already pushed to
+  `advisory-alert`) with `npx vercel deploy --prod --yes --scope
+  nirmays06-3523s-projects`. Deployment `dpl_Dj4ePkHyCvKLDpmtvkAQc1r88h2T` is
+  Ready at `https://water-alert-c0ado2kg5-nirmays06-3523s-projects.vercel.app`,
+  aliased to **https://water-alert-blond.vercel.app**. Hosted build passed; the
+  existing bundle-size warning remains.
+- Read-only HTTPS checks returned 200 for HTML referencing `index-Bl3v9oAa.js`,
+  that asset, `index-BTyCFcgw.css` and `/api/push/config`. Production Home and Map
+  rendered (Leisure Hills listed). Local e2e has 8 known unresolved failures.
+  No environment, scheduler or database changes, migrations or real sends.
+
 ### October 25 softer-ripple production deployment
 
 - With explicit user approval, pushed app commit `82a39b6` to `advisory-alert`

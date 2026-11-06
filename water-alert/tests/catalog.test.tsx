@@ -14,7 +14,6 @@ it('does not offer waterbodies in supplier search', async () => {
   const user = userEvent.setup(); render(<App />)
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
-  await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   expect(screen.queryByRole('button', { name: 'Select Beaver Lake' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Select Buffalo National River' })).not.toBeInTheDocument()
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
@@ -24,8 +23,16 @@ it('offers every ADH-verified supplier in the initial coverage without an observ
   const user = userEvent.setup(); render(<App />)
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
-  await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
-  for (const name of ['FAYETTEVILLE WATERWORKS', 'SPRINGDALE WATER UTILITIES', 'ROGERS WATER UTILITIES', 'BENTONVILLE WATER UTILITIES', 'LEISURE HILLS MOBILE HOME PARK']) expect(screen.getByRole('button', { name: `Select ${name}` })).toBeVisible()
+  // The no-scroll search card shows the top three matches and no "show more"; every catalog
+  // supplier is still reachable by typing its name.
+  expect(screen.getAllByRole('button', { name: /^Select / })).toHaveLength(3)
+  expect(screen.queryByRole('button', { name: /Show more matches/ })).not.toBeInTheDocument()
+  for (const name of ['FAYETTEVILLE WATERWORKS', 'SPRINGDALE WATER UTILITIES', 'ROGERS WATER UTILITIES', 'BENTONVILLE WATER UTILITIES', 'LEISURE HILLS MOBILE HOME PARK']) {
+    await user.clear(screen.getByRole('searchbox'))
+    await user.type(screen.getByRole('searchbox'), name)
+    expect(screen.getByRole('button', { name: `Select ${name}` })).toBeVisible()
+  }
+  await user.clear(screen.getByRole('searchbox'))
   await user.type(screen.getByRole('searchbox'), 'Leisure Hills')
   expect(screen.getByRole('button', { name: 'Select LEISURE HILLS MOBILE HOME PARK' })).toBeVisible()
   await user.clear(screen.getByRole('searchbox'))
@@ -59,7 +66,6 @@ it('keeps real catalog entries out of the fictional sample catalog', async () =>
   const user = userEvent.setup(); render(<App />)
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
-  await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
   for (const name of ['FAYETTEVILLE WATERWORKS', 'SPRINGDALE WATER UTILITIES', 'ROGERS WATER UTILITIES', 'BENTONVILLE WATER UTILITIES']) expect(screen.queryByRole('button', { name: `Select ${name}` })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Select Beaver Lake' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Select Buffalo National River' })).not.toBeInTheDocument()

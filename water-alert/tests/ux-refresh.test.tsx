@@ -1,7 +1,7 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
-import { Welcome } from '../src/Journey'
+import { ConfirmPlace, SearchPlace, WelcomeStrip } from '../src/Journey'
 import { WATER_RIPPLE_EVENT } from '../src/HomeWater'
 import { StatusCard } from '../src/components'
 import { RecoveryActions } from '../src/RecoveryActions'
@@ -13,16 +13,6 @@ import { es } from '../src/strings'
 
 const place: Place = { id: 'ADH:test', name: 'TEST WATER SYSTEM', county: 'Benton', kind: 'system' }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
-
-it('puts choices before collapsed coverage and keeps the concise safety qualification', () => {
-  render(<Welcome t={en} onSearch={() => {}} onWell={() => {}} onSample={() => {}} />)
-  expect(screen.getByRole('heading', { level: 1, name: 'How do you get your water?' })).toBeVisible()
-  // The heading's question replaces the old, repetitive intro line.
-  expect(screen.queryByText(en.welcomeIntro)).not.toBeInTheDocument()
-  expect(screen.getByText('Published notices are not a water safety test.')).toBeVisible()
-  // About WAVE now lives on the Sources page; the welcome card stays focused on the choice.
-  expect(screen.queryByText('About WAVE')).not.toBeInTheDocument()
-})
 
 it('shows a readable name and official source with check timing reserved for details', async () => {
   const at = '2026-10-18T12:00:00Z'
@@ -94,35 +84,20 @@ it('retries a failed configuration read successfully', async () => {
   await vi.waitFor(() => expect(screen.getByTestId('push-controls')).toHaveAttribute('data-state', 'ready'))
 })
 
-it('centres the question and subtitle above the unchanged choices, with no glossary', async () => {
-  const onSearch = vi.fn(), onWell = vi.fn(), onSample = vi.fn()
-  const { container } = render(<Welcome t={en} onSearch={onSearch} onWell={onWell} onSample={onSample} />)
-  expect(screen.getByRole('heading', { level: 1, name: en.welcome })).toBeVisible()
-  expect(screen.getByText('Choose your water source to find relevant notices and guidance.')).toHaveClass('welcome-subtitle')
-  expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
-  // Reading order: question, subtitle, choices, safety note. No glossary or About section.
-  const panel = container.querySelector('.panel.welcome')!
-  expect([...panel.children].map(el => el.className)).toEqual(['welcome-title', 'welcome-subtitle', 'welcome-options', 'quiet-note'])
-  expect(screen.queryByRole('list', { name: 'What WAVE stands for' })).not.toBeInTheDocument()
-  expect(container.querySelector('details')).toBeNull()
-  // The three buttons keep their order, text and behaviour; the first stays primary.
-  expect(screen.getAllByRole('button').map(b => b.className)).toEqual(['welcome-option welcome-option--primary', 'welcome-option welcome-option--secondary', 'welcome-option welcome-option--sample'])
-  const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: /My public water supplier/ }))
-  await user.click(screen.getByRole('button', { name: "I'm on a private well" }))
-  await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
-  expect(onSearch).toHaveBeenCalledWith('system'); expect(onWell).toHaveBeenCalled(); expect(onSample).toHaveBeenCalled()
+it('lists at most three supplier matches with no extra instruction line', () => {
+  const many: Place[] = Array.from({ length: 6 }, (_, i) => ({ id: `ADH:test-${i}`, name: `TEST WATER ${i}`, county: 'Benton', kind: 'system' }))
+  const { container } = render(<SearchPlace kind="system" places={many} query="test water" t={en} onQuery={vi.fn()} onSelect={vi.fn()} onBack={vi.fn()} />)
+  expect(container.querySelectorAll('.place-row')).toHaveLength(3)
+  expect(screen.queryByText(/Choose your supplier explicitly/)).not.toBeInTheDocument()
+  expect(container.querySelector('.info')).toBeNull()
+  expect(container.querySelector('.search-stage > .welcome-strip')).not.toBeNull()
 })
 
-it('shows the Spanish subtitle', () => {
-  render(<Welcome t={es} onSearch={vi.fn()} onWell={vi.fn()} onSample={vi.fn()} />)
-  expect(screen.getByRole('heading', { level: 1, name: es.welcome })).toBeVisible()
-  expect(screen.getByText('Elige tu fuente de agua para ver avisos y orientación relevantes.')).toBeVisible()
-})
+const confirm = (t = en) => render(<ConfirmPlace place={place} t={t} onConfirm={vi.fn()} onBack={vi.fn()} />)
 
-it('draws a decorative teal and aqua wave strip behind the card (no navy band)', () => {
-  const { container } = render(<Welcome t={en} onSearch={vi.fn()} onWell={vi.fn()} onSample={vi.fn()} />)
-  const stage = container.querySelector('.welcome-stage')!
+it('draws a decorative teal and aqua wave strip behind the confirm card (no navy band)', () => {
+  const { container } = confirm()
+  const stage = container.querySelector('.search-stage')!
   expect([...stage.children].map(c => c.classList[0])).toEqual(['welcome-strip', 'panel'])
   const strip = stage.querySelector('.welcome-strip')!
   expect(strip).toHaveAttribute('aria-hidden', 'true')
@@ -150,7 +125,7 @@ it('animates the strip only when motion is allowed, and stops when reduced motio
   const raf = vi.fn((cb: FrameRequestCallback) => { queued = cb; return 1 })
   vi.stubGlobal('requestAnimationFrame', raf)
   vi.stubGlobal('cancelAnimationFrame', vi.fn(() => { queued = null }))
-  const { container } = render(<Welcome t={en} onSearch={vi.fn()} onWell={vi.fn()} onSample={vi.fn()} />)
+  const { container } = confirm()
   const teal = container.querySelector('.welcome-band--teal')!
   const first = teal.getAttribute('d')
   act(() => { queued!(1000) })
@@ -166,19 +141,29 @@ it('shows a still strip under reduced motion', () => {
   stubMotion(true)
   const raf = vi.fn(() => 1)
   vi.stubGlobal('requestAnimationFrame', raf)
-  const { container } = render(<Welcome t={en} onSearch={vi.fn()} onWell={vi.fn()} onSample={vi.fn()} />)
+  const { container } = confirm()
   expect(raf).not.toHaveBeenCalled()
   expect(container.querySelector('.welcome-band--aqua')!.getAttribute('d')).toMatch(/^M.+Z$/)
 })
 
-it('keeps the welcome calm: no entrance ripple on the page water', () => {
+it('draws a still, quieter strip (Settings) that never animates even when motion is allowed', () => {
+  stubMotion(false)
+  const raf = vi.fn(() => 1)
+  vi.stubGlobal('requestAnimationFrame', raf)
+  const { container } = render(<WelcomeStrip still />)
+  expect(raf).not.toHaveBeenCalled()
+  expect(container.querySelector('.welcome-strip')).toHaveClass('welcome-strip--still')
+  expect(container.querySelector('.welcome-band--teal')!.getAttribute('d')).toMatch(/^M.+Z$/)
+})
+
+it('keeps the confirm step calm: no entrance ripple on the page water', () => {
   sessionStorage.clear()
   vi.useFakeTimers()
   const ripples: Event[] = []
   const listen = (event: Event) => ripples.push(event)
   window.addEventListener(WATER_RIPPLE_EVENT, listen)
   try {
-    render(<Welcome t={en} onSearch={vi.fn()} onWell={vi.fn()} onSample={vi.fn()} />)
+    confirm()
     act(() => { vi.advanceTimersByTime(10000) })
     expect(ripples).toHaveLength(0)
   } finally {

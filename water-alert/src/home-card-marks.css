@@ -5,3 +5,16 @@
 .wave-card-mark svg{display:block;width:34px;height:34px;overflow:visible}
 .wave-card-mark-arkansas path{fill:rgba(8,127,131,.12);stroke:currentColor;stroke-width:8;stroke-linejoin:round}
 .wave-card-mark-issue svg path:first-child{fill:rgba(8,127,131,.12);stroke:currentColor;stroke-width:2.5;stroke-linejoin:round}
+
+/* Home "Check your supplier" link: same look as the glass card's primary supplier option,
+   spanning the full width of the two shortcut cards below it. */
+.wave-home-supplier{position:relative;z-index:1;box-sizing:border-box;display:flex;width:100%;min-height:84px;margin:28px 0 0;padding:18px 26px;gap:18px;border-radius:12px;color:#fff;font-size:1.0625rem;text-decoration:none;box-shadow:0 10px 26px rgba(8,82,92,.16)}
+.wave-home-supplier:hover{background:#06696d;border-color:#06696d;color:#fff}
+.wave-home-supplier:focus-visible{outline:3px solid #145fc0;outline-offset:4px}
+.wave-home-supplier .welcome-option-icon{width:48px;height:48px;border-radius:10px}
+.wave-home-supplier .welcome-option-text b{font-size:1.2rem;font-weight:700}
+.wave-home-supplier .welcome-option-text small{font-size:1rem}
+.wave-home-supplier .welcome-option-arrow{font-size:2rem;font-weight:700}
+.wave-home-supplier+.wave-home-actions{margin-top:20px}
+@media (max-width:760px){.wave-home-supplier{min-height:72px;margin-top:24px;padding:14px 18px;gap:14px}.wave-home-supplier .welcome-option-icon{width:42px;height:42px}.wave-home-supplier .welcome-option-text b{font-size:1.08rem}.wave-home-supplier .welcome-option-text small{font-size:.94rem}.wave-home-supplier+.wave-home-actions{margin-top:12px}}
+@media (prefers-reduced-motion:no-preference){.wave-home-supplier{transition:background-color .15s ease,border-color .15s ease}}

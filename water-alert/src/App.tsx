@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { EMPTY_SOURCES, SOURCES, statusFor, type Mode, type Notice, type Place, type SourceSnapshot } from './domain'
 import { defaults, loadPreferences, savePreferences, type Preferences } from './storage'
 import { SAMPLE_NOW, sampleArchive, samplePlaces, sampleSources } from './sample'
@@ -6,7 +6,7 @@ import { APP_NAME, en, es } from './strings'
 import { appTimestamp, DateRow, Icon, Panel, SourceLink, StatusCard } from './components'
 import { PushPanel } from './PushPanel'
 import { disablePush, enablePush, pushDevice, pushSignature, supportsPush, PushSetupError } from './push'
-import { ConfirmPlace, PrivateWell, SampleIntro, SearchPlace, Welcome } from './Journey'
+import { ConfirmPlace, SampleIntro, SearchPlace, WelcomeStrip } from './Journey'
 import { NoticeDetail } from './NoticeDetail'
 import { ObservedHistory } from './ObservedHistory'
 import { MapSources } from './MapSources'
@@ -23,7 +23,7 @@ import { HomeWater } from './HomeWater'
 import { ARKANSAS_OUTLINE } from './arkansas-outline'
 import './home-card-marks.css'
 
-type Page = 'home' | 'browse' | 'managePlaces' | 'map' | 'history' | 'settings' | 'setup' | 'search' | 'confirm' | 'well' | 'sampleIntro' | 'detail' | 'help' | 'alerts' | 'sources' | 'privacy' | 'installation'
+type Page = 'home' | 'browse' | 'managePlaces' | 'map' | 'history' | 'settings' | 'search' | 'confirm' | 'sampleIntro' | 'detail' | 'help' | 'alerts' | 'sources' | 'privacy' | 'installation'
 type RemovedPlace = { id: string; index: number; lifted: boolean }
 const PLACE_CATALOG = FULL_PLACE_CATALOG.filter(entry => entry.place.kind === 'system')
 export interface LiveData { sources: SourceSnapshot[]; places: Place[]; archive: Notice[]; coverageStart: string | null; recentChanges?: ObservedChange[] }
@@ -33,7 +33,7 @@ function savedMode(): Mode { if (new URLSearchParams(window.location.search).has
 export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { liveData?: LiveData; onRefresh?: () => Promise<void>; onLiveOpen?: () => Promise<void> }) {
   const [mode, setMode] = useState<Mode>(savedMode)
   const [prefs, setPrefs] = useState<Preferences>(() => loadPreferences(savedMode()))
-  const [page, setPage] = useState<Page>(() => window.location.hash.startsWith('#request=') ? 'history' : 'home')
+  const [page, setPage] = useState<Page>(() => window.location.hash.startsWith('#request=') ? 'history' : window.location.hash === '#search' || window.location.hash === '#setup' ? 'search' : 'home')
   const [mapVisited, setMapVisited] = useState(false)
   const [requestId, setRequestId] = useState<string | undefined>(() => window.location.hash.match(/^#request=([a-f0-9-]{36})$/i)?.[1])
   const [resumingRequest, setResumingRequest] = useState<HelpRequest | null>(null)
@@ -120,6 +120,24 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
 
   function commitNavigation(next: Page) { if (next === 'map') setMapVisited(true); if (next === 'detail') detailReturn.current = page === 'map' ? 'map' : page === 'browse' ? 'browse' : 'home'; setRequestId(undefined); setResumingRequest(null); window.history.replaceState(null, '', window.location.pathname + window.location.search); setPage(next); setLinkedId(null); setMessage(''); setConfirmDelete(false) }
   function navigate(next: Page) { if (page === 'help' && leaveHelp.current) { void leaveHelp.current().then(saved => { if (saved) commitNavigation(next) }); return }; commitNavigation(next) }
+  // Home's "Check your supplier" link is the only in-app step that adds a browser history entry,
+  // so browser Back from the supplier glass card (or a step reached from it) returns to Home.
+  function historyNavigate(next: 'home' | 'search') { const leaving = page === 'help' && leaveHelp.current; if (next === 'search') search('system'); else navigate(next); if (!leaving) window.history.replaceState({ wavePage: next }, '', window.location.pathname + window.location.search + (next === 'search' ? '#search' : '')) }
+  const historyNavigateRef = useRef(historyNavigate)
+  historyNavigateRef.current = historyNavigate
+  useEffect(() => {
+    const onPop = (event: PopStateEvent) => { const target = (event.state as { wavePage?: unknown } | null)?.wavePage; if (target === 'home' || target === 'search') historyNavigateRef.current(target) }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  function openSupplierCheck(event: ReactMouseEvent<HTMLAnchorElement>) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    const base = window.location.pathname + window.location.search
+    search('system')
+    window.history.replaceState({ wavePage: 'home' }, '', base)
+    window.history.pushState({ wavePage: 'search' }, '', base + '#search')
+  }
   function openHelp(id: string, returnTo: Page = page) { helpReturn.current = { page: returnTo, noticeId: linkedId }; setHelpIntent(false); setRequestId(undefined); setResumingRequest(null); setSelected(id); setPage('help'); setMessage('') }
   function openRequestHistory(id: string) { setRequestId(id); setPage('history'); window.history.replaceState(null, '', `#request=${id}`) }
   function resumeRequest(request: HelpRequest) { helpReturn.current = { page: 'history', noticeId: null }; setRequestId(request.id); setResumingRequest(request); setSelected(request.draft.place.id); setPage('help'); window.history.replaceState(null, '', `#request=${request.id}`) }
@@ -167,7 +185,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     setBusy(true)
     try { await disablePush(); setDevice(null) } catch { setMessage(t.pushFailed); setBusy(false); return }
     try { for (const key of ['water-alert:live:v1', 'water-alert:sample:v1', 'water-alert:mode', 'water-alert:live-check:v1', SAMPLE_HELP_KEY, LIVE_LOCAL_HELP_KEY]) localStorage.removeItem(key) } catch { setMessage(t.storageError); setBusy(false); return }
-    setPrefs(defaults()); setMode('live'); setSelected(null); setCandidate(null); setRemoved(null); setLinkedId(null); setMessage(''); setPage('setup')
+    setPrefs(defaults()); setMode('live'); setSelected(null); setCandidate(null); setRemoved(null); setLinkedId(null); setMessage(''); setPage('home')
     setBusy(false)
   }
   async function togglePush() {
@@ -187,7 +205,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     catch (error) { setMessage(typeof Notification !== 'undefined' && (Notification.permission === 'denied' || error instanceof Error && error.message.toLowerCase().includes('permission')) ? t.pushPermissionDenied : error instanceof PushSetupError ? error.stage === 'worker' ? t.pushWorkerFailed : error.stage === 'subscription' ? t.pushSubscriptionFailed : t.pushServerFailed : t.pushSetupFailed) }
     finally { setBusy(false) }
   }
-  const navPage = ['alerts', 'sources', 'privacy', 'installation', 'managePlaces'].includes(page) ? 'settings' : page === 'help' ? 'history' : page === 'detail' ? detailReturn.current : ['search', 'confirm', 'well'].includes(page) ? 'browse' : page
+  const navPage = ['alerts', 'sources', 'privacy', 'installation', 'managePlaces'].includes(page) ? 'settings' : page === 'help' ? 'history' : page === 'detail' ? detailReturn.current : ['search', 'confirm'].includes(page) ? 'browse' : page
   const nav = (['home', 'browse', 'map', 'history', 'settings'] as const).map(item => <button key={item} aria-current={navPage === item ? 'page' : undefined} onClick={() => navigate(item)}><Icon name={item === 'map' ? 'water' : item} /><span>{item === 'map' ? prefs.language === 'es' ? 'Mapa' : 'Map' : t[item]}</span></button>)
   const settingsLinks = [
     { page: 'alerts' as const, title: t.alertOptions, help: t.alertHelp, icon: 'bell' as const },
@@ -203,21 +221,20 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     {page === 'home' ? <div className="wave-marquee" tabIndex={0} aria-label="WAVE: Water Awareness, Verification, and Empowerment"><div className="wave-marquee-track">{[false, true].map(hidden => <span className="wave-marquee-copy" aria-hidden={hidden || undefined} key={String(hidden)}>{Array.from({ length: 6 }, (_, index) => <span className="wave-marquee-unit" key={index}><span>WAVE: Water Awareness, Verification, and Empowerment</span><span className="wave-marquee-separator" aria-hidden="true">●</span></span>)}</span>)}</div></div> : null}
     {sample ? <section className="sample-banner" aria-label={t.sample}><div><b>{t.sample}</b><span>{t.sampleText}</span><button onClick={() => changeMode('live')}>{t.exit}</button></div></section> : null}
     <main id="main" ref={main} tabIndex={-1}>
-      <HomeWater paused={page === 'setup'} />
+      <HomeWater paused={page === 'search' || page === 'confirm'} />
       <div role="status" className={message ? 'message' : 'sr-only'}>{message}</div>
       {!sample && page !== 'home' && page !== 'alerts' && device && device.signature !== pushSignature(prefs) ? <p className="info">{t.pushDirty} <button className="text-button" onClick={() => navigate('alerts')}>{t.alertOptions}</button></p> : null}
-      {page === 'setup' ? <Welcome t={t} onSearch={search} onWell={() => navigate('well')} onSample={() => sample ? navigate('sampleIntro') : changeMode('sample')} /> : null}
       {page === 'search' ? helpIntent
         ? <SearchPlace key={`${mode}:${kind}:help`} kind={kind} places={places} query={query} onQuery={setQuery} t={t}
             heading={prefs.language === 'es' ? 'Elige tu proveedor de agua' : 'Choose your water provider'}
             intro={prefs.language === 'es' ? 'Elige el proveedor sobre el que quieres escribir. Te ayudaremos a preparar un mensaje que puedes revisar y copiar. No tienes que seguir a este proveedor.' : 'Pick the provider your message is about. We’ll help you prepare a message you can review and copy. You don’t have to follow this provider.'}
             onBack={() => { setHelpIntent(false); navigate('home') }} onSelect={p => openHelp(p.id, 'home')} />
-        : <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={setQuery} t={t} onBack={() => navigate('setup')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
+        : <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={setQuery} t={t} onBack={() => navigate('home')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
       {page === 'confirm' && candidate ? <ConfirmPlace place={candidate} t={t} onConfirm={confirmWatch} onBack={() => navigate('search')} /> : null}
-      {page === 'well' ? <PrivateWell t={t} onBack={() => navigate('setup')} /> : null}
       {page === 'sampleIntro' ? <SampleIntro t={t} onStart={() => search('system')} onList={sampleList} /> : null}
       {page === 'home' ? <section className="wave-home">
         <div className="wave-home-intro"><h1>{prefs.language === 'es' ? 'Información sobre el agua, más fácil.' : 'Water information, made easier.'}</h1><p>{prefs.language === 'es' ? 'Encuentra avisos públicos sobre el agua, entiende de dónde viene la información y comunícate con tu proveedor de agua.' : 'Find public water advisories, understand where the information comes from, and contact your water provider about a concern.'}</p></div>
+        <a className="welcome-option welcome-option--primary wave-home-supplier" href="#search" onClick={openSupplierCheck}><span className="welcome-option-icon"><Icon name="water" /></span><span className="welcome-option-text"><b>{prefs.language === 'es' ? 'Consulta tu proveedor' : 'Check your supplier'}</b><small>{prefs.language === 'es' ? 'Encuentra avisos oficiales sobre el agua para tu zona' : 'Find official water notices for your area'}</small></span><span className="welcome-option-arrow" aria-hidden="true">›</span></a>
         <div className="wave-home-actions">
           <button className="wave-home-action" onClick={() => navigate('map')}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Consultar avisos de agua' : 'Check water advisories'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-arkansas" aria-hidden="true"><svg viewBox="0 0 620 620"><path d={ARKANSAS_OUTLINE} /></svg></span></span><span>{prefs.language === 'es' ? 'Explora el mapa y consulta avisos de fuentes oficiales.' : 'Explore the map and view notices from official sources.'}</span><b>{prefs.language === 'es' ? 'Abrir el mapa' : 'Open the map'} <span aria-hidden="true">→</span></b></button>
           <button className="wave-home-action" onClick={() => watched[0] ? openHelp(watched[0].id) : search('system', true)}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Obtener ayuda con un problema de agua' : 'Get help with a water issue'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-issue" aria-hidden="true"><svg viewBox="0 0 48 56"><path d="M24 3C18 14 4 26 4 36a20 14 0 0 0 40 0C44 26 30 14 24 3Z" /></svg></span></span><span>{prefs.language === 'es' ? 'Describe lo que ocurre y prepara un mensaje para tu proveedor.' : 'Describe what you’re experiencing and prepare a message to your provider.'}</span><b>{prefs.language === 'es' ? 'Iniciar un informe' : 'Start a report'} <span aria-hidden="true">→</span></b></button>
@@ -225,9 +242,9 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
       </section> : null}
       {page === 'browse' ? <>
         <h1 className="sr-only">{t.myWater}</h1>
-        <div className="home-layout"><button className="primary add-place" onClick={() => navigate('setup')}>+ {t.add}</button><div className="home-main">
+        <div className="home-layout"><button className="primary add-place" onClick={() => search('system')}>+ {t.add}</button><div className="home-main">
           {recent.length ? <Panel><h2>{t.sinceVisit}</h2><p>{t.sinceVisitInfo}</p>{recent.map(e => <div key={e.id} className="watched-row"><span>{e.notice.name} · {e.type === 'lifted' ? t.agencyLifted : t.active} · {appTimestamp(e.observedAt, prefs.language)}</span><button className="text-button" onClick={() => { setSelected(e.notice.placeId); navigate('detail'); setLinkedId(e.notice.id) }}>{t.view}</button></div>)}</Panel> : null}
-          {!prefs.watches.length ? <Panel><p>{t.noWatches}</p><button className="primary" onClick={() => navigate('setup')}>{t.setup}</button></Panel> : <ProviderCarousel language={prefs.language}>{[...watched.map(p => <StatusCard key={p.id} place={p} archive={archive} source={sources.find(s => s.agency === (p.kind === 'system' ? 'ADH' : 'ADEQ'))} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onSources={() => navigate('sources')} onHelp={() => openHelp(p.id)} onView={() => { setSelected(p.id); navigate('detail') }} onViewNotice={id => { setSelected(p.id); navigate('detail'); setLinkedId(id) }} />), ...missingWatches.map(id => <Panel className="status-card unavailable" key={`missing:${id}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">?</span>{t.unavailable}</p><p>{t.missingPlace}</p><p className="quiet-note">{id}</p><button className="secondary" onClick={() => navigate('managePlaces')}>{t.watched}</button></Panel>)]}</ProviderCarousel>}
+          {!prefs.watches.length ? <Panel><p>{t.noWatches}</p><button className="primary" onClick={() => search('system')}>{t.setup}</button></Panel> : <ProviderCarousel language={prefs.language}>{[...watched.map(p => <StatusCard key={p.id} place={p} archive={archive} source={sources.find(s => s.agency === (p.kind === 'system' ? 'ADH' : 'ADEQ'))} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onSources={() => navigate('sources')} onHelp={() => openHelp(p.id)} onView={() => { setSelected(p.id); navigate('detail') }} onViewNotice={id => { setSelected(p.id); navigate('detail'); setLinkedId(id) }} />), ...missingWatches.map(id => <Panel className="status-card unavailable" key={`missing:${id}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">?</span>{t.unavailable}</p><p>{t.missingPlace}</p><p className="quiet-note">{id}</p><button className="secondary" onClick={() => navigate('managePlaces')}>{t.watched}</button></Panel>)]}</ProviderCarousel>}
         </div><aside className="home-sidebar"><section className="home-alert-options"><div className="sidebar-heading-row"><h2><Icon name="bell" />{t.waterUpdates}</h2><button type="button" role="switch" aria-label={t.waterUpdates} aria-checked={!sample && !!device} disabled={busy || sample || pushConfig.state === 'loading'} className="notification-switch" onClick={() => void togglePush()}><span aria-hidden="true" /></button></div></section><section className="about-results"><h2><Icon name="info" />{t.aboutResults}</h2><p>{t.resultsSummary}</p></section></aside></div>
       </> : null}
       {page === 'detail' ? linkedId && !linkedNotice ? <Panel><p>{prefs.language === 'es' ? 'No se puede abrir este aviso guardado con los registros disponibles actualmente. No se ha sustituido por otro aviso.' : 'This saved notice cannot be opened from the currently available records. It has not been replaced with another notice.'}</p><button className="secondary" onClick={() => navigate('browse')}>{t.back}</button></Panel> : place ? <NoticeDetail place={place} source={source} now={clock} linkedNotice={linkedNotice} t={t} language={prefs.language} sample={sample} onBack={() => navigate(detailReturn.current)} onShare={n => void share(n)} onAlerts={askLift} onHelp={() => openHelp(place.id)} /> : null : null}
@@ -240,10 +257,10 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
       </Panel></div> : null}
       {mapVisited ? <div className="advisory-map-page" hidden={page !== 'map'}><ObservedHistory key={mode} archive={archive} watches={activeWatches} coverageStart={sample ? sampleArchive.find(n => n.lifted)?.firstObservedAt ?? null : liveData.coverageStart} t={t} language={prefs.language} places={places} sources={sources} now={clock} active={page === 'map'} onSources={() => navigate('sources')} /></div> : null}
       {page === 'history' ? <RequestHistory key={`${mode}:${requestId ?? ''}`} language={prefs.language} sample={sample} requestId={requestId} onResume={resumeRequest} /> : null}
-      {page === 'settings' ? <div className="narrow-page"><div className="page-heading"><div><h1>{t.settings}</h1></div></div><Panel className="settings-menu">{settingsLinks.map(link => <button className="choice" key={link.page} onClick={() => navigate(link.page)}><span className="choice-icon"><Icon name={link.icon} /></span><span><b>{link.title}</b><small>{link.help}</small></span><span aria-hidden="true">›</span></button>)}</Panel>
+      {page === 'settings' ? <div className="search-stage settings-stage"><WelcomeStrip still /><Panel className="settings-glass"><h1>{t.settings}</h1><div className="settings-menu">{settingsLinks.map(link => <button className="choice" key={link.page} onClick={() => navigate(link.page)}><span className="choice-icon"><Icon name={link.icon} /></span><span><b>{link.title}</b><small>{link.help}</small></span><span aria-hidden="true">›</span></button>)}</div>
         <label className="checkbox-row"><input type="checkbox" checked={prefs.checkOnOpen} onChange={e => setPrefs(p => ({ ...p, checkOnOpen: e.target.checked }))} />{t.checkOnOpen}</label><hr /><h2>{t.sample}</h2><p>{t.sampleText}</p><button className="secondary full" onClick={() => changeMode(sample ? 'live' : 'sample')}>{sample ? t.exit : t.trySample}</button><hr /><button className="danger full" disabled={busy} onClick={() => setConfirmDelete(true)}>{t.delete}</button>
         {confirmDelete ? <section aria-label={t.confirmRemoval}><p>{t.deletionText}</p><button className="danger" disabled={busy} onClick={() => void deleteDevice()}>{t.confirmRemoval}</button><button className="secondary" disabled={busy} onClick={() => setConfirmDelete(false)}>{t.cancel}</button></section> : null}
-      </div> : null}
+      </Panel></div> : null}
       {['alerts', 'sources', 'privacy', 'installation'].includes(page) ? <div className="narrow-page"><button className="back" onClick={() => navigate('settings')}>‹ {t.settings}</button>
         {page === 'sources' ? <><h1>{t.sources}</h1><Panel><h2>{t.advisorySources}</h2><p>{t.resultsSummary}</p>{sources.map(s => <div className="source-entry" key={s.agency}><h3>{s.agency === 'ADH' ? 'Arkansas Department of Health (ADH)' : 'Arkansas Division of Environmental Quality (ADEQ)'}</h3><SourceLink url={SOURCES[s.agency]}>{t.sourceLink}</SourceLink><dl><DateRow label={t.checked} value={s.retrievedAt} app language={prefs.language} />{s.lastSuccessAt ? <DateRow label={t.lastSuccess} value={s.lastSuccessAt} app language={prefs.language} /> : <div><dt>{t.lastSuccess}</dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl><p>{statusFor('', s, clock).state === 'unavailable' ? t.unavailable : t.sourceRetrieved}</p></div>)}</Panel><Panel><h2>{t.coverageHeading}</h2><p>{t.sourceCoverage}</p><p>{t.catalogWaterbody}</p><p>{t.catalogSupplier}</p>{!sample ? <details><summary>{t.catalogSource}<span className="disclosure-icon" aria-hidden="true" /></summary>{PLACE_CATALOG.map(entry => <p key={entry.place.id}><SourceLink url={entry.url}>{entry.place.name}</SourceLink></p>)}</details> : null}</Panel><Panel><h2>{t.cannotTell}</h2><p>{t.limits}</p></Panel><Panel className="about-wave"><h2>{t.aboutWave}</h2><p>{t.purpose}</p><p>{t.verificationLimit}</p><p>{t.setupIntro}</p><p>{t.coverage}</p></Panel></> : null}
         {page === 'sources' ? <Panel><h2>{prefs.language === 'es' ? 'Referencias seleccionadas — no son fuentes de avisos en vivo' : 'Curated references — not live advisory feeds'}</h2><p>{prefs.language === 'es' ? 'Revisadas el 14 de octubre de 2026. No determinan el estado actual, la responsabilidad, el derecho a reembolso ni la elegibilidad para asistencia legal.' : 'Checked October 14, 2026. These do not determine current advisory status, liability, reimbursement entitlement or legal-aid eligibility.'}</p>{[['CDC — general drinking-water advisory guidance', CDC_GUIDANCE_URL], ['Arkansas Attorney General', RECOVERY_RESOURCES.complaint], ['AG complaint form — English', RECOVERY_RESOURCES.englishForm], ['Formulario de queja — español', RECOVERY_RESOURCES.spanishForm], ['Arkansas Law Help', RECOVERY_RESOURCES.legalHelp], ['Legal-aid intake', RECOVERY_RESOURCES.intake], ['Small-claims process and forms', RECOVERY_RESOURCES.court], ['ADH annual drinking-water reports', RECOVERY_RESOURCES.annualReports]].map(([label, url]) => <p key={url}><SourceLink url={url}>{label}</SourceLink></p>)}<p>{prefs.language === 'es' ? 'Los perfiles de proveedores son datos de directorio, no mediciones actuales. Verifique el proveedor y el año de cada informe. Las plantillas son texto de preparación editable, no consejo legal ni reclamaciones presentadas.' : 'Supplier profiles are directory facts, not live measurements. Verify the system and year of each report. Templates are editable preparation text, not legal advice or submitted claims.'}</p></Panel> : null}

@@ -57,7 +57,6 @@ async function watchSupplier(page: Page, supplier = place) {
   await page.goto('/')
   await page.getByRole('navigation').getByRole('button', { name: 'Places', exact: true }).click()
   await page.getByRole('button', { name: /Add a place/ }).click()
-  await page.getByRole('button', { name: /My public water supplier/ }).click()
   await page.getByRole('searchbox').fill(supplier.name)
   await page.getByRole('button', { name: `Select ${supplier.name}`, exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()
@@ -596,7 +595,7 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await page.getByRole('button', { name: 'Exit sample', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Sample mode', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: /Get help with a water issue/ }).click()
-  await expect(page.getByRole('button', { name: /My public water supplier/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Choose your water provider' })).toBeVisible()
 })
 
 test('keyboard-focused draft editor stays above mobile bottom navigation', async ({ page }) => {
