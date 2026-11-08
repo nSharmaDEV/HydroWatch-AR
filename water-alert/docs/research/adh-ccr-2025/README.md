@@ -119,6 +119,60 @@ a count of formal enforcement actions.
 | Rogers Water Utilities | 055 | [PDF](pdfs/055.pdf) | No violations/significant deficiencies reported |
 | Bentonville Water Utilities | 041 | [PDF](pdfs/041.pdf) | No violations/significant deficiencies reported |
 
+## Second batch — November 7, 2026
+
+The 11 suppliers in the live ADH notice list without an earlier record were
+searched with the same method (name search, then PWS-ID search where the name
+returned nothing). Missing systems were also checked in the ADH water-system
+directory (`WSlist.aspx` by county, then `WS.aspx?ID=`). Every new PDF was read
+in full, all physical pages. These are added to `manifest.json` with
+`retrievedOn: 2026-11-07`; the 35 October entries are unchanged.
+
+| App supplier | PWS | PDF | Review outcome |
+| --- | --- | --- | --- |
+| Burdette Waterworks | 366 | [PDF](pdfs/366.pdf) | No violations/significant deficiencies reported |
+| North Howard Rural Water Assn | 1075 | [PDF](pdfs/1075.pdf) | RTCR monitoring violation, p. 2 |
+| Little River Water Assn (Mississippi Co.) | 371 | [PDF](pdfs/371.pdf) | No violations/significant deficiencies reported |
+| Ravenden Waterworks (Lawrence Co.) | 306 | [PDF](pdfs/306.pdf) | No violations/significant deficiencies reported |
+| Hazen Waterworks | 452 | [PDF](pdfs/452.pdf) | No violations/significant deficiencies reported |
+| Sevier Co Water Assn | 868 | [PDF](pdfs/868.pdf) | No violations/significant deficiencies reported |
+| Evening Shade Waterworks | 525 | [PDF](pdfs/525.pdf) | No violations/significant deficiencies reported |
+| Kibler Water System | 140 | [PDF](pdfs/140.pdf) | No violations/significant deficiencies reported; footer says "CCR 24" |
+| Village Water LLC | 747 | [PDF](pdfs/747.pdf) | Same PWS as Leisure Hills; uses that reviewed report |
+| Entergy - Independence | N0009 | Not located | Non-transient non-community; no 2025 result |
+| Eureka Riverside Resort | T0467 | Not located | Transient non-community; no 2025 result |
+
+Notes:
+
+- **North Howard 1075, p. 2:** "Failed to submit the proper number of valid
+  bacteriological samples", **12/1/2025–12/31/2025**. Action: resumed
+  bacteriological monitoring as required by state and federal regulations.
+  The report also says single TTHM (up to 84.1 ppb) and HAA5 (up to 68.9 ppb)
+  results went above the MCL. Both rows are marked **N** because compliance
+  uses the running annual average (64 and 51 ppb). This is not counted as a
+  violation.
+- **Sevier County 868** (TTHM up to 87.1, HAA5 up to 78) and **Kibler 140**
+  (TTHM up to 110) print the same "upper range only" disclosure with rows
+  marked **N**. They are not counted as violations.
+- **Little River 371** lists 2 of 10 copper sites over the action level. Its
+  90th percentile, 0.599 ppm, is below 1.3 ppm, so it is not a violation.
+- **Kibler 140**'s footer prints "CCR 24", but the title and test period say
+  2025. This is treated as a footer typo, unlike Springdale 575, whose title
+  itself says 2024.
+- **Village Water LLC:** on 2026-11-07, ADH's directory listed PWS **747** as
+  "VILLAGE WATER LLC" in Benton County, with population 113, WELL #1 and a
+  2/5/2026 inspection, all matching the Leisure Hills profile. The CCR search
+  still lists 747 as "Leisure Hills MP", and the PDF title is Leisure Hills
+  Mobile Home Park. The live notice for Village Water LLC also names Leisure
+  Hills as its area. The mapping is by exact PWS ID, not name similarity.
+- **Eureka Riverside Resort:** the directory now lists **T0467** under this
+  name. The October record mapped T0467 to "Riverside Resort at Kings River".
+  Both app suppliers are kept as unavailable. Neither is merged with or used
+  for the other's live notices.
+- **Entergy - Independence:** directory **N0009** is a non-transient
+  non-community system. The CCR search returned nothing for "Entergy",
+  "Independence" in Independence County, or "N0009".
+
 ## Reported findings and actions
 
 Dates below follow the reports' **month/day/year** convention. Survey/inspection
@@ -278,9 +332,38 @@ interpretations or present-day conditions. No app test rerun was needed for this
 research-only batch.
 
 This review supplies source evidence and findings for all 35 systems, including
-explicit missing/conflicting cases. **It does not modify `src/annual-reports.ts`
-or the current UI catalog.** Integrating the additional findings requires
-separate UI/data work to distinguish significant deficiencies, upstream-supplier
-findings, inspection dates, multiple violation intervals and unresolved source
-contradictions without mislabeling them. No automatic retrieval service or
-ongoing report monitoring was installed.
+explicit missing/conflicting cases. The October research batch itself did not
+modify the app; its findings were later transcribed by hand into
+`src/annual-reports.ts` and `src/observed-supplier-reports.ts`, which now
+distinguish significant deficiencies, upstream-supplier findings, inspection
+dates, multiple violation intervals and unresolved contradictions.
+
+### Current totals (both batches, as of 2026-11-08)
+
+Across the October 19 batch and the November 7 second batch the app has **46
+annual-report entries for 44 unique PWS IDs** (Leisure Hills / Village Water
+share PWS 747; Riverside Resort at Kings River / Eureka Riverside share T0467):
+
+| Status | PWS IDs |
+| --- | ---: |
+| Reviewed by hand (findings or clean, incl. Central Logan's recorded conflict) | 40 |
+| Not yet reviewed (Springdale 575: report-year mismatch) | 1 |
+| No 2025 PDF found (T0467, T0718, N0009) | 3 |
+| **Total** | **44** |
+
+All rows are requested year 2025 only and remain dated document evidence.
+
+### Automatic sync (`npm run ccr:sync`)
+
+Added 2026-11-08, local only; not yet run against the live ADH site. It targets
+suppliers with no entry plus the not-reviewed ones above (never hand-reviewed
+records), repeats steps 1–4 of the method automatically with exact identity
+rules, and asks Claude to summarize every page. A summary is kept only as the
+separate `aiSummarized` state, labelled “AI summary” in the app, when the printed
+title year is 2025, the AI reports no uncertainty or contradiction, and every
+cited page, date and short verbatim quote is found in the extracted PDF text.
+Otherwise the PDF link is shown as “Not yet reviewed”; a successful search with
+no exact match is “No report found”. Search, download or AI failures and
+ambiguous identities write nothing. Output: `src/ai-annual-reports.ts`, new
+`pdfs/`/`text/` snapshots, and `ai-sync-log.json` (per-run evidence). No
+scheduler, deployment or notification is involved.

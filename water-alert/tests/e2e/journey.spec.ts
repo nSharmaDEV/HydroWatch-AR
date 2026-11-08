@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { SOURCES, type Notice, type Place, type SourceSnapshot } from '../../src/domain'
 import { en, es } from '../../src/strings'
 import { PLACE_CATALOG } from '../../src/place-catalog'
+import { LEISURE_HILLS_ID } from '../../src/annual-reports'
 
 // Synthetic incident on the exact directory-backed supplier ID. Not a live record.
 const at = '2026-10-17T12:00:00Z'
@@ -74,16 +75,33 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
       await watchSupplier(page, entry.place)
       await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
       await expect(page.locator('.supplier-finding .status-label')).toContainText(t.noneBoil)
-      await page.getByRole('button', { name: t.providerHelp, exact: true }).click()
+      await page.getByRole('button', { name: new RegExp(`^${t.providerHelp}`) }).click()
       const report = page.locator('.annual-report')
-      await expect(report.getByRole('combobox')).toHaveValue('2025')
-      await expect(report.getByText(entry.place.name.startsWith('SPRINGDALE')
-        ? language === 'en' ? 'Report not yet reviewed' : 'Informe aún no revisado'
-        : language === 'en' ? 'No violations reported' : 'No se reportaron infracciones', { exact: true })).toBeVisible()
-      await expect(page.locator('.provider-water-source')).toContainText('Beaver Water District')
-      await expect(page.locator('.provider-water-source a')).toHaveAttribute('href', entry.url)
-      await expect(page.locator('.profile-facts')).toBeVisible()
-      await expect(page.locator('.profile-facts')).not.toContainText('WELL #1')
+      // Leisure Hills is a groundwater system with reviewed findings; the city
+      // suppliers share Beaver Water District and a clean or unreviewed report,
+      // shown as a heading-only Annual report card.
+      const leisure = entry.place.id === LEISURE_HILLS_ID
+      // Findings: heading is just "Annual report ··· PDF" (count lives in the Provider information chip).
+      // Clean/unreviewed: "Annual report · year · pill · PDF".
+      await expect(report.locator('h4')).toContainText(language === 'en' ? 'Annual report' : 'Informe anual')
+      await expect(report.locator('.report-year')).toHaveCount(leisure ? 0 : 1)
+      await expect(report.locator('.provider-card-facts')).toHaveCount(leisure ? 1 : 0)
+      if (leisure) {
+        await expect(report.locator('.provider-card-heading .status-pill')).toHaveCount(0)
+        await expect(page.locator('.provider-info-chip')).toHaveText(language === 'en' ? '2025: 4 compliance issues' : '2025: 4 problemas de cumplimiento')
+      } else {
+        await expect(report.locator('.report-year')).toHaveText('2025')
+        await expect(report.locator('.provider-card-heading .status-pill')).toContainText(entry.place.name.startsWith('SPRINGDALE')
+          ? language === 'en' ? 'Not yet reviewed' : 'Aún no revisado'
+          : language === 'en' ? 'No violations reported' : 'No se reportaron infracciones')
+        await expect(report.locator('.provider-card-heading .status-pill')).toBeVisible()
+      }
+      await expect(page.locator('.provider-system-card .provider-card-note')).toHaveText(language === 'en' ? /^ADH directory, checked .+\.$/ : /^Directorio de ADH, revisado el .+\.$/)
+      await expect(page.locator('.provider-water-source dd')).toHaveText(leisure ? /Roubidoux Formation Aquifer/ : /Beaver Water District/)
+      await expect(page.locator(`.provider-info-content a[href="${entry.url}"]`)).toHaveCount(1)
+      await expect(page.locator('.provider-system-card .provider-card-heading a')).toHaveAttribute('href', entry.url)
+      await expect(page.locator('.provider-system-card .provider-card-facts')).toBeVisible()
+      await expect(page.locator('.provider-system-card')).toContainText(leisure ? 'WELL #1' : 'BEAVER WATER DISTRICT')
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
       if (test.info().project.name === 'phone-sized') {
         await page.setViewportSize({ width: 320, height: 844 })
@@ -113,10 +131,10 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
       await watchSupplier(page, supplier)
       await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
       await expect(page.locator('.supplier-finding .status-label')).toContainText(t.activeBoil)
-      await page.getByRole('button', { name: t.providerHelp, exact: true }).click()
+      await page.getByRole('button', { name: new RegExp(`^${t.providerHelp}`) }).click()
       const report = page.locator('.annual-report')
       if (scenario.kind === 'missing') {
-        await expect(report.getByText(language === 'en' ? 'Report unavailable' : 'Informe no disponible', { exact: true })).toBeVisible()
+        await expect(report.getByText(language === 'en' ? 'No 2025 report found' : 'No se encontró informe de 2025', { exact: true })).toBeVisible()
         await expect(report.locator('.report-toggle')).toHaveCount(0)
       } else {
         await expect(report.locator('.report-issues')).not.toBeVisible()
@@ -138,7 +156,7 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
         } else if (scenario.kind === 'upstream') {
           await expect(first.locator('.report-issue-kind')).toHaveText(language === 'en' ? 'Upstream supplier finding' : 'Hallazgo del proveedor de origen')
           await expect(first).toContainText('Community Water')
-        } else await expect(report.locator('.report-finding')).toContainText(language === 'en' ? 'clarification needed' : 'se requiere aclaración')
+        } else await expect(page.locator('.provider-info-chip')).toContainText(language === 'en' ? 'clarification needed' : 'requiere aclaración')
       }
       await report.scrollIntoViewIfNeeded()
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -154,32 +172,80 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
   test(`issues-first annual report and independent provider details (${language})`, async ({ page }) => {
     await watchSupplier(page)
     await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
-    await page.getByRole('button', { name: t.providerHelp, exact: true }).click()
+    await page.getByRole('button', { name: new RegExp(`^${t.providerHelp}`) }).click()
     const report = page.locator('.annual-report')
-    await expect(report.getByRole('combobox')).toHaveValue('2025')
-    await expect(report.getByRole('option')).toHaveCount(1)
-    await expect(report.locator('.report-finding')).toHaveText(language === 'en' ? '4 compliance issues reported' : '4 problemas de cumplimiento reportados')
+    // With findings the visible header is just "Annual report ··· PDF"; the dated count sits in the
+    // Provider information chip, and the year/status remain in the heading for screen readers.
+    await expect(report.getByRole('heading', { name: language === 'en' ? /^Annual report 2025: 4 compliance issues reported;/ : /^Informe anual 2025: 4 problemas de cumplimiento reportados;/ })).toBeVisible()
+    await expect(report.locator('.report-year')).toHaveCount(0)
+    await expect(report.getByRole('combobox')).toHaveCount(0)
+    await expect(report.locator('.provider-card-heading .status-pill')).toHaveCount(0)
+    await expect(page.locator('.provider-info-chip')).toHaveText(language === 'en' ? '2025: 4 compliance issues' : '2025: 4 problemas de cumplimiento')
+    await expect(report.locator('.provider-caveat')).toHaveCount(0)
+    await expect(report.getByText(/Historical report|Informe histórico/)).toHaveCount(0)
     await expect(report.locator('.report-issues')).not.toBeVisible()
-    await expect(page.locator('.profile-facts')).toBeVisible()
+    await expect(page.locator('.provider-system-card')).toBeVisible()
     await report.scrollIntoViewIfNeeded()
     await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-collapsed.png`), fullPage: true })
     const toggle = report.locator('.report-toggle')
     await expect(toggle).toHaveText(language === 'en' ? 'View 4 issues' : 'Ver 4 problemas')
-    const header = report.locator('.report-summary-header')
-    await expect(header.locator('.report-toggle')).toHaveCount(1)
-    const headerBox = await header.boundingBox()
-    const toggleBox = await toggle.boundingBox()
-    expect(toggleBox!.x + toggleBox!.width).toBeCloseTo(headerBox!.x + headerBox!.width, 0)
+    // Reference card: a light tint and no full-width status bar keep it distinct from Advisory history cards.
+    const header = report.locator('.provider-card-heading')
+    const pdf = header.getByRole('link', { name: language === 'en' ? /View original report/ : /Ver informe original/ })
+    await expect(pdf).toBeVisible()
+    await expect(report.locator('.report-toggle')).toHaveCount(1)
+    await expect(report.locator('.alert-status')).toHaveCount(0)
+    await expect(report).toHaveClass(/report-summary-issues/)
+    await expect(report).toHaveCSS('background-color', 'rgb(246, 249, 250)')
+    const titleBox = await header.locator('h4').boundingBox()
+    const pdfBox = await pdf.boundingBox()
+    expect(Math.abs(titleBox!.y + titleBox!.height / 2 - pdfBox!.y - pdfBox!.height / 2)).toBeLessThan(8)
     if (test.info().project.name === 'desktop') {
-      const titleBox = await report.locator('.report-finding').boundingBox()
-      expect(Math.abs(titleBox!.y + titleBox!.height / 2 - toggleBox!.y - toggleBox!.height / 2)).toBeLessThan(2)
+      // The dotted leader runs straight from the title to the PDF link.
+      const leaderBox = await header.locator('.profile-leader').boundingBox()
+      expect(Math.abs(leaderBox!.x - (titleBox!.x + titleBox!.width))).toBeLessThan(12)
+      expect(Math.abs(pdfBox!.x - (leaderBox!.x + leaderBox!.width))).toBeLessThan(16)
     }
+    // Teal "View issues" bar with white text spanning the card content, label centred.
+    await expect(toggle).toHaveCSS('background-color', 'rgb(8, 127, 131)')
+    await expect(toggle).toHaveCSS('color', 'rgb(255, 255, 255)')
+    await expect(toggle).toHaveCSS('justify-content', 'center')
+    const toggleBox = (await toggle.boundingBox())!
+    const cardBox = (await report.boundingBox())!
+    const inset = await report.evaluate(node => { const s = getComputedStyle(node); return { left: parseFloat(s.paddingLeft) + parseFloat(s.borderLeftWidth), right: parseFloat(s.paddingRight) + parseFloat(s.borderRightWidth) } })
+    expect(Math.abs(cardBox.x + inset.left - toggleBox.x)).toBeLessThan(2)
+    expect(Math.abs(cardBox.x + cardBox.width - inset.right - (toggleBox.x + toggleBox.width))).toBeLessThan(2)
+    const labelCentre = await toggle.evaluate(node => { const range = document.createRange(); range.selectNodeContents(node.firstChild!); const r = range.getBoundingClientRect(); return r.x + r.width / 2 })
+    expect(Math.abs(labelCentre - (toggleBox.x + toggleBox.width / 2))).toBeLessThan(3)
+    // Reviewed, Ongoing when printed and Issue types share equal widths on desktop; stacked on phones.
+    const factBoxes = await Promise.all((await report.locator('.report-facts>div').all()).map(node => node.boundingBox()))
+    expect(factBoxes).toHaveLength(3)
+    if (test.info().project.name === 'desktop') {
+      expect(Math.abs(factBoxes[0]!.width - factBoxes[2]!.width)).toBeLessThan(1)
+      expect(Math.abs(factBoxes[1]!.width - factBoxes[2]!.width)).toBeLessThan(1)
+      expect(Math.abs(factBoxes[0]!.y - factBoxes[2]!.y)).toBeLessThan(1)
+    } else {
+      expect(factBoxes[1]!.y).toBeGreaterThan(factBoxes[0]!.y)
+      expect(factBoxes[2]!.y).toBeGreaterThan(factBoxes[1]!.y)
+    }
+    await expect(report.locator('.report-facts dt')).toHaveText(language === 'en' ? ['Reviewed', 'Ongoing when printed', 'Issue types'] : ['Revisado', 'En curso al imprimirse', 'Tipos de problemas'])
+    await expect(report.locator('.report-ongoing-since')).toHaveText(language === 'en' ? 'since Oct 1, 2025' : /desde 1 .*oct.*2025/i)
+    // The collapsed-header chip sits at the right, just left of the −/+ icon.
+    const headerToggle = page.locator('.provider-info-toggle')
+    const chipBox = (await headerToggle.locator('.provider-info-chip').boundingBox())!
+    const iconBox = (await headerToggle.locator('.disclosure-icon').boundingBox())!
+    expect(chipBox.x + chipBox.width).toBeLessThanOrEqual(iconBox.x + 1)
+    expect(iconBox.x - (chipBox.x + chipBox.width)).toBeLessThan(16)
+    // Category counts are a list, one category per line.
+    await expect(report.locator('.report-category-list li')).toHaveText(language === 'en'
+      ? ['2 Monitoring/reporting', '1 Licensing', '1 Public notice']
+      : ['2 Monitoreo/informes', '1 Licencia', '1 Aviso público'])
     await toggle.focus()
     await page.keyboard.press('Enter')
     await expect(toggle).toHaveAttribute('aria-expanded', 'true')
-    await expect(report.locator('.report-summary-issues .report-issues>ol>li')).toHaveCount(4)
+    await expect(report.locator('.report-issues>ol>li')).toHaveCount(4)
     await expect(page.getByRole('button', { name: /Supplier details & tools|Detalles y herramientas del proveedor/ })).toHaveCount(0)
-    const issues = report.locator('li')
+    const issues = report.locator('.report-issues>ol>li')
     await expect(issues).toHaveCount(4)
     for (const issue of await issues.all()) {
       await expect(issue).toBeVisible()
@@ -201,12 +267,12 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
       expect(finding!.y).toBeGreaterThan(from!.y + from!.height)
       await expect(issues.first().locator('.report-issue-leader')).toBeVisible()
     }
-    await expect(report.locator('li').last()).toContainText('“Current”')
-    await expect(report.locator('li').nth(2)).toContainText(language === 'en' ? 'None listed' : 'Ninguna indicada')
+    await expect(report.locator('.report-issues>ol>li').last()).toContainText('“Current”')
+    await expect(report.locator('.report-issues>ol>li').nth(2)).toContainText(language === 'en' ? 'None listed' : 'Ninguna indicada')
     expect(await toggle.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44)
     await expect(issues.first().locator('dd').first()).toHaveCSS('font-size', '16px')
-    await expect(page.locator('.profile-facts')).toBeVisible()
-    await expect(page.locator('.provider-water-source').getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
+    await expect(page.locator('.provider-system-card')).toBeVisible()
+    await expect(page.locator('.provider-system-card .provider-card-heading').getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: test.info().outputPath(`annual-report-${language}-expanded.png`), fullPage: true })
     if (test.info().project.name === 'phone-sized') {
@@ -283,10 +349,14 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await expect(page.getByText(t.placesIntro)).toHaveCount(0)
     await nav.getByRole('button', { name: t.settings, exact: true }).click()
     await expect(page.getByText(t.settingsIntro)).toHaveCount(0)
+    // Settings is links only; removal (with its confirmation) lives on Privacy and stored data.
+    await expect(page.getByRole('button', { name: t.delete, exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: new RegExp(t.privacy) }).click()
     await page.getByRole('button', { name: t.delete, exact: true }).click()
     await expect(page.getByText(t.deletionText)).toBeVisible()
     await page.getByRole('button', { name: t.cancel, exact: true }).click()
     await expect(page.getByRole('button', { name: t.confirmRemoval, exact: true })).toHaveCount(0)
+    await nav.getByRole('button', { name: t.settings, exact: true }).click()
     await page.getByRole('button', { name: new RegExp(t.sources) }).click()
     for (const name of [t.advisorySources, t.coverageHeading, t.cannotTell]) await expect(page.getByRole('heading', { name, exact: true })).toBeVisible()
     await nav.getByRole('button', { name: t.settings, exact: true }).click()
@@ -448,7 +518,7 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
     await expect(history).toHaveAttribute('aria-expanded', 'true')
     expect(await history.locator('.disclosure-icon').evaluate(icon => getComputedStyle(icon, '::before').content)).toBe('"−"')
     await page.keyboard.press('Space')
-    const help = card.getByRole('button', { name: 'Provider information', exact: true })
+    const help = card.getByRole('button', { name: /^Provider information/ })
     const referenceIcon = await history.locator('.disclosure-icon').evaluate(icon => {
       const s = getComputedStyle(icon), r = icon.getBoundingClientRect()
       return { size: s.fontSize, weight: s.fontWeight, width: r.width, right: r.right }
@@ -470,7 +540,7 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
 test('source-first cards fit phone and laptop widths, with left-aligned facts and touch targets', async ({ page }) => {
   await watchSupplier(page)
   await expect(page.locator('.supplier-contact-section .provider-contact')).toBeVisible()
-  await page.getByRole('button', { name: 'Provider information', exact: true }).click()
+  await page.getByRole('button', { name: /^Provider information/ }).click()
   for (const width of [320, 390, 1366]) {
     await page.setViewportSize({ width, height: 768 })
     const card = page.locator('.supplier-card')
@@ -481,12 +551,13 @@ test('source-first cards fit phone and laptop widths, with left-aligned facts an
       const link = element.querySelector('.official-list')!
       const finding = element.querySelector('.supplier-finding')!
       const contact = element.querySelector('.provider-contact')!
-      const row = element.querySelector('.profile-facts dd')!
+      const row = element.querySelector('.provider-card-facts dd')!
       return { linkTop: link.getBoundingClientRect().top, findingBottom: finding.getBoundingClientRect().bottom, contactTop: contact.getBoundingClientRect().top, height: link.getBoundingClientRect().height, factAlign: getComputedStyle(row).textAlign }
     })
     expect(geometry.linkTop).toBeGreaterThanOrEqual(geometry.findingBottom)
     expect(geometry.contactTop).toBeGreaterThan(geometry.linkTop)
     expect(geometry.height).toBeGreaterThanOrEqual(44)
+    // Provider facts are two-column label-over-value cells, left-aligned.
     expect(geometry.factAlign).toBe('left')
     for (const language of ['EN', 'ES']) {
       const bounds = await page.getByRole('button', { name: language, exact: true }).boundingBox()
@@ -533,8 +604,8 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await expect(panel.locator('article')).toHaveCount(2)
     await expect(panel.locator('details')).toHaveCount(0)
     await expect(panel.getByRole('link', { name: language === 'en' ? /Open ADH notice list/ : /Abrir lista de avisos de ADH/ }).first()).toHaveAttribute('href', SOURCES.ADH)
-    await card.getByRole('button', { name: t.providerHelp, exact: true }).click()
-    await expect(card.locator('.profile-facts')).toBeVisible()
+    await card.getByRole('button', { name: new RegExp(`^${t.providerHelp}`) }).click()
+    await expect(card.locator('.provider-cards')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: test.info().outputPath(`expanded-${language}-${width}.png`), fullPage: true })
     await card.locator('.guide-entry').click()
@@ -571,7 +642,7 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await page.getByRole('button', { name: /Get help with a water issue/ }).click()
   await expect(page.getByText('Published notices are not a water safety test.', { exact: true })).toBeVisible()
   await expect(page.getByText('Choose your water source to find relevant notices and guidance.', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Try sample mode', exact: true }).click()
+  await page.getByRole('button', { name: /^Try sample mode/ }).click()
   await page.getByRole('button', { name: 'Use sample watch list', exact: true }).click()
   await expect(page.locator('.status-label').filter({ hasText: /^Active boil-water notice$/ })).toBeVisible()
   await expect(page.locator('.status-label').filter({ hasText: 'No active boil-water notice found' })).toBeVisible()
@@ -623,7 +694,7 @@ for (const savedSample of [false, true]) {
     const liveBefore = await page.evaluate(() => localStorage.getItem('water-alert:live:v1'))
     if (savedSample) await page.evaluate(() => localStorage.setItem('water-alert:sample:v1', JSON.stringify({ watches: ['ADH:sample-ridge'], liftWatches: [], language: 'en', checkOnOpen: false })))
     await page.getByRole('button', { name: 'Ajustes', exact: true }).first().click()
-    await page.getByRole('button', { name: 'Probar modo de muestra', exact: true }).click()
+    await page.getByRole('button', { name: /^Probar modo de muestra/ }).click()
     await expect(page.locator('html')).toHaveAttribute('lang', 'es')
     await expect(page.getByRole('button', { name: 'ES', exact: true })).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('button', { name: 'Usar lista de muestra', exact: true })).toBeVisible()

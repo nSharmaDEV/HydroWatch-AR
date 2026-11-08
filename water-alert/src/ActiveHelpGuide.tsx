@@ -1,4 +1,5 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react'
+import { Icon } from './icons'
 import type { Language, Notice, Place } from './domain'
 import type { DraftKind } from './recovery-drafts'
 import { SourceLink } from './components'
@@ -75,7 +76,7 @@ export function ActiveHelpGuide({ place, notice, language, sample, onBack }: { p
     setRecord(null); setResponses([]); setSummary(''); setClosed(false); setSentDate(''); setReference(''); setFollow(''); setConfirmed(false); setMessage(t.deleted)
   }
   return <div className="help-guide active-help">
-    <button className="back" aria-label={h.back} onClick={onBack}>‹ {h.back}</button>
+    <button className="back" aria-label={h.back} onClick={onBack}><Icon name="chevron-left" size={18} />{h.back}</button>
     <section className="panel guide-step" aria-labelledby={`${id}-heading`}>
       <header className="guide-step-heading">
         <p className="guide-context">{place.name}{sample ? ` · ${t.sample}` : ''}</p>
@@ -85,7 +86,7 @@ export function ActiveHelpGuide({ place, notice, language, sample, onBack }: { p
       <div className="help-task-progress">
         <p id={`${id}-count`} className="guide-progress" aria-live="polite">{t.count(count)}</p>
         <progress max={4} value={count} aria-labelledby={`${id}-count`} />
-        <nav aria-label={t.nav} className="help-task-nav">{t.tasks.map((label, index) => <button key={label} className={`secondary${completed[index] ? ' task-done' : ''}`} aria-current={step === index ? 'step' : undefined} onClick={() => go(index)}><span aria-hidden="true">{completed[index] ? '✓' : step === index ? '●' : '○'} </span>{label}<small>{completed[index] ? t.done : step === index ? t.current : t.todo}</small></button>)}</nav>
+        <nav aria-label={t.nav} className="help-task-nav">{t.tasks.map((label, index) => <button key={label} className={`secondary${completed[index] ? ' task-done' : ''}`} aria-current={step === index ? 'step' : undefined} onClick={() => go(index)}><Icon name={completed[index] ? 'circle-check' : step === index ? 'circle-dot' : 'circle'} size={18} />{label}<small>{completed[index] ? t.done : step === index ? t.current : t.todo}</small></button>)}</nav>
         <p className="sr-only">{next < 0 ? t.allDone : `${t.next} ${t.tasks[next]}`}</p>
       </div>
       <HelpWorkspace language={language} directions={<>

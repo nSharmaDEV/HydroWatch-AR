@@ -1055,5 +1055,342 @@
     "sha256": "778f48c17e66bec1da1d5701aab1d67dab99f33e284f955f3632501d1f128402",
     "bytes": 176656,
     "physicalPages": 3
+  },
+  {
+    "id": "ADH:bb6a0aa1382bcc8f9601a373787af07a4417c969236d8b26cdeb8c394c09a74f",
+    "name": "BURDETTE WATERWORKS",
+    "county": "MISSISSIPPI",
+    "query": "BURDETTE",
+    "candidates": [
+      {
+        "cells": [
+          "Burdette",
+          "366",
+          "MISSISSIPPI",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=366&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "366",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=366&YEAR=2025",
+    "searchName": "Burdette",
+    "pdf": "pdfs/366.pdf",
+    "extractedText": "text/366.txt",
+    "sha256": "1965a52873b394a819c4f574fe9f16473370bf56dea84ca762ad3c8212e39e58",
+    "bytes": 118704,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:4822f1d434ff61879c00969ae7478b76dd5920b3c441521a060300be10fb1873",
+    "name": "NORTH HOWARD RURAL WATER ASSOCIATION",
+    "county": "HOWARD",
+    "query": "NORTH HOWARD",
+    "candidates": [
+      {
+        "cells": [
+          "North Howard RWA",
+          "1075",
+          "HOWARD",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=1075&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "1075",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=1075&YEAR=2025",
+    "searchName": "North Howard RWA",
+    "pdf": "pdfs/1075.pdf",
+    "extractedText": "text/1075.txt",
+    "sha256": "90e1674d2ddcbed36e3f5df22c1136809255e650ffaa3ca9794011f06de9b67d",
+    "bytes": 167058,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:dd0c55cca8bf449b3f415c40312ee2da965c2e0b15d053a40e2d8da8ada8cd20",
+    "name": "LITTLE RIVER WATER ASSOCIATION",
+    "county": "MISSISSIPPI",
+    "query": "LITTLE RIVER",
+    "candidates": [
+      {
+        "cells": [
+          "Little River",
+          "371",
+          "MISSISSIPPI",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=371&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Little River Country Club",
+          "467",
+          "LITTLE RIVER",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=467&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Little River County RDA",
+          "787",
+          "LITTLE RIVER",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=787&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "371",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=371&YEAR=2025",
+    "searchName": "Little River",
+    "pdf": "pdfs/371.pdf",
+    "extractedText": "text/371.txt",
+    "sha256": "f7aa10ba1c775b8cede2b3c587b94f50f5625b34ab237bc5c63aa32e9ea30b2a",
+    "bytes": 163888,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:16a31dc011c391cdb733b42db4608fdac7c088f71b22c5d7c1ba42d34bb31841",
+    "name": "RAVENDEN WATERWORKS",
+    "county": "LAWRENCE",
+    "query": "RAVENDEN",
+    "candidates": [
+      {
+        "cells": [
+          "Ravenden",
+          "306",
+          "LAWRENCE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=306&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Ravenden Springs",
+          "477",
+          "RANDOLPH",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=477&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "306",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=306&YEAR=2025",
+    "searchName": "Ravenden",
+    "pdf": "pdfs/306.pdf",
+    "extractedText": "text/306.txt",
+    "sha256": "3b2011eb342f76fdf489479f2cd0c3c0c65622f5701abb1102c927ba2a2209c8",
+    "bytes": 140352,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:b7db04ae8b18e90d01194739cab0a5929fecf1131d014c4ebf31903efade1f81",
+    "name": "HAZEN WATERWORKS",
+    "county": "PRAIRIE",
+    "query": "HAZEN",
+    "candidates": [
+      {
+        "cells": [
+          "Hazen",
+          "452",
+          "PRAIRIE",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=452&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "452",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=452&YEAR=2025",
+    "searchName": "Hazen",
+    "pdf": "pdfs/452.pdf",
+    "extractedText": "text/452.txt",
+    "sha256": "dfeaa21ebd5311dca6adcb30dee85cd70d97d2d9a5ce8edad2da74b5c833a729",
+    "bytes": 183929,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:a22c9f829de3dcc786845de6e2019a0449eb002c08e2b61265357f1b788dd6bc",
+    "name": "SEVIER CO WATER ASSOCIATION",
+    "county": "POLK, SEVIER",
+    "query": "SEVIER",
+    "candidates": [
+      {
+        "cells": [
+          "Sevier County",
+          "868",
+          "POLK",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=868&YEAR=2025"
+      },
+      {
+        "cells": [
+          "Sevier County",
+          "868",
+          "SEVIER",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=868&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "868",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=868&YEAR=2025",
+    "searchName": "Sevier County",
+    "pdf": "pdfs/868.pdf",
+    "extractedText": "text/868.txt",
+    "sha256": "1424aca41dc13be9d244291dcb1aa6623ad98f56ae564dda84db2f4d651fbce3",
+    "bytes": 169711,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:4a74934a1f0a929abb23264229fec04364722bc065a1246e0c4ed52b9a60b324",
+    "name": "EVENING SHADE WATERWORKS",
+    "county": "SHARP",
+    "query": "EVENING SHADE",
+    "candidates": [
+      {
+        "cells": [
+          "Evening Shade",
+          "525",
+          "SHARP",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=525&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "525",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=525&YEAR=2025",
+    "searchName": "Evening Shade",
+    "pdf": "pdfs/525.pdf",
+    "extractedText": "text/525.txt",
+    "sha256": "bc828aff0331b67cbc45a3dc7aef226ab572ea4f6fe789b5fac7b0b7430687d2",
+    "bytes": 144754,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:61c7e65a2b401bf11e1afc021445d676e894ab790911718270d364d09618063a",
+    "name": "KIBLER WATER SYSTEM",
+    "county": "CRAWFORD",
+    "query": "KIBLER",
+    "candidates": [
+      {
+        "cells": [
+          "Kibler",
+          "140",
+          "CRAWFORD",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=140&YEAR=2025"
+      }
+    ],
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "pdf-retrieved",
+    "pwsId": "140",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=140&YEAR=2025",
+    "searchName": "Kibler",
+    "pdf": "pdfs/140.pdf",
+    "extractedText": "text/140.txt",
+    "sha256": "e2a31a9418523dcff7cd719f14f61b13becf110e291024602792340fba9b348f",
+    "bytes": 165645,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:60d4cc00909fefb1e5b34e34f861fd3a3e5003f571ac36e719f3716793c9535d",
+    "name": "VILLAGE WATER LLC",
+    "county": "BENTON",
+    "query": "VILLAGE WATER",
+    "candidates": [],
+    "directoryMatch": {
+      "source": "https://health.arkansas.gov/eng/WS.aspx?ID=747",
+      "name": "VILLAGE WATER LLC",
+      "county": "BENTON",
+      "type": "Community",
+      "retrievedOn": "2026-11-07"
+    },
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "same-pws-as-existing-record",
+    "pwsId": "747",
+    "sourceUrl": "https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025",
+    "searchName": "Leisure Hills MP",
+    "pdf": "pdfs/747.pdf",
+    "extractedText": "text/747.txt",
+    "sha256": "7f6c06fb3c45e6883ede2fec4ba3c7078bdb9deded226f1e73907979ab8aa2ed",
+    "bytes": 146428,
+    "physicalPages": 2
+  },
+  {
+    "id": "ADH:bc78112e18850b3c73772317623bb248d573780fa1fa9ddfc27be31e06772796",
+    "name": "ENTERGY - INDEPENDENCE",
+    "county": "INDEPENDENCE",
+    "query": "ENTERGY",
+    "candidates": [],
+    "additionalQueries": [
+      "INDEPENDENCE",
+      "N0009 (PWS ID)"
+    ],
+    "directoryMatch": {
+      "source": "https://health.arkansas.gov/eng/WS.aspx?ID=N0009",
+      "name": "ENTERGY - INDEPENDENCE",
+      "county": "INDEPENDENCE",
+      "type": "Non-transient Non-community",
+      "retrievedOn": "2026-11-07"
+    },
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "no-matching-2025-search-result"
+  },
+  {
+    "id": "ADH:59ea414b9de925682e918f76f10c1f537214a14af92b033ee92df0846dda6382",
+    "name": "EUREKA RIVERSIDE RESORT",
+    "county": "CARROLL",
+    "query": "EUREKA",
+    "candidates": [
+      {
+        "cells": [
+          "Eureka Springs",
+          "075",
+          "CARROLL",
+          "2025"
+        ],
+        "url": "https://health.arkansas.gov/eng/d.aspx?P=075&YEAR=2025"
+      }
+    ],
+    "additionalQueries": [
+      "RIVERSIDE",
+      "T0467 (PWS ID)"
+    ],
+    "directoryMatch": {
+      "source": "https://health.arkansas.gov/eng/WS.aspx?ID=T0467",
+      "name": "EUREKA RIVERSIDE RESORT",
+      "county": "CARROLL",
+      "type": "Transient Non-community",
+      "retrievedOn": "2026-11-07"
+    },
+    "requestedYear": 2025,
+    "retrievedOn": "2026-11-07",
+    "retrieval": "no-matching-2025-search-result"
   }
 ]

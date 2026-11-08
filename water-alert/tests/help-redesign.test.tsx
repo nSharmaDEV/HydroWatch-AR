@@ -38,7 +38,7 @@ it('keeps contact values and help directly available', async () => {
   expect(screen.getByRole('link', { name: /Call.*479/ })).toHaveTextContent('(479) 549-2158')
   expect(screen.getByRole('link', { name: /LEISUREHILLSWATERCO@GMAIL.COM/ })).toHaveTextContent('LEISUREHILLSWATERCO@GMAIL.COM')
   expect(screen.getByRole('button', { name: 'Get help with a water issue' })).toBeVisible()
-  expect(screen.getByRole('button', { name: 'Provider information' })).toBeVisible()
+  expect(screen.getByRole('button', { name: /^Provider information/ })).toBeVisible()
 })
 
 // Losing mounted editor state, advancing without a branch or filing from WAVE must fail.

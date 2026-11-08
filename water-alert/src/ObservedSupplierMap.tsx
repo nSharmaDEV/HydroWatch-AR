@@ -1,4 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { Icon } from './icons'
 import { statusFor, type Language, type Notice, type Place, type SourceSnapshot } from './domain'
 import { DateRow } from './components'
 import { unavailableReason } from './source-checks'
@@ -8,6 +9,7 @@ import { mapEn, mapEs } from './map-strings'
 import { MapSupplierDetails } from './MapSupplierDetails'
 import { noticeMatchesPlace } from './place-catalog'
 import type { Strings } from './strings'
+import { closeMotionDialog, useContentMotion } from './interface-motion'
 import './observed-map.css'
 
 const locations = new Map(SUPPLIER_LOCATIONS.map(point => [point.placeId, point]))
@@ -26,6 +28,10 @@ export function ObservedSupplierMap({ archive, watches, places, sources, now, t,
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [mobile, setMobile] = useState(() => window.matchMedia?.('(max-width: 760px)').matches ?? false)
   const dialog = useRef<HTMLDialogElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
+  const workspace = useRef<HTMLDivElement>(null)
+  const changePanel = useContentMotion(panel)
+  const changeView = useContentMotion(workspace)
   const back = useRef<HTMLButtonElement>(null)
   const trigger = useRef<Element | null>(null)
   const restoreFocus = useRef(false)
@@ -79,8 +85,15 @@ export function ObservedSupplierMap({ archive, watches, places, sources, now, t,
       restoreFocus.current = false
     }
   }, [showDetails, mobile, active, selected])
-  function select(place: Place, element: Element) { trigger.current = element; setSelected(place.id); setDetailsOpen(true) }
-  function closeDetails() { restoreFocus.current = true; setDetailsOpen(false) }
+  function select(place: Place, element: Element) {
+    trigger.current = element
+    const update = () => { setSelected(place.id); setDetailsOpen(true) }
+    if (mobile) update(); else changePanel(update, 'forward')
+  }
+  function closeDetails() {
+    const update = () => { restoreFocus.current = true; setDetailsOpen(false) }
+    if (mobile) closeMotionDialog(dialog.current, update); else changePanel(update, 'back')
+  }
   function changeFilter() { setDetailsOpen(false) }
   const details = selection ? <MapSupplierDetails key={selection.place.id} {...selection} archive={archive} source={source} now={now} t={t} language={language} /> : null
 
@@ -90,8 +103,8 @@ export function ObservedSupplierMap({ archive, watches, places, sources, now, t,
       <div className="map-scope" role="group" aria-label={t.myPlaces}><button aria-pressed={scope === 'mine'} onClick={() => { setScope('mine'); changeFilter() }}>{t.myPlaces}</button><button aria-pressed={scope === 'all'} onClick={() => { setScope('all'); changeFilter() }}>{m.allPlaces}</button></div>
       <label className="map-status-filter"><span>{m.status}</span><select value={filter} onChange={e => { setFilter(e.target.value as StatusFilter); changeFilter() }}><option value="all">{m.allStatuses}</option>{Object.entries(labels).map(([state, label]) => <option key={state} value={state}>{label}</option>)}</select></label>
     </div>
-    <div className="map-mobile-tabs" role="group" aria-label={m.view}><button aria-pressed={view === 'map'} onClick={() => setView('map')}>{m.map}</button><button aria-pressed={view === 'list'} onClick={() => setView('list')}>{m.list}</button></div>
-    <div className={`map-workspace mobile-${view}`}>
+    <div className="map-mobile-tabs" role="group" aria-label={m.view}><button aria-pressed={view === 'map'} onClick={() => { if (view !== 'map') changeView(() => setView('map')) }}>{m.map}</button><button aria-pressed={view === 'list'} onClick={() => { if (view !== 'list') changeView(() => setView('list')) }}>{m.list}</button></div>
+    <div ref={workspace} className={`map-workspace mobile-${view}`}>
       <div className="map-geography">
         <div className="map-legend" aria-label={m.legend}>{Object.entries(labels).map(([state, label]) => <span key={state}><span className={`map-status-dot ${state}`} aria-hidden="true" />{label}</span>)}</div>
         <div className="map-canvas">
@@ -114,14 +127,14 @@ export function ObservedSupplierMap({ archive, watches, places, sources, now, t,
         <p id={`${id}-pan`} className="sr-only">{m.pan}</p>
         {!mapped.length ? <p className="map-no-points">{m.mapNoPoints}</p> : null}
       </div>
-      <div className="map-side-panel">
+      <div ref={panel} className="map-side-panel">
         <section className="map-results" aria-label={m.results} hidden={!mobile && showDetails}>
           <h2>{m.results} <span role="status">({suppliers.length})</span></h2>
           {!suppliers.length ? <p role="status">{m.mapNoMatches}</p> : null}
-          <ul className="map-supplier-list">{suppliers.map(({ place, state, label, point }) => <li key={place.id}><button aria-pressed={place.id === selected} onClick={e => select(place, e.currentTarget)} className="map-supplier-button"><span className={`map-status-dot ${state}`} aria-hidden="true" /><span><strong>{place.name}</strong><span>{place.county}</span><span className={state === 'active' ? 'map-active-label' : undefined}>{label}</span>{!point ? <span>{m.locationUnavailable}</span> : null}</span><span aria-hidden="true">›</span></button></li>)}</ul>
+          <ul className="map-supplier-list">{suppliers.map(({ place, state, label, point }) => <li key={place.id}><button aria-pressed={place.id === selected} onClick={e => select(place, e.currentTarget)} className="map-supplier-button"><span className={`map-status-dot ${state}`} aria-hidden="true" /><span><strong>{place.name}</strong><span>{place.county}</span><span className={state === 'active' ? 'map-active-label' : undefined}>{label}</span>{!point ? <span>{m.locationUnavailable}</span> : null}</span><Icon name="chevron-right" size={20} /></button></li>)}</ul>
           <div className="map-freshness"><dl><DateRow label={t.successfulCheck} value={source?.lastSuccessAt} app language={language} /><DateRow label={t.since} value={coverageStart} app language={language} /></dl>{!source?.lastSuccessAt ? <p>{t.noSuccessfulCheck}</p> : null}{statusFor('', source, now).state === 'unavailable' ? <p>{checkExplanation}</p> : null}</div>
         </section>
-        {!mobile && showDetails ? <section className="map-details" aria-label={selection?.place.name}><button ref={back} className="map-back" onClick={closeDetails}>‹ {m.back}</button>{details}</section> : null}
+        {!mobile && showDetails ? <section className="map-details" aria-label={selection?.place.name}><button ref={back} className="map-back" onClick={closeDetails}><Icon name="chevron-left" size={18} />{m.back}</button>{details}</section> : null}
       </div>
     </div>
     <p className="map-boundary-note">{m.boundary}</p><p className="map-safety-note">{m.mapNoSafety}</p>
@@ -132,7 +145,7 @@ export function ObservedSupplierMap({ archive, watches, places, sources, now, t,
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
     }} onCancel={e => { e.preventDefault(); closeDetails() }} onClick={e => { if (e.target === e.currentTarget) { const r = e.currentTarget.getBoundingClientRect(); if (e.clientY < r.top || e.clientX < r.left || e.clientX > r.right) closeDetails() } }}>
-      <div className="map-sheet-heading"><button className="map-back" onClick={closeDetails}>‹ {m.back}</button><button className="map-sheet-close" aria-label={m.close} onClick={closeDetails}>×</button></div>
+      <div className="map-sheet-heading"><button className="map-back" onClick={closeDetails}><Icon name="chevron-left" size={18} />{m.back}</button><button className="map-sheet-close" aria-label={m.close} onClick={closeDetails}><Icon name="x" size={20} /></button></div>
       {mobile && showDetails ? details : null}
     </dialog>
   </section>

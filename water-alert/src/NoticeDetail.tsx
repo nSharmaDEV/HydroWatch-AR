@@ -1,4 +1,5 @@
 import { SOURCES, statusFor, type Language, type Notice, type Place, type SourceSnapshot } from './domain'
+import { Icon } from './icons'
 import { AgencyLiftRow, CatalogCoverage, DateRow, Panel, SourceLink } from './components'
 import { AdeqGuidance } from './AdeqGuidance'
 import type { Strings } from './strings'
@@ -18,13 +19,13 @@ export function NoticeDetail({ place, source, now, linkedNotice, t, language, sa
   const tone = linkedNotice ? linkedNotice.lifted ? 'none' : 'unavailable' : status.state === 'active' ? place.kind === 'system' ? 'boil' : 'hab' : status.state
   const heading = linkedNotice ? linkedNotice.lifted ? t.explicitLift : t.unverified : status.state === 'active' ? place.kind === 'system' ? t.activeBoil : t.activeHab : unavailable ? t.unavailable : t.none
   return <>
-    <button className="back" onClick={onBack}>‹ {t.back}</button>
+    <button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{t.back}</button>
     <div className="page-heading"><div><h1>{supplierCounty(place.name)}</h1><p>{supplierCounty(place.county)} · {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div></div>
       <Panel className={`detail-status ${tone}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">{linkedNotice ? linkedNotice.lifted ? '—' : '?' : status.state === 'active' ? '!' : unavailable ? '?' : '—'}</span>{heading}</p>
         {unavailable ? <p>{t.unavailableText}</p> : !linkedNotice && status.state === 'none' ? <p>{t.noneText}</p> : null}
         {records.some(n => n.liftStatus === 'unknown') ? <p className="info">{t.unknownLift}</p> : null}
         <dl>{source?.lastSuccessAt ? <DateRow label={t.successfulCheck} value={source.lastSuccessAt} app language={language} zoneId={false} /> : <div className="date-row"><dt>{t.successfulCheck}</dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl>
-        <a className="primary official-list" href={linkedNotice?.url ?? SOURCES[place.kind === 'system' ? 'ADH' : 'ADEQ']} target="_blank" rel="noreferrer">{t.officialSource} <span aria-hidden="true">↗</span></a>
+        <a className="primary official-list" href={linkedNotice?.url ?? SOURCES[place.kind === 'system' ? 'ADH' : 'ADEQ']} target="_blank" rel="noreferrer">{t.officialSource} <Icon name="external-link" size={16} /></a>
         {records.map(n => <section className="detail-record" key={n.id}>
           {!n.lifted && unavailable && !linkedNotice ? <p className="unverified-label">{t.unverified}</p> : null}
           <div className="record-facts"><div><h2>{t.affected}</h2><p>{n.area}</p></div><div><h2>{t.reason}</h2><p>{n.reason || t.unknown}</p></div></div>

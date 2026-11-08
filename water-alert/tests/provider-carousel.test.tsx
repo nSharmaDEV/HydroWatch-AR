@@ -38,7 +38,7 @@ it('shows one card at a time with an indicator and boundary-aware controls', asy
 
   await user.click(previous)
   expect(screen.getByText('2 of 3 places')).toBeVisible()
-  expect(Element.prototype.scrollTo).toHaveBeenCalled()
+  expect(Element.prototype.scrollTo).not.toHaveBeenCalled()
 })
 
 it('does not move cards on wheel or horizontal trackpad scroll', () => {
@@ -51,19 +51,15 @@ it('does not move cards on wheel or horizontal trackpad scroll', () => {
   expect(screen.getByText('1 of 2 places')).toBeVisible()
 })
 
-it('does not move cards on mouse or touch drag gestures', () => {
-  render(<ProviderCarousel><article>First place</article><article>Second place</article></ProviderCarousel>)
-  const region = track()
-
-  fireEvent.pointerDown(region, { pointerType: 'mouse', button: 0, pointerId: 1, clientX: 300 })
-  fireEvent.pointerMove(region, { pointerType: 'mouse', pointerId: 1, clientX: 120 })
-  fireEvent.pointerUp(region, { pointerType: 'mouse', pointerId: 1, clientX: 120 })
-  fireEvent.pointerDown(region, { pointerType: 'touch', pointerId: 2, clientX: 300 })
-  fireEvent.pointerMove(region, { pointerType: 'touch', pointerId: 2, clientX: 120 })
-  fireEvent.pointerUp(region, { pointerType: 'touch', pointerId: 2, clientX: 120 })
-
-  expect(region.scrollLeft).toBe(0)
-  expect(screen.getByText('1 of 2 places')).toBeVisible()
+it('clamps the active place when watched cards are removed', () => {
+  const { rerender } = render(<ProviderCarousel><article>First place</article><article>Second place</article><article>Third place</article></ProviderCarousel>)
+  fireEvent.keyDown(track(), { key: 'End' })
+  expect(screen.getByText('3 of 3 places')).toBeVisible()
+  rerender(<ProviderCarousel><article>First place</article><article>Second place</article></ProviderCarousel>)
+  expect(screen.getByText('2 of 2 places')).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Next place' })).toBeDisabled()
+  rerender(<ProviderCarousel>{[]}</ProviderCarousel>)
+  expect(track()).toBeInTheDocument()
 })
 
 it('keeps card buttons and links usable', async () => {

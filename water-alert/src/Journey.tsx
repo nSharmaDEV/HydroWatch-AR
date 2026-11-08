@@ -10,13 +10,15 @@ import { catalogEntry } from './place-catalog'
 // The WAVE logo's teal and aqua bands as one continuous strip flowing right to left (geometry in
 // welcome-strip.ts). Paths are updated through refs each frame, not React state. Under reduced
 // motion (or if it changes to reduced) the strip is drawn once and stays still. `still` draws it
-// once and never animates (Settings, where the controls should get attention first).
+// once and never animates (Settings and History, where the controls should get attention first),
+// always from the same fixed seed so the still strip has one identical shape on every page/visit.
+export const STILL_STRIP_SEED = 0x5a7e
 export function WelcomeStrip({ still = false }: { still?: boolean } = {}) {
   const id = useId().replace(/:/g, '')
   const aqua = useRef<SVGPathElement>(null)
   const teal = useRef<SVGPathElement>(null)
   useEffect(() => {
-    const seed = Math.floor(Math.random() * 0x100000000)
+    const seed = still ? STILL_STRIP_SEED : Math.floor(Math.random() * 0x100000000)
     let offset = 0, previous: number | undefined, frame = 0
     const draw = () => {
       const paths = stripPaths(offset, seed)
@@ -68,7 +70,7 @@ export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack,
   return <div className="search-stage">
     <WelcomeStrip />
     <Panel className="journey-panel search-glass">
-    <button className="back" onClick={onBack}>‹ {t.backStep}</button>
+    <button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{t.backStep}</button>
     <h1>{noMatch ? system ? t.noSupplier : t.noLake : heading ?? (system ? t.findSupplier : t.findLake)}</h1>
     <p>{intro ?? (system ? t.supplierIntro : t.lakeIntro)}</p>
     <label className="sr-only" htmlFor="place-search">{system ? t.supplierSearch : t.lakeSearch}</label>
@@ -89,7 +91,7 @@ export function ConfirmPlace({ place, t, onConfirm, onBack }: { place: Place; t:
   // Same flowing strip and frosted card as the search step that leads here.
   return <div className="search-stage">
     <WelcomeStrip />
-    <Panel className="journey-panel search-glass confirm-glass"><button className="back" onClick={onBack}>‹ {t.backStep}</button><h1>{place.kind === 'system' ? t.confirmSupplier : t.confirmLake}</h1>
+    <Panel className="journey-panel search-glass confirm-glass"><button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{t.backStep}</button><h1>{place.kind === 'system' ? t.confirmSupplier : t.confirmLake}</h1>
     <div className="confirm-place"><h2>{supplierCounty(place.name)}</h2><p>{supplierCounty(place.county)}</p><p>{t.source}: {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p></div>
     <p>{place.kind === 'system' ? t.confirmBill : t.confirmArea}</p><details><summary>{t.coverageDetails}<span className="disclosure-icon" aria-hidden="true" /></summary>{catalogEntry(place.id) ? <CatalogCoverage placeId={place.id} t={t} /> : <><p>{place.kind === 'system' ? t.coverage : t.catalogWaterbody}</p><SourceLink url={SOURCES[place.kind === 'system' ? 'ADH' : 'ADEQ']}>{t.sourceLink}</SourceLink></>}</details><button className="primary full" onClick={onConfirm}>{t.confirmWatch}</button><button className="secondary full" onClick={onBack}>{t.differentPlace}</button>
     </Panel>

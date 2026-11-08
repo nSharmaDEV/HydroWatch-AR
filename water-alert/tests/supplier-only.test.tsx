@@ -24,7 +24,7 @@ it('offers only suppliers at setup and in sample mode', async () => {
   expect(screen.getByRole('searchbox')).toBeVisible()
   expect(screen.queryByRole('button', { name: /A lake or waterbody/ })).not.toBeInTheDocument()
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
-  await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
+  await user.click(screen.getByRole('button', { name: /^Try sample mode/ }))
   await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
   expect(screen.queryByText(/Cove Lake/)).not.toBeInTheDocument()
   expect(screen.queryByRole('checkbox', { name: /HAB/ })).not.toBeInTheDocument()

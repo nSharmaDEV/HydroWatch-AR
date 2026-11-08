@@ -1,4 +1,5 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react'
+import { Icon } from './icons'
 import type { Language, Notice, Place } from './domain'
 import { SourceLink } from './components'
 import { ProviderContact } from './ProviderContact'
@@ -27,7 +28,7 @@ function StandardHelpGuide({ place, notice, language, sample, onBack }: { place:
   const w = workspaceStrings[language]
   useLayoutEffect(() => { heading.current?.focus(); window.scrollTo?.(0, 0) }, [step])
   return <div className="help-guide">
-    <button className="back" aria-label={t.back} onClick={onBack}>‹ {t.back}</button>
+    <button className="back" aria-label={t.back} onClick={onBack}><Icon name="chevron-left" size={18} />{t.back}</button>
     <section className="panel guide-step" aria-labelledby={headingId}>
     <header className="guide-step-heading">
       <p className="guide-context">{place.name}{sample ? language === 'en' ? ' · SAMPLE' : ' · EJEMPLO' : ''}</p>

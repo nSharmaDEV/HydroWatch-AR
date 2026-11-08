@@ -1,4 +1,5 @@
 import { useId, useState } from 'react'
+import { useMotionPresence } from './interface-motion'
 import type { Language, Notice, Place } from './domain'
 import { supplierArea, supplierIssued } from './supplier-display'
 import type { Strings } from './strings'
@@ -6,6 +7,7 @@ import type { Strings } from './strings'
 export function NoticeChecklist({ notices, place, language, t, sample, onHelp }: { notices: Notice[]; place: Place; language: Language; t: Strings; sample: boolean; onHelp: () => void }) {
   const [checked, setChecked] = useState([false, false, false])
   const [showArea, setShowArea] = useState(false)
+  const areaMotion = useMotionPresence(showArea, 'slide')
   const id = useId()
   const spanish = language === 'es'
   const labels = spanish
@@ -25,7 +27,7 @@ export function NoticeChecklist({ notices, place, language, t, sample, onHelp }:
       <label><input type="checkbox" checked={checked[index]} onChange={event => { const value = event.target.checked; setChecked(previous => previous.map((done, i) => i === index ? value : done)) }} /><span><strong>{label}</strong><small>{descriptions[index]}</small></span></label>
       {index === 0 && !sample ? <a className="primary" href={notices[0].url} target="_blank" rel="noreferrer">{spanish ? 'Ver aviso' : 'View notice'}</a> : <button className="primary" aria-expanded={index === 1 || (index === 0 && sample) ? showArea : undefined} aria-controls={index === 1 || (index === 0 && sample) ? id : undefined} onClick={index === 2 ? onHelp : () => setShowArea(value => !value)}>{index === 2 ? spanish ? 'Obtener ayuda' : 'Get help' : index === 0 ? spanish ? 'Ver ejemplo' : 'View sample' : spanish ? 'Ver área' : 'View area'}</button>}
     </li>)}</ul>
-    <div id={id} hidden={!showArea} className="notice-area-details">{notices.map(notice => <p key={notice.id}>{spanish ? 'Área afectada publicada: ' : 'Published affected area: '}{notice.area || t.unknown}</p>)}<p>{spanish ? 'Confirme su proveedor en su factura. No se infiere su domicilio a partir del condado.' : 'Confirm your supplier on your water bill. Your address is not inferred from the county.'}</p></div>
+    <div ref={areaMotion.ref} id={id} hidden={!areaMotion.present} inert={!showArea} aria-hidden={!showArea || undefined} className="notice-area-details">{notices.map(notice => <p key={notice.id}>{spanish ? 'Área afectada publicada: ' : 'Published affected area: '}{notice.area || t.unknown}</p>)}<p>{spanish ? 'Confirme su proveedor en su factura. No se infiere su domicilio a partir del condado.' : 'Confirm your supplier on your water bill. Your address is not inferred from the county.'}</p></div>
     <p className="quiet-note">{spanish ? 'Marque los pasos al terminarlos. Esta lista no cambia el estado del aviso. El progreso no se guarda al recargar.' : 'Check off steps as you finish. Your checklist does not change the notice status. Progress resets when you reload.'}</p>
     <p className="quiet-note">{t.guidanceGap} {spanish ? 'No hay una hora de finalización verificada; consulte al proveedor.' : 'No verified end time is available; check with the provider.'}</p>
   </section>

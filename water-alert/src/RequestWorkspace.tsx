@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Icon } from './icons'
 import type { Language, Notice, Place } from './domain'
 import { HelpAccount } from './HelpAccount'
 import { reportMessage } from './recovery-evidence'
@@ -10,6 +11,7 @@ import './requests.css'
 import { answerFingerprint } from './help-outputs'
 import { localizeDraft, updateDraft } from './help-draft'
 import { exportedText } from './help-exports'
+import { useContentMotion } from './interface-motion'
 interface Props { place: Place; places?: Place[]; notice?: Notice; notices?: Notice[]; language: Language; sample: boolean; requestId?: string; currentAdvisory?: boolean; registerLeave?: (handler: (() => Promise<boolean>) | null) => void; onBack: () => void; onHistory: (id: string) => void }
 export function RequestWorkspace(props: Props) {
   return <div className="request-workspace">{props.sample ? <Workspace {...props} delivery={false} deviceOnly={false} /> : <HelpAccount language={props.language}>{s => <Workspace {...props} delivery={s.delivery} deviceOnly={!s.user} />}</HelpAccount>}</div>
@@ -19,6 +21,8 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
   const current = useRef<HelpDraft | null>(null), revision = useRef(0), queue = useRef<Promise<unknown>>(Promise.resolve()), timer = useRef<ReturnType<typeof setTimeout> | null>(null), alive = useRef(true), heading = useRef<HTMLHeadingElement>(null)
   const savedSnapshot = useRef<HelpDraft | null>(null), savedRecord = useRef<HelpRequest | null>(null)
   const draftLanguage = useRef(language)
+  const stepContent = useRef<HTMLElement>(null)
+  const changeStep = useContentMotion(stepContent)
   const [sent, setSent] = useState(false)
   const [readingFiles, setReadingFiles] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
@@ -72,8 +76,11 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
     if (!draft) return
     let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' ? 2 : 1 }
     if (value === 'review') { const { sources, context, evidence } = factPatch(relevantFacts(draft)); patch = { ...patch, sources, context, evidence } }
-    edit(patch)
-    try { await persist() } catch { setError(say('Could not save. Your text remains here. Reload only after keeping a copy; a conflicting edit may exist.', 'No se pudo guardar. El texto sigue aquí. Guarda una copia antes de recargar; puede existir otra edición.')) }
+    const path = helpPath(draft)
+    changeStep(() => {
+      edit(patch)
+      void persist().catch(() => { setError(say('Could not save. Your text remains here. Reload only after keeping a copy; a conflicting edit may exist.', 'No se pudo guardar. El texto sigue aquí. Guarda una copia antes de recargar; puede existir otra edición.')) })
+    }, path.indexOf(value) < path.indexOf(helpStep(draft)) ? 'back' : 'forward')
   }
   function messageFromIssue(value: HelpDraft) {
     if (value.facts) return { ...generateMessage({ ...value, ...factPatch(relevantFacts(value)) }, language), generatedFrom: answerFingerprint(value) }
@@ -99,7 +106,7 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
     catch { setError(say('Sending was not confirmed. Open History before trying again; do not create a duplicate request.', 'El envío no se confirmó. Abre Historial antes de volver a intentarlo; no crees una solicitud duplicada.')) }
     finally { setSending(false) }
   }
-  if (!draft) return <section className="request-workspace"><button className="back" onClick={onBack}>‹ {say('Back', 'Atrás')}</button><p role="status">{saving === 'error' ? say('Could not load your draft. Nothing was overwritten.', 'No se pudo cargar el borrador. No se sobrescribió nada.') : say('Loading draft…', 'Cargando borrador…')}</p></section>
+  if (!draft) return <section className="request-workspace"><button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{say('Back', 'Atrás')}</button><p role="status">{saving === 'error' ? say('Could not load your draft. Nothing was overwritten.', 'No se pudo cargar el borrador. No se sobrescribió nada.') : say('Loading draft…', 'Cargando borrador…')}</p></section>
   const extras = <section className="request-extras" aria-label={say('Add a photo or document', 'Añade una foto o documento')}>
       <button className="request-attachment-button secondary" disabled={readingFiles} onClick={() => fileInput.current?.click()}><span aria-hidden="true">＋</span>{say('Add a photo or document', 'Añade una foto o documento')}</button>
       <label className="sr-only">{say('Attachments (optional)', 'Archivos adjuntos (opcional)')}<input ref={fileInput} type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" multiple disabled={readingFiles} onChange={e => void files(e.currentTarget)} /></label>
@@ -107,8 +114,8 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
       {draft.attachments.map(a => <p key={a.id} className="request-file-row"><span aria-hidden="true">▤</span> {a.name} ({a.type}) — {say('Ready', 'Listo')} <button className="text-button" aria-label={`${say('Remove attachment', 'Eliminar archivo')}: ${a.name}`} onClick={() => edit({ attachments: draft.attachments.filter(f => f.id !== a.id) })}>{say('Remove', 'Eliminar')}</button></p>)}
        </section>
   const step = helpStep(draft), path = helpPath(draft), index = path.indexOf(step)
-  const topLine = <div className="request-topline"><button className="back" aria-label={say('Back', 'Atrás')} disabled={sending} onClick={() => index > 0 ? void stage(path[index - 1]) : void leave(onBack)}>‹ {say(index ? 'Back to previous step' : 'Back', index ? 'Volver al paso anterior' : 'Atrás')}</button><div className="request-actions"><p role="status">{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p><button className="text-button" onClick={() => void leave(() => onHistory(draft.id))}>{say('Open History', 'Abrir Historial')}</button></div></div>
-  return <section className="request-workspace request-guided-workspace">
+  const topLine = <div className="request-topline"><button className="back" aria-label={say('Back', 'Atrás')} disabled={sending} onClick={() => index > 0 ? void stage(path[index - 1]) : void leave(onBack)}><Icon name="chevron-left" size={18} />{say(index ? 'Back to previous step' : 'Back', index ? 'Volver al paso anterior' : 'Atrás')}</button><div className="request-actions"><p role="status">{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p><button className="text-button" onClick={() => void leave(() => onHistory(draft.id))}>{say('Open History', 'Abrir Historial')}</button></div></div>
+  return <section ref={stepContent} className="request-workspace request-guided-workspace">
       <GuidedHelp topLine={topLine} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} edit={edit} changeFacts={facts => edit(factPatch(facts))} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
     {sent ? <p role="status">{say('Message accepted by the email processor, not confirmed delivered or resolved. Open History for updates.', 'Mensaje aceptado por el procesador, no confirma entrega ni solución. Abre Historial para ver actualizaciones.')}</p> : null}
     {error ? <p role="alert">{error}</p> : null}

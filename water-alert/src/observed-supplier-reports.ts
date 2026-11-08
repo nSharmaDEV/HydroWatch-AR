@@ -20,11 +20,18 @@ function publicNotice(from: string, through: string, title: Text, action: Text):
   return { category: 'publicNotice', heading: text('Public notice', 'Aviso público'), title, action, reportedFrom: from, reportedThrough: through, page: 2 }
 }
 const upstreamTurbidity: AnnualReportIssue = { category: 'upstreamSupplier', heading: text('Upstream supplier turbidity', 'Turbidez del proveedor de origen'), title: text('The Community Water turbidity row is marked Y for violation: highest 2.49 NTU; lowest monthly percentage meeting the limit 99.4%. These are upstream supplier results, not a current measurement at this utility.', 'La fila de turbidez de Community Water indica Y (infracción): máximo 2.49 NTU; porcentaje mensual mínimo que cumple el límite 99.4%. Son resultados del proveedor de origen, no una medición actual de este sistema.'), action: notProvided, page: 2 }
-function reviewed(pws: string, issues: readonly AnnualReportIssue[] = [], note?: Text): readonly AnnualReport[] {
-  return [{ year: 2025, state: 'reviewed', reviewedOn: '2026-10-19', url: `https://health.arkansas.gov/eng/d.aspx?P=${pws}&YEAR=2025`, issues, ...(note ? { note } : {}) }]
+function reviewed(pws: string, issues: readonly AnnualReportIssue[] = [], note?: Text, reviewedOn = '2026-10-19'): readonly AnnualReport[] {
+  return [{ year: 2025, state: 'reviewed', reviewedOn, url: `https://health.arkansas.gov/eng/d.aspx?P=${pws}&YEAR=2025`, issues, ...(note ? { note } : {}) }]
 }
-function unavailable(pws: string): readonly AnnualReport[] {
-  return [{ year: 2025, state: 'unavailable', sourceUrl: `https://health.arkansas.gov/eng/WS.aspx?ID=${pws}`, note: text(`Checked Oct 19, 2026: no 2025 PDF found in ADH’s annual-report search. The ADH directory identifies ${pws} as a transient non-community system. No report findings or safety conclusion can be inferred.`, `Revisado el 19 de octubre de 2026: no se encontró un PDF de 2025 en la búsqueda de informes de ADH. El directorio identifica ${pws} como sistema transitorio no comunitario. No se pueden inferir hallazgos ni conclusiones de seguridad.`) }]
+// Second batch: whole-document review of live-feed suppliers on 2026-11-07.
+const reviewedNov = (pws: string, issues: readonly AnnualReportIssue[] = []) => reviewed(pws, issues, undefined, '2026-11-07')
+const checked = { oct: text('Checked Oct 19, 2026', 'Revisado el 19 de octubre de 2026'), nov: text('Checked Nov 7, 2026', 'Revisado el 7 de noviembre de 2026') }
+const systemType = {
+  transient: text('a transient non-community system', 'sistema transitorio no comunitario'),
+  nonTransient: text('a non-transient non-community system', 'sistema no transitorio no comunitario'),
+}
+function unavailable(pws: string, type: Text = systemType.transient, on: Text = checked.oct): readonly AnnualReport[] {
+  return [{ year: 2025, state: 'unavailable', sourceUrl: `https://health.arkansas.gov/eng/WS.aspx?ID=${pws}`, note: text(`${on.en}: no 2025 PDF found in ADH’s annual-report search. The ADH directory identifies ${pws} as ${type.en}. No report findings or safety conclusion can be inferred.`, `${on.es}: no se encontró un PDF de 2025 en la búsqueda de informes de ADH. El directorio identifica ${pws} como ${type.es}. No se pueden inferir hallazgos ni conclusiones de seguridad.`) }]
 }
 
 export const OBSERVED_SUPPLIER_REPORTS: Readonly<Record<string, readonly AnnualReport[]>> = {
@@ -44,7 +51,8 @@ export const OBSERVED_SUPPLIER_REPORTS: Readonly<Record<string, readonly AnnualR
   'ADH:74ade4dfe3721f77ed2756a11406ffc00e45dbdbcc6c956745dbb8573d4153ea': reviewed('882', [monitoring('07/01/2025', '07/31/2025', 2)]),
   // Midway Water Association, Crittenden County (not Lakeview-Midway).
   'ADH:a12f41b2b9ea15999a66e205359086a4e565a7733f5f0d4b791e653f5b30ec03': reviewed('153'),
-  // Riverside Resort at Kings River, not Riverside Resort T1037.
+  // Riverside Resort at Kings River, not Riverside Resort T1037. On 2026-11-07
+  // the ADH directory listed T0467 as EUREKA RIVERSIDE RESORT (see below).
   'ADH:12bb8f46cb9fd02f88bf88b6d20172df4c34e235781dd5d43199b24761259eba': unavailable('T0467'),
   // Holly Grove Waterworks
   'ADH:0f8b954e9aa2f3d1deeb3b2b8125ca21afe1e6716b670b5a6ca3449f03a6219d': reviewed('388', [deficiency('12/08/2023', text('Storage tanks have not been inspected for more than five years.', 'Los tanques de almacenamiento no se han inspeccionado en más de cinco años.'), text('The water system submitted a plan for tank inspections', 'El sistema presentó un plan de inspecciones de tanques'))]),
@@ -91,4 +99,27 @@ export const OBSERVED_SUPPLIER_REPORTS: Readonly<Record<string, readonly AnnualR
   'ADH:ca6ccc23d097ff186823c601fe725e0f4f63d89083b8b0e27f2a24d41ee1df58': reviewed('264'),
   // Bull Shoals Water System, not Lake Bull Shoals Estates.
   'ADH:d1bf471be8487e1b4003bb2e98916593413537252b895fe5a05f3e68f29f081d': reviewed('352', [deficiency('11/06/2024', text('Tank 2 needs roof vent improvements, a roof hatch gasket, and proper welding or sealing of sheet metal.', 'El tanque 2 necesita mejoras de ventilación, una junta en la escotilla y soldadura o sellado adecuado de la chapa.'), text('Working to correct the deficiencies, with completion expected in May 2026 according to the report; completion has not been verified here', 'Se estaba trabajando para corregir las deficiencias, con finalización prevista para mayo de 2026 según el informe; aquí no se ha verificado su finalización'))]),
+
+  // ---- 2026-11-07 batch: live-feed suppliers without an earlier record. ----
+  // Burdette Water — all Y/N columns N; no violation or deficiency section.
+  'ADH:bb6a0aa1382bcc8f9601a373787af07a4417c969236d8b26cdeb8c394c09a74f': reviewedNov('366'),
+  // North Howard RWA — RTCR monitoring violation table, p. 2. TTHM/HAA5
+  // single results above the MCL are disclosed, but both rows are marked N.
+  'ADH:4822f1d434ff61879c00969ae7478b76dd5920b3c441521a060300be10fb1873': reviewedNov('1075', [monitoring('12/1/2025', '12/31/2025', 2)]),
+  // Little River Water Association, Mississippi County (not Little River County RDA 787).
+  'ADH:dd0c55cca8bf449b3f415c40312ee2da965c2e0b15d053a40e2d8da8ada8cd20': reviewedNov('371'),
+  // Ravenden Water System, Lawrence County (not Ravenden Springs 477).
+  'ADH:16a31dc011c391cdb733b42db4608fdac7c088f71b22c5d7c1ba42d34bb31841': reviewedNov('306'),
+  // City of Hazen
+  'ADH:b7db04ae8b18e90d01194739cab0a5929fecf1131d014c4ebf31903efade1f81': reviewedNov('452'),
+  // Sevier County Water Association — upper-range TTHM/HAA5 disclosed; rows marked N.
+  'ADH:a22c9f829de3dcc786845de6e2019a0449eb002c08e2b61265357f1b788dd6bc': reviewedNov('868'),
+  // Evening Shade Waterworks
+  'ADH:4a74934a1f0a929abb23264229fec04364722bc065a1246e0c4ed52b9a60b324': reviewedNov('525'),
+  // Kibler Water System — footer prints "CCR 24", title and test period say 2025.
+  'ADH:61c7e65a2b401bf11e1afc021445d676e894ab790911718270d364d09618063a': reviewedNov('140'),
+  // Entergy - Independence: ADH directory N0009; no 2025 search result by name or ID.
+  'ADH:bc78112e18850b3c73772317623bb248d573780fa1fa9ddfc27be31e06772796': unavailable('N0009', systemType.nonTransient, checked.nov),
+  // Eureka Riverside Resort: ADH directory T0467; no 2025 search result by name or ID.
+  'ADH:59ea414b9de925682e918f76f10c1f537214a14af92b033ee92df0846dda6382': unavailable('T0467', systemType.transient, checked.nov),
 }

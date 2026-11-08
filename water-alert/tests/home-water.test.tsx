@@ -13,6 +13,45 @@ function motion(reduced = false) {
   return media
 }
 
+it.each(['running', 'paused'])('waits for %s expanding layout to settle before resizing water and skips unchanged sizes', playState => {
+  vi.useFakeTimers()
+  motion()
+  const surface = { resize: vi.fn(), drop: vi.fn(), frame: vi.fn(), dispose: vi.fn() }
+  vi.mocked(createWaterSurface).mockReturnValue(surface)
+  let notify = () => {}
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback: () => void) { notify = callback }
+    observe() {}
+    disconnect() {}
+  })
+  let height = 700
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(() => ({ x: 0, y: 0, top: 0, left: 0, right: 1000, bottom: height, width: 1000, height, toJSON() {} }))
+  try {
+    const { unmount } = render(<main><HomeWater /></main>)
+    expect(surface.resize).toHaveBeenCalledTimes(1)
+    for (let i = 0; i < 15; i++) {
+      height += 20
+      act(() => { notify(); vi.advanceTimersByTime(16) })
+    }
+    expect(surface.resize).toHaveBeenCalledTimes(1)
+    const main = document.querySelector('main')!
+    let expanding = true
+    Object.defineProperty(main, 'getAnimations', { value: () => expanding ? [{ playState, effect: { getKeyframes: () => [{ height: '0px' }, { height: '1000px' }] } }] : [] })
+    act(() => { vi.advanceTimersByTime(150) })
+    expect(surface.resize).toHaveBeenCalledTimes(1)
+    expanding = false
+    act(() => { vi.advanceTimersByTime(150) })
+    expect(surface.resize).toHaveBeenLastCalledWith(1000, 1000)
+    expect(surface.resize).toHaveBeenCalledTimes(2)
+    act(() => { notify(); vi.advanceTimersByTime(150) })
+    expect(surface.resize).toHaveBeenCalledTimes(2)
+    notify()
+    unmount()
+    act(() => { vi.advanceTimersByTime(150) })
+    expect(surface.resize).toHaveBeenCalledTimes(2)
+  } finally { vi.useRealTimers() }
+})
+
 it('keeps a decorative static fallback when WebGL is unavailable', () => {
   motion()
   vi.mocked(createWaterSurface).mockReturnValue(null)

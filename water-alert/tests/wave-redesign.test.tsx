@@ -14,8 +14,8 @@ it('offers per-card checking through the supplied refresh handler without invent
   const refresh = vi.fn()
   render(<StatusCard place={place} source={source} now={Date.parse(at)} t={en} onView={() => {}} onRefresh={refresh} />)
   const checkNow = screen.getByRole('button', { name: 'Check now' })
-  expect(checkNow.querySelector('span[aria-hidden="true"]')).toHaveTextContent('⟳')
-  expect(checkNow.querySelector('svg')).not.toBeInTheDocument()
+  expect(checkNow.querySelector('svg.icon[aria-hidden="true"]')).toBeInTheDocument()
+  expect(checkNow).not.toHaveTextContent('⟳')
   await userEvent.setup().click(checkNow)
   expect(refresh).toHaveBeenCalledOnce()
   expect(screen.getByText('No active boil-water notice found')).toBeVisible()
@@ -53,7 +53,7 @@ it('keeps history and provider help closed initially and keyboard-operable', asy
   await userEvent.setup().keyboard(' ')
   expect(history).toHaveAttribute('aria-expanded', 'true')
   expect(document.getElementById(history.getAttribute('aria-controls')!)).toBeVisible()
-  const help = screen.getByRole('button', { name: 'Provider information' })
+  const help = screen.getByRole('button', { name: /^Provider information/ })
   expect(help).toHaveAttribute('aria-expanded', 'false')
   help.focus()
   await userEvent.setup().keyboard('{Enter}')
@@ -87,14 +87,15 @@ it.each(['active', 'none', 'failed', 'stale', 'unchecked'] as const)('uses refer
   expect(container.querySelectorAll('.provider-contact-actions svg')).toHaveLength(0)
   expect(screen.getByRole('link', { name: 'Contact ADH' })).toHaveAttribute('target', '_blank')
   expect(screen.queryByText(/Contact details have not been verified/)).toBeNull()
-  expect(container.querySelector('article>dl')).toBeNull()
+  expect(container.querySelector('article:not(.provider-card)>dl')).toBeNull()
 })
 
-it.each(['en', 'es'] as const)('offers the verified phone without inventing an email action (%s)', language => {
+it.each(['en', 'es'] as const)('offers the verified phone and the sourced email, never a guessed one (%s)', language => {
   const supplier = PLACE_CATALOG.find(entry => entry.place.name === 'FAYETTEVILLE WATERWORKS')!.place
   render(<StatusCard place={supplier} now={Date.parse(at)} t={language === 'en' ? en : es} language={language} onView={() => {}} />)
   const region = within(screen.getByRole('region', { name: language === 'en' ? 'Contact water provider' : 'Contactar al proveedor de agua' }))
   expect(region.getByRole('link', { name: language === 'en' ? /Call/ : /Llamar/ })).toHaveAttribute('href', 'tel:+14795758386')
   expect(region.queryByRole('button', { name: /email|correo/i })).not.toBeInTheDocument()
-  expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
+  expect([...document.querySelectorAll('a[href^="mailto:"]')].map(a => a.getAttribute('href'))).toEqual(['mailto:tnyander@fayetteville-ar.gov'])
+  expect(document.querySelector('a[href*="FAYETTEVILL-AR"]')).toBeNull()
 })

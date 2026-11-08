@@ -8,6 +8,30 @@ import App from '../src/App'
 const name = 'WellPower: WAVE'
 const purpose = 'WellPower: WAVE—Water Advisory Verification & Empowerment—helps Arkansas residents check official advisories for their exact water supplier and take informed action through verified provider contacts and editable follow-up or reimbursement requests.'
 
+it.each([0, 1, 2, 3, 4])('keeps Settings destination %i inside a frosted card with decorative waves', async index => {
+  render(<App />)
+  const user = userEvent.setup()
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
+  const choices = screen.getByRole('main').querySelectorAll<HTMLButtonElement>('.settings-menu > .choice')
+  await user.click(choices[index])
+  const main = screen.getByRole('main')
+  expect(main.querySelector('.welcome-strip--still')).toHaveAttribute('aria-hidden', 'true')
+  expect(main.querySelector('.settings-detail.settings-glass')).not.toBeNull()
+  expect(main.querySelector('.settings-detail h1')).not.toBeNull()
+  await user.click(within(main).getByRole('button', { name: 'Settings' }))
+  expect(within(main).getByRole('heading', { name: 'Settings' })).toBeVisible()
+})
+
+it('reuses the decorative still History waves on Places', async () => {
+  render(<App />)
+  const user = userEvent.setup()
+  await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
+  const strip = screen.getByRole('main').querySelector('.welcome-strip--still')
+  expect(strip).not.toBeNull()
+  expect(strip).toHaveAttribute('aria-hidden', 'true')
+  expect(strip?.querySelector('svg')).not.toBeNull()
+})
+
 it('uses the supplied logo in the accessible home button instead of the default water glyph', () => {
   render(<App />)
   const home = screen.getByRole('button', { name })
@@ -73,7 +97,7 @@ it('preserves the approved brand and sample warning without invoking sharing on 
     render(<App />)
     const user = userEvent.setup()
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
-    await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
+    await user.click(screen.getByRole('button', { name: /^Try sample mode/ }))
     await user.click(screen.getByRole('button', { name: 'Use sample watch list' }))
     expect(screen.getByRole('button', { name })).toBeVisible()
     expect(screen.getByRole('region', { name: 'Sample mode' })).toBeVisible()

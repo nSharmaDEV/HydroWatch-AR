@@ -460,3 +460,20 @@ body:has(.sample-banner) .request-screen-review .request-review-email .request-m
   body:has(.sample-banner) .request-screen-review .request-review-email .request-message-editor { flex: none; height: 50dvh; min-height: 240px; max-height: 640px; }
   .request-review-email .request-subject { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
+
+/* Send it — resident-initiated handoffs (2026-11-08) */
+.send-options { display: grid; gap: 12px; margin-top: 16px; padding: 20px 24px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.send-options > h2 { margin: 0; }
+.send-options > .quiet-note { margin: 0; }
+.send-option { display: grid; gap: 8px; padding: 16px; border: 1px solid #c9d4df; border-radius: 10px; background: #f8fafb; min-width: 0; overflow-wrap: anywhere; }
+.send-option-recommended { border-color: #7eb7b9; background: #f2f9f8; }
+.send-option h3, .send-option p { margin: 0; }
+.send-option-badge { font-size: .8rem; font-weight: 700; color: #06686e; }
+.send-option-contact { font-size: .95rem; }
+.send-option-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.send-option-actions a { text-decoration: none; }
+.send-option .quiet-note { font-size: .82rem; }
+.send-option-script summary, .send-option-next > summary { font-size: .9rem; }
+.send-option-script ol { margin: 0; padding-left: 20px; font-size: .9rem; }
+.send-option-next > .send-option { margin-top: 8px; }
+@media (max-width: 520px) { .send-options { padding: 16px; } .send-option-actions > * { flex: 1 1 100%; } }

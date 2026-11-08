@@ -21,8 +21,8 @@ function Fixture() {
   const mode = new URLSearchParams(location.search).get('mode')
   const place = data.places[0]
   if (mode === 'carousel') return <main><ProviderCarousel language={language}>
-    <article><label>Resident text<input defaultValue="Resident wording" /></label><label>Report year<select defaultValue="2025"><option>2025</option><option>2024</option></select></label><details><summary>Saved expansion</summary><p>Kept open</p></details><button>First card action</button></article>
-    <article><button>Second card action</button></article>
+    <article><h2>First utility</h2><label>Resident text<input defaultValue="Resident wording" /></label><label>Report year<select defaultValue="2025"><option>2025</option><option>2024</option></select></label><details><summary>Saved expansion</summary><p>Kept open</p></details><button>First card action</button></article>
+    <article><h2>Second utility</h2><button>Second card action</button></article>
   </ProviderCarousel></main>
   return <main>{help ? <ActiveHelpGuide place={place} notice={data.archive.find(n => n.placeId === place.id)} language={language} sample={sample} onBack={() => setHelp(false)} /> : <>
     {data.places.map(p => <StatusCard key={p.id} place={p} source={data.sources.find(s => s.agency === (p.kind === 'lake' ? 'ADEQ' : 'ADH'))} archive={data.archive} now={sample ? SAMPLE_NOW : Date.now()} language={language} t={language === 'es' ? es : en} sample={sample} onView={() => {}} onRefresh={() => {}} onHelp={mode === 'help' && p.kind === 'system' ? () => setHelp(true) : undefined} />)}

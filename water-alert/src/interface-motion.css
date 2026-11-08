@@ -1,0 +1,39 @@
+/* Only explicit navigation names a snapshot. Background refreshes stay silent. */
+html[data-wave-motion]::view-transition-old(root),
+html[data-wave-motion]::view-transition-new(root){animation:none;mix-blend-mode:normal}
+html[data-wave-motion]::view-transition-group(root){z-index:1}
+html[data-wave-motion]::view-transition-group(wave-water){z-index:0}
+html[data-wave-motion]::view-transition-group(wave-content){z-index:2}
+html[data-wave-motion]::view-transition-group(wave-content){animation-duration:400ms;animation-timing-function:cubic-bezier(.31,.24,.14,1)}
+html[data-wave-motion]::view-transition-old(wave-content){animation:wave-content-out 400ms cubic-bezier(.31,.24,.14,1) both;mix-blend-mode:normal}
+html[data-wave-motion]::view-transition-new(wave-content){animation:wave-content-in 400ms cubic-bezier(.31,.24,.14,1) both;mix-blend-mode:normal}
+html[data-wave-motion=forward]::view-transition-group(wave-content),html[data-wave-motion=back]::view-transition-group(wave-content){animation-duration:440ms}
+html[data-wave-motion=forward]::view-transition-old(wave-content){animation-name:wave-forward-out;animation-duration:440ms}
+html[data-wave-motion=forward]::view-transition-new(wave-content){animation-name:wave-forward-in;animation-duration:440ms}
+html[data-wave-motion=back]::view-transition-old(wave-content){animation-name:wave-back-out;animation-duration:440ms}
+html[data-wave-motion=back]::view-transition-new(wave-content){animation-name:wave-back-in;animation-duration:440ms}
+/* Exclude the persistent water canvas from foreground snapshots. */
+html[data-wave-motion] .home-water{view-transition-name:wave-water}
+html[data-wave-motion]::view-transition-old(wave-water){animation:none;opacity:0}
+html[data-wave-motion]::view-transition-new(wave-water){animation:none}
+@keyframes wave-content-out{to{opacity:0}}
+@keyframes wave-content-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes wave-forward-out{to{opacity:0;transform:translateX(-24px)}}
+@keyframes wave-forward-in{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:none}}
+@keyframes wave-back-out{to{opacity:0;transform:translateX(24px)}}
+@keyframes wave-back-in{from{opacity:0;transform:translateX(-32px)}to{opacity:1;transform:none}}
+details>summary .disclosure-icon{transition:transform 520ms cubic-bezier(.31,.24,.14,1)}
+details>summary[aria-expanded=false] .disclosure-icon{transition-duration:380ms}
+details>summary[aria-expanded=false] .disclosure-icon{transform:none}
+dialog:is(.supplier-info,.map-detail-sheet)[open]{animation:wave-dialog-in 360ms cubic-bezier(.31,.24,.14,1) both}
+dialog.map-detail-sheet[open]{animation:wave-sheet-in 440ms cubic-bezier(.31,.24,.14,1) both}
+dialog:is(.supplier-info,.map-detail-sheet)::backdrop{transition:opacity 360ms cubic-bezier(.31,.24,.14,1);opacity:1}
+dialog[data-motion-closing]::backdrop{opacity:0}
+@starting-style{dialog:is(.supplier-info,.map-detail-sheet)[open]::backdrop{opacity:0}}
+@keyframes wave-dialog-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes wave-sheet-in{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  html[data-wave-motion]::view-transition-group(*),html[data-wave-motion]::view-transition-old(*),html[data-wave-motion]::view-transition-new(*){animation:none!important}
+  dialog:is(.supplier-info,.map-detail-sheet)[open]{animation:none}
+  details>summary .disclosure-icon,dialog:is(.supplier-info,.map-detail-sheet)::backdrop{transition:none}
+}

@@ -29,7 +29,7 @@ it.each(['en', 'es'] as const)('shows %s contact details directly in the service
 // Header clutter or nesting links in the toggle must fail.
 it.each(['en', 'es'] as const)('combines %s water sources and provider facts without nested disclosures or duplicate links', async language => {
   card(language)
-  const toggle = screen.getByRole('button', { name: language === 'en' ? 'Provider information' : 'Información del proveedor' })
+  const toggle = screen.getByRole('button', { name: language === 'en' ? /^Provider information/ : /^Información del proveedor/ })
   const header = toggle.closest('.provider-info-header')!
    expect(within(header as HTMLElement).queryAllByRole('link')).toHaveLength(0)
   expect(toggle.querySelector('a')).toBeNull()
@@ -38,15 +38,16 @@ it.each(['en', 'es'] as const)('combines %s water sources and provider facts wit
   await userEvent.setup().click(toggle)
   const panel = document.getElementById(toggle.getAttribute('aria-controls')!)!
   expect(panel).toBeVisible()
-  expect(panel.querySelector('.provider-more')).toBeNull()
-  const details = panel.querySelector('.provider-water-source') as HTMLElement
-  expect(details.querySelectorAll('.profile-facts>div')).toHaveLength(6)
-  expect(details.querySelector('details')).toBeNull()
+  // Two reference cards (report, water system); no nested disclosures.
+  expect(panel.querySelectorAll('.provider-cards>.provider-card')).toHaveLength(2)
+  expect(panel.querySelector('details')).toBeNull()
+  expect(within(panel).queryByRole('button', { name: /More details|Más detalles/ })).toBeNull()
   expect(within(panel).getByRole('link', { name: language === 'en' ? /View original report/ : /Ver informe original/ })).toBeVisible()
-  expect(within(details).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toBeVisible()
-  expect(within(details).queryByRole('link', { name: /Annual water-quality reports|Informes anuales de calidad del agua/ })).toBeNull()
-  expect(panel.querySelectorAll('.profile-facts>div')).toHaveLength(6)
-  expect(within(panel).getByText('WELL #1')).toHaveAttribute('lang', 'en')
+  const system = panel.querySelector('.provider-system-card') as HTMLElement
+  expect(within(system.querySelector('.provider-card-heading') as HTMLElement).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toBeVisible()
+  expect(within(panel).getAllByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveLength(1)
+  expect(system.querySelectorAll('.provider-card-facts>div')).toHaveLength(6)
+  expect(within(system).getByText('WELL #1')).toHaveAttribute('lang', 'en')
   expect(panel).not.toHaveTextContent(language === 'en' ? 'Not live readings' : 'No son mediciones en vivo')
   await userEvent.setup().click(toggle)
   expect(panel).not.toBeVisible()
@@ -63,7 +64,7 @@ it.each(['en', 'es'] as const)('opens the %s guide directly from the bottom of t
   expect(help).toHaveAttribute('data-help-place', place.id)
   expect(help.previousElementSibling).toHaveClass('supplier-contact-section')
   expect(help.nextElementSibling?.tagName).toBe('DIALOG')
-  expect(screen.queryByText('More details')).toBeNull()
+  expect(screen.queryByRole('button', { name: /More details|Más detalles/ })).toBeNull()
   expect(screen.getByText(language === 'en' ? en.uncheckedStatus : es.uncheckedStatus)).toBeVisible()
   help.focus()
   await userEvent.setup().keyboard('{Enter}')

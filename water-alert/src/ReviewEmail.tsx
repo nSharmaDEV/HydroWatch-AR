@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { Icon } from './icons'
 import type { Language } from './domain'
 import type { HelpDraft, HelpFact, HelpStep } from './help-requests'
 import { relevantFacts } from './help-flow'
@@ -10,9 +11,10 @@ import { RequestRecipients } from './RequestRecipients'
 import { RequestSources } from './RequestSources'
 import { downloadText } from './help-client'
 import { exportedText } from './help-exports'
+import { useMotionPresence } from './interface-motion'
 
 function ReviewActionIcon({ kind }: { kind: 'refresh' | 'email' | 'report' }) {
-  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{kind === 'refresh' ? <><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 5" /></> : kind === 'email' ? <><rect x="3" y="3" width="18" height="13" rx="2" /><path d="m3 5 9 6 9-6M12 17v5m-3-3 3 3 3-3" /></> : <><path d="M14 2H5v20h14V7ZM14 2v5h5M8 11h8M8 15h4m5 1v6m-3-3 3 3 3-3" /></>}</svg>
+  return <Icon name={({ refresh: 'refresh-cw', email: 'mail', report: 'file-down' } as const)[kind]} />
 }
 
 interface Props {
@@ -29,6 +31,8 @@ export function ReviewEmail({ draft, language, sample = false, extras, edit, cha
   // greeting on entry, not on every keystroke or answer/fact update.
   useLayoutEffect(() => { if (editor.current) { editor.current.setSelectionRange(0, 0); editor.current.scrollTop = 0 } }, [draft.id])
   const [showCitations, setShowCitations] = useState(false)
+  const citationsMotion = useMotionPresence(showCitations)
+  useLayoutEffect(() => { if (showCitations) citationsMotion.ref.current?.querySelector('button')?.focus() }, [showCitations, citationsMotion.ref])
   const citationButton = useRef<HTMLButtonElement>(null)
   const closeCitations = () => { setShowCitations(false); citationButton.current?.focus() }
   const requiredIds = new Set(requiredReportEvidence(draft.place, sample).map(row => row.key))
@@ -85,7 +89,7 @@ export function ReviewEmail({ draft, language, sample = false, extras, edit, cha
     <section className="request-composer request-review-email" aria-label={say('Your email', 'Tu correo')}>
       <h2 className="sr-only">{say('Your email', 'Tu correo')}</h2>
       <div className="request-citation-control"><button ref={citationButton} className="request-answer-info" aria-label={say('Cited sources', 'Fuentes citadas')} title={say('Cited sources', 'Fuentes citadas')} aria-expanded={showCitations} aria-controls="request-citations" onClick={() => setShowCitations(!showCitations)}><span aria-hidden="true">ⓘ</span></button>
-        {showCitations ? <div id="request-citations" role="dialog" aria-label={say('Cited sources', 'Fuentes citadas')} className="request-citations-popup" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closeCitations() } }}><button autoFocus className="text-button" aria-label={say('Close citations', 'Cerrar citas')} onClick={closeCitations}>×</button><h3>{say('Cited sources', 'Fuentes citadas')}</h3>{citations.size ? [...citations].map(([url, row]) => <a key={url} href={url} target="_blank" rel="noreferrer">[{row.numbers.join(', ')}] {row.source.label || say('Official source', 'Fuente oficial')}</a>) : <RequestSources sources={draft.sources} es={es} compact />}{facts.map(f => <p key={f.id}>{f.text}</p>)}</div> : null}
+        {citationsMotion.present ? <div ref={citationsMotion.ref} inert={!showCitations} aria-hidden={!showCitations || undefined} id="request-citations" role="dialog" aria-label={say('Cited sources', 'Fuentes citadas')} className="request-citations-popup" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closeCitations() } }}><button autoFocus className="text-button" aria-label={say('Close citations', 'Cerrar citas')} onClick={closeCitations}><Icon name="x" size={20} /></button><h3>{say('Cited sources', 'Fuentes citadas')}</h3>{citations.size ? [...citations].map(([url, row]) => <a key={url} href={url} target="_blank" rel="noreferrer">[{row.numbers.join(', ')}] {row.source.label || say('Official source', 'Fuente oficial')}</a>) : <RequestSources sources={draft.sources} es={es} compact />}{facts.map(f => <p key={f.id}>{f.text}</p>)}</div> : null}
       </div>
       {stale ? <p className="request-stale" role="status">{say('Your answers changed. Update the draft to include them.', 'Tus respuestas cambiaron. Actualiza el borrador para incluirlas.')}</p> : null}
       <div className="request-output-email"><RequestRecipients draft={draft} es={es} edit={edit} />

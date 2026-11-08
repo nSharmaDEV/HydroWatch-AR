@@ -8,6 +8,582 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-08 — Help "Where to send it" and sourced contact emails
+
+- Adds a **Where to send it** panel to Help Review. It has one row per selected
+  recipient with resident-initiated **Open in email app** (`mailto:`), **Call**
+  (`tel:` plus a call script built from confirmed answers) and **Copy message &
+  open form** actions, plus one collapsed escalation office. English/Spanish.
+  Actions are disabled for samples and while drafts are incomplete. WAVE sends,
+  calls and files nothing, and Resend stays disabled in production.
+- Adds per-field contact provenance (`emailSource`, `emailKind`, `otherListings`).
+  New emails: Fayetteville `tnyander@fayetteville-ar.gov` (EPA SDWIS; the ADH page
+  misspells the domain) and Bentonville `pnewbill@bentonvillear.com` (ADH, matches
+  EPA). Leisure Hills keeps its EPA address and shows the ADH listing as an unused
+  alternate. Springdale still has no email. Phones are unchanged.
+- Documents EPA SDWIS as a **directory-only** source in README and
+  IMPLEMENTATION-NOTES. It is never an advisory feed or a status/safety signal.
+- Local checks: type check; `send-options`, `provider-contact` and
+  `wave-redesign` tests pass. Not deployed; no email, call or form was sent.
+
+### 2026-11-08 — Separately sourced historical advisories
+
+- Adds a history-only curated document catalog and imports the verified Rogers
+  September 7–10, 2018 issue/lift pair, preserving published wording, exact scope,
+  direct source links, review metadata and the visible 2018/2016 date discrepancy.
+- Preserves newest-first pagination and English/Spanish labels. Imported records
+  never change current status, collection-start dates, live storage or notifications.
+- Records the bounded 30-supplier review and unresolved evidence separately;
+  no older Leisure Hills record was verified, and the archive remains incomplete.
+- Local checks: 25 focused tests, four synthetic English/Spanish desktop/phone
+  browser checks and production build pass (existing bundle-size warning remains).
+  Full suite: 748 passed, two previously documented annual-report disclaimer
+  failures in `tests/all-supplier-reports.test.tsx`. Not deployed.
+
+### 2026-11-08 — Compact annual-report findings
+
+- Moves the dated review metadata beside the annual-report heading, brings
+  finding columns closer together, and reduces vertical spacing before the
+  findings action. Phone layouts retain stacked finding sections.
+- Local checks: 13 focused annual-report tests and production build pass
+  (existing bundle-size warning remains); checked the desktop browser layout.
+  Not deployed.
+
+### 2026-11-08 — Glass issue choices and solid Places cards
+
+- Extends the shared glass material to unselected issue-category cards in guided
+  help. The selected category retains its opaque teal tint and thicker border.
+- Returns Places supplier cards to their normal solid white surface, preserving
+  the wave background and existing carousel/disclosure behavior.
+- Local checks: all 20 synthetic desktop/phone glass and interface-motion browser
+  checks pass, including category selection, English/Spanish and saved-draft edits.
+  Production build passes with the existing bundle warning. Not deployed.
+
+### 2026-11-08 — Share Settings glass across Places, History and help
+
+- Shares the Settings glass material with supplier cards, saved-draft cards,
+  guided-help form panels and review information. Adds the still wave decoration
+  behind the help flow without another canvas or changes to draft storage.
+- Keeps advisory status, inputs, selections and the email preview readable on
+  opaque surfaces. Uses denser, lower-blur glass on phones, a near-opaque fallback
+  without backdrop-filter support, and reduced-transparency/forced-color styles.
+- Leaves carousel and disclosure mechanics unchanged, including hide-before-cancel
+  collapse completion. Local checks: 62 focused unit tests, 18 synthetic desktop/
+  phone browser checks and production build pass; existing bundle warning remains.
+  Browser checks cover English/Spanish, draft edits, focus, reduced motion, forced
+  colors and final-frame collapse. Not deployed or verified on the user's device.
+
+### 2026-11-08 — Refine annual-report card spacing
+
+- Removes the annual-report header's dotted leader, moves review/AI-summary
+  dates into secondary metadata, and balances ongoing findings and issue types
+  in two columns that stack on phones. Preserves source links, historical
+  wording, AI labels and English/Spanish behavior.
+- Local checks: 13 focused annual-report tests and production build pass
+  (existing bundle-size warning remains); inspected the phone layout locally.
+  A broader report test run still has two unrelated historical-caveat wording
+  failures in `all-supplier-reports.test.tsx`. Not deployed.
+
+### 2026-11-08 — Remove the final-frame collapse flicker
+
+- Commits the exiting panel's hidden/unmounted state synchronously before
+  releasing its zero-height animation frame. This prevents its natural expanded
+  height from returning for one frame at completion; motion/timing are unchanged.
+- Local checks: 51 focused unit tests, all 12 synthetic desktop/phone interface
+  browser checks and production build pass (existing bundle warning remains).
+  New regressions inspect visibility at animation release and sample real frames
+  through completion. Not deployed or verified on the user's browser/device.
+
+### 2026-11-08 — Coordinate the reveal with the lower card edge
+
+- Replaces the disclosure sibling-transform workaround with one clipped, measured
+  viewport. Its height and vertical spacing move with the content using the
+  existing 567 ms swipe curve; following rows remain in normal layout. The heading,
+  status and disclosure row remain outside the reveal, and the card no longer
+  retains its expanded height until an abrupt final collapse.
+- Preserves interrupted reversals, inert exiting controls and reduced-motion
+  behavior. Water-buffer resizing also waits while a height animation is paused.
+- Local checks: focused motion/water/provider/report tests and all 10 synthetic
+  desktop/phone interface browser checks pass. The provider check now measures
+  card-height progress and the final-frame/finished-height difference, not only
+  clipping. Production build passes with its existing bundle warning. Not deployed;
+  these checks do not establish the feel on the user's browser/device.
+
+### 2026-11-08 — Bound panel collapse to its disclosure row
+
+- Removes whole-supplier-card clipping from sliding disclosures. Only the panel
+  is clipped, keeping the card heading and status visible while Provider
+  information closes to its own row, including when retained content leaves layout.
+- Local checks: 24 focused unit tests and both desktop/phone provider browser
+  regressions pass. Closing is inspected at five points through the final frame,
+  checking the reveal edge, painted heading/status and untransformed, unclipped
+  card shell. Production build passes; existing bundle warning remains. Not deployed.
+
+### 2026-11-08 — Sliding panels without squeezing the status region
+
+- Reserves the supplier status region's measured space, remeasuring on width
+  changes, so opening information below it no longer consumes its spare height.
+- Replaces provider/report/history/notice-area panel height animation with clipped
+  translated surfaces, accompanying rows and card-edge clipping. Uses the supplier
+  swipe's shared 567 ms duration and fitted curve; commits layout once, supports
+  reversal and live reduced motion, and keeps exiting controls inert. The actual
+  carousel and native `details` behavior are unchanged.
+- Local verification: 50 focused unit tests, 10 desktop/phone synthetic browser
+  checks (single worker) and production build passed. The browser regression checks
+  status size/position at a paused reveal frame and rejects height keyframes.
+  Existing bundle warning remains; no deployment or Brave/GPU-specific verification.
+
+### 2026-11-08 — Frosted Settings destination pages
+
+- Alert Options, Your Places, Sources and coverage limits, Privacy and stored
+  data, and Installation now share Settings' frosted-glass card and still wave
+  background. Existing content and controls remain inside the shared treatment;
+  long pages scroll naturally. Your Places also gains a Settings back button.
+- Local checks: 13 branding tests and production build pass (existing bundle-size
+  warning); mobile Privacy styling checked in the browser. Not deployed.
+
+### 2026-11-08 — Slower coordinated interface animations
+
+- Keeps the supplier carousel's fitted easing and swipe unchanged while giving
+  interface motion more settling time: panels open/close in 520/380 ms, main tabs
+  in 400 ms, details/help steps in 440 ms, popups/dialogs in 360/320 ms, and mobile
+  sheets in 440/380 ms. Reduced motion, interruption and focus behavior remain intact.
+  These are Apple-like design choices, not claimed Apple API timing constants.
+- Water-buffer resizing also waits for active height animations to finish, so a
+  slow rendering frame cannot prematurely trigger a resize during longer expansion.
+- Local checks: 22 focused unit tests, all 10 desktop/phone synthetic motion browser
+  checks and production build passed (existing bundle-size warning remains).
+  No deployment or verification on the user's Brave/GPU configuration performed.
+
+### 2026-11-08 — Avoid repeated water-canvas clears during expansion
+
+- Coalesces page-size changes until layout settles for 120 ms, preventing animated
+  provider/report disclosures from repeatedly resizing the WebGL drawing buffer.
+  Skips unchanged sizes and redraws immediately after an actual resize; cancels
+  pending resize work on cleanup. Panel motion and the static fallback remain intact.
+- Local verification: 21 focused unit tests, production build and all 10 synthetic
+  motion browser checks passed. The new desktop/phone check repeatedly opens and
+  closes Leisure Hills provider information, bounds canvas-buffer assignments and
+  checks for WebGL context loss. This does not verify the user's Brave/GPU setup;
+  no deployment or real notifications performed.
+
+### 2026-11-08 — Matching Places action colors
+
+- The Add a place button now uses the same teal background and white text as
+  Get help with a water issue. Local styling change; not deployed.
+
+### 2026-11-08 — Automatic annual-report sync with AI disclaimer
+
+- Added local-only `npm run ccr:sync` (`scripts/ccr-sync.ts`, `scripts/ccr-sync-lib.ts`):
+  targets suppliers with no 2025 annual-report entry plus not-reviewed ones
+  (never hand-reviewed records), searches ADH's CCR site with exact PWS/name+county
+  identity, downloads and verifies the PDF, and asks Claude (`ANTHROPIC_API_KEY`,
+  optional `CCR_MODEL`) to summarize all pages in English and Spanish.
+- Results are written to generated `src/ai-annual-reports.ts` as a new
+  `aiSummarized` state, kept only when the printed title year is 2025, the AI
+  reports no uncertainty/contradiction, and every cited page, printed date and
+  verbatim quote is found in the extracted PDF text. Otherwise the PDF link stays
+  "Not yet reviewed"; a successful search with no exact match is "No report found".
+  Search/download/AI failures and ambiguous identities write nothing. PDFs, text and
+  `ai-sync-log.json` are archived under `docs/research/adh-ccr-2025/`.
+- App: AI summaries show an "AI summary" / "Resumen por IA" tag, AI date label
+  and header-chip suffix; hand-reviewed records always win in the merge and
+  remain the only findings quoted in provider messages. The supplier info dialog
+  and Sources page show an EN/ES disclaimer (AI may contain errors; check the
+  original PDF; past-year documents, not current water-safety status).
+- Docs: research README now has current totals for both batches (46 entries /
+  44 PWS: 40 reviewed, 1 unreviewed, 3 not found) and drops the stale "does not
+  modify `src/annual-reports.ts`" note; IMPLEMENTATION-NOTES records the Nov 7 batch.
+- Local checks only: new `tests/ccr-sync.test.ts` (saved PDFs, mocked ADH and AI,
+  no network) and `tests/ai-annual-report.test.tsx` pass; `npm run build` passes.
+  Full `npm test`: 2 failures in `tests/all-supplier-reports.test.tsx` (Gurdon
+  "historical" sentence not present in source; pre-existing, unrelated). No live
+  ADH run, Claude API call, deployment or notification has occurred.
+
+### 2026-11-08 — Coordinated interface motion
+
+- Added restrained main-tab fades, directional detail/help-step transitions,
+  measured-height native disclosures and provider/report/history panels, citations
+  popup exits and native supplier-dialog/mobile-map-sheet entrances and exits.
+  Reuses the supplier carousel's fitted easing without changing its swipe motion.
+- Keeps the existing React map/forms mounted, preserves modal focus/scroll locking,
+  makes closing popup/panel content inert, and respects reduced motion (including
+  preference changes). Unsupported page snapshots fall back to immediate navigation.
+  Only explicit navigation animates; typing and feed refreshes remain silent.
+- Local checks: production build and targeted Vitest checks passed; the full unit
+  suite passed 702 tests with the 2 previously documented Gurdon copy failures. 8 synthetic
+  Chromium checks passed at desktop and phone sizes for navigation, snapshot timing,
+  reduced motion, native disclosure keyboard access, fallback navigation, map zoom
+  and modal focus restoration. Existing broad-suite failures in Gurdon report-copy
+  expectations and map duplicate-text selectors are unrelated to this motion work.
+  No deployment, real notifications or delivery verification performed.
+
+### 2026-11-08 — Annual-report header with findings is just "Annual report ··· PDF"
+
+- When the selected report lists findings, the Annual report card heading no
+  longer shows the year or the "N compliance issues reported" pill; the dotted
+  leader now runs straight from "Annual report" to the PDF link. The dated
+  count stays visible in the Provider information chip (for example
+  "2025: 4 compliance issues"). The year, status and "not a current
+  water-safety assessment" caveat remain in the heading as screen-reader-only
+  text (EN/ES). A year selector still appears if a supplier ever has more than
+  one report.
+- Clean, unreviewed and unavailable reports keep "Annual report · year · pill ·
+  PDF" so their status stays visible.
+- Updated `tests/annual-report.test.tsx`, `tests/annual-report-coverage.test.tsx`,
+  `tests/all-supplier-reports.test.tsx` and `tests/e2e/journey.spec.ts`
+  (header has no pill or year, chip text, leader connects title to PDF).
+- Local checks only (2026-11-08): annual-report Vitest files pass except the 2
+  known Gurdon failures caused by the separately removed issue-list intro
+  sentence; Playwright parity/issues-first 24/24 and reviewed formatting pass on
+  desktop and phone sizes. Not committed or deployed.
+
+### 2026-11-08 — Status notifications move to a bottom-right toast
+
+- App status messages (for example "Server push is not configured…") now appear
+  as a fixed toast in the bottom-right corner instead of a banner above page
+  content, with an "x" close button in the top-right corner ("Close
+  notification" / "Cerrar notificación"). The `role="status"` live region is
+  unchanged; the close button sits outside it so it is not announced. Local
+  change only; not deployed.
+
+### 2026-11-08 — Annual-report facts: Ongoing when printed, Issue types, full-width toggle
+
+- Reports with issues now show "Ongoing when printed" / "En curso al imprimirse"
+  between Reviewed and the category counts, listing each finding the document
+  printed as "Current" with its printed start date (Leisure Hills 2025: Public
+  notice, since Oct 1, 2025). A screen-reader note scopes it to the report and
+  states it is not current status. Hidden when no finding is printed "Current".
+- "Categories" is renamed "Issue types" / "Tipos de problemas".
+- The facts use three equal columns when "Ongoing when printed" is shown (two
+  otherwise) and stack in one column at 640px and below.
+- "View N issues" is a full-width teal bar with the label centred and +/− on
+  the right, matching the Home action cards.
+- Local verification: Vitest 697/697, build passes, and 44 journey.spec.ts
+  annual-report/parity/formatting checks pass on desktop and phone sizes.
+  Not committed or deployed.
+- Expanded issue labels now carry decorative icons (hidden from screen
+  readers): calendar for Reported from/through, Reported periods, Identified on
+  and Reported completion; document for What was reported; a Lucide wrench
+  (added to `src/icons.tsx`) for Reported corrective action/progress.
+  Local verification: build passes; 24 issues-first/formatting browser checks
+  pass on desktop and phone sizes; Vitest 695/697, where the 2 Gurdon failures
+  in `all-supplier-reports.test.tsx` come from the separate intro-paragraph
+  removal in "Compact annual-report issue list", not from this change.
+
+### 2026-11-08 — Compact annual-report issue list
+
+- Removed the introductory dates/actions/historical-report paragraph in English
+  and Spanish so the issues move up directly below the divider. Existing dated
+  labels and screen-reader historical context remain unchanged.
+- Local verification: all 8 annual-report tests pass. Not deployed.
+
+### 2026-11-07 — History waves on Places
+
+- Places reuses History's full-width, low-opacity still wave decoration behind
+  the existing cards and controls, without changing its content layout.
+- Local verification: focused branding tests pass. Not deployed.
+
+### 2026-11-07 — One annual-report card layout for every supplier
+
+- Every supplier's Provider information now shows one Annual report card
+  above Water system, headed "Annual report · year · status · PDF" (the
+  year is a selector when several report years exist). The "2025 annual
+  report" title and the folded Annual report row in Water system are gone.
+- Reports with findings keep the Reviewed date and list categories as
+  per-category finding counts (a finding printed with two intervals counts
+  once), with a right-aligned "View N issues" button in white on teal.
+  Clean, unreviewed and not-found reports show the heading only, plus their
+  existing check notes and ADH links where they apply; a clean report's
+  review date moves into the PDF link's screen-reader label.
+- The visible "Historical report (year): not a current…" caveat is replaced
+  by screen-reader text on the status pill and one sentence in the opened
+  issue list note (English and Spanish), so findings stay dated document
+  evidence, not a current safety or compliance assessment.
+- The Provider information header chip is right-aligned beside the −/+ icon;
+  provider cards use even 14px padding; the Water system directory note is
+  shortened to "ADH directory, checked {date}." / "Directorio de ADH,
+  revisado el {date}."
+- Local checks only: Vitest 697/697, build passes; Playwright supplier
+  parity, reviewed-report formatting and issues-first tests pass on desktop
+  and phone projects. Still failing and unrelated to this change: the earlier
+  icon-session checks (`journey.spec.ts` expanded-history,
+  `home-viewport.spec.ts` provider-title) and a 320px Spanish Home overflow
+  from the decorative wave SVG. Not deployed.
+
+### 2026-11-07 — Violations chip in the Provider information header
+
+- The collapsed Provider information header now shows a short dated chip
+  (for example "2025: 4 compliance issues", "2025: N findings" or
+  "2025: clarification needed") when the selected annual report lists
+  findings. No chip appears for clean, unreviewed or missing reports, or for
+  sample suppliers. The year keeps the chip historical, not a current status.
+- The full annual report card now appears only when a report year lists
+  findings; its issue details still start collapsed. Otherwise the report
+  folds into one "Annual report" row of the Water system card with the same
+  status pill, PDF or ADH links, reviewed date, historical caveat and check
+  notes as before.
+- Fact labels in provider cards and issue details are bold navy.
+- Local checks only: Vitest suite passes (two load-related timeouts pass when
+  rerun), build passes, provider/parity Playwright subset 54/54. Remaining
+  journey e2e failures are the earlier icon-session checks. Not deployed.
+
+### 2026-11-07 — Video-measured Spaces transition curve
+
+- Replaces the 420 ms symmetric easing below with a roughly 567 ms front-loaded
+  curve, `cubic-bezier(0.31, 0.24, 0.14, 1)`, fitted to tracked text positions in
+  a filmed macOS trackpad transition. Measurement provenance, samples and limits
+  are recorded in `IMPLEMENTATION-NOTES.md`; this is not an Apple-specified curve
+  or universal native timing.
+- Touch still follows the finger; releases use the remaining curve segment
+  instead of replaying its full duration. Existing inputs, rigid adjoining
+  panels, reduced motion and retained card state stay unchanged.
+- Local checks: 12 focused unit tests, 36 synthetic Chromium browser cases and
+  production build pass (existing chunk-size warning). Not a full-suite or
+  Apple-hardware verification; earlier broader layout limitations remain
+  unresolved. Nothing deployed or sent. Usage docs updated.
+
+### 2026-11-07 — Desktop-style utility transitions
+
+- Supersedes the spring below with a rigid, adjoining-panel slide: Previous/Next
+  and keyboard navigation use a 420 ms eased handoff with a defined stop. Touch
+  stays finger-following, with distance/velocity selecting the destination and
+  a shorter, non-spring finish. Outer edges clamp without rubber-banding.
+- Removes the moving gutter and clips neighboring panels fully at rest. Keeps
+  card state, equal heights, stationary controls, native vertical scrolling,
+  keyboard access and reduced-motion behavior. No trackpad navigation added.
+- Local checks: 9 carousel unit tests, 36 focused synthetic Chromium cases and
+  production build pass (existing chunk-size warning). Browser checks used an
+  isolated port/output directory after a broader run timed out and shared test
+  artifacts conflicted. Not a full-suite pass or Apple-hardware verification;
+  earlier broader layout limitations remain unresolved. Nothing deployed or sent.
+- Usage documentation updated in `README.md`.
+
+### 2026-11-07 — Finger-following utility swipes and spring settling
+
+- Replaces the fixed 300 ms slide below with direct touch/pointer dragging,
+  distance/velocity-aware release, restrained edge resistance and a critically
+  damped spring shared by Previous/Next and keyboard navigation. Reversals keep
+  the current position and velocity; animation frames do not rerender cards.
+- Cards stay mounted and equal-height, controls stay stationary, and vertical
+  touch scrolling, pinch zoom and native form/disclosure controls are preserved.
+  Reduced-motion navigation settles immediately. Inactive cards remain inert.
+- Local checks: 9 carousel unit tests and 30 focused synthetic desktop/phone
+  browser cases cover touch, drag, release, cancellation, edges, reversal,
+  resizing, reduced motion, EN/ES keyboard/state retention and active-card fit.
+  Production build passes with the existing chunk-size warning. These are local
+  Chromium checks, not verification on Apple hardware or a full-suite pass;
+  the broader layout limitations below remain unresolved. Nothing deployed or sent.
+- Usage documentation updated in `README.md`.
+
+### 2026-11-07 — Smoother utility switching
+
+- Places now uses a 300 ms eased transform instead of browser smooth scrolling.
+  Percentage-based alignment removes resize-observer scroll resets; quick
+  Previous/Next reversals retarget the current motion without remounting cards.
+  Controls remain stationary and reduced-motion preferences disable the slide.
+- Local checks: 9 carousel unit tests, 16 focused synthetic desktop/phone browser
+  cases (motion, resizing, EN/ES keyboard/state retention and active-card fit),
+  and the production build pass. The build retains its chunk-size warning.
+- A broader layout run was not green: Spanish Places overflows at 320 px, and
+  a provider-title/action test timed out before the run's command deadline.
+  Those layout checks remain unresolved; this entry does not claim a full-suite
+  pass. Nothing deployed or sent.
+
+### 2026-11-07 — Annual reports for 11 more live-feed suppliers
+
+- I manually read the ADH 2025 annual-report PDFs for the live-feed suppliers
+  that had no record. They are archived under `docs/research/adh-ccr-2025/`
+  (`pdfs/`, `text/`, `manifest.json`, README section "Second batch").
+- Results:
+  - North Howard RWA 1075: one RTCR monitoring violation, 12/1–12/31/2025, p. 2.
+  - No violations or significant deficiencies reported: Burdette 366, Little
+    River 371, Ravenden 306, Hazen 452, Sevier County 868, Evening Shade 525,
+    Kibler 140.
+  - Village Water LLC: ADH's directory lists it as PWS 747, so it shares the
+    reviewed Leisure Hills 747 record (exact ID match).
+  - Entergy - Independence (N0009) and Eureka Riverside Resort (T0467): no 2025
+    report found. Shown as "Unavailable" with the ADH directory link.
+- These records use `reviewedOn: 2026-11-07`. Single high TTHM/HAA5 readings
+  that the reports mark N are noted in the archive but not counted as issues.
+- Tests: `all-supplier-reports` now covers 46 suppliers. It checks the North
+  Howard finding, the Village Water ↔ 747 mapping and both unavailable states.
+- Local only. Nothing committed, pushed or deployed.
+
+### 2026-11-07 — Provider information as reference cards
+
+- Provider information now uses two cards shaped like Advisory history: a
+  heading with a dotted leader and a source link, then facts in two columns
+  with the label above the value. This replaces the dot-leader rows and the
+  "More details" toggle.
+- The annual-report card is titled "2025 annual report" ("Annual report" when
+  none was found). It shows a status pill, a PDF link, Reviewed and Categories
+  facts, "View N issues", and the historical-report caveat. When there's no
+  report, it links to ADH's report search and shows the dated check note.
+- The water-system card shows six ADH directory facts: water source, source
+  name, system ID, system type, people served and last ADH inspection. It also
+  has the ADH profile link and the directory check date. Unverified systems
+  show only a "Not yet verified" pill.
+- To keep these cards distinct from Advisory history, they sit on a light tint
+  and the status is a grey pill beside the heading. There is no full-width
+  status bar. Issue counts use a darker grey outline, never amber or green, so a
+  past report can't read as a live alert or an all-clear.
+- On phones the facts stack into one column and the leader is hidden. The
+  leader is also left out when a card has no source link.
+- The notice page's "About this water system" uses the same water-system card.
+  People served is now formatted (116,398).
+- Tests updated: annual-report, all-supplier-reports, annual-report-coverage,
+  supplier-parity, reviewed-disclosures and advisory-help, plus the e2e
+  journey and home-viewport specs.
+- Local only. Nothing committed, pushed or deployed.
+
+### 2026-11-07 — Provider information with dot leaders
+
+- Provider rows now read "label · · · value": the label is on the left, the
+  value is right-aligned, and a dotted leader joins them in place of the full
+  dividers. The leader is a CSS `::after` on the row, so the `dl` markup stays
+  valid and screen readers don't hear it. On narrow screens the value wraps
+  under its label, still right-aligned.
+- Annual report row: the leader line holds the year and status pill. The
+  categories, "View N issues" and the PDF link sit on a second line below.
+- A missing report is now shown as "No 2025 report found" / "No se encontró
+  informe de 2025", with no bold year beside it. Before, it read "2025
+  Unavailable", which suggested a 2025 document existed.
+- More details no longer repeats the pills as sentences ("No report is
+  available here…", "We have not yet verified…", "This provider's water source
+  has not yet been verified."). It keeps only the dated check note, the links
+  and the directory facts, on a light tinted card.
+- The "Historical report (YEAR)…" caveat is hidden when no report exists.
+- The More details and View issues toggles have rounded corners and padding,
+  so the keyboard focus outline wraps the text instead of sitting tight
+  against it.
+- Tests updated: annual-report, annual-report-coverage, all-supplier-reports
+  and e2e/journey.spec.ts.
+- Local only. Nothing committed, pushed or deployed.
+
+### 2026-11-07 — Provider information as scannable rows
+
+- Provider information is now one label/value list:
+  - Annual report: year · status pill · "View N issues" · PDF.
+  - Water source.
+  - System: ID, type and "people served", with numbers formatted (51,250).
+  - Last ADH inspection.
+- The open issue list spans the full width under the report row.
+- A single "More details" toggle now holds:
+  - the unreviewed or unavailable explanation and the agency note;
+  - the ADH directory and annual-report search links;
+  - raw source names, the water-source citation, and the directory check
+    date with its "not readings or inspection findings" limit.
+- "ADH profile" sits beside the toggle. The historical-report caveat stays
+  visible as one small line.
+- Reviewed-report notes stay visible under the row. Examples are Central
+  Logan's document conflict and Texarkana's scope.
+- The year shows as text when there is only one year. A select appears when
+  there are several, and changing the year closes the open issue list.
+- Units, reviewed-disclosure, parity, coverage and e2e tests are updated. The
+  e2e parity loop now also handles Leisure Hills, whose groundwater profile
+  and 4 findings were failing the Beaver Water District expectations at HEAD.
+- Local checks:
+  - Vitest passes: 79 files, 690 tests. The typecheck passes.
+  - Playwright provider tests pass: 48 on desktop and phone.
+  - `home-viewport.spec.ts`: 94 pass and 14 fail, all outside Provider
+    information. Twelve expect a `<span>` icon on "View official source",
+    which the icon change replaced with an SVG `Icon`. Two are a 320px
+    Spanish Places overflow (334px) with Provider information collapsed.
+    These are left for the icon work.
+- Local only. Nothing committed, pushed or deployed.
+
+### 2026-11-07 — Provider information layout
+
+- The annual-report and water-source sections share one header: a title and a
+  status pill. Pill labels include "Not yet reviewed", "No violations
+  reported" and "N compliance issues reported", in English and Spanish.
+- The amber report box, which looked like a live alert, is gone.
+- Reports with issues show a one-line summary and a "View N issues" toggle.
+- Unreviewed or unavailable reports show one sentence instead of repeated
+  "not verified" lines.
+- The facts grid uses 3/2/1 columns. The duplicate "Water source" fact and
+  the duplicate "detailed profile" line are removed.
+- Tests are updated for the new pill wording and layout. Unit tests and
+  `npm run build` pass locally. The Playwright check was not run.
+
+### 2026-11-07 — Clearer, consistent icons
+
+- New `src/icons.tsx` holds one `Icon` component with outline icons taken from
+  Lucide v1.70.0 (ISC licence, path data copied in, so there's no new
+  dependency). WAVE's own droplet stays as `water`. `components.tsx`
+  re-exports `Icon`, and the custom icons that were never used (`receipt`,
+  `alert`, `verify`, `draft`) are removed.
+- Icons that were reused for different meanings now have their own shape:
+  - Nav: Home `house`, Places `list`, Map `map` (was the droplet).
+  - Settings: Your Places `map-pin`, Sources `file-text`, Privacy `shield`,
+    Installation `smartphone`, sample mode `test-tube`.
+  - Get help issue types: `triangle-alert`, `receipt`, `gauge`,
+    `flask-conical`, `ellipsis`.
+  - Watched-place rows: `map-pin`.
+  - Check your supplier: `search`.
+  - Get help home card: the WAVE `water` droplet.
+- Hand-drawn info, warning, calendar, phone, mail and review-action SVGs now use
+  the matching Lucide icons.
+- Text glyphs are replaced with icons:
+  - `‹` / `›` become chevrons.
+  - `→` becomes `arrow-right`.
+  - `↗` becomes `external-link`.
+  - `⟳` becomes `refresh-cw`.
+  - `×` becomes `x`.
+  - `✓ ● ○` become circle states.
+  - The CSS `+`/`−` and `▸`/`▾` markers become Lucide shapes drawn with CSS masks
+    (`src/icons.css`).
+- Icons stay `aria-hidden`. Accessible names and the English/Spanish labels
+  are unchanged.
+- `tests/wave-redesign.test.tsx` now expects an icon in Check now instead of
+  the `⟳` glyph.
+- Local checks only: `npm test`, `npm run build`, and a browser look at Home
+  and Settings. Not deployed.
+
+### 2026-11-07 — Settings fits without scrolling
+
+- Settings (`src/App.tsx`) is now the heading plus six link rows in the glass
+  card. Sample mode is the sixth row ("Try sample mode" / "Exit sample", with
+  the "Fictional records. Not current agency data." disclosure as its
+  description); entering and exiting work as before, and the sample banner's
+  Exit button is unchanged.
+- Remove saved data and its confirmation were removed from Settings; the same
+  button and confirmation remain on Privacy and stored data. The auto-refresh
+  checkbox moved to Alert Options (same `checkOnOpen` preference).
+- Settings rows are more compact (`src/welcome.css`: 64px rows, 60px on
+  phones, tighter card padding; touch targets stay at least 44px).
+- Local only: unit and e2e tests updated for the new locations, plus new unit
+  tests for the six rows/sample toggle (EN/ES) and the Alert Options checkbox;
+  663 unit tests and build pass. In the browser, Settings had no vertical
+  scroll at 1440×900, 1280×700, 1000×640, 390×844 and 375×667 in EN and ES,
+  with no console errors. Targeted e2e reruns of the changed copy/disclosure
+  and card-geometry tests passed on desktop; the full rerun of the three
+  Settings-related spec files did not finish (timed out). Not pushed or
+  deployed.
+
+### 2026-11-06 — Still wave strip behind History
+
+- History (`src/App.tsx`) now shows the same still, half-strength
+  `WelcomeStrip` as Settings behind its content. The page layout is unchanged:
+  `main` goes full width so the strip spans the viewport, while the history
+  content keeps its previous width (max 1192px, centred) above the strip
+  (`src/welcome.css`). No glass card was added.
+- The still strip now has one identical shape, size and position on Settings
+  and History: it uses a fixed seed (`STILL_STRIP_SEED` in `src/Journey.tsx`)
+  instead of a random one per visit, and its own height and vertical anchor
+  (centred in the first screen below the header, and above the bottom nav on
+  phones) rather than depending on each page's content height. The flowing
+  search/confirm strip still gets a random seed.
+- Local check of the matching: at 1440×900, 1990×1100 and 390×844 the
+  Settings and History strips had the same path and the same on-screen box.
+  New unit test confirms the still strip's shape is the same on every render.
+- Local only: new App unit test for the History strip; 660 unit tests and
+  build pass. E2E not rerun. In the browser at
+  1990×1100 and 390×844 the strip spans the full width, did not move over
+  600 ms, showed at opacity .32, the content stayed where it was, with no
+  horizontal scroll and no console errors. Not pushed or deployed.
+
 ### 2026-11-06 — Still, quieter wave strip on Settings
 
 - `WelcomeStrip` takes a `still` prop: the strip is drawn once and never

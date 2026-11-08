@@ -25,12 +25,28 @@ export function HomeWater({ paused = false }: { paused?: boolean }) {
       if (!surface) return
       canvas.hidden = false
       let frame = 0
+      let resizeTimer: ReturnType<typeof setTimeout> | undefined
+      let width = -1, height = -1
       let nextAmbient = 0
       const ambientDelay = () => 1000 + Math.random() * 1000
       const resize = () => {
+        // A busy frame can exceed the debounce interval even mid-expansion.
+        // Never reallocate the buffer until height animations actually finish.
+        const expanding = main.getAnimations?.({ subtree: true }).some(animation =>
+          (animation.playState === 'running' || animation.playState === 'paused') && animation.effect && 'getKeyframes' in animation.effect &&
+          (animation.effect as KeyframeEffect).getKeyframes().some(keyframe => keyframe.height !== undefined))
+        if (expanding) { scheduleResize(); return }
         const box = host.getBoundingClientRect()
-        try { surface.resize(box.width, box.height) }
+        if (box.width === width && box.height === height) return
+        try { surface.resize(box.width, box.height); width = box.width; height = box.height }
         catch { lost() }
+      }
+      // Height disclosures resize main on every animation frame. Let CSS stretch
+      // the existing surface until layout settles rather than clearing the GPU
+      // drawing buffer repeatedly throughout the animation.
+      const scheduleResize = () => {
+        clearTimeout(resizeTimer)
+        resizeTimer = setTimeout(resize, 120)
       }
       const animate = (now: number) => {
         if (document.hidden) return
@@ -62,17 +78,18 @@ export function HomeWater({ paused = false }: { paused?: boolean }) {
         surface.drop((x - box.left) / box.width, 1 - (y - box.top) / box.height, RIPPLE_STRENGTH)
       }
       const lost = () => { stop(); canvas.hidden = true }
-      const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(resize)
+      const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(scheduleResize)
       observer?.observe(main)
-      window.addEventListener('resize', resize)
+      window.addEventListener('resize', scheduleResize)
       main.addEventListener('pointerdown', drop, { passive: true })
       document.addEventListener('visibilitychange', visibility)
       window.addEventListener(WATER_RIPPLE_EVENT, ripple)
       canvas.addEventListener('webglcontextlost', lost)
       stop = () => {
         cancelAnimationFrame(frame)
+        clearTimeout(resizeTimer)
         observer?.disconnect()
-        window.removeEventListener('resize', resize)
+        window.removeEventListener('resize', scheduleResize)
         main.removeEventListener('pointerdown', drop)
         document.removeEventListener('visibilitychange', visibility)
         window.removeEventListener(WATER_RIPPLE_EVENT, ripple)

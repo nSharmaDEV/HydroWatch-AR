@@ -152,7 +152,7 @@ it('keeps the switch off and explains blocked permission when enable is attempte
 it('introduces a fictional sample journey and keeps removal/undo isolated from live preferences', async () => {
   saved(); const before = localStorage.getItem('water-alert:live:v1'); const user = userEvent.setup()
   render(<App liveData={data} />)
-  await user.click(nav('Settings')); await user.click(screen.getByRole('button', { name: 'Try sample mode' }))
+  await user.click(nav('Settings')); await user.click(screen.getByRole('button', { name: /^Try sample mode/ }))
   expect(screen.getByRole('heading', { name: 'Try a resident journey' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Start sample journey' }))
   await user.click(screen.getByRole('button', { name: 'Select Sample Creek Water' }))

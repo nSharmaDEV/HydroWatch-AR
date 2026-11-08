@@ -17,7 +17,8 @@ export function reportMessage(place: Place, sample: boolean, selected: readonly 
   }
 }
 
-/** Exact supplier keys only; never use a name/county match or live reports in samples. */
+/** Exact supplier keys only; never use a name/county match or live reports in samples.
+ * Human-reviewed findings only: AI summaries are never quoted in resident messages. */
 export function reportEvidence(place: Place, sample: boolean) {
   if (sample || place.kind !== 'system' || !Object.hasOwn(ANNUAL_REPORTS, place.id)) return []
   return ANNUAL_REPORTS[place.id].flatMap(report => report.state === 'reviewed'

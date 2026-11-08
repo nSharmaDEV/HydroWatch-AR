@@ -86,6 +86,18 @@ packed-height simulation buffers, avoiding accumulating background noise.
 Animation pauses in hidden tabs and uses bounded GPU resources.
 Reduced motion, unavailable WebGL and context loss retain a static gradient.
 
+Settings and its five destination pages share a frosted-glass card over the still
+wave decoration. Longer settings pages scroll naturally within the page.
+History saved-draft cards, guided-help issue choices and form panels, and the
+review information panel use the same material. Help now includes the still wave
+decoration throughout its flow; it reuses the existing background canvas. Advisory
+status surfaces, inputs, selected issue choices, selection rows and the email
+preview remain opaque. Places supplier cards retain their solid white surface
+over the wave background.
+The shared material uses 6px backdrop blur, reduced to 4px with a denser fill on
+small screens. Unsupported blur uses a near-opaque fill; reduced transparency
+removes blur, and forced colors uses system colors without shadows.
+
 ## Places sources shortcut
 
 On Places, the card's info icon opens **Sources and coverage**, using the existing
@@ -109,6 +121,20 @@ status and advisory history. It is not a general Village Water alias or inferred
 service boundary. Source record IDs, wording, dates and lift handling are unchanged;
 other affected-area wording requires separate verification. This does not replay
 past notification events or establish device delivery.
+
+### Separately sourced older advisory history
+
+Advisory history also supports reviewed historical documents kept separately from
+live feeds. The initial import is one Rogers Water Utilities event (September
+7–10, 2018), with original issue/lift links, exact affected-area/cause excerpts,
+review metadata and a visible 2018/2016 source-date discrepancy. Imports share the
+newest-first, five-at-a-time history list; they never change live status, backdate
+collection, enter live storage or trigger notifications.
+
+The bounded review covered all 30 currently listed suppliers; it is **not a
+complete archive**. No older Leisure Hills record was verified. Unresolved
+Fayetteville/downstream-area and unreadable social/news leads were not imported.
+See [historical-advisory review and evidence limits](docs/research/historical-advisories.md).
 
 ## Observed supplier map
 
@@ -197,6 +223,33 @@ not an all-clear claim. The typical advisory desktop path fits at 1280×800 with
 page scrolling at normal text size; optional expanded tools or larger records can
 need scrolling. Mobile and enlarged text use one column and natural page scrolling.
 
+### Where to send it and contact sources
+
+Below the Review composer, **Where to send it** lists one row per selected
+recipient (the same recipients as the greeting) with resident-initiated actions
+only: **Open in email app** (a `mailto:` link with subject and message; links
+over about 8,000 characters keep To/Subject and ask the resident to paste),
+**Call** (a `tel:` link with an optional call script built only from confirmed
+answers) and **Copy message & open form** for official online forms. The panel
+also offers one collapsed escalation office ("If this isn't resolved"). WAVE never
+sends, calls or files anything, cannot confirm delivery or a reply, and disables
+every action for samples or while the subject, message or bracketed placeholders
+are incomplete. The optional hosted Resend path remains disabled in production.
+
+Each supplier email records its own source and check date
+(`src/provider-contacts.ts`). Addresses are copied exactly and never corrected
+or guessed. Named-staff addresses are labelled as such. When two sources
+disagree, WAVE shows the other listing with its source but never uses it as a send
+target. Systems without a sourced address show "No checked email on file".
+
+**EPA SDWIS is a directory-only source.** The federal Safe Drinking Water
+Information System water-system records (`data.epa.gov/efservice/WATER_SYSTEM`)
+may supply contact fields only. They are never an advisory feed, never change
+active/none/unavailable status and never imply current safety or compliance.
+ADH page IDs match EPA PWS IDs (ADH `ID=569` is `AR0000569`), so matching is by
+exact ID, never by city or county name. The only live advisory feeds remain ADH
+boil-water HTML and ADEQ HAB JSON.
+
 Four large icon choices and a full-width Other issue choice show relevant questions.
 Service uses start/end dates and an explicit ongoing choice; only No enables
 the end date. The locations panel replaces the old area input without discarding
@@ -261,10 +314,41 @@ from changed answers, recipients and facts, including saved-record status on res
 Manually edited subject and message fields are protected independently, including
 intentionally blank fields and legacy drafts. Meaningful changes flag protected
 email as outdated; **Update draft from answers** confirms replacement of both fields.
-The Places carousel supports arrows/Home/End when the carousel itself is focused.
+The Places carousel supports touch swipes, pointer drags, Previous/Next, and
+arrows/Home/End when the carousel itself is focused. Horizontal gestures follow
+the pointer, with distance and release velocity choosing the destination. Adjoining
+panels finish with a bounded, non-spring slide; outer edges clamp without
+rubber-banding. Buttons use an approximately 567 ms, front-loaded handoff fitted
+to a filmed macOS Spaces gesture; swipe releases use the remaining part of that
+curve, not a new full-duration slide. This is a video-based approximation, not
+Apple's specified timing (see [measurement notes](IMPLEMENTATION-NOTES.md#measured-spaces-motion--november-7-2026)).
+Vertical touch scrolling and pinch zoom remain native; trackpad/wheel gestures
+do not switch utilities.
+Reduced motion disables animated settling.
 Native controls within a card keep their own keyboard behavior. Inactive cards
 stay mounted to retain state but are excluded from keyboard focus and the
-accessibility tree until selected with Previous/Next or the carousel shortcuts.
+accessibility tree until selected by a swipe, Previous/Next or the carousel shortcuts.
+
+Navigation uses the carousel's fitted easing with a slower, gently settling feel:
+main tabs fade/lift (400 ms), while detail navigation and ordered help steps travel
+a short distance forward/back (440 ms). Expandable provider, report, history and
+notice-area panels use a clipped viewport with the supplier swipe's 567 ms timing
+and fitted curve. Its height and vertical spacing change continuously while content
+travels a short distance inside it; following rows stay in normal layout, so the
+card edge moves with the reveal rather than snapping at completion.
+The supplier status region keeps its initial space
+(remeasured on width changes) instead of shrinking when a lower panel opens.
+Clipping stays on the expandable panel, never the supplier card shell, so closing
+stops below its disclosure row without clipping the heading or status area.
+Native `details` disclosures still animate measured height (520/380 ms);
+citations and supplier dialogs fade/lift (360/320 ms), and mobile map details slide
+as a sheet (440/380 ms). The supplier swipe is unchanged. Header/navigation stay
+stationary, and background refreshes and typing do not trigger these transitions.
+Reduced motion skips them; browsers without native view-transition support switch
+pages immediately. No experimental React version or animation dependency is needed.
+The water canvas stretches during panel expansion and resizes only after layout
+settles (height animations finished and 120 ms without size changes), skipping unchanged dimensions and repainting
+immediately after a buffer resize to avoid cleared frames.
 
 Switching EN/ES updates untouched generated email templates without clearing
 answers or attachments. Manual/legacy subject or message text, confirmed resident

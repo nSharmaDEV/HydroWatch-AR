@@ -76,14 +76,22 @@ export function createWaterSurface(canvas: HTMLCanvasElement): WaterSurface | nu
     gpu.vertexAttribPointer(position, 2, gpu.FLOAT, false, 0, 0)
     const field = createRippleField()
     let previousFrame: number | undefined
+    let cssWidth = -1, cssHeight = -1
     const resize = (w: number, h: number) => {
       const width = Math.max(1, w), height = Math.max(1, h)
+      if (width === cssWidth && height === cssHeight) return
+      cssWidth = width; cssHeight = height
       const scale = Math.min(1, 1280 / width, 960 / height)
-      canvas.width = Math.max(1, Math.round(width * scale))
-      canvas.height = Math.max(1, Math.round(height * scale))
+      const bufferWidth = Math.max(1, Math.round(width * scale))
+      const bufferHeight = Math.max(1, Math.round(height * scale))
+      // Assigning even the same dimension clears an opaque WebGL canvas.
+      if (canvas.width !== bufferWidth) canvas.width = bufferWidth
+      if (canvas.height !== bufferHeight) canvas.height = bufferHeight
       gpu.useProgram(program)
       gpu.uniform2f(size, width, height)
       gpu.viewport(0, 0, canvas.width, canvas.height)
+      // Repaint in the same task as a resize; the normal frame loop is throttled.
+      gpu.drawArrays(gpu.TRIANGLES, 0, 6)
     }
     const frame = (now: number) => {
       if (disposed || (previousFrame !== undefined && now - previousFrame < 32)) return

@@ -4,7 +4,7 @@
 .wave-card-mark{position:static;flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;color:#087f83}
 .wave-card-mark svg{display:block;width:34px;height:34px;overflow:visible}
 .wave-card-mark-arkansas path{fill:rgba(8,127,131,.12);stroke:currentColor;stroke-width:8;stroke-linejoin:round}
-.wave-card-mark-issue svg path:first-child{fill:rgba(8,127,131,.12);stroke:currentColor;stroke-width:2.5;stroke-linejoin:round}
+.wave-card-mark-issue svg path:first-child{fill:rgba(8,127,131,.12)}
 
 /* Home "Check your supplier" link: same look as the glass card's primary supplier option,
    spanning the full width of the two shortcut cards below it. */

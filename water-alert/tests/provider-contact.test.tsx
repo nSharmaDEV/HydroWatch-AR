@@ -69,11 +69,16 @@ it.each([
   ['SPRINGDALE WATER UTILITIES', 'tel:+14797515751'],
   ['ROGERS WATER UTILITIES', 'tel:+14796211142'],
   ['BENTONVILLE WATER UTILITIES', 'tel:+14792713140'],
-])('provides the directory phone for %s without invented email', (name, phone) => {
+])('provides the directory phone for %s and only a sourced email', (name, phone) => {
   card(PLACE_CATALOG.find(entry => entry.place.name === name)!.place)
   expect(screen.getByRole('link', { name: /Call/ })).toHaveAttribute('href', phone)
-  if (name === 'ROGERS WATER UTILITIES') expect(screen.getByRole('link', { name: /Email provider: WATER@RWU.ORG/ })).toHaveAttribute('href', 'mailto:WATER@RWU.ORG')
-  else {
+  const listed: Record<string, string> = { 'ROGERS WATER UTILITIES': 'WATER@RWU.ORG', 'BENTONVILLE WATER UTILITIES': 'pnewbill@bentonvillear.com', 'FAYETTEVILLE WATERWORKS': 'tnyander@fayetteville-ar.gov' }
+  if (listed[name]) {
+    expect(screen.getByRole('link', { name: new RegExp(`Email provider: ${listed[name]}`) })).toHaveAttribute('href', `mailto:${listed[name]}`)
+    // The ADH page misspells Fayetteville's domain; WAVE uses the EPA record and says so.
+    if (name === 'FAYETTEVILLE WATERWORKS') expect(screen.getByRole('link', { name: 'Email from the EPA water-system record' })).toHaveAttribute('href', 'https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000569/JSON')
+    else expect(screen.queryByText('Email from the EPA water-system record')).toBeNull()
+  } else {
     expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
     expect(screen.queryByText(/No verified email address is available/i)).not.toBeInTheDocument()
   }

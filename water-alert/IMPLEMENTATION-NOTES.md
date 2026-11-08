@@ -5,6 +5,119 @@ setup and navigation, start with [README.md](README.md); for change history, see
 [CHANGELOG.md](CHANGELOG.md). Earlier entries describe their verification date,
 not necessarily today's deployment state.
 
+## Help "Where to send it" and contact provenance — November 8, 2026
+
+Local change only; nothing deployed, sent or submitted.
+
+- `src/send-options.ts` builds the send rows from `recipientRoutes(draft)`, so the
+  rows always match the greeting. It adds one escalation office per issue
+  (service/quality/advisory/other → ADH; billing → Arkansas Attorney General form;
+  legal → none) and a call script built only from resident-confirmed answers.
+  `mailtoUrl` rejects addresses containing CR/LF, `,`, `;`, `?` or `&`.
+- `src/SendOptions.tsx` renders the panel on the Review step under the composer.
+  Actions are links or buttons the resident activates: email app, phone, or copy
+  and open an official form in a new tab. The panel tells residents to attach files
+  themselves, because `mailto:` links cannot carry them.
+- `ProviderContact` now has per-field provenance: `emailSource` (ADH or EPA, URL,
+  check date), `emailKind` (`general`/`staff`) and `otherListings` (disagreeing
+  addresses, shown and never used).
+
+Contact evidence checked November 8, 2026 (ADH `health.arkansas.gov/Eng/WS.aspx?ID=…`
+and EPA SDWIS `data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000…/JSON`):
+
+| System (ADH ID) | ADH page email | EPA SDWIS email | WAVE uses |
+|---|---|---|---|
+| Fayetteville (569) | TNYANDER@FAYETTEVILL-AR.GOV (domain misspelled) | tnyander@fayetteville-ar.gov | EPA (staff) |
+| Springdale (575) | none | none | none: call or copy |
+| Rogers (055) | WATER@RWU.ORG | BRENTDOBLER@rwu.org | ADH (general inbox) |
+| Bentonville (041) | PNEWBILL@BENTONVILLEAR.COM | pnewbill@bentonvillear.com | ADH, matches EPA (staff) |
+| Leisure Hills (747) | SUPERCLAIO@YAHOO.COM | LEISUREHILLSWATERCO@GMAIL.COM | EPA (existing); ADH shown as other listing |
+
+Directory phone fields were not changed. EPA also lists different phones for
+Leisure Hills (479-213-1573) and Springdale (479-387-0769). WAVE keeps the
+ADH-checked phones from October 14, 2026 `[NEEDS: confirm which phone each
+supplier currently answers]`.
+
+**EPA SDWIS is directory-only.** It supplies contact fields and, later, a
+statewide system list (658 active Arkansas community water systems in the EPA
+count on November 8, 2026). It is never an advisory feed or a safety, compliance
+or boundary source. Matching uses the exact PWS ID only.
+
+Not yet done: the "Did you send it?" status and History timeline, the three-step
+flow, and the statewide directory snapshot.
+
+## Measured Spaces motion — November 7, 2026
+
+Local utility-carousel tuning; no deployment or change to advisory data. The
+previous 420 ms symmetric easing was an approximation. This revision fits a
+visible **trackpad gesture**, not the keyboard transition in the same video.
+
+**Reference and method.** Adam Talks Tech, [“Mac Spaces Explained: The Multiple
+Desktop Feature You're Not Using”](https://www.youtube.com/watch?v=HXZlywZM6LA&t=101s),
+uploaded July 17, 2026. Analyzed a 1920×1080 video segment from source seconds
+79–115 at 30000/1001 fps (29.97003 fps). The overhead-filmed laptop display was
+perspective-rectified to 1000×625 using source corners (500,82), (1490,84),
+(1385,462), (594,460). OpenCV normalized cross-correlation tracked text patches
+with ±4 px vertical search. Optical flow located transitions but was too noisy
+to serve as the final displacement measurement.
+
+The selected gesture spans clip frames 674–691, approximately source seconds
+101.489–102.056: **17 frame intervals, 567.23 ms**. Outgoing template: frame 673,
+rectified x=180, y=120, width=90, height=220. Incoming template: frame 695,
+x=250, y=180, width=90, height=220. Outgoing displacements at frames 675–679
+were 43, 159, 314, 471, 617 px; incoming offsets at frames 682–691 were −177,
+−120, −77, −50, −31, −18, −10, −6, −2, 0 px. Clipped/low-confidence matches
+at frames 680–681 were excluded. Frame 674's approximately 6 px displacement
+was treated as the zero-time baseline. Estimated inter-desktop band: about
+60 px, giving approximately 1060 px full travel in the rectified viewport.
+
+**Fit inputs.** With time = frame offset / 17, progress samples were:
+
+```text
+offset:    0   1       2        3        4        5
+progress:  0  43/1060 159/1060 314/1060 471/1060 617/1060
+
+offset:    8         9         10       11       12       13
+progress:  1-177/1060 1-120/1060 1-77/1060 1-50/1060 1-31/1060 1-18/1060
+
+offset:    14        15       16       17
+progress:  1-10/1060 1-6/1060 1-2/1060 1
+```
+
+Bounded four-parameter cubic-bezier least-squares fitting (control points in
+[0,1], numerical inversion of the time coordinate) gave approximately
+`cubic-bezier(0.31136, 0.24186, 0.13879, 1)`, RMS normalized-progress residual
+0.0077. The app rounds this to **567 ms, cubic-bezier(0.31, 0.24, 0.14, 1)**:
+approximately 49% travel at one-quarter time, 86% at halfway and 97% at
+three-quarter time. `src/desktop-transition.ts` evaluates this curve without
+an animation dependency. Button reversals begin at the current position.
+
+Touch remains finger-following. Release distance/velocity still chooses the
+destination; the finish takes the corresponding remaining tail of the fitted
+curve. Specifically, invert the curve at `1 - remainingDistance / panelWidth`,
+then evaluate the normalized segment from that time to the endpoint. This
+release rule is an implementation choice, **not separately measured Apple
+release physics**. Panels remain adjoining and bounded; no spring, overshoot,
+outer-edge rubber band or new trackpad/wheel input. Reduced motion snaps.
+
+**Limits.** Timing uncertainty is at least one video frame (33.37 ms), plus
+unquantified filming/display refresh, perspective, patch-selection and editing
+effects. The fit residual is not a confidence interval. Another visible gesture
+is about 500 ms; duration is gesture-dependent, so 567 ms is not a universal
+macOS constant. [Apple's gesture help](https://support.apple.com/en-us/102482)
+documents inputs, not an animation curve. The previously consulted
+[community discussion](https://discussions.apple.com/thread/256195960) is
+anecdotal, not timing evidence. This approximation is not native macOS behavior
+or verification on Apple hardware. Raw video, analysis tools and captures remain
+outside tracked project files.
+
+Verification: the old easing failed the new sampled-motion browser assertion;
+after tuning, **12 focused unit tests and 36 synthetic Chromium browser cases**
+pass. These cover fitted positions, bounded endpoints, shortened release tails,
+touch/pointer behavior, interruptions, keyboard/state retention, reduced motion,
+resizing and active-card fit. Not a full-suite pass; previously recorded broader
+layout failures remain unresolved. Build status is recorded in the changelog.
+
 **All-supplier annual reports — October 19, 2026 (local only; not deployed):**
 The [2025 ADH review](docs/research/adh-ccr-2025/README.md) covers all 35 currently
 represented drinking-water systems. It preserves 33 retrieved PDFs, extracted
@@ -25,6 +138,17 @@ Water attribution. Desktop facts use two columns and stack on mobile in EN/ES.
 No live advisory, backend or notification behavior changes; no automatic PDF
 retrieval. Unknown future suppliers remain unreviewed; sample mode and lakes do
 not inherit real supplier reports. Human Spanish review remains unverified.
+
+**Annual reports, second batch and automatic sync — November 7–8, 2026 (local only; not deployed):**
+A November 7 hand review added 11 live-feed suppliers (9 reviewed, Entergy-Independence
+N0009 and Eureka Riverside T0467 not found); totals are now 46 entries / 44 PWS
+(40 reviewed, Springdale unreviewed, 3 not found). On November 8 a local
+`npm run ccr:sync` command was added: exact-identity ADH search, PDF download and
+a Claude summary stored as a separate, labelled `aiSummarized` state only after
+year, page, date and quote checks; otherwise "Not yet reviewed" or "No report
+found", never safe. The supplier info dialog and Sources page carry an EN/ES AI
+disclaimer. Verified only with offline tests on saved PDFs and a mocked AI; the
+live ADH run and Claude API use have not happened. [NEEDS: first supervised live run]
 
 Verification: **373 unit/integration tests in 44 files**, production build and
 **40 focused desktop/phone EN/ES browser cases** pass. Browser checks cover

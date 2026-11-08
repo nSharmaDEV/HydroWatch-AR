@@ -11,7 +11,7 @@ it('reloads live observations every thirty seconds and stops in sample mode', as
   await act(() => vi.advanceTimersByTimeAsync(30_000))
   expect(reads).toBe(2)
   fireEvent.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Settings' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Try sample mode' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Try sample mode/ }))
   await act(() => vi.advanceTimersByTimeAsync(60_000))
   expect(reads).toBe(2)
   view.unmount()

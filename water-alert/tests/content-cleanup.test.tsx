@@ -48,7 +48,7 @@ it('removes the supplier footer and redundant popup notes while retaining the no
 it('keeps check timing in supplier details, not below the notice banner', async () => {
   const { container } = render(<StatusCard place={place} source={{ ...source, lastSuccessAt: null, error: 'Timeout', records: [] }} now={Date.parse(at)} t={en} onView={() => {}} />)
   expect(screen.queryByText(en.uncheckedExplanation)).not.toBeInTheDocument()
-  expect(container.querySelector('article > dl')).toBeNull()
+  expect(container.querySelector('article:not(.provider-card) > dl')).toBeNull()
   await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAbout }))
   expect(container.querySelector('.supplier-popup-check')).toHaveTextContent('Last successful checkNo successful check yet')
 })
@@ -110,6 +110,9 @@ it('removes generic Home/Places/Settings paragraphs and requires deletion confir
   await user.click(screen.getByRole('button', { name: 'Settings' }))
   expect(screen.queryByText(en.settingsIntro)).not.toBeInTheDocument()
   expect(screen.queryByText(en.deletionText)).not.toBeInTheDocument()
+  // Settings is links only; removal lives on Privacy and stored data.
+  expect(screen.queryByRole('button', { name: en.delete })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: new RegExp(en.privacy) }))
   await user.click(screen.getByRole('button', { name: en.delete }))
   expect(screen.getByText(en.deletionText)).toBeVisible()
   expect(screen.getByRole('button', { name: 'Confirm removal' })).toBeVisible()

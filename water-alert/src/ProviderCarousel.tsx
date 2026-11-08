@@ -1,4 +1,6 @@
-import { Children, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+import { Children, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+import { useCarouselMotion } from './useCarouselMotion'
+import { Icon } from './icons'
 import type { Language } from './domain'
 
 const copy = {
@@ -18,62 +20,17 @@ const copy = {
   },
 }
 
-function prefersReducedMotion() {
-  return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
 /**
  * One-card-at-a-time horizontal carousel. Cards stay mounted, so expanded
  * sections, dialogs and other card state survive every transition. Only the
- * Previous/Next controls and keyboard arrows move the track; the track itself
- * is not user-scrollable, so swipes, wheel and drag cannot change cards.
+ * controls, keyboard and horizontal pointer gestures move a spring-driven track.
+ * Vertical touch scrolling and descendant controls retain their native behavior.
  */
 export function ProviderCarousel({ children, language = 'en' }: { children: ReactNode; language?: Language }) {
-  const track = useRef<HTMLDivElement>(null)
   const slides = Children.toArray(children)
   const count = slides.length
   const strings = copy[language]
-  const [index, setIndex] = useState(0)
-  const indexRef = useRef(0)
-  indexRef.current = index
-
-  const clamp = useCallback((value: number) => Math.max(0, Math.min(count - 1, value)), [count])
-
-  const cardStep = useCallback(() => {
-    const el = track.current
-    const first = el?.firstElementChild as HTMLElement | null
-    if (!el || !first) return 0
-    const gap = Number.parseFloat(getComputedStyle(el).columnGap || '0') || 0
-    return first.getBoundingClientRect().width + gap
-  }, [])
-
-  const showIndex = useCallback((target: number, smooth = true) => {
-    const el = track.current
-    if (!el) return
-    const next = clamp(target)
-    setIndex(next)
-    indexRef.current = next
-    const left = next * cardStep()
-    if (typeof el.scrollTo === 'function') {
-      el.scrollTo({ left, behavior: smooth && !prefersReducedMotion() ? 'smooth' : 'auto' })
-    } else {
-      el.scrollLeft = left
-    }
-  }, [cardStep, clamp])
-
-  // Keep the current card aligned when the available width changes.
-  useLayoutEffect(() => {
-    const el = track.current
-    if (!el || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(() => showIndex(indexRef.current, false))
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [showIndex])
-
-  // Removing a watched place can leave the index past the last card.
-  useEffect(() => {
-    if (indexRef.current > count - 1) showIndex(count - 1, false)
-  }, [count, showIndex])
+  const { trackRef, index, indexRef, showIndex, pointerHandlers } = useCarouselMotion(count)
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     // Descendant controls own their native text, select and disclosure keys.
@@ -88,8 +45,9 @@ export function ProviderCarousel({ children, language = 'en' }: { children: Reac
   return <div className="status-carousel">
     <div className="carousel-viewport">
       <div
-        ref={track}
         className="carousel-track"
+        ref={trackRef}
+        {...pointerHandlers}
         role="region"
         aria-roledescription={language === 'en' ? 'carousel' : 'carrusel'}
         aria-label={strings.label}
@@ -100,9 +58,9 @@ export function ProviderCarousel({ children, language = 'en' }: { children: Reac
       </div>
     </div>
     {count > 1 ? <div className="carousel-controls">
-      <button type="button" className="secondary" aria-label={strings.previous} disabled={index <= 0} onClick={() => showIndex(indexRef.current - 1)}>‹<span aria-hidden="true"> {language === 'en' ? 'Previous' : 'Anterior'}</span></button>
+      <button type="button" className="secondary" aria-label={strings.previous} disabled={index <= 0} onClick={() => showIndex(indexRef.current - 1)}><Icon name="chevron-left" size={18} /><span aria-hidden="true">{language === 'en' ? 'Previous' : 'Anterior'}</span></button>
       <p className="carousel-status" aria-live="polite" aria-atomic="true">{strings.of(index, count)}</p>
-      <button type="button" className="secondary" aria-label={strings.next} disabled={index >= count - 1} onClick={() => showIndex(indexRef.current + 1)}><span aria-hidden="true">{language === 'en' ? 'Next' : 'Siguiente'} </span>›</button>
+      <button type="button" className="secondary" aria-label={strings.next} disabled={index >= count - 1} onClick={() => showIndex(indexRef.current + 1)}><span aria-hidden="true">{language === 'en' ? 'Next' : 'Siguiente'}</span><Icon name="chevron-right" size={18} /></button>
     </div> : null}
   </div>
 }

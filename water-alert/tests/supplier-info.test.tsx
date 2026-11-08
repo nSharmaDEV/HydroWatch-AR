@@ -15,7 +15,7 @@ function card(s = source) { render(<StatusCard place={place} source={s} archive=
 it.each(['en', 'es'] as const)('orders provider information before history and service questions (%s)', language => {
   const t = language === 'en' ? en : es
   render(<StatusCard place={place} source={source} archive={[notice]} now={Date.parse(at)} t={t} language={language} onView={() => {}} />)
-  const provider = screen.getByRole('button', { name: t.providerHelp })
+  const provider = screen.getByRole('button', { name: new RegExp(`^${t.providerHelp}`) })
   const history = screen.getByRole('button', { name: t.supplierAlertHistory })
   const service = screen.getByText(language === 'en' ? 'Service questions?' : '¿Preguntas del servicio?', { selector: 'h3' })
   expect(provider.compareDocumentPosition(history) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -25,7 +25,7 @@ it.each(['en', 'es'] as const)('orders provider information before history and s
 it('shows active area and reason while keeping provider facts and technical activity separate', async () => {
   card()
   expect(screen.getByText(notice.area)).toBeVisible()
-  await userEvent.setup().click(screen.getByRole('button', { name: en.providerHelp }))
+  await userEvent.setup().click(screen.getByRole('button', { name: new RegExp(`^${en.providerHelp}`) }))
   expect(document.querySelector('.provider-info-content')).not.toHaveTextContent(notice.area)
   await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAlertHistory }))
   const history = within(screen.getByRole('region', { name: en.supplierAlertHistory }))
@@ -52,7 +52,7 @@ it('compacts whole-system facts in the popup while preserving original wording i
   const supplier = { ...place, name: 'LEISURE HILLS MOBILE HOME PARK', county: 'BENTON' }
   const record = { ...notice, name: supplier.name, area: `${supplier.name} for the Entire System`, issued: '10/14/2026 3:12:14 PM' }
   render(<StatusCard place={supplier} source={{ ...source, records: [record] }} archive={[record]} now={Date.parse(at)} t={en} onView={() => {}} />)
-  await userEvent.setup().click(screen.getByRole('button', { name: en.providerHelp }))
+  await userEvent.setup().click(screen.getByRole('button', { name: new RegExp(`^${en.providerHelp}`) }))
   expect(screen.getByText('Benton County · Arkansas Department of Health')).toBeVisible()
   await userEvent.setup().click(screen.getByRole('button', { name: en.supplierAlertHistory }))
   const history = within(screen.getByRole('region', { name: en.supplierAlertHistory }))

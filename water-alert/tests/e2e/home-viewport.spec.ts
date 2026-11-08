@@ -230,12 +230,11 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
 
       // Expansion must grow the document, not a clipped or internally scrolling card.
       await card.locator('.provider-info-toggle').click()
-      await expect(card.locator('.provider-water-source .profile-facts')).toBeVisible()
-      await expect(card.locator('.provider-more')).toHaveCount(0)
-      await expect(card.locator('.annual-report')).toHaveCSS('border-bottom-width', '0px')
-      await expect(card.locator('.provider-water-source .supplier-profile')).toHaveCSS('border-bottom-width', '0px')
+      await expect(card.locator('.provider-cards')).toBeVisible()
+      await expect(card.locator('.provider-card')).toHaveCount(2)
+      await expect(card.locator('.annual-report')).toHaveCSS('background-color', 'rgb(246, 249, 250)')
       const directory = PLACE_CATALOG.find(entry => entry.place.kind === 'system')!.url
-      await expect(card.locator(`.provider-water-source a[href="${directory}"]`)).toHaveCount(1)
+      await expect(card.locator(`.provider-info-content a[href="${directory}"]`)).toHaveCount(1)
       await card.locator('.supplier-actions>.alert-toggle').click()
       await expect(card.locator('.supplier-contact-section .provider-contact')).toBeVisible()
       expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeGreaterThan(viewport.height)

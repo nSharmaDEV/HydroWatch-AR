@@ -48,7 +48,7 @@ test('draws contours, fills, exits, and leaves the app usable without replaying'
   await page.clock.fastForward(2510)
   await expect(overlay).toHaveCount(0, { timeout: 3500 })
   await page.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true }).click()
-  await page.getByRole('button', { name: 'Try sample mode' }).click()
+  await page.getByRole('button', { name: /^Try sample mode/ }).click()
   await expect(page.getByRole('button', { name: 'Use sample watch list' })).toBeVisible()
   await page.getByRole('button', { name: 'Use sample watch list' }).click()
   await expect(page.getByRole('heading', { name: 'My Water' })).toBeVisible()
@@ -72,7 +72,7 @@ test('reduced motion uses completed paths and a short fade', async ({ page }) =>
   expect(style).toEqual({ animation: 'none', fill: '1', stroke: 'none' })
   await expect(overlay).toHaveCount(0, { timeout: 1500 })
   await page.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true }).click()
-  await page.getByRole('button', { name: 'Try sample mode' }).click()
+  await page.getByRole('button', { name: /^Try sample mode/ }).click()
   await expect(page.getByRole('button', { name: 'Use sample watch list' })).toBeVisible()
 })
 

@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it } from 'vitest'
 import manifest from '../docs/research/adh-ccr-2025/manifest.json'
-import { ANNUAL_REPORTS } from '../src/annual-reports'
+import { ANNUAL_REPORTS, HUMAN_ANNUAL_REPORTS } from '../src/annual-reports'
 import { AnnualWaterReport } from '../src/AnnualWaterReport'
 import { SupplierInformation } from '../src/SupplierProfile'
 import { PLACE_CATALOG } from '../src/place-catalog'
@@ -16,8 +16,9 @@ it('covers the reviewed scope with exact identities, source URLs and honest exce
   for (const entry of PLACE_CATALOG.filter(e => e.place.kind === 'system')) {
     expect(manifest.some(r => r.id === entry.place.id)).toBe(true)
   }
+  // Hand-reviewed scope; `npm run ccr:sync` may later replace not-reviewed rows.
   for (const source of manifest) {
-    const reports = ANNUAL_REPORTS[source.id]
+    const reports = HUMAN_ANNUAL_REPORTS[source.id]
     expect(reports, source.name).toHaveLength(1)
     const report = reports[0]
     expect(report.year).toBe(2025)
@@ -37,11 +38,11 @@ it.each(['en', 'es'] as const)('formats Gurdon deficiencies as inspection findin
   const es = language === 'es'
   const user = userEvent.setup()
   render(<AnnualWaterReport reports={byPws('087') ?? []} language={language} />)
-  expect(screen.getByText(es ? '1 hallazgo reportado' : '1 finding reported')).toBeVisible()
+  expect(screen.getByRole('heading', { name: es ? /^Informe anual 2025: 1 hallazgo reportado;/ : /^Annual report 2025: 1 finding reported;/ })).toBeVisible()
   const toggle = screen.getByRole('button', { name: es ? 'Ver 1 hallazgo' : 'View 1 finding' })
   expect(toggle).toHaveAttribute('aria-expanded', 'false')
   await user.click(toggle)
-  expect(screen.getByText(es ? 'Deficiencia significativa' : 'Significant deficiency', { exact: true })).toBeVisible()
+  expect(screen.getByText(es ? 'Deficiencia significativa' : 'Significant deficiency', { exact: true, selector: '.report-issue-kind' })).toBeVisible()
   expect(screen.getByText(es ? 'Identificado el' : 'Identified on')).toBeVisible()
   expect(screen.getByText('04/22/2025')).toBeVisible()
   expect(screen.queryByText(es ? 'Desde (según el informe)' : 'Reported from')).toBeNull()
@@ -75,7 +76,7 @@ it.each(['en', 'es'] as const)('shows contradictory and missing reports without 
   expect(screen.queryByText(/No violations reported|No se reportaron infracciones/)).toBeNull()
   const missing = manifest.find(r => !r.sourceUrl)!
   view.rerender(<AnnualWaterReport reports={ANNUAL_REPORTS[missing.id] ?? []} language={language} />)
-  expect(screen.getByText(language === 'es' ? 'Informe no disponible' : 'Report unavailable')).toBeVisible()
+  expect(screen.getByText(language === 'es' ? 'No se encontró informe de 2025' : 'No 2025 report found')).toBeVisible()
   expect(screen.getByText(/2025.*ADH/)).toBeVisible()
   expect(screen.queryByRole('link', { name: /original/ })).toBeNull()
 })
@@ -84,8 +85,8 @@ it('wires observed suppliers through Provider information without leaking report
   const source = manifest.find(r => r.pwsId === '087')!
   const place = { id: source.id, name: source.name, kind: 'system' as const, county: source.county ?? '' }
   const view = render(<SupplierInformation place={place} sample={false} language="en" onView={() => {}} />)
-  await userEvent.setup().click(screen.getByRole('button', { name: 'Provider information' }))
-  expect(screen.getByText('1 finding reported')).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: /^Provider information/ }))
+  expect(screen.getByRole('heading', { name: /^Annual report 2025: 1 finding reported;/ })).toBeVisible()
   view.rerender(<SupplierInformation place={place} sample language="en" onView={() => {}} />)
-  expect(screen.queryByText('1 finding reported')).toBeNull()
+  expect(screen.queryByText(/1 finding reported/)).toBeNull()
 })

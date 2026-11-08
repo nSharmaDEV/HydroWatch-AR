@@ -1,4 +1,5 @@
 import { useDeferredValue, useId, useRef, useState } from 'react'
+import { Icon } from './icons'
 import { resolvePlaces, type Place } from './domain'
 import { loadPreferences } from './storage'
 import type { HelpDraft } from './help-requests'
@@ -57,6 +58,6 @@ export function RequestLocations({ draft, places, sample, es, edit }: { draft: H
       <button className="secondary" disabled={selected.length >= 10 || query.trim().length < 8 || lookupState === 'loading'} onClick={() => void findAddresses()}>{lookupState === 'loading' ? es ? 'Buscando…' : 'Searching…' : es ? 'Buscar direcciones en Arkansas' : 'Find matching Arkansas addresses'}</button>
     </div>
     <div aria-live="polite">{lookupState === 'error' ? <p role="status" className="quiet-note">{es ? 'No se pudo buscar ahora. Puedes añadir el lugar escrito.' : 'Address search is unavailable right now. You can still add your own wording.'}</p> : lookupState === 'done' && !addresses.length ? <p role="status" className="quiet-note">{es ? 'No se encontró una coincidencia. Prueba la dirección completa o añade tus propias palabras.' : 'No address match found. Try the full street address or add your own wording.'}</p> : lookupState === 'loading' ? <p role="status">{es ? 'Buscando coincidencias de direcciones…' : 'Searching for address matches…'}</p> : !places.length ? <p className="quiet-note">{es ? 'El catálogo limitado de lugares de agua no está disponible; puedes añadir cualquier lugar manualmente.' : 'The limited water-place directory is unavailable; you can add any location manually.'}</p> : !candidates.length && !addresses.length ? <p className="quiet-note">{es ? 'Busca una dirección o añade cualquier lugar con tus propias palabras.' : 'Find an address or add any location in your own words.'}</p> : null}</div>
-    <ul className="request-location-chips" aria-label={es ? 'Lugares seleccionados' : 'Selected locations'}>{selected.map(text => <li key={text}>{text}<button className="text-button" aria-label={`${es ? 'Eliminar lugar' : 'Remove location'}: ${text}`} onClick={() => edit({ locations: selected.filter(v => v !== text) })}>×</button></li>)}</ul>
+    <ul className="request-location-chips" aria-label={es ? 'Lugares seleccionados' : 'Selected locations'}>{selected.map(text => <li key={text}>{text}<button className="text-button" aria-label={`${es ? 'Eliminar lugar' : 'Remove location'}: ${text}`} onClick={() => edit({ locations: selected.filter(v => v !== text) })}><Icon name="x" size={16} /></button></li>)}</ul>
   </section>
 }

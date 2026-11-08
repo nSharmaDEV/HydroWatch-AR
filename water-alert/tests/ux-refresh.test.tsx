@@ -156,6 +156,20 @@ it('draws a still, quieter strip (Settings) that never animates even when motion
   expect(container.querySelector('.welcome-band--teal')!.getAttribute('d')).toMatch(/^M.+Z$/)
 })
 
+it('draws the still strip with one fixed shape every time (Settings and History match)', () => {
+  const shape = () => {
+    const { container, unmount } = render(<WelcomeStrip still />)
+    const d = [...container.querySelectorAll('.welcome-band')].map(p => p.getAttribute('d'))
+    unmount()
+    return d
+  }
+  const random = vi.spyOn(Math, 'random').mockReturnValueOnce(0.1)
+  const first = shape()
+  random.mockReturnValueOnce(0.9)
+  expect(shape()).toEqual(first)
+  random.mockRestore()
+})
+
 it('keeps the confirm step calm: no entrance ripple on the page water', () => {
   sessionStorage.clear()
   vi.useFakeTimers()
