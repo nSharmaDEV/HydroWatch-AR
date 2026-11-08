@@ -1,4 +1,5 @@
 import type { Notice, Place } from './domain.js'
+import { adhPlaceIdsFor } from './water-system-directory.js'
 
 // Manually verified on 2026-10-13. These pages establish place identity, not
 // current conditions, monitoring completeness, or a household's service area.
@@ -41,6 +42,7 @@ export const ADH_AREA_ASSOCIATIONS = [{
 
 export function noticeMatchesPlace(placeId: string, notice: Notice): boolean {
   if (placeId === notice.placeId) return true
+  if (notice.agency === 'ADH' && notice.kind === 'boil' && adhPlaceIdsFor(placeId).includes(notice.placeId)) return true
   if (notice.agency === 'ADH' && notice.kind === 'boil' && ADH_AREA_ASSOCIATIONS.some(link =>
     link.placeId === placeId && link.url === notice.url && nameKey(link.system) === nameKey(notice.name)
     && nameKey(link.area) === nameKey(notice.area) && nameKey(link.county) === nameKey(notice.county))) return true

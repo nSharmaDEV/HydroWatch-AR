@@ -187,7 +187,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       expect(mainBox.width).toBe(1160)
       expect(cardBox.x).toBeCloseTo((viewport.width - 1160) / 2 + 30, 0)
       expect(cardBox.width).toBeLessThan(740)
-      await expect(card).toHaveCSS('padding-top', '24px')
+      await expect(card).toHaveCSS('padding-top', '20px')
       const controlsBox = (await controls.boundingBox())!
       expect(controlsBox.y - cardBox.y - cardBox.height).toBeGreaterThanOrEqual(8)
       expect(controlsBox.y - cardBox.y - cardBox.height).toBeLessThanOrEqual(12)
@@ -211,8 +211,9 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
       const verticalPadding = viewport.height <= 750 ? 12 : 24
       expect(cardBox.y - headerBox.height).toBeCloseTo(verticalPadding + 2, 0)
       const documentHeight = await page.evaluate(() => document.documentElement.scrollHeight)
-      expect(documentHeight - controlsBox.y - controlsBox.height).toBeCloseTo(verticalPadding, 0)
-      expect(uiBox.y - headerBox.height).toBeCloseTo(documentHeight - uiBox.y - uiBox.height, 0)
+      // Content-sized Places leaves spare viewport space below, not inside the status banner.
+      expect(documentHeight - controlsBox.y - controlsBox.height).toBeGreaterThanOrEqual(verticalPadding - 1)
+      expect(uiBox.y - headerBox.height).toBeCloseTo(verticalPadding, 0)
       for (const control of [controls.locator('button').last(), card.locator('.provider-info-toggle'), card.locator('.supplier-help-action')]) {
         expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44)
       }
@@ -440,8 +441,8 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
             left: box.left - actions.left, right: box.right - actions.right, height: box.height }
         })
         const compact = viewport.width > 760 && viewport.height <= 750
-        expect(spacing.above).toBe(compact ? 8 : 16)
-        expect(spacing.below).toBe(compact ? 8 : 16)
+        expect(spacing.above).toBe(compact ? 8 : viewport.width > 760 ? 12 : 16)
+        expect(spacing.below).toBe(compact ? 8 : viewport.width > 760 ? 12 : 16)
         expect(spacing.gap).toBe(8)
         expect(spacing.top).toBeCloseTo(spacing.bottom, 1)
         expect(spacing.paddingTop).toBe(spacing.paddingBottom)

@@ -37,7 +37,7 @@ function validate(d: HelpDraft) {
   }
   const sources = d.sources?.map(sourceValue)
   if (d.locations !== undefined && (!Array.isArray(d.locations) || d.locations.length > 10 || d.locations.some(s => typeof s !== 'string' || !s.trim() || s.length > 200 || /[\r\n\x00-\x1f]/.test(s)) || new Set(d.locations).size !== d.locations.length)) throw new Error('Invalid locations')
-  if (d.flowStep !== undefined && !['choose', 'billing', 'timing', 'experience', 'response', 'records', 'review', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
+  if (d.flowStep !== undefined && !['choose', 'billing', 'timing', 'experience', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
   if (d.recipientRoutes !== undefined && (!Array.isArray(d.recipientRoutes) || d.recipientRoutes.length > 4 || new Set(d.recipientRoutes).size !== d.recipientRoutes.length || d.recipientRoutes.some(r => !['provider', 'adh', 'ag', 'legal'].includes(r)))) throw new Error('Invalid recipients')
   let wording: HelpDraft['wording']
   if (d.wording !== undefined) {
@@ -51,6 +51,17 @@ function validate(d: HelpDraft) {
       }
     }
   }
+  const day = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`))
+  const line = (v: unknown, max: number) => typeof v === 'string' && v.length <= max && !/[\x00-\x1f]/.test(v)
+  if (d.outcomes !== undefined && (!Array.isArray(d.outcomes) || d.outcomes.length > 30)) throw new Error('Invalid outcomes')
+  const outcomes = d.outcomes?.map(o => {
+    if (!o || typeof o.id !== 'string' || o.id.length > 64 || !['emailed', 'called', 'form', 'unreachable', 'reply', 'resolved', 'unresolved'].includes(o.kind) || !['provider', 'adh', 'ag', 'legal'].includes(o.route) || !line(o.name, 200) || !day(o.on) || (o.reference !== undefined && !line(o.reference, 100)) || (o.note !== undefined && (typeof o.note !== 'string' || o.note.length > 500))) throw new Error('Invalid outcome')
+    return { id: o.id, kind: o.kind, route: o.route, name: o.name, on: o.on, ...(o.reference !== undefined ? { reference: o.reference } : {}), ...(o.note !== undefined ? { note: o.note } : {}) }
+  })
+  if (d.followUpOn !== undefined && !day(d.followUpOn)) throw new Error('Invalid follow-up date')
+  const p = d.priorContact
+  if (p !== undefined && (!p || !line(p.name, 200) || !day(p.on) || (p.reference !== undefined && !line(p.reference, 100)))) throw new Error('Invalid prior contact')
+  const priorContact = p ? { name: p.name, on: p.on, ...(p.reference !== undefined ? { reference: p.reference } : {}) } : undefined
   if (d.facts !== undefined && (!Array.isArray(d.facts) || d.facts.length > 60)) throw new Error('Invalid facts')
   let factSize = 0, recordSize = 0
   const facts = d.facts?.map(f => {
@@ -69,7 +80,7 @@ function validate(d: HelpDraft) {
     }
     return { id: f.id, text: f.text, kind: f.kind, included: f.included, sources: f.sources.map(sourceValue), ...(record ? { record } : {}) }
   })
-  return { id, ...(d.subjectEdited !== undefined ? { subjectEdited: d.subjectEdited } : {}), ...(d.bodyEdited !== undefined ? { bodyEdited: d.bodyEdited } : {}), place: { id: d.place.id, name: d.place.name, kind: d.place.kind, county: d.place.county }, issue, description, dates, route, subject, body, stage, evidence: [...evidence], context, answers, ...(d.residentName !== undefined ? { residentName: d.residentName } : {}), ...(d.replyContact !== undefined ? { replyContact: d.replyContact } : {}), ...(d.generatedFrom ? { generatedFrom: d.generatedFrom } : {}), ...(d.locations ? { locations: [...d.locations] } : {}), ...(wording ? { wording } : {}), ...(d.recipientRoutes ? { recipientRoutes: [...d.recipientRoutes] } : {}), ...(sources ? { sources } : {}), ...(facts ? { facts } : {}), ...(d.flowStep ? { flowStep: d.flowStep } : {}), attachments: d.attachments.map(({ id, name, type, data }) => ({ id, name, type, data })) } satisfies HelpDraft
+  return { id, ...(d.subjectEdited !== undefined ? { subjectEdited: d.subjectEdited } : {}), ...(d.bodyEdited !== undefined ? { bodyEdited: d.bodyEdited } : {}), place: { id: d.place.id, name: d.place.name, kind: d.place.kind, county: d.place.county }, issue, description, dates, route, subject, body, stage, evidence: [...evidence], context, answers, ...(d.residentName !== undefined ? { residentName: d.residentName } : {}), ...(d.replyContact !== undefined ? { replyContact: d.replyContact } : {}), ...(d.generatedFrom ? { generatedFrom: d.generatedFrom } : {}), ...(d.locations ? { locations: [...d.locations] } : {}), ...(wording ? { wording } : {}), ...(d.recipientRoutes ? { recipientRoutes: [...d.recipientRoutes] } : {}), ...(sources ? { sources } : {}), ...(facts ? { facts } : {}), ...(d.flowStep ? { flowStep: d.flowStep } : {}), ...(outcomes ? { outcomes } : {}), ...(d.followUpOn ? { followUpOn: d.followUpOn } : {}), ...(priorContact ? { priorContact } : {}), attachments: d.attachments.map(({ id, name, type, data }) => ({ id, name, type, data })) } satisfies HelpDraft
 }
 /** Private bounded aggregate, atomic locally and row-locked in PostgreSQL. Never part of public observations. */
 export class HelpStore {

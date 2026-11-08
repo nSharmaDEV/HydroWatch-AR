@@ -12,6 +12,7 @@
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
     "verify:hosting": "tsx scripts/verify-hosting.ts",
     "ccr:sync": "tsx --env-file-if-exists=.env scripts/ccr-sync.ts",
+    "directory:epa": "tsx scripts/epa-directory.ts",
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",

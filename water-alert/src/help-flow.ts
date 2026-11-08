@@ -3,8 +3,9 @@ import type { HelpDraft, HelpFact, HelpStep } from './help-requests'
 import { advisoryFacts, advisorySources } from './help-facts'
 import { reportEvidence, reportMessage, requiredReportEvidence } from './recovery-evidence'
 
-export function helpPath(d: HelpDraft): HelpStep[] {
-  return ['choose', 'timing', 'experience', 'response', 'review']
+/** Choose → What happened → When, where & what you want → Review email → Send it. */
+export function helpPath(_d: HelpDraft): HelpStep[] {
+  return ['choose', 'experience', 'timing', 'review', 'send']
 }
 /** Billing/other reports have no inferred link to water-quality or service notices. */
 export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
@@ -17,7 +18,9 @@ export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
   })
 }
 export function helpStep(d: HelpDraft): HelpStep {
+  // Earlier drafts resume on the screen that now holds the same answers.
   if (d.flowStep === 'billing') return 'experience'
+  if (d.flowStep === 'response') return 'timing'
   if (d.flowStep === 'confirm' || d.flowStep === 'records') return 'review'
   const fallback = d.stage >= 2 ? 'review' : 'choose'
   return d.flowStep && helpPath(d).includes(d.flowStep) ? d.flowStep : fallback

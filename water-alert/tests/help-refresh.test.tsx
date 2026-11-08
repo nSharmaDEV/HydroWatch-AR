@@ -45,19 +45,27 @@ test('catalog matches appear while typing and arrows/Enter select without enteri
 
 test('invalid date ranges show guidance and prevent advancing; ongoing clears the end date without disabling its picker', () => {
   render(<Guide initial={{ ...base(), flowStep: 'timing', answers: { began: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
-  expect(screen.getByRole('alert')).toHaveTextContent(/end date.*start date/i)
-  expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
+  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+  // Inline field error inside the always-visible "When and where" panel.
+  expect(screen.getAllByRole('alert').map(a => a.textContent)).toEqual(['The end date must be on or after the start date.'])
+  expect(screen.getByRole('heading', { name: 'When and where' })).toBeVisible()
+  expect(document.querySelector('details.request-optional')).toBeNull()
+  expect(screen.getByLabelText('When did it end? (optional)')).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Review email' })).toBeDisabled()
   fireEvent.change(screen.getByLabelText('When did it end? (optional)'), { target: { value: '2026-10-15' } })
-  expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Review email' })).toBeEnabled()
   fireEvent.change(screen.getByLabelText('Is it ongoing? (optional)'), { target: { value: 'Yes' } })
   expect(screen.getByLabelText('When did it end? (optional)')).toBeEnabled()
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveValue('')
 })
 
-test.each(['quality', 'advisory'] as const)('%s dates validate the first-noticed date against the end', issue => {
-  render(<Guide initial={{ ...base(), issue, flowStep: 'timing', answers: { noticed: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
-  expect(screen.getByRole('alert')).toHaveTextContent(/end date.*start date/i)
-  expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
+test.each(['quality', 'advisory'] as const)('%s dates validate the first-noticed date against the end (legacy response step resumes on the timing screen)', issue => {
+  render(<Guide initial={{ ...base(), issue, flowStep: 'response', answers: { noticed: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
+  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+  expect(screen.getAllByRole('alert')).toHaveLength(1)
+  for (const alert of screen.getAllByRole('alert')) expect(alert).toHaveTextContent(/end date.*start date/i)
+  expect(screen.getByRole('button', { name: 'Review email' })).toBeDisabled()
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveAttribute('min', '2026-10-14')
 })
 

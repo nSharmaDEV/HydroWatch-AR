@@ -43,8 +43,38 @@ statewide system list (658 active Arkansas community water systems in the EPA
 count on November 8, 2026). It is never an advisory feed or a safety, compliance
 or boundary source. Matching uses the exact PWS ID only.
 
-Not yet done: the "Did you send it?" status and History timeline, the three-step
-flow, and the statewide directory snapshot.
+### Follow-through, five short steps and statewide directory — same day
+
+- **Outcomes:** `HelpDraft.outcomes` (≤30 entries: `emailed`, `called`, `form`,
+  `unreachable`, `reply`, `resolved`, `unresolved`; route, name, `YYYY-MM-DD`,
+  optional reference ≤100 and note ≤500), `followUpOn` and `priorContact`. The
+  server validates and whitelists all three (`server/help-store.ts`). They are
+  resident-reported only. A contact sets `followUpOn` five weekdays later; a
+  reply after the contact or a resolution clears the due state. Logic lives in
+  `src/help-outcomes.ts`; `followUpDraft` is in `src/send-options.ts`. Requests
+  with a recorded contact are no longer reused as the open draft for that supplier.
+- **Five short steps:** A 3-step version was tried first. It made you scroll at
+  1280×800, so it was split into five steps.
+  - `helpPath` is `choose → experience → timing → review → send`.
+  - Legacy steps map as: `billing` → `experience`, `response` → `timing`,
+    `confirm`/`records` → `review`.
+  - The server `flowStep` whitelist gains `send`; old drafts stay valid.
+  - The supplier line moved into the title row.
+  - Step 3 is a three-column grid: two columns at ≤1100px, one at ≤760px.
+  - On Send it, the "Did you send it?" panel replaces the contact cards while
+    it is open.
+  - `tests/e2e/help-workspace.spec.ts` checks that each step fits at 1280×800
+    and 1440×780 using synthetic data.
+- **Directory:** `scripts/epa-directory.ts` (+ `-lib`) normalizes EPA
+  `WATER_SYSTEM` and `GEOGRAPHIC_AREA` (county) rows. The filter is primacy AR,
+  activity A, type CWS. The letter-bearing PWS ID `ART001101` is kept. Place IDs
+  use `adhSystemPlaceId` (exported from `server/parsers.ts`), so they equal the
+  live ADH IDs for identical names; all five reviewed catalog suppliers match.
+  `withDirectory` is a read-only projection for search and push validation; it
+  never writes observations or journals. 492 systems list an email, 619 a phone.
+- `[NEEDS: confirm the Vercel function bundles the JSON import (src/directory/epa-water-systems.json via server/push.ts) on the next authorized preview deploy]`.
+  Local `tsx` and the Vite build both load it. The client bundle grew by about
+  145 KB raw, roughly 35 KB gzipped.
 
 ## Measured Spaces motion — November 7, 2026
 

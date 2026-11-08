@@ -3,6 +3,7 @@ import './welcome.css'
 import { STRIP_HEIGHT, STRIP_MAX_STEP_MS, STRIP_SPEED, STRIP_WIDTH, stripPaths } from './welcome-strip'
 import { SOURCES, resolvePlaces, type Place } from './domain'
 import { CatalogCoverage, Icon, Panel, SourceLink } from './components'
+import { directorySystem, epaRecordUrl } from './water-system-directory'
 import type { Strings } from './strings'
 import { supplierCounty } from './supplier-display'
 import { catalogEntry } from './place-catalog'
@@ -76,7 +77,7 @@ export function SearchPlace({ kind, places, query, t, onQuery, onSelect, onBack,
     <label className="sr-only" htmlFor="place-search">{system ? t.supplierSearch : t.lakeSearch}</label>
     <div className="search-field"><Icon name="search" /><input ref={input} id="place-search" name="place-search" type="search" autoComplete="off" value={query} placeholder={system ? t.supplierSearch : t.lakeSearch} onChange={e => onQuery(e.target.value)} /></div>
     <div className="search-results" aria-live="polite">
-      {matches.slice(0, SEARCH_RESULT_LIMIT).map(p => <div className="place-row" key={p.id}><div><h2>{supplierCounty(p.name)}</h2><p>{supplierCounty(p.county)} · {system ? 'ADH' : 'ADEQ'}</p></div><button className="primary" aria-label={`${t.select} ${p.name}`} onClick={() => onSelect(p)}>{t.select}</button></div>)}
+      {matches.slice(0, SEARCH_RESULT_LIMIT).map(p => <div className="place-row" key={p.id}><div><h2>{supplierCounty(p.name)}</h2><p>{supplierCounty(p.county)} · {system ? directorySystem(p.id) ? `PWS ID ${directorySystem(p.id)!.pwsid}` : 'ADH' : 'ADEQ'}</p></div><button className="primary" aria-label={`${t.select} ${p.name}`} onClick={() => onSelect(p)}>{t.select}</button></div>)}
       {!matches.length ? <p>{t.noResults}</p> : null}
     </div>
     {noMatch ? <p className="quiet-note">{t.noAdvisoryMeaning}</p> : null}
@@ -92,7 +93,7 @@ export function ConfirmPlace({ place, t, onConfirm, onBack }: { place: Place; t:
   return <div className="search-stage">
     <WelcomeStrip />
     <Panel className="journey-panel search-glass confirm-glass"><button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{t.backStep}</button><h1>{place.kind === 'system' ? t.confirmSupplier : t.confirmLake}</h1>
-    <div className="confirm-place"><h2>{supplierCounty(place.name)}</h2><p>{supplierCounty(place.county)}</p><p>{t.source}: {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p></div>
+    <div className="confirm-place"><h2>{supplierCounty(place.name)}</h2><p>{supplierCounty(place.county)}</p><p>{t.source}: {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p>{place.kind === 'system' && directorySystem(place.id) ? <p>PWS ID {directorySystem(place.id)!.pwsid} · <a href={epaRecordUrl(directorySystem(place.id)!.pwsid)} target="_blank" rel="noreferrer">EPA</a></p> : null}</div>
     <p>{place.kind === 'system' ? t.confirmBill : t.confirmArea}</p><details><summary>{t.coverageDetails}<span className="disclosure-icon" aria-hidden="true" /></summary>{catalogEntry(place.id) ? <CatalogCoverage placeId={place.id} t={t} /> : <><p>{place.kind === 'system' ? t.coverage : t.catalogWaterbody}</p><SourceLink url={SOURCES[place.kind === 'system' ? 'ADH' : 'ADEQ']}>{t.sourceLink}</SourceLink></>}</details><button className="primary full" onClick={onConfirm}>{t.confirmWatch}</button><button className="secondary full" onClick={onBack}>{t.differentPlace}</button>
     </Panel>
   </div>

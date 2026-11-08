@@ -3,6 +3,7 @@ import { useStableStatus } from './disclosure-slide'
 import { closeMotionDialog } from './interface-motion'
 import { SOURCES, statusFor, type Language, type Notice, type Place, type SourceSnapshot } from './domain'
 import type { Strings } from './strings'
+import { directorySystem } from './water-system-directory'
 import { catalogEntry, noticeMatchesPlace } from './place-catalog'
 import { SupplierAlertHistory } from './SupplierAlertHistory'
 import { unavailableReason } from './source-checks'
@@ -72,7 +73,9 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
     </div></div>
     <div className="card-check-actions">{!sample && onRefresh ? <button className="secondary check-now-action" disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow} <Icon name="refresh-cw" size={16} /></button> : null}<a className="official-source-action official-list" href={SOURCES.ADH} target="_blank" rel="noreferrer">{t.officialSource} <Icon name="external-link" size={16} /></a></div>
     <SupplierInformation key={`profile:${place.id}`} place={place} language={language} sample={sample} onView={onView} />
-    <SupplierAlertHistory key={place.id} place={place} archive={archive} source={source} now={now} t={t} language={language} onViewNotice={onViewNotice} />
+    <SupplierAlertHistory key={place.id} place={place} archive={archive} source={source} now={now} t={t} language={language} onViewNotice={onViewNotice} coverageNote={!sample && status.state === 'none' && directorySystem(place.id) && !catalogEntry(place.id) ? <p className="quiet-note directory-match-note">{language === 'es'
+      ? `Coincidencia solo por nombre exacto: WAVE muestra avisos de ADH para este sistema solo si ADH lo nombra “${place.name}”. Un aviso con otro nombre no aparecería aquí; revisa la lista de ADH.`
+      : `Matched by exact name only: WAVE shows ADH notices for this system only when ADH lists it as “${place.name}”. A notice under another name would not appear here — check the ADH list.`}</p> : null} />
     {status.state === 'unavailable' && status.records.length ? <p className="historical-note">{t.unverified}</p> : null}
     {!sample ? <div key={`contact:${place.id}`} className="supplier-contact-section supplier-section"><ProviderContact place={place} language={language} sample={sample} compact /></div> : null}
     {onHelp ? <button className="supplier-help-action guide-entry" data-help-place={place.id} onClick={onHelp}>{helpGuideStrings[language].entry}</button> : null}

@@ -33,8 +33,7 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 5' : 'Paso 1 de 5')
   await fits()
   await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-  await fits()
-  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 2 of 5' : 'Paso 2 de 5')
   await page.getByLabel(language === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', { exact: true }).fill('Synthetic resident issue — no service on Monday')
   const other = language === 'en' ? 'es' : 'en'
   if (outputs) {
@@ -44,8 +43,10 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   }
   await fits()
   await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 3 of 5' : 'Paso 3 de 5')
   await fits()
-  await page.getByRole('button', { name: language === 'en' ? 'Review message' : 'Revisar mensaje', exact: true }).click()
+  await page.getByRole('button', { name: language === 'en' ? 'Review email' : 'Revisar correo', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 5' : 'Paso 4 de 5')
   await fits()
   if (outputs) {
     await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
@@ -59,12 +60,8 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await page.reload()
   await page.getByRole('button', { name: language === 'en' ? 'Resume draft' : 'Reanudar borrador', exact: true }).click()
   await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
-  await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true })).toBeEnabled()
   if (outputs) {
-    await page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true }).click()
     const marker = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
-    expect(await page.evaluate(() => sessionStorage.getItem('test:copied'))).toContain(marker)
     for (const [label, filename] of [[language === 'en' ? 'Download email' : 'Descargar correo', 'sample-water-email.txt'], [language === 'en' ? 'Download report' : 'Descargar reporte', 'sample-water-report.txt']]) {
       const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: label, exact: true }).click()])
       expect(download.suggestedFilename()).toBe(filename)
@@ -72,6 +69,17 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
       expect(content).toContain(marker)
       if (filename.includes('email')) expect(content).toContain('SYNTHETIC EDIT RETAINED')
     }
+  }
+  // Step 5 holds the copy/send action and "Where to send it".
+  await page.getByRole('button', { name: language === 'en' ? 'Where to send it' : 'Dónde enviarlo', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 5 of 5' : 'Paso 5 de 5')
+  await expect(page.locator('.send-options')).toContainText(language === 'en' ? 'Sample — sending disabled.' : 'Ejemplo — envío desactivado.')
+  await expect(page.locator('a[href^="mailto:"], a[href^="tel:"]')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true })).toBeEnabled()
+  if (outputs) {
+    await page.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo', exact: true }).click()
+    expect(await page.evaluate(() => sessionStorage.getItem('test:copied'))).toContain(language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO')
   }
   if (!outputs) {
     await fits()

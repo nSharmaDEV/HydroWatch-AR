@@ -102,7 +102,7 @@ export function confirmedSections(d: HelpDraft, language: 'en' | 'es') {
   return { timing, observations, frequency, location, billing, contact, requests, facts, references, records, description: sentence(d.description), signature: [d.residentName?.trim(), d.replyContact?.trim()].filter(Boolean).join('\n') }
 }
 export function answerFingerprint(d: HelpDraft) {
-  const text = JSON.stringify([d.issue, d.place.id, d.description, d.dates, Object.entries(d.answers ?? {}).sort(), d.locations ?? [], d.wording ?? {}, d.facts ?? d.context, recipientRoutes(d), d.residentName ?? '', d.replyContact ?? '', d.attachments.map(a => [a.id,a.name,a.type])])
+  const text = JSON.stringify([d.issue, d.place.id, d.description, d.dates, Object.entries(d.answers ?? {}).sort(), d.locations ?? [], d.wording ?? {}, d.facts ?? d.context, recipientRoutes(d), d.residentName ?? '', d.replyContact ?? '', d.attachments.map(a => [a.id,a.name,a.type]), d.priorContact ?? null])
   let hash = 2166136261
   for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619)
   return `v1:${text.length}:${hash >>> 0}`
@@ -126,7 +126,9 @@ export function emailOutput(d: HelpDraft, language: 'en' | 'es', appendix = '') 
       : recipients[0].route === 'provider' ? es ? `Hola, equipo de ${supplierDisplayName(recipients[0].name)},` : `Hello ${supplierDisplayName(recipients[0].name)} team,`
       : `${es ? 'Hola' : 'Hello'} ${supplierDisplayName(recipients[0].name)},`
     const experience = [s.observations, s.description, s.timing, s.location, s.frequency, s.billing].filter(Boolean).join(' ')
-    const body = [greeting, intro, experience, s.contact, s.records || (!d.facts ? d.context.trim() : ''), appendix.trim(), s.requests, es ? 'Gracias.' : 'Thank you.', s.signature, s.references].filter(Boolean).join('\n\n')
+    const p = d.priorContact
+    const prior = p ? es ? `Me comuniqué con ${p.name} sobre esto el ${readableDate(p.on, language) ?? p.on}${p.reference ? ` (referencia ${p.reference})` : ''} y no se ha resuelto.` : `I contacted ${p.name} about this on ${readableDate(p.on, language) ?? p.on}${p.reference ? ` (reference ${p.reference})` : ''}, and it has not been resolved.` : ''
+    const body = [greeting, intro, experience, prior, s.contact, s.records || (!d.facts ? d.context.trim() : ''), appendix.trim(), s.requests, es ? 'Gracias.' : 'Thank you.', s.signature, s.references].filter(Boolean).join('\n\n')
       const concern = intermittent ? (es ? 'Interrupciones del servicio de agua' : 'Intermittent water service') : specific ? `${specific[0].toLocaleUpperCase()}${specific.slice(1)}` : ISSUE_LABELS[d.issue][es ? 1 : 0]
      const subject = `${concern} — ${supplier}`
    return { subject: subject.slice(0,200), body }

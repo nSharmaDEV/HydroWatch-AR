@@ -9,17 +9,20 @@ test.use({ reducedMotion: 'reduce' })
 
 async function expectFits(page: import('@playwright/test').Page) {
   const panels = page.locator('.request-split > .request-panel')
-  if (await panels.count() === 2) {
-    const geometry = await panels.evaluateAll(els => els.map(el => ({ height: el.getBoundingClientRect().height, top: el.getBoundingClientRect().top, padding: getComputedStyle(el).padding, background: getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth })))
+  // Two panels on most steps; three (dates, places, response) on step 3. Never skipped silently.
+  if (await panels.count() >= 2) {
+    const geometry = await panels.evaluateAll(els => els.map(el => ({ height: el.getBoundingClientRect().height, top: el.getBoundingClientRect().top, padding: getComputedStyle(el).padding, background: getComputedStyle(el).backgroundImage !== 'none' ? 'glass' : getComputedStyle(el).backgroundColor, border: getComputedStyle(el).borderTopWidth })))
     const timing = await page.locator('.request-screen-timing').count()
     const experience = await page.locator('.request-screen-experience').count()
     if (!timing) expect(geometry[0].height).toBeCloseTo(geometry[1].height, 0)
-    expect(geometry[0].top).toBeCloseTo(geometry[1].top, 0)
+    if (timing && page.viewportSize()!.width >= 1280) expect(geometry).toHaveLength(3)
+    for (const panel of geometry.slice(1)) if (page.viewportSize()!.width > 1100) expect(panel.top).toBeCloseTo(geometry[0].top, 0)
     for (const panel of geometry) {
       if (timing) expect(Number.parseFloat(panel.padding)).toBeGreaterThanOrEqual(20)
       else if (experience) expect(panel.padding).toBe('20px 24px')
       else expect(panel.padding).toBe('24px')
-      expect(panel.background).toBe('rgb(255, 255, 255)')
+      // Panels use the shared glass material (a gradient fill) or opaque white.
+      expect(['glass', 'rgb(255, 255, 255)', 'rgb(250, 255, 255)']).toContain(panel.background)
       expect(panel.border).toBe('1px')
     }
   }
@@ -39,7 +42,7 @@ async function expectFits(page: import('@playwright/test').Page) {
     expect(dimensions.document, JSON.stringify(dimensions)).toBeLessThanOrEqual(801)
   }
   if (!await composer.count()) {
-    const layout = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, panels: [...document.querySelectorAll('.request-experience-primary, .request-experience-primary > section, .request-experience-primary > section > *')].map(el => ({ name: el.className || el.tagName, height: el.getBoundingClientRect().height, bottom: el.getBoundingClientRect().bottom })) }))
+    const layout = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, panels: [...document.querySelectorAll('.request-experience-primary, .request-experience-primary > section, .request-experience-primary > section > *, .request-timing-response > section, .request-timing-response > section > *, .request-timing-response > section > section > *')].map(el => ({ name: el.className || el.tagName, height: el.getBoundingClientRect().height, bottom: el.getBoundingClientRect().bottom })) }))
     expect(layout.height, JSON.stringify(layout)).toBeLessThanOrEqual(page.viewportSize()!.height + 1)
   }
 }
@@ -115,27 +118,13 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-choose.png` })
     await expect(page.getByLabel(es ? '¿Cómo te está afectando?' : 'How is this affecting you?', { exact: true })).toHaveCount(0)
     await page.getByRole('button', { name: es ? 'Continuar' : 'Continue', exact: true }).click()
-    {
-      const locationInput = page.locator('.request-location-panel input')
-      await expect(page.locator('.request-location-chips li')).toHaveCount(0)
-      for (const location of ['Oak Street', 'Community centre', 'Remove me']) { await locationInput.fill(location); await locationInput.press('Enter') }
-      await page.getByRole('button', { name: `${es ? 'Eliminar lugar' : 'Remove location'}: Remove me`, exact: true }).click()
-      await expect(page.locator('.request-location-chips li')).toHaveCount(2)
-      await expect(page.locator('.request-title-row .primary')).toHaveText(es ? 'Continuar' : 'Continue')
-      if (issue === 'service') {
-        await expect(page.locator('input[type=date]').last()).toBeEnabled()
-        await page.getByRole('combobox', { name: es ? '¿Continúa? (opcional)' : 'Is it ongoing? (optional)', exact: true }).selectOption('No')
-        await expect(page.locator('input[type=date]').last()).toBeEnabled()
-        await expect(page.locator('input[type=date]').first()).toBeVisible()
-        expect(await page.locator('input[type=date]').first().evaluate(el => getComputedStyle(el, '::-webkit-calendar-picker-indicator').opacity)).toBe('1')
-      }
-      await expect(page.getByLabel(es ? 'Archivos adjuntos (opcional)' : 'Attachments (optional)', { exact: true })).toHaveCount(0)
-      await expectFits(page)
-      if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-timing.png` })
-      await page.getByRole('button', { name: es ? 'Continuar' : 'Continue', exact: true }).click()
-    }
+    await expect(page.locator('.request-progress')).toContainText(es ? 'Paso 2 de 5' : 'Step 2 of 5')
+    // Step 2: observations and details only. No folding sections on any step.
+    await expect(page.locator('details.request-optional')).toHaveCount(0)
+    await expect(page.locator('.request-location-panel input')).toHaveCount(0)
     if (issue === 'billing') await page.getByRole('textbox', { name: es ? '¿Qué cargo cuestionas? (opcional)' : 'Which charge is in question? (optional)', exact: true }).fill('Synthetic duplicated service charge')
     await page.getByRole('textbox', { name: es ? 'Describe lo que pasó (opcional si seleccionaste arriba)' : 'Describe what happened (optional if selected above)', exact: true }).fill('Synthetic resident issue, no actual submission')
+    if (issue === 'billing') await page.getByRole('textbox', { name: es ? '¿Qué has intentado? (opcional)' : 'What have you already tried? (optional)', exact: true }).fill('Synthetic billing-desk question')
     if (issue !== 'other') await page.locator('.request-wording input[type=checkbox]').first().check()
     await expect(page.getByRole('button', { name: es ? 'Añade una foto o documento' : 'Add a photo or document' })).toBeVisible()
     await expectFits(page)
@@ -147,12 +136,31 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.evaluate(() => { document.documentElement.style.fontSize = '' })
     await page.getByLabel(es ? 'Archivos adjuntos (opcional)' : 'Attachments (optional)', { exact: true }).setInputFiles({ name: 'synthetic.txt', mimeType: 'text/plain', buffer: Buffer.from('Synthetic attachment only') })
-    await page.getByRole('button', { name: es ? 'Continuar' : 'Continue', exact: true }).click()
-    if (issue === 'billing') await page.getByRole('textbox', { name: es ? '¿Qué has intentado? (opcional)' : 'What have you already tried? (optional)', exact: true }).fill('Synthetic billing-desk question')
-    await page.locator('.request-wording input[type=checkbox]').first().check()
-    await expect(page.locator('.request-title-row .primary')).toHaveText(es ? 'Revisar mensaje' : 'Review message')
     await expectFits(page)
-    await page.getByRole('button', { name: es ? 'Revisar mensaje' : 'Review message', exact: true }).click()
+    await page.getByRole('button', { name: es ? 'Continuar' : 'Continue', exact: true }).click()
+    // Step 3: dates and locations beside the response choices, all visible at once.
+    await expect(page.locator('.request-progress')).toContainText(es ? 'Paso 3 de 5' : 'Step 3 of 5')
+    await expect(page.locator('details.request-optional')).toHaveCount(0)
+    {
+      const locationInput = page.locator('.request-location-panel input')
+      await expect(page.locator('.request-location-chips li')).toHaveCount(0)
+      for (const location of ['Oak Street', 'Community centre', 'Remove me']) { await locationInput.fill(location); await locationInput.press('Enter') }
+      await page.getByRole('button', { name: `${es ? 'Eliminar lugar' : 'Remove location'}: Remove me`, exact: true }).click()
+      await expect(page.locator('.request-location-chips li')).toHaveCount(2)
+      await expect(page.locator('.request-title-row .primary')).toHaveText(es ? 'Revisar correo' : 'Review email')
+      if (issue === 'service') {
+        await expect(page.locator('input[type=date]').last()).toBeEnabled()
+        await page.getByRole('combobox', { name: es ? '¿Continúa? (opcional)' : 'Is it ongoing? (optional)', exact: true }).selectOption('No')
+        await expect(page.locator('input[type=date]').last()).toBeEnabled()
+        await expect(page.locator('input[type=date]').first()).toBeVisible()
+        expect(await page.locator('input[type=date]').first().evaluate(el => getComputedStyle(el, '::-webkit-calendar-picker-indicator').opacity)).toBe('1')
+      }
+    }
+    await page.locator('.request-timing-response-choices .request-wording input[type=checkbox]').first().check()
+    await expectFits(page)
+    if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-timing.png` })
+    await page.getByRole('button', { name: es ? 'Revisar correo' : 'Review email', exact: true }).click()
+    await expect(page.locator('.request-progress')).toContainText(es ? 'Paso 4 de 5' : 'Step 4 of 5')
     const activeRecords = active && !['billing', 'other'].includes(issue)
     if (activeRecords) {
       await expect(page.locator('.request-review-record').first()).toContainText('Synthetic test incident')
@@ -211,16 +219,24 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
       await expect(page.getByRole('checkbox', { name: es ? 'Incluir en el correo' : 'Include in email', exact: true }).first()).not.toBeChecked()
     }
-    await expect(page.getByRole('button', { name: es ? 'Continuar al envío' : 'Continue to send', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: es ? 'Enviar mensaje' : 'Send message', exact: true })).toHaveCount(0)
+    await expect(page.locator('.send-options')).toHaveCount(0)
+    await page.getByRole('button', { name: es ? 'Dónde enviarlo' : 'Where to send it', exact: true }).click()
+    // Step 5: where to send it, on its own screen.
+    await expect(page.locator('.request-progress')).toContainText(es ? 'Paso 5 de 5' : 'Step 5 of 5')
+    await expect(page.locator('.send-options')).toBeVisible()
     await expect(page.getByRole('button', { name: es ? 'Enviar mensaje' : 'Send message', exact: true })).toHaveCount(0)
     const sendButton = page.getByRole('button', { name: es ? 'Copiar correo' : 'Copy email', exact: true })
     await expect(sendButton).toBeEnabled()
     await expectFits(page)
     if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-confirm.png` })
     await page.getByRole('button', { name: es ? 'Atrás' : 'Back', exact: true }).click()
-    await page.getByRole('button', { name: es ? 'Revisar mensaje' : 'Review message', exact: true }).click()
+    await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
+    await page.getByRole('button', { name: es ? 'Atrás' : 'Back', exact: true }).click()
+    await page.getByRole('button', { name: es ? 'Revisar correo' : 'Review email', exact: true }).click()
     await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
     await expect(page.getByText(/synthetic.txt/, { exact: false })).toBeVisible()
+    await page.getByRole('button', { name: es ? 'Dónde enviarlo' : 'Where to send it', exact: true }).click()
     // Narrow screens and enlarged text may naturally scroll, never horizontally.
     for (const width of [640, 390, 320]) {
       await page.setViewportSize({ width, height: 700 })

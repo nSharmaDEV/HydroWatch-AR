@@ -1,7 +1,7 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
 import type { Language, Notice, Place } from './domain'
 import { SourceLink } from './components'
-import { PROVIDER_CONTACTS } from './provider-contacts'
+import { providerContact } from './provider-contacts'
 import { buildPreparationPacket, buildRecoveryDraft, draftText, emailDraftUrl, type DraftKind, type RecoveryDraft } from './recovery-drafts'
 import { RECOVERY_RESOURCES as links } from './recovery-resources'
 import { recoveryStrings } from './recovery-strings'
@@ -23,7 +23,7 @@ export function RecoveryActions({ place, notice, language, sample, initialKind =
   const draft = activeKind ? edits[activeKind] ?? buildRecoveryDraft({ ...input, kind: activeKind }) : { subject: '', body: '' }
   const outgoing = { ...draft, body: draft.body + appendix }
   const remaining = (draft.subject + draft.body).match(/\[[^\]]+\]/g)?.length ?? 0
-  const contact = !sample && Object.hasOwn(PROVIDER_CONTACTS, place.id) ? PROVIDER_CONTACTS[place.id] : undefined
+  const contact = !sample ? providerContact(place.id) : undefined
   const mailto = allowEmail && (activeKind === 'service' || activeKind === 'request' || activeKind === 'followup' || activeKind === 'response') ? emailDraftUrl(contact?.email, outgoing) : undefined
   function edit(field: keyof RecoveryDraft, value: string) { setEdits(previous => ({ ...previous, [activeKind]: { ...draft, [field]: value } })); setMessage(''); onEdit?.() }
   async function copy() {

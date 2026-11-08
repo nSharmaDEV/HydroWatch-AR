@@ -107,6 +107,11 @@ The Places updates section contains only the heading and toggle, followed by Abo
 these results; notification details remain available through Settings.
 The earlier Home-dashboard layout checks are historical evidence, not verification
 of the current Places layout. Expanded content and enlarged text can still scroll.
+Desktop Places cards keep reference-sized proportions rather than stretching to fill
+the window, with a roomier status panel and tighter spacing on short screens, without
+removing text, contacts or actions. Mobile retains its existing spacing and scrolling.
+For directory-only suppliers, the exact-name matching limitation appears inside
+Advisory history rather than the current-status panel; expand that section to read it.
 When supplier phone/email details are unavailable, Service questions offers a
 right-aligned **Contact ADH** link to Safe Water Engineering instead of the
 missing-contact paragraph; verified supplier contacts remain unchanged.
@@ -208,20 +213,47 @@ not verify production feeds or device delivery. Nothing deployed or sent.
 
 ## Advisory help
 
-Help uses the existing Map-aligned shell: **Choose issue → When and where →
-What did you observe? → Requested response → Review**. All categories retain five
-stages; billing details are on observations. Review is the final screen,
-with a header Send action only when supported for every selected recipient;
-otherwise the header offers Copy email. Download and official alternatives remain
-available, without another confirmation page. Every screen shares the same
+Help uses the existing Map-aligned shell in five short steps (since November 8,
+2026): **Choose issue → What happened? → When, where and what you want → Review
+your email → Send it**. There are no folding sections.
+- **What happened?** shows observations and attachments beside the details. For billing,
+  that includes the charge questions and "What have you already tried?".
+- **When, where and what you want** puts dates and notes, observed locations and
+  the response choices in three panels side by side. An invalid date range
+  disables **Review email**.
+- **Review your email** holds the answers, records, composer and downloads.
+- **Send it** holds Where to send it and "Did you send it?", with a header Send
+  action only when supported for every selected recipient. Otherwise the header
+  offers Copy email.
+
+Drafts saved on the old billing step resume on What happened?; old response
+steps resume on step 3. Every screen shares the same
 heading–leader–primary-action layout, with Back, progress and save status in one
-compact row. Middle screens use matching white, bordered panels with 24px desktop
-padding; choices are full bordered rows and writing prompts are rounded chips.
-The supplier stays visible, progress shows the actual **Step n of m**, and Back
-preserves answers and email edits. No relevant records means omitting that tool,
-not an all-clear claim. The typical advisory desktop path fits at 1280×800 without
-page scrolling at normal text size; optional expanded tools or larger records can
-need scrolling. Mobile and enlarged text use one column and natural page scrolling.
+compact row. The supplier name and status sit in that title row. Middle screens use
+matching bordered panels with 20px desktop padding; choices are full bordered rows
+and writing prompts are rounded chips. Progress shows the actual **Step n of m**,
+and Back preserves answers and email edits. No relevant records means omitting that
+tool, not an all-clear claim. With the synthetic browser fixture, every step fits
+without page scrolling at 1280×800 and 1440×780. Larger record sets, long notes
+or attachments can still add scrolling. Mobile and enlarged text use one column
+and natural page scrolling.
+
+### Did you send it? and follow-up
+
+After a resident opens their email app, starts a call or opens a form, the panel
+asks **Did you send it?** (or "Did you reach them?"). It offers Yes, Not yet and
+I couldn't reach them, plus an optional reference number. "Sent it another way?
+Record it" covers messages sent outside WAVE. Only the resident's answer is saved
+(`draft.outcomes`), in the same device or account storage as the draft, and it is
+deleted with the request. WAVE never observes delivery, calls, replies or
+resolution. A contact answer starts an in-app **follow-up reminder** five business
+days later (weekends skipped; holidays not modelled). It appears in History only;
+no notification, email or push is sent. History shows **What you recorded** as a
+timeline and offers Record a reply, Mark resolved and Not resolved. It also
+offers **Write a follow-up** to the same office or **Contact** the next office
+(service/quality/advisory/other → ADH; billing → Arkansas Attorney General). A
+follow-up is a new draft whose message cites the earlier contact ("I contacted X
+about this on DATE (reference …), and it has not been resolved.").
 
 ### Where to send it and contact sources
 
@@ -249,6 +281,35 @@ active/none/unavailable status and never imply current safety or compliance.
 ADH page IDs match EPA PWS IDs (ADH `ID=569` is `AR0000569`), so matching is by
 exact ID, never by city or county name. The only live advisory feeds remain ADH
 boil-water HTML and ADEQ HAB JSON.
+
+### Statewide supplier directory
+
+`src/directory/epa-water-systems.json` is a checked-in EPA SDWIS snapshot of the 658
+active Arkansas community water systems (checked November 8, 2026). It lists
+name, PWS ID, county, population and any listed email/phone. Supplier search
+covers all of them by name, county or PWS ID (for example `AR0000569`). Results
+show the PWS ID; WAVE never infers a household's supplier from an address,
+city or county.
+
+- **Refresh:** `npm run directory:epa` fetches EPA and prints added, removed and
+  changed systems for review. `npm run directory:epa -- --write` saves the
+  snapshot (one system per line for readable diffs). It refuses to run on
+  implausible row counts or when more than 10% of systems disappear.
+- **Notice linking:** each system's ID is the ADH parser hash of its exact EPA
+  name. ADH boil-water notices link only when ADH publishes the same name (same
+  parser normalization), or through a reviewed entry in `REVIEWED_ADH_ALIASES`
+  (`src/water-system-directory.ts`, empty today). Names published by two EPA
+  systems are not linked by name. On November 8, 2026, 21 of 25 locally observed
+  ADH systems matched exactly; the other four appear to be non-community systems
+  outside this list.
+- **Honest absence:** directory-only systems with no linked notice show "Matched
+  by exact name only … A notice under another name would not appear here — check
+  the ADH list" next to "no active notice found". This is never an all-clear.
+- **Contacts:** the reviewed `PROVIDER_CONTACTS` table wins. Otherwise EPA
+  phone/email fields are used and labelled "EPA water-system record (directory
+  only)" with the check date.
+- Push subscriptions accept directory system IDs. Notices still come only from
+  the live ADH feed.
 
 Four large icon choices and a full-width Other issue choice show relevant questions.
 Service uses start/end dates and an explicit ongoing choice; only No enables

@@ -8,6 +8,77 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-08 — Directory matching note inside Advisory history
+
+- Moved the directory-only exact-name warning from the status panel into expandable
+  Advisory history, preserving its English/Spanish wording and display conditions.
+  Expanded details can still scroll; the collapsed card keeps its existing proportions.
+- Local checks: 29 focused unit tests and 16 synthetic browser cases pass. Gurdon's
+  collapsed card and Previous/Next controls fit without scrolling at 1280×650,
+  1440×780 and 1440×900 in English/Spanish. Production build passes with the existing
+  chunk-size warning. Not deployed; no notifications or messages sent.
+
+### 2026-11-08 — Places reference-size refinement
+
+- Increased desktop status-panel breathing room to bring the complete supplier card
+  closer to the supplied size reference. Reduced outer page spacing at intermediate
+  desktop heights; retained the compact treatment on short screens and existing mobile layout.
+- Local checks: all 40 focused synthetic browser cases pass, including long active
+  notices and English/Spanish contact cards without scrolling at the tested desktop
+  sizes. Production build passes with the existing chunk-size warning. Not deployed.
+
+### 2026-11-08 — Compact Places card
+
+- Removed desktop carousel/status-panel height stretching and tightened supplier-card
+  padding and heading/status gaps. All text, source links, contacts, disclosure rows
+  and actions remain; expanded details and mobile can still scroll naturally.
+- Local synthetic browser checks: 40 focused cases pass across English/Spanish,
+  collapsed/expanded views, active/unavailable statuses and mobile overflow checks.
+  The Leisure Hills contact/provenance view fits tested 1440px-wide windows at
+  650, 780 and 900px heights without page scrolling. Production build passes with
+  the existing chunk-size warning. Not deployed; no notifications or messages sent.
+
+### 2026-11-08 — Did you send it?, five-step Help and statewide directory
+
+- **Follow-through:** after an email, call or form handoff, Help asks "Did you
+  send it?" and saves only the resident's answer, with an optional reference.
+  A contact starts an in-app follow-up reminder five business days later (History
+  only; nothing is sent). History shows a "What you recorded" timeline with
+  Record a reply / Mark resolved / Not resolved. It also offers a follow-up or
+  next-office draft that cites the earlier contact. The server validates the
+  new `outcomes`, `followUpOn` and `priorContact` draft fields.
+- **Five short steps, no scrolling at desktop size:** Choose → What happened? →
+  When, where and what you want → Review your email → Send it. No folding sections.
+  - The supplier name moved into the title row.
+  - "What have you already tried?" moved to What happened?.
+  - The Review "Requested response" edit link opens step 3.
+  - A bad date range shows one error message.
+  - Escalation cards show "If this isn’t resolved".
+  - "Did you send it?" replaces the cards while it is open.
+  - Older drafts resume on the matching step.
+- **Statewide directory:** checked-in EPA SDWIS snapshot of 658 active Arkansas
+  community water systems (`npm run directory:epa` prints a review diff; `--write`
+  saves). Search covers name, county or PWS ID. ADH notices link only by exact
+  published name or a reviewed alias (none yet). Directory-only systems show an
+  exact-name caveat beside "no active notice found". EPA contacts are labelled
+  directory-only; reviewed contacts win.
+- **Fixes:** Back/forward between steps no longer re-enables Send message
+  after a confirmed hosted send. The EPA snapshot moved to
+  `src/directory/epa-water-systems.json`, because `.gitignore`'s `data/`
+  rule hid it.
+- **Tests:** updated the unit and e2e tests for the five steps, including
+  `tests/sample-exports.test.tsx`. Added a regression test for the
+  Back/forward double send.
+- **Local checks only, 2026-11-08:** `tsc -b` clean, `npm run build` ok.
+- **Vitest:** 777/779 passed. The 2 failures are the known Gurdon en/es tests
+  from the separate annual-report work in progress.
+- **Playwright:** 448/492 passed. The 44 failures break down as:
+  - 34 fail the same way at commit 2d19990: `home-viewport` lines 35/106/366
+    and `observed-map`, which check the older Home/Places layout.
+  - 10 passed on rerun: `home-viewport:164`, `help-formatting` and
+    `saved-help` (es).
+- Not deployed; nothing sent.
+
 ### 2026-11-08 — Help "Where to send it" and sourced contact emails
 
 - Adds a **Where to send it** panel to Help Review. It has one row per selected

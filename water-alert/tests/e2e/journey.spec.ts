@@ -199,12 +199,12 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await expect(report).toHaveCSS('background-color', 'rgb(246, 249, 250)')
     const titleBox = await header.locator('h4').boundingBox()
     const pdfBox = await pdf.boundingBox()
-    expect(Math.abs(titleBox!.y + titleBox!.height / 2 - pdfBox!.y - pdfBox!.height / 2)).toBeLessThan(8)
     if (test.info().project.name === 'desktop') {
-      // The dotted leader runs straight from the title to the PDF link.
-      const leaderBox = await header.locator('.profile-leader').boundingBox()
-      expect(Math.abs(leaderBox!.x - (titleBox!.x + titleBox!.width))).toBeLessThan(12)
-      expect(Math.abs(pdfBox!.x - (leaderBox!.x + leaderBox!.width))).toBeLessThan(16)
+      // On phones the PDF link wraps below the title, so vertical centring is a desktop check.
+      expect(Math.abs(titleBox!.y + titleBox!.height / 2 - pdfBox!.y - pdfBox!.height / 2)).toBeLessThan(8)
+      // The heading reads title first and the PDF link last, on one line, with no leader.
+      await expect(header.locator('.profile-leader')).toHaveCount(0)
+      expect(pdfBox!.x).toBeGreaterThan(titleBox!.x + titleBox!.width)
     }
     // Teal "View issues" bar with white text spanning the card content, label centred.
     await expect(toggle).toHaveCSS('background-color', 'rgb(8, 127, 131)')
@@ -217,18 +217,18 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     expect(Math.abs(cardBox.x + cardBox.width - inset.right - (toggleBox.x + toggleBox.width))).toBeLessThan(2)
     const labelCentre = await toggle.evaluate(node => { const range = document.createRange(); range.selectNodeContents(node.firstChild!); const r = range.getBoundingClientRect(); return r.x + r.width / 2 })
     expect(Math.abs(labelCentre - (toggleBox.x + toggleBox.width / 2))).toBeLessThan(3)
-    // Reviewed, Ongoing when printed and Issue types share equal widths on desktop; stacked on phones.
+    // The reviewed/summarized date sits in the heading; Ongoing when printed and Issue types share a row on
+    // desktop and stack on phones.
+    await expect(header.locator('.report-reviewed')).toContainText(language === 'en' ? /Reviewed|AI summary/ : /Revisado|Resumido por IA/)
     const factBoxes = await Promise.all((await report.locator('.report-facts>div').all()).map(node => node.boundingBox()))
-    expect(factBoxes).toHaveLength(3)
+    expect(factBoxes).toHaveLength(2)
     if (test.info().project.name === 'desktop') {
-      expect(Math.abs(factBoxes[0]!.width - factBoxes[2]!.width)).toBeLessThan(1)
-      expect(Math.abs(factBoxes[1]!.width - factBoxes[2]!.width)).toBeLessThan(1)
-      expect(Math.abs(factBoxes[0]!.y - factBoxes[2]!.y)).toBeLessThan(1)
+      expect(Math.abs(factBoxes[0]!.y - factBoxes[1]!.y)).toBeLessThan(1)
+      expect(factBoxes[1]!.x).toBeGreaterThanOrEqual(factBoxes[0]!.x + factBoxes[0]!.width)
     } else {
       expect(factBoxes[1]!.y).toBeGreaterThan(factBoxes[0]!.y)
-      expect(factBoxes[2]!.y).toBeGreaterThan(factBoxes[1]!.y)
     }
-    await expect(report.locator('.report-facts dt')).toHaveText(language === 'en' ? ['Reviewed', 'Ongoing when printed', 'Issue types'] : ['Revisado', 'En curso al imprimirse', 'Tipos de problemas'])
+    await expect(report.locator('.report-facts dt')).toHaveText(language === 'en' ? ['Ongoing when printed', 'Issue types'] : ['En curso al imprimirse', 'Tipos de problemas'])
     await expect(report.locator('.report-ongoing-since')).toHaveText(language === 'en' ? 'since Oct 1, 2025' : /desde 1 .*oct.*2025/i)
     // The collapsed-header chip sits at the right, just left of the −/+ icon.
     const headerToggle = page.locator('.provider-info-toggle')
@@ -512,11 +512,16 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
     if (width === 1366) expect(geometry.cardWidth).toBeGreaterThan(700)
     const history = card.getByRole('button', { name: 'Advisory history', exact: true })
     await expect(history).toHaveAttribute('aria-expanded', 'false')
-    expect(await history.locator('.disclosure-icon').evaluate(icon => getComputedStyle(icon, '::before').content)).toBe('"+"')
+    // Disclosure markers are Lucide plus/minus shapes drawn through a CSS mask.
+    const marker = () => history.locator('.disclosure-icon').evaluate(icon => getComputedStyle(icon, '::before').getPropertyValue('--icon'))
+    const closedMarker = await marker()
+    expect(closedMarker).toContain('M5 12h14M12 5v14')
     await history.focus()
     await page.keyboard.press('Space')
     await expect(history).toHaveAttribute('aria-expanded', 'true')
-    expect(await history.locator('.disclosure-icon').evaluate(icon => getComputedStyle(icon, '::before').content)).toBe('"−"')
+    const openMarker = await marker()
+    expect(openMarker).toContain('M5 12h14')
+    expect(openMarker).not.toContain('M12 5v14')
     await page.keyboard.press('Space')
     const help = card.getByRole('button', { name: /^Provider information/ })
     const referenceIcon = await history.locator('.disclosure-icon').evaluate(icon => {
@@ -591,7 +596,7 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await expect(official).toHaveCSS('font-weight', '700')
     await expect(official).toHaveCSS('background-color', 'rgb(255, 255, 255)')
     await expect(official).toHaveCSS('color', 'rgb(6, 109, 115)')
-    await expect(official.locator('span')).toHaveCSS('color', 'rgb(6, 109, 115)')
+    await expect(official.locator('svg.icon')).toHaveCSS('color', 'rgb(6, 109, 115)')
     expect(await help.evaluate(el => el.previousElementSibling?.classList.contains('supplier-contact-section'))).toBe(true)
     await expect(card.locator('.supplier-contact-section .provider-contact')).toBeVisible()
     await expect(email).toHaveText('LEISUREHILLSWATERCO@GMAIL.COM')
@@ -613,10 +618,10 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     const next = language === 'en' ? 'Continue' : 'Continuar'
     await page.getByRole('button', { name: billing, exact: true }).click()
     await page.getByRole('button', { name: next, exact: true }).click()
-    await page.getByRole('button', { name: next, exact: true }).click()
+    await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 2 of 5' : 'Paso 2 de 5')
     await page.getByRole('textbox', { name: language === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', exact: true }).fill('SYNTHETIC GUIDE REVIEW ONLY')
     await page.getByRole('button', { name: next, exact: true }).click()
-    await page.getByRole('button', { name: language === 'en' ? 'Review message' : 'Revisar mensaje', exact: true }).click()
+    await page.getByRole('button', { name: language === 'en' ? 'Review email' : 'Revisar correo', exact: true }).click()
     const body = page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })
     await body.fill('SYNTHETIC GUIDE REVIEW ONLY')
     await expect(body).toHaveValue('SYNTHETIC GUIDE REVIEW ONLY')
@@ -639,9 +644,9 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
 
 test('sample scenarios stay fictional across detail, help choices, history and exit', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: /Get help with a water issue/ }).click()
-  await expect(page.getByText('Published notices are not a water safety test.', { exact: true })).toBeVisible()
-  await expect(page.getByText('Choose your water source to find relevant notices and guidance.', { exact: true })).toBeVisible()
+  // Sample mode lives in Settings; its row keeps the fictional-data disclosure.
+  await page.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true }).click()
+  await expect(page.getByRole('button', { name: /^Try sample mode/ })).toContainText('Fictional records. Not current agency data.')
   await page.getByRole('button', { name: /^Try sample mode/ }).click()
   await page.getByRole('button', { name: 'Use sample watch list', exact: true }).click()
   await expect(page.locator('.status-label').filter({ hasText: /^Active boil-water notice$/ })).toBeVisible()
@@ -653,13 +658,21 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Sample Creek Water', exact: true }) }).getByRole('button', { name: 'Get help with a water issue', exact: true }).click()
   await page.getByRole('button', { name: 'Bill or charge', exact: true }).click()
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText('Step 2 of 5')
   await page.getByRole('textbox', { name: 'Describe what happened (optional if selected above)', exact: true }).fill('A fictional billing issue for this sample.')
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
-  await page.getByRole('button', { name: 'Review message', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText('Step 3 of 5')
+  await page.getByRole('button', { name: 'Review email', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Review your email', exact: true })).toBeVisible()
   await expect(page.getByRole('textbox', { name: 'Message', exact: true })).not.toHaveValue('')
   await expect(page.getByText('Sample — fictional. Sending disabled.', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Where to send it', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Send it', exact: true })).toBeVisible()
+  const sendIt = page.getByRole('region', { name: 'Where to send it', exact: true })
+  await expect(sendIt).toBeVisible()
+  await expect(sendIt.getByText('Sample — sending disabled.', { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Send message', exact: true })).toHaveCount(0)
+  await expect(sendIt.getByRole('button', { name: /Copy message & open form|Sent it another way/ })).toHaveCount(0)
   await expect(page.locator('a[href^="mailto:"],a[href^="tel:"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'History', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Sample mode', exact: true })).toBeVisible()

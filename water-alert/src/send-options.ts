@@ -1,5 +1,5 @@
 import type { Language } from './domain.js'
-import { PROVIDER_CONTACTS, type EmailListing } from './provider-contacts.js'
+import { providerContact, type EmailListing } from './provider-contacts.js'
 import { ADH_ENGINEERING_SOURCE, RECOVERY_RESOURCES } from './recovery-resources.js'
 import { ISSUE_LABELS } from './help-questions.js'
 import { readableDate } from './help-format.js'
@@ -9,19 +9,29 @@ import { recipientRoutes, routeFor, type HelpDraft, type HelpRoute, type IssueTy
 export interface SendOption {
   route: HelpRoute; name: string; recommended: boolean
   email?: string; emailKind?: 'general' | 'staff'; emailSource?: EmailListing; otherListings?: EmailListing[]
-  phone?: string; dial?: string; formUrl?: string; sourceUrl?: string; checkedOn?: string
+  phone?: string; dial?: string; formUrl?: string; sourceUrl?: string; checkedOn?: string; phoneSource?: 'ADH' | 'EPA'
 }
 
 /** Where a resident might go next if the first contact does not resolve the issue. */
 const ESCALATION: Record<IssueType, HelpRoute | undefined> = { service: 'adh', quality: 'adh', advisory: 'adh', other: 'adh', billing: 'ag', legal: undefined }
+
+export function escalationRoute(issue: IssueType): HelpRoute | undefined { return ESCALATION[issue] }
+
+/** A new draft to another (or the same) office that cites the earlier resident-reported contact. */
+export function followUpDraft(d: HelpDraft, route: HelpRoute, id: string): HelpDraft {
+  const last = [...(d.outcomes ?? [])].reverse().find(o => o.kind === 'emailed' || o.kind === 'called' || o.kind === 'form')
+  const { outcomes: _o, followUpOn: _f, ...rest } = d
+  return { ...rest, id, route, recipientRoutes: [route], flowStep: 'review', stage: 2, subject: '', body: '', subjectEdited: false, bodyEdited: false, generatedFrom: undefined, attachments: [],
+    ...(last ? { priorContact: { name: last.name, on: last.on, ...(last.reference ? { reference: last.reference } : {}) } } : {}) }
+}
 
 const ADH_PHONE = '501-661-2623', ADH_DIAL = '+15016612623'
 
 export function sendOption(draft: HelpDraft, route: HelpRoute, recommended: boolean): SendOption {
   const base = routeFor({ ...draft, route })
   if (route === 'provider') {
-    const c = Object.hasOwn(PROVIDER_CONTACTS, draft.place.id) ? PROVIDER_CONTACTS[draft.place.id] : undefined
-    return { route, name: draft.place.name, recommended, email: c?.email, emailKind: c?.emailKind, emailSource: c?.emailSource, otherListings: c?.otherListings, phone: c?.phone, dial: c?.dial, sourceUrl: c?.sourceUrl, checkedOn: c?.verifiedOn }
+    const c = providerContact(draft.place.id)
+    return { route, name: draft.place.name, recommended, email: c?.email, emailKind: c?.emailKind, emailSource: c?.emailSource, otherListings: c?.otherListings, phone: c?.phone || undefined, dial: c?.dial || undefined, sourceUrl: c?.sourceUrl, checkedOn: c?.verifiedOn, phoneSource: c ? c.phoneSource ?? 'ADH' : undefined }
   }
   if (route === 'adh') return { route, name: base.name, recommended, phone: ADH_PHONE, dial: ADH_DIAL, sourceUrl: ADH_ENGINEERING_SOURCE, checkedOn: '2026-10-14' }
   if (route === 'ag') return { route, name: base.name, recommended, formUrl: RECOVERY_RESOURCES.complaint, checkedOn: '2026-10-14' }

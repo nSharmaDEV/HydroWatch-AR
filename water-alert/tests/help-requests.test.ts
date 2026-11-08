@@ -142,3 +142,17 @@ test('untrusted fields are discarded and valid foreign attachment ids never retr
   expect(JSON.stringify(await s.list('bob'))).not.toContain('PRIVATE')
   await expect(s.prepare('bob', alice.id, 1)).rejects.toThrow('not found')
 })
+test('resident-reported outcomes, reminders and prior contact round trip with bounded validation', async () => {
+  const s = await store()
+  const outcome = { id: 'o1', kind: 'emailed' as const, route: 'provider' as const, name: 'Leisure Hills', on: '2026-11-02', reference: 'T-1', note: 'Sent from my phone' }
+  const d = { ...blankRequest(place), outcomes: [outcome], followUpOn: '2026-11-09', priorContact: { name: 'Leisure Hills', on: '2026-10-01' } }
+  const saved = await s.save('alice', d, 0)
+  const resumed = (await new HelpStore(dirs[0]).list('alice'))[0].draft
+  expect(resumed.outcomes).toEqual([outcome])
+  expect(resumed.followUpOn).toBe('2026-11-09')
+  expect(resumed.priorContact).toEqual({ name: 'Leisure Hills', on: '2026-10-01' })
+  for (const patch of [
+    { outcomes: [{ ...outcome, kind: 'delivered' as never }] }, { outcomes: [{ ...outcome, on: 'yesterday' }] }, { outcomes: [{ ...outcome, reference: 'x'.repeat(101) }] },
+    { outcomes: [{ ...outcome, name: 'Injected\nHeader' }] }, { outcomes: Array(31).fill(outcome) }, { followUpOn: '2026-13-45' }, { priorContact: { name: 'x', on: 'soon' } },
+  ]) await expect(s.save('alice', { ...d, ...patch }, saved.revision)).rejects.toThrow()
+})

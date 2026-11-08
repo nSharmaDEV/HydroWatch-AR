@@ -5,6 +5,8 @@ import { SOURCES, type Notice } from '../src/domain.js'
 const text = (value: string) => value.replace(/\s+/g, ' ').trim()
 const key = (value: string) => text(value).normalize('NFKC').replace(/[’‘]/g, "'").toLowerCase()
 const id = (agency: string, values: string[]) => `${agency}:${createHash('sha256').update(JSON.stringify(values)).digest('hex')}`
+/** The ADH place ID for an exact published system name; used by the directory snapshot script. */
+export const adhSystemPlaceId = (name: string) => id('ADH', ['system', key(name)])
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 // Validate the published calendar/time fields without inventing a timezone.

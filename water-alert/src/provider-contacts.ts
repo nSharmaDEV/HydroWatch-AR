@@ -4,10 +4,13 @@
 // are directory data only (never an advisory feed); PWS IDs match the ADH page
 // IDs (ADH ID=569 is EPA AR0000569). Addresses are copied exactly as listed and
 // never corrected or guessed. Named-staff addresses are allowed and labelled.
+import { DIRECTORY, directorySystem, epaRecordUrl } from './water-system-directory.js'
 export type ContactSource = 'ADH' | 'EPA'
 export interface EmailListing { email: string; source: ContactSource; url: string; checkedOn: string }
 export interface ProviderContact {
   phone: string; dial: string; email?: string; sourceUrl: string; verifiedOn: string
+  /** Which directory the phone/sourceUrl came from; reviewed entries default to ADH. */
+  phoneSource?: ContactSource
   /** Provenance of `email`, when it differs from the phone directory check. */
   emailSource?: EmailListing
   /** `staff` = a named person's address listed by the directory; `general` = a shared inbox. */
@@ -32,4 +35,16 @@ export const PROVIDER_CONTACTS: Readonly<Record<string, ProviderContact>> = {
   // ADH page and EPA SDWIS agree on 2026-11-08.
   'ADH:cb08f1d6d339ab0c908178b44da1deb36c8fddcf607f91025bcfef4d84b681bb': { phone: '(479) 271-3140', dial: '+14792713140', email: 'pnewbill@bentonvillear.com', sourceUrl: adh('041'), verifiedOn: '2026-10-14',
     emailSource: { email: 'pnewbill@bentonvillear.com', source: 'ADH', url: adh('041'), checkedOn: '2026-11-08' }, emailKind: 'staff' },
+}
+
+/** Reviewed contacts first; otherwise the EPA SDWIS directory fields, labelled as such. */
+export function providerContact(placeId: string): ProviderContact | undefined {
+  if (Object.hasOwn(PROVIDER_CONTACTS, placeId)) return PROVIDER_CONTACTS[placeId]
+  const s = directorySystem(placeId)
+  if (!s || (!s.phone && !s.email)) return undefined
+  const url = epaRecordUrl(s.pwsid), digits = s.phone?.replace(/\D/g, '')
+  return {
+    phone: s.phone ? `(${digits!.slice(0, 3)}) ${digits!.slice(3, 6)}-${digits!.slice(6)}` : '', dial: digits ? `+1${digits}` : '', sourceUrl: url, verifiedOn: DIRECTORY.checkedOn, phoneSource: 'EPA',
+    ...(s.email ? { email: s.email, emailSource: { email: s.email, source: 'EPA' as const, url, checkedOn: DIRECTORY.checkedOn } } : {}),
+  }
 }

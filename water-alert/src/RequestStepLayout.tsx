@@ -7,8 +7,8 @@ export function RequestStepLayout({ title, heading, action, supplier, status, pr
 }) {
   return <div className="request-step-layout">
     <div className="request-frame-topline">{topLine}{progress}</div>
-    <div className="request-title-row"><h1 ref={heading} tabIndex={-1}>{title}</h1><span className="request-leader" aria-hidden="true" />{action}</div>
-    <div className="request-supplier-line"><p className="request-provider">{supplier}</p>{status}</div>
+    {/* Supplier and status share the title row so every step keeps its height for the form. */}
+    <div className="request-title-row"><h1 ref={heading} tabIndex={-1}>{title}</h1><span className="request-leader" aria-hidden="true" /><div className="request-supplier-line"><p className="request-provider">{supplier}</p>{status}</div>{action}</div>
     {children}
   </div>
 }

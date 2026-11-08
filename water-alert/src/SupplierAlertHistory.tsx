@@ -11,7 +11,7 @@ import { supplierHistory } from './imported-advisories'
 const instant = (value?: string) => value && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value)) ? value : undefined
 const calendar = <Icon name="calendar" size={16} />
 
-export function SupplierAlertHistory({ place, archive, source, now, t, language, action }: { place: Place; archive: Notice[]; source?: SourceSnapshot; now: number; t: Strings; language: Language; action?: ReactNode; onViewNotice?: (id: string) => void }) {
+export function SupplierAlertHistory({ place, archive, source, now, t, language, action, coverageNote }: { place: Place; archive: Notice[]; source?: SourceSnapshot; now: number; t: Strings; language: Language; action?: ReactNode; coverageNote?: ReactNode; onViewNotice?: (id: string) => void }) {
   const [open, setOpen] = useState(false)
   const motion = useMotionPresence(open, 'slide')
   const [limit, setLimit] = useState(5)
@@ -34,6 +34,7 @@ export function SupplierAlertHistory({ place, archive, source, now, t, language,
     <div className="supplier-actions"><button className="alert-toggle check-toggle text-button disclosure-toggle" aria-expanded={open} aria-controls={id} onClick={() => setOpen(v => !v)}>{title}<span aria-hidden="true" className="disclosure-icon" /></button>{action}</div>
     <section ref={motion.ref} id={id} hidden={!motion.present} inert={!open} aria-hidden={!open || undefined} className="supplier-alert-history" aria-label={title}>
       {motion.present ? <>
+        {coverageNote}
         {lake && records.length && !source?.records.some(matches) ? <p className="historical-note">{t.unverified}</p> : null}
         {!records.length ? <p>{lake ? es ? 'No hay avisos guardados para este cuerpo de agua.' : 'No advisory notices saved for this waterbody.' : t.supplierAlertEmpty}</p> : null}
         {records.slice(0, limit).map(({ record: n, observed, imported }) => {

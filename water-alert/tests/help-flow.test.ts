@@ -4,13 +4,23 @@ import { blankRequest } from '../src/help-requests'
 import { samplePlaces } from '../src/sample'
 import { LEISURE_HILLS_ID } from '../src/annual-reports'
 
-test('records are skipped when none exist and billing has an honest extra step', () => {
+test('every issue uses five steps; records are skipped and legacy drafts resume on the screen holding their answers', () => {
   const draft = blankRequest(samplePlaces[0])
-  expect(helpPath(draft)).toEqual(['choose', 'timing', 'experience', 'response', 'review'])
-  expect(helpPath({ ...draft, issue: 'billing' })).toEqual(['choose', 'timing', 'experience', 'response', 'review'])
-  expect(helpPath({ ...draft, issue: 'other' })).toEqual(['choose', 'timing', 'experience', 'response', 'review'])
+  const five = ['choose', 'experience', 'timing', 'review', 'send']
+  expect(helpPath(draft)).toEqual(five)
+  expect(helpPath({ ...draft, issue: 'billing' })).toEqual(five)
+  expect(helpPath({ ...draft, issue: 'other' })).toEqual(five)
+  expect(helpPath(draft)).not.toContain('records')
   expect(helpStep({ ...draft, flowStep: 'confirm', stage: 3 })).toBe('review')
   expect(helpStep({ ...draft, flowStep: 'records' })).toBe('review')
+  expect(helpStep({ ...draft, flowStep: 'timing' })).toBe('timing')
+  expect(helpStep({ ...draft, flowStep: 'response' })).toBe('timing')
+  expect(helpStep({ ...draft, flowStep: 'billing' })).toBe('experience')
+  expect(helpStep({ ...draft, flowStep: 'experience' })).toBe('experience')
+  expect(helpStep({ ...draft, flowStep: 'review' })).toBe('review')
+  expect(helpStep({ ...draft, flowStep: 'send' })).toBe('send')
+  expect(helpStep({ ...draft, stage: 2 })).toBe('review')
+  expect(helpStep(draft)).toBe('choose')
 })
 test('initial fact previews stay within draft bounds without truncating agency wording', () => {
   const p = samplePlaces[0]

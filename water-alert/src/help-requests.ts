@@ -1,5 +1,5 @@
 import type { Place } from './domain.js'
-import { PROVIDER_CONTACTS } from './provider-contacts.js'
+import { providerContact } from './provider-contacts.js'
 import { ADH_ENGINEERING_SOURCE, RECOVERY_RESOURCES } from './recovery-resources.js'
 import type { AnswerKey } from './help-questions.js'
 import { emailOutput } from './help-outputs.js'
@@ -7,7 +7,7 @@ export type HelpRoute = 'provider' | 'adh' | 'ag' | 'legal'
 export type IssueType = 'service' | 'quality' | 'billing' | 'legal' | 'advisory' | 'other'
 export interface HelpAttachment { id: string; name: string; type: string; data: string }
 export interface HelpSource { recordId: string; url: string; label: string }
-export type HelpStep = 'choose' | 'billing' | 'timing' | 'experience' | 'response' | 'records' | 'review' | 'confirm'
+export type HelpStep = 'choose' | 'billing' | 'timing' | 'experience' | 'response' | 'records' | 'review' | 'send' | 'confirm'
 export interface HelpFactRecord { agency: string; date: string; problem: string; area: string; status: string; verified: boolean; year?: string }
 export interface HelpFact { id: string; text: string; kind: 'active' | 'saved' | 'historical'; included: boolean; sources: HelpSource[]; record?: HelpFactRecord }
 export interface HelpDraft {
@@ -17,13 +17,19 @@ export interface HelpDraft {
   id: string; place: Place; issue: IssueType; description: string; dates: string; route: HelpRoute;
   subject: string; body: string; stage: number; attachments: HelpAttachment[]; evidence: string[]; context: string; answers?: Partial<Record<AnswerKey, string>>; sources?: HelpSource[]; flowStep?: HelpStep; facts?: HelpFact[];
   recipientRoutes?: HelpRoute[]; wording?: { report: Record<string, string>; response: Record<string, string> }
+  /** Resident-reported contact history; WAVE never observes delivery or replies. */
+  outcomes?: HelpOutcome[]; followUpOn?: string
+  /** A follow-up to another office after an earlier resident-reported contact. */
+  priorContact?: { name: string; on: string; reference?: string }
 }
+export type HelpOutcomeKind = 'emailed' | 'called' | 'form' | 'unreachable' | 'reply' | 'resolved' | 'unresolved'
+export interface HelpOutcome { id: string; kind: HelpOutcomeKind; route: HelpRoute; name: string; on: string; reference?: string; note?: string }
 export type Delivery = 'sending' | 'sent' | 'delivered' | 'failed' | 'unknown'
 export interface HelpMessage { id: string; subject: string; body: string; attachments: HelpAttachment[]; destination: string; destinations?: string[]; at: number; delivery: Delivery; providerId?: string; direction: 'outgoing' | 'incoming'; unsupportedAttachments?: number; draftRevision: number; sources?: HelpSource[] }
 export interface HelpRequest { id: string; owner: string; draft: HelpDraft; revision: number; status: 'open' | 'closed'; updatedAt: number; original?: HelpDraft; messages: HelpMessage[]; events: { id: string; at: number; kind: string }[]; replyToken: string }
 export function blankRequest(place: Place, context = ''): HelpDraft { return { id: crypto.randomUUID(), place, issue: 'service', description: '', dates: '', route: 'provider', subject: '', body: '', stage: 1, attachments: [], evidence: [], context } }
 export function routeFor(d: HelpDraft) {
-  const contact = Object.hasOwn(PROVIDER_CONTACTS, d.place.id) ? PROVIDER_CONTACTS[d.place.id] : undefined
+  const contact = providerContact(d.place.id)
   switch (d.route) {
     case 'provider': return { name: d.place.name, email: contact?.email, url: contact?.sourceUrl, phone: contact?.phone, checked: contact?.verifiedOn }
     case 'adh': return { name: 'Arkansas Department of Health', email: undefined, url: ADH_ENGINEERING_SOURCE, phone: '501-661-2623' }

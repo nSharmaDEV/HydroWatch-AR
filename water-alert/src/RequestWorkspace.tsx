@@ -12,6 +12,7 @@ import { answerFingerprint } from './help-outputs'
 import { localizeDraft, updateDraft } from './help-draft'
 import { exportedText } from './help-exports'
 import { useContentMotion } from './interface-motion'
+import { contacted } from './help-outcomes'
 interface Props { place: Place; places?: Place[]; notice?: Notice; notices?: Notice[]; language: Language; sample: boolean; requestId?: string; currentAdvisory?: boolean; registerLeave?: (handler: (() => Promise<boolean>) | null) => void; onBack: () => void; onHistory: (id: string) => void }
 export function RequestWorkspace(props: Props) {
   return <div className="request-workspace">{props.sample ? <Workspace {...props} delivery={false} deviceOnly={false} /> : <HelpAccount language={props.language}>{s => <Workspace {...props} delivery={s.delivery} deviceOnly={!s.user} />}</HelpAccount>}</div>
@@ -40,7 +41,7 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
     let cancelled = false
      void listRequests(sample, deviceOnly).then(records => {
       if (cancelled) return
-      const old = requestId ? records.find(r => r.id === requestId) : records.find(r => r.draft.place.id === place.id && r.status === 'open' && (!r.messages.length || r.revision > Math.max(...r.messages.map(m => m.draftRevision))))
+      const old = requestId ? records.find(r => r.id === requestId) : records.find(r => r.draft.place.id === place.id && r.status === 'open' && !contacted(r.draft) && (!r.messages.length || r.revision > Math.max(...r.messages.map(m => m.draftRevision))))
       if (requestId && !old) throw new Error('Request unavailable')
       const recordsForPlace = notices ?? (notice ? [notice] : [])
       const value = old ? updateDraft(old.draft, factPatch(savedFacts(old.draft, sample, language)), language) : { ...blankRequest(place), ...factPatch(initialFacts(place, recordsForPlace, currentAdvisory, sample, language)), flowStep: 'choose' as const, ...(currentAdvisory ? { issue: 'advisory' as const } : {}) }
@@ -74,11 +75,12 @@ function Workspace({ place, places = [], notice, notices, language, sample, requ
   function edit(patch: Partial<HelpDraft>) { setSent(false); commit(updateDraft(current.current!, patch, language)) }
   async function stage(value: HelpStep) {
     if (!draft) return
-    let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' ? 2 : 1 }
+    let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' || value === 'send' ? 2 : 1 }
     if (value === 'review') { const { sources, context, evidence } = factPatch(relevantFacts(draft)); patch = { ...patch, sources, context, evidence } }
     const path = helpPath(draft)
     changeStep(() => {
-      edit(patch)
+      // Moving between steps is not an edit: keep a confirmed send so Back and forward cannot send twice.
+      commit(updateDraft(current.current!, patch, language))
       void persist().catch(() => { setError(say('Could not save. Your text remains here. Reload only after keeping a copy; a conflicting edit may exist.', 'No se pudo guardar. El texto sigue aquí. Guarda una copia antes de recargar; puede existir otra edición.')) })
     }, path.indexOf(value) < path.indexOf(helpStep(draft)) ? 'back' : 'forward')
   }

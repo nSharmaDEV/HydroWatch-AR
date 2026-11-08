@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { EMPTY_SOURCES, SOURCES, statusFor, type Mode, type Notice, type Place, type SourceSnapshot } from './domain'
 import { defaults, loadPreferences, savePreferences, type Preferences } from './storage'
 import { SAMPLE_NOW, sampleArchive, samplePlaces, sampleSources } from './sample'
@@ -12,6 +12,7 @@ import { ObservedHistory } from './ObservedHistory'
 import { MapSources } from './MapSources'
 import type { ObservedChange } from './check-history'
 import { PLACE_CATALOG as FULL_PLACE_CATALOG, noticeMatchesPlace, withPlaceCatalog } from './place-catalog'
+import { withDirectory } from './water-system-directory'
 import { AnnualReportAiDisclaimer } from './annual-report-disclaimer'
 import { RECOVERY_RESOURCES } from './recovery-resources'
 import { CDC_GUIDANCE_URL } from './BoilWaterGuidance'
@@ -72,7 +73,8 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
   const words = prefs.language === 'en' ? en : es
   const t = { ...words, catalogWaterbody: '', ...(!sample ? { disconnected: words.pushInfo } : {}) }
   const sources = (sample ? sampleSources(false) : liveData.sources).filter(s => s.agency === 'ADH')
-  const allPlaces = sample ? samplePlaces : withPlaceCatalog(liveData.places)
+  const livePlaces = useMemo(() => withDirectory(withPlaceCatalog(liveData.places)), [liveData.places])
+  const allPlaces = sample ? samplePlaces : livePlaces
   const places = allPlaces.filter(p => p.kind === 'system')
   const activeWatches = prefs.watches.filter(id => !id.startsWith('ADEQ:') && !allPlaces.some(p => p.id === id && p.kind === 'lake'))
   const supplierPrefs = { ...prefs, watches: activeWatches, liftWatches: prefs.liftWatches.filter(id => activeWatches.includes(id)) }

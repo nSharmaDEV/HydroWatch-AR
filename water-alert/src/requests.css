@@ -184,6 +184,8 @@ body:has(.sample-banner) .request-step-layout { min-height: calc(100dvh - 305px)
 .request-frame-topline > .request-progress { grid-column: 2; grid-row: 1; justify-content: center; }
 .request-supplier-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
 .request-supplier-line p { margin: 0 !important; }
+.request-title-row > .request-supplier-line { flex: 0 1 auto; min-width: 0; max-width: 40%; justify-content: end; text-align: right; }
+@media (max-width: 760px) { .request-title-row > .request-supplier-line { order: 3; flex-basis: 100%; max-width: none; justify-content: start; text-align: left; } }
 .request-primary-action { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .request-primary-action small { max-width: 200px; font-size: .875rem; line-height: 1.35; }
 .request-step-layout > .request-fields { flex: 1; display: flex; flex-direction: column; gap: 16px; }
@@ -462,7 +464,7 @@ body:has(.sample-banner) .request-screen-review .request-review-email .request-m
 }
 
 /* Send it — resident-initiated handoffs (2026-11-08) */
-.send-options { display: grid; gap: 12px; margin-top: 16px; padding: 20px 24px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.send-options { display: grid; gap: 12px; margin-top: 0; padding: 20px 24px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .send-options > h2 { margin: 0; }
 .send-options > .quiet-note { margin: 0; }
 .send-option { display: grid; gap: 8px; padding: 16px; border: 1px solid #c9d4df; border-radius: 10px; background: #f8fafb; min-width: 0; overflow-wrap: anywhere; }
@@ -473,7 +475,52 @@ body:has(.sample-banner) .request-screen-review .request-review-email .request-m
 .send-option-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .send-option-actions a { text-decoration: none; }
 .send-option .quiet-note { font-size: .82rem; }
-.send-option-script summary, .send-option-next > summary { font-size: .9rem; }
+.send-option-script summary { font-size: .9rem; }
 .send-option-script ol { margin: 0; padding-left: 20px; font-size: .9rem; }
-.send-option-next > .send-option { margin-top: 8px; }
+.send-option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; align-items: stretch; }
+.send-option-grid > .send-option { align-content: start; }
+.send-option-badge-next { color: #4b5a66; }
 @media (max-width: 520px) { .send-options { padding: 16px; } .send-option-actions > * { flex: 1 1 100%; } }
+.send-confirm { display: grid; gap: 10px; padding: 16px; border: 2px solid var(--teal); border-radius: 10px; background: #fff; }
+.send-confirm h3, .send-confirm p { margin: 0; }
+.send-confirm label { display: grid; gap: 4px; font-weight: 600; font-size: .9rem; }
+.send-confirm input { font: inherit; min-height: 44px; padding: 8px 10px; border: 1px solid #8191a0; border-radius: 6px; max-width: 320px; }
+.send-record-other { justify-self: start; }
+.send-last { margin: 0; }
+.request-outcomes { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.request-outcome-tools { display: grid; gap: 12px; margin: 12px 0; }
+.request-follow-due { color: #853c10; font-weight: 600; }
+/* Three-step Help: optional folding sections on "Tell us what happened" (2026-11-08) */
+/* Step 3: dates, places and the response sit side by side so the screen fits without scrolling. */
+.request-screen-timing .request-split.request-timing-response { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) minmax(0, 1.2fr); align-items: stretch; }
+.request-screen-timing .request-split.request-timing-response > .request-panel { align-self: stretch; padding: 20px; }
+.request-timing-response .request-questions-details { grid-template-columns: minmax(0, 1fr); }
+.request-timing-locations .request-location-panel { display: grid; gap: .6rem; }
+.request-timing-locations .request-location-panel h2 { font-size: 1.1rem; margin: 0; }
+.request-timing-response-choices .request-writing-prompts > .request-actions { display: flex; flex-wrap: wrap; gap: .35rem .5rem; }
+.request-timing-response-choices .request-writing-prompts .text-button { min-height: 44px; padding: .2rem .6rem; font-size: .85rem; }
+.request-timing-response-choices .request-wording-choice { padding-block: 0; }
+.request-timing-response-choices .request-wording-grid { gap: .35rem; }
+.request-timing-locations .request-location-panel > .quiet-note { font-size: .8rem; line-height: 1.35; }
+.request-timing-locations .request-location-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
+.request-timing-locations .request-location-actions button { min-height: 44px; padding: .3rem .7rem; font-size: .9rem; }
+.request-timing-locations .request-location-chips { gap: .4rem; }
+.request-timing-response-choices textarea { min-height: 0; height: 3.4rem; resize: vertical; }
+.request-screen-timing .request-timing-response > .request-panel { gap: 8px; }
+.request-timing-response .request-date-hint, .request-timing-response .quiet-note { margin: 0; font-size: .82rem; }
+@media (max-width: 1100px) {
+  .request-screen-timing .request-split.request-timing-response { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .request-timing-response > .request-timing-response-choices { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .request-screen-timing .request-split.request-timing-response { grid-template-columns: minmax(0, 1fr); }
+}
+.request-screen-experience .request-experience-details > label.request-billing-tried { flex: none; }
+.request-screen-experience .request-experience-details > label.request-billing-tried textarea { flex: none; min-height: 0; height: 4.2rem; }
+.request-screen-experience .request-experience-details:has(.request-billing-tried) > label:not(.request-billing-tried) textarea { min-height: 6rem; }
+.request-timing-response .request-question-grid { row-gap: .5rem; }
+.request-timing-response .checkbox-row { min-height: 44px; margin: 0; }
+.request-screen-timing .request-timing-response > .request-panel { gap: 6px; }
+.request-timing-response-choices .request-writing-prompts > .request-actions { gap: .3rem .5rem; }
+.request-step-layout:has(.request-screen-timing) { gap: 8px; }
+.request-timing-locations .request-location-panel { gap: 8px; }

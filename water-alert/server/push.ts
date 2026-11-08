@@ -5,6 +5,7 @@ import { statusFor, type Place } from '../src/domain.js'
 import type { StoredState } from './store.js'
 import type { StateCell } from './postgres.js'
 import { noticeMatchesPlace, withPlaceCatalog } from '../src/place-catalog.js'
+import { withDirectory } from '../src/water-system-directory.js'
 export interface DeviceInput { subscription: { endpoint: string; keys: { p256dh: string; auth: string } }; watches: string[]; liftWatches: string[]; language: 'en' | 'es' }
 export type PushSender = (subscription: DeviceInput['subscription'], payload: string) => Promise<unknown>
 interface Attempt { tries: number; nextAt: number; accepted: boolean; claimId?: string }
@@ -20,7 +21,7 @@ function validate(input: DeviceInput, places: Place[]): DeviceInput {
   const keys = input.subscription.keys
   if (!keys || !/^[A-Za-z0-9_-]+={0,2}$/.test(keys.p256dh) || !/^[A-Za-z0-9_-]+={0,2}$/.test(keys.auth) || Buffer.from(keys.p256dh, 'base64url').length !== 65 || Buffer.from(keys.p256dh, 'base64url')[0] !== 4 || Buffer.from(keys.auth, 'base64url').length !== 16) throw new Error('Invalid subscription keys')
   ECDH.convertKey(Buffer.from(keys.p256dh, 'base64url'), 'prime256v1')
-  const known = new Set(withPlaceCatalog(places).map(p => p.id))
+  const known = new Set(withDirectory(withPlaceCatalog(places)).map(p => p.id))
   if (!Array.isArray(input.watches) || !input.watches.length || input.watches.length > 50 || input.watches.some(id => typeof id !== 'string' || /sample/i.test(id) || !known.has(id))) throw new Error('Select known live places')
   if (!Array.isArray(input.liftWatches) || input.liftWatches.some(id => !input.watches.includes(id)) || !['en', 'es'].includes(input.language)) throw new Error('Invalid alert preferences')
   return { subscription: { endpoint: url.href, keys: { p256dh: keys.p256dh, auth: keys.auth } }, watches: [...new Set(input.watches)], liftWatches: [...new Set(input.liftWatches)], language: input.language }

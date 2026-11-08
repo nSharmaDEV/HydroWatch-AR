@@ -120,12 +120,39 @@ test('Review groups answers, records, files and signature separately from the ed
   expect(within(composer).queryByLabelText('Resident name (optional)')).toBeNull()
   fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'My own message.' } })
   fireEvent.click(within(info).getByRole('button', { name: 'Edit reported start date' }))
+  // Editing a date from Review returns to step 3, "When, where and what you want".
+  expect(screen.getByText('Step 3 of 5')).toBeVisible()
   fireEvent.change(screen.getByLabelText('When did it begin? (optional)'), { target: { value: '2026-10-10' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Review message' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
   expect(screen.getByLabelText('Message')).toHaveValue('My own message.')
   expect(screen.getByRole('button', { name: 'Update draft from answers' })).toBeVisible()
+})
+
+// Review's "Edit …" controls for dates, locations and the requested response target step 3,
+// where those fields are always visible; observations go back to step 2.
+test('editing a reported date, location or response from Review lands on step 3 with the fields visible', async () => {
+  const draft = updateDraft({ ...example(), locations: ['Oak Street'] }, { flowStep: 'review' }, 'en')
+  await saveRequest(true, draft, 0)
+  render(<RequestWorkspace place={place} requestId={draft.id} sample language="en" onBack={() => {}} onHistory={() => {}} />)
+  const info = await screen.findByRole('region', { name: 'Information provided' })
+  fireEvent.click(within(info).getByRole('button', { name: 'Edit reported start date' }))
+  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'When, where and what you want' })).toBeVisible()
+  expect(document.querySelector('details.request-optional')).toBeNull()
+  expect(screen.getByLabelText('When did it begin? (optional)')).toBeVisible()
+  expect(screen.getByLabelText('When did it begin? (optional)')).toHaveValue('2026-10-09')
+  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
+  fireEvent.click(within(await screen.findByRole('region', { name: 'Information provided' })).getByRole('button', { name: 'Edit affected location' }))
+  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Remove location: Oak Street' })).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
+  fireEvent.click(within(await screen.findByRole('region', { name: 'Information provided' })).getByRole('button', { name: 'Edit requested response' }))
+  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+  expect(screen.getByLabelText('Additional wording (optional)')).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
+  fireEvent.click(within(await screen.findByRole('region', { name: 'Information provided' })).getByRole('button', { name: 'Edit reported observations' }))
+  expect(screen.getByText('Step 2 of 5')).toBeVisible()
+  expect(screen.getByLabelText('Describe what happened (optional if selected above)')).toBeVisible()
 })
 
 test('Review presents supplied and missing answers in a two-column table with info controls', async () => {

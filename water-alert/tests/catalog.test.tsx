@@ -17,7 +17,7 @@ it('does not offer waterbodies in supplier search', async () => {
   expect(screen.queryByRole('button', { name: 'Select Beaver Lake' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Select Buffalo National River' })).not.toBeInTheDocument()
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
-})
+}, 20000) // types five supplier names one key at a time against the statewide directory
 
 it('offers every ADH-verified supplier in the initial coverage without an observed notice and does not guess a supplier from a lake', async () => {
   const user = userEvent.setup(); render(<App />)

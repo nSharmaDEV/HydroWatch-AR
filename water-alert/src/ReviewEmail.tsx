@@ -62,7 +62,7 @@ export function ReviewEmail({ draft, language, sample = false, extras, edit, cha
           {(draft.issue === 'service' || draft.issue === 'quality' || draft.issue === 'advisory' && a.advisoryService === 'Yes') ? answerRow(say('Frequency', 'Frecuencia'), a.frequency ? ({ Constant: say('Constantly', 'Constantemente'), Occasional: say('Occasionally', 'Ocasionalmente'), 'At particular times': say('At particular times', 'A ciertas horas') }[a.frequency] ?? a.frequency) : '', 'experience', !!a.frequency, say('reported frequency', 'frecuencia reportada')) : null}
           {answerRow(say('Locations', 'Lugares'), [...(draft.locations ?? []), a.area, (draft.issue === 'service' || draft.issue === 'advisory' && a.advisoryService === 'Yes') ? a.observationLocation : ''].filter(Boolean).join('; '), 'timing', !!(draft.locations?.length || a.area || (draft.issue === 'service' && a.observationLocation)), say('affected location', 'ubicación afectada'))}
           {answerRow(say('Previous provider contact', 'Contacto previo con el proveedor'), contact, 'experience', !!contact, say('previous provider contact', 'contacto previo con el proveedor'))}
-          {answerRow(say('Requested response', 'Respuesta solicitada'), requested, 'response', !!requested, say('requested response', 'respuesta solicitada'))}
+          {answerRow(say('Requested response', 'Respuesta solicitada'), requested, 'timing', !!requested, say('requested response', 'respuesta solicitada'))}
         </tbody></table>
       </section>
       <section className="request-review-section request-review-records" aria-label={say('Problems', 'Problemas')}><h2>{say('Problems', 'Problemas')}</h2>
