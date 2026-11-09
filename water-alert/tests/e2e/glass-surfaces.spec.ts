@@ -60,7 +60,7 @@ for (const language of ['en', 'es'] as const) test(`outer glass preserves contro
    const card = page.locator('.request-card')
    await expect(card).toHaveCount(1)
    await expect(card).toHaveCSS('background-color', 'rgb(255, 255, 255)')
-   await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+   // The saved `experience` step now opens on What's wrong?, which holds the description.
    const description = page.locator('.request-description textarea')
   await expect(description).toHaveValue(record.draft.description)
   await expect(description).toHaveCSS('background-color', 'rgb(255, 255, 255)')
@@ -86,7 +86,8 @@ test('issue choices share glass while the selected category stays distinct', asy
   await page.getByRole('navigation').getByRole('button', { name: 'History', exact: true }).click()
   await page.locator('.request-resume').click()
   const choices = page.locator('.request-issue-choice')
-  await expect(choices).toHaveCount(5)
+  // Leisure Hills has hand-checked report findings, so "Ask about a water report" is the sixth choice.
+  await expect(choices).toHaveCount(6)
   for (const choice of await choices.all()) {
     if (await choice.getAttribute('aria-pressed') === 'false') expect(await material(choice)).toEqual(reference)
   }

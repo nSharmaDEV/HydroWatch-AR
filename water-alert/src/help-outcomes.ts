@@ -60,3 +60,17 @@ export function recordOutcome(d: HelpDraft, kind: HelpOutcomeKind, route: HelpRo
   const followUpOn = CONTACT_KINDS.includes(kind) ? addBusinessDays(on, FOLLOW_UP_BUSINESS_DAYS) : kind === 'resolved' ? undefined : d.followUpOn
   return { outcomes, followUpOn }
 }
+/** An all-day calendar event (RFC 5545) for the follow-up date; downloaded, never synced. */
+export function reminderIcs(d: HelpDraft, language: Language): string | undefined {
+  if (!d.followUpOn || !/^\d{4}-\d{2}-\d{2}$/.test(d.followUpOn)) return undefined
+  const es = language === 'es', escape = (t: string) => t.replace(/[\\;,]/g, m => `\\${m}`).replace(/\r?\n/g, '\\n')
+  const day = (date: string) => date.replaceAll('-', '')
+  const next = new Date(`${d.followUpOn}T12:00:00Z`); next.setUTCDate(next.getUTCDate() + 1)
+  const name = contacted(d)?.name ?? d.place.name
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//WAVE//Help follow-up//EN', 'BEGIN:VEVENT',
+    `UID:wave-followup-${d.id}@wave`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')}`,
+    `DTSTART;VALUE=DATE:${day(d.followUpOn)}`, `DTEND;VALUE=DATE:${next.toISOString().slice(0, 10).replaceAll('-', '')}`,
+    `SUMMARY:${escape(es ? `Dar seguimiento a ${name}` : `Follow up with ${name}`)}`,
+    `DESCRIPTION:${escape(es ? `¿Respondieron? Regístralo en Historial de WAVE.` : 'Did they reply? Record it in WAVE History.')}`,
+    'END:VEVENT', 'END:VCALENDAR', ''].join('\r\n')
+}

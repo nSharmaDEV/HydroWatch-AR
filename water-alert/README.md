@@ -42,7 +42,7 @@ Browser tests distinguish shipped-app journeys from retained-component checks.
 components for lake/tap separation, agency wording, dates and local-output checks.
 It is a test-only Vite fixture, not an application route or evidence that the
 current supplier-only app exposes lake cards or the older help flow. Current
-eight-step help and Places navigation are tested through the application itself.
+four-screen help and Places navigation are tested through the application itself.
 
 Test recovery check (November 3, 2026, Node 24.22.1): **651 unit/integration tests
 pass**, with zero failures or pending cases, using
@@ -213,29 +213,40 @@ not verify production feeds or device delivery. Nothing deployed or sent.
 
 ## Advisory help
 
-Help uses eight short screens (since November 8, 2026), each in one centred card
-up to 760px wide: **Choose issue → What did you notice? → Tell us more → When did
-it happen? → Where did you observe it? → What response would help? → Review your
-email → Send it**. There are no folding form sections.
-- Observations and optional attachments have their own screen; details and a
-  description follow. Select an observation or describe the issue to continue.
-- Dates and locations each have their own screen. An invalid date range disables
-  Continue. Billing's "What have you already tried?" is on the response screen.
-- Review holds optional signature fields, the composer and downloads. **Records**
-  opens the dated source evidence and inclusion controls; required historical
-  records remain locked. Cited sources, stale-draft warnings and manual edits remain.
-- Send it holds Where to send it and "Did you send it?". The full-width bottom
-  action offers Send message only when supported for every recipient; otherwise
-  it offers Copy email. **Contact sources** opens the per-field directory links,
-  check dates and conflicting listings. Sample sending remains disabled.
+Help uses four short screens (since November 9, 2026). Every answer either enters
+the email or decides where it goes. There are no folding form sections.
+1. **What's wrong?** Issue tiles, 2–4 observation checkboxes and "Anything else?"
+   (for Other: "What happened?"). An observation or a description is required.
+   Live suppliers with a phone show "Prefer to call?" beside the supplier name.
+   Advisory asks "My water service is also affected" as one more checkbox.
+   "Ask about a water report" appears only for suppliers whose newest report is
+   hand-checked and lists findings.
+2. **When and where.** Address where it happened (the first saved location),
+   optional account number, then dates (an invalid range disables Continue) or,
+   for bills, which bill and amount. Service and quality add how often.
+3. **What should they do?** The usual one or two requests start ticked the first
+   time; the resident can untick them. Anything else to ask, what they already
+   tried, name, how to reach them and attachments.
+4. **Send it.** A wider card (up to 1100px): the editable email (To, Subject,
+   Message, **Records** popup with required records locked, cited sources, stale
+   warning, Update/Download buttons with text labels) beside **How to send it**.
 
-Old `billing` steps resume on Tell us more; `confirm`/`records` resume on Review.
-Other saved step IDs remain valid. Back, progress, save status and History sit
-above the card; title and supplier/status sit inside it. Progress shows the actual
-**Step n of m**, and Back preserves answers and email edits. No relevant records
-is not an all-clear claim. Desktop layout targets 1280×800 without page scrolling
-for the synthetic fixture. Long custom wording or attachment lists can still add
-height. Mobile and enlarged text scroll naturally rather than clipping controls.
+The email follows public complaint-letter guidance (FTC sample letter, CCW
+complaint-letter tool, Arkansas AG and PSC complaint pages): who and where (with
+account number), what happened in plain sentences, earlier contact and what was
+tried, a numbered **Could you please:** list, **For reference:** dated records,
+"I'd appreciate a reply within 5 business days" and how to reach the resident,
+then the sign-off and source links. The subject names the concern and the account
+number when given. The call script ("What to say when you call") reuses the same
+sentences. Nothing threatens action or claims a violation or safety status.
+
+Older drafts open on the screen that now holds their answers: `experience` →
+What's wrong; `billing`/`timing`/`where` → When and where; `review`/`confirm`/
+`records` → Send it. During Help the nav highlights the tab it was opened from.
+Desktop layout targets 1280×800 and 1440×780 without page scrolling for the
+synthetic fixture in English and Spanish. Long custom wording, attachment lists
+or the advisory "service also affected" branch can still add height. Mobile and
+enlarged text scroll naturally rather than clipping controls.
 
 ### Did you send it? and follow-up
 
@@ -246,23 +257,72 @@ Record it" covers messages sent outside WAVE. Only the resident's answer is save
 (`draft.outcomes`), in the same device or account storage as the draft, and it is
 deleted with the request. WAVE never observes delivery, calls, replies or
 resolution. A contact answer starts an in-app **follow-up reminder** five business
-days later (weekends skipped; holidays not modelled). It appears in History only;
-no notification, email or push is sent. History shows **What you recorded** as a
+days later (weekends skipped; holidays not modelled). It appears in History and,
+if the resident downloads it, as a calendar event; no notification, email or push
+is sent for it. History shows **What you recorded** as a
 timeline and offers Record a reply, Mark resolved and Not resolved. It also
 offers **Write a follow-up** to the same office or **Contact** the next office
 (service/quality/advisory/other → ADH; billing → Arkansas Attorney General). A
 follow-up is a new draft whose message cites the earlier contact ("I contacted X
 about this on DATE (reference …), and it has not been resolved.").
 
+### History statuses and drafts
+
+History never says "Open". Each request reads **Not sent yet**, **Sent – waiting
+for reply** (the resident recorded a contact or a hosted send was accepted),
+**Resolved** (the resident's note) or **Closed by you**. An unsent draft opens as
+one summary card (problem, what you noticed, where, the step you stopped at, last
+save) with **Continue draft**, which resumes on that step, and a quieter **Delete
+draft**. Empty "Original issue" sections are hidden.
+
+### Annual-report findings on Home and "Ask about this"
+
+`src/report-findings.ts` reads the newest annual report for an exact supplier ID.
+When the selected annual report lists findings, the supplier card shows a yellow,
+dated findings chip with a document icon in **Provider information**, rather
+than a separate report callout. Open that section, then **View N issues** to see
+the findings. The expanded report retains its historical, not-current-safety
+context. Hand-checked findings get **Ask about this**, which starts a new Help draft
+of type "Question about a water report": the question quotes the finding with
+its year, page and printed dates; the finding is included as a dated historical
+record with its PDF page link; the usual requests are "Tell me whether this has
+been resolved" and "Send me a copy of any notice about it". It goes to the
+supplier, with ADH as the next office. AI-summarized findings appear in the list
+with their label but are never quoted or offered as a question. Suppliers whose
+report is not reviewed are never described as having no issues. Samples and
+lakes never show live report data.
+
+### Report alerts (push)
+
+The push sender (`server/push.ts`) also sends one notification per watched
+supplier and report year when that supplier's newest report is **hand-checked**,
+lists issues and was checked within the last 365 days (`reviewedReportAlerts`).
+The body says how many issues the report lists and that these are dated findings,
+not current status, and links the report. It is sent at most once per device per
+report year, never for samples, unwatched places or AI-only summaries. Because
+report data ships with app updates, a device watching such a supplier receives
+that alert on the next push run after it is deployed — including devices enrolled
+before the report was added. Built and tested locally only; nothing has been
+deployed or sent (`[NEEDS: authorized preview deploy to verify on a device]`).
+
+### Confirming supplier contacts
+
+[CONTACT-CONFIRMATION.md](CONTACT-CONFIRMATION.md) is a checklist and call script
+for a person to confirm the five reviewed suppliers' phone and email. An entry's
+optional `confirmedOn` date shows "Confirmed by WAVE on [date]" on the Send
+screen; no entry has one yet.
+
 ### Where to send it and contact sources
 
-Below the Review composer, **Where to send it** lists one row per selected
+Beside the composer, **How to send it** lists one row per selected
 recipient (the same recipients as the greeting) with resident-initiated actions
 only: **Open in email app** (a `mailto:` link with subject and message; links
 over about 8,000 characters keep To/Subject and ask the resident to paste),
 **Call** (a `tel:` link with an optional call script built only from confirmed
 answers) and **Copy message & open form** for official online forms. The panel
-also offers one collapsed escalation office ("If this isn't resolved"). WAVE never
+also offers one escalation office on a single line ("Not resolved? You can also
+contact …"). After a recorded contact, **Add a reminder to my calendar** downloads
+an all-day `.ics` event for the follow-up date; nothing syncs or notifies. WAVE never
 sends, calls or files anything, cannot confirm delivery or a reply, and disables
 every action for samples or while the subject, message or bracketed placeholders
 are incomplete. The optional hosted Resend path remains disabled in production.

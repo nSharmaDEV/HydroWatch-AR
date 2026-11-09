@@ -95,6 +95,50 @@ and focus return. Small screens and enlarged text scroll naturally.
 Local only; nothing deployed, sent or submitted. Verification is recorded in the
 matching changelog entry.
 
+## Four-screen Help, letter-style email and report findings — November 9, 2026
+
+The eight single-card screens above were superseded after the student asked
+whether the form would actually get problems solved. Decisions:
+
+- **Four screens, not three.** The approved plan was three screens. In testing,
+  "Your details" (address, account, dates, requests, name, contact, attachments)
+  overflowed 1280×800 by about 340px, so it was split into **When and where**
+  and **What should they do?**, keeping the no-scroll rule instead of shrinking
+  text. `helpPath` is `choose → details → response → send`; `experience` →
+  choose, `billing/timing/where` → details, `review/confirm/records` → send.
+- **Email shape** follows public complaint-letter guidance, checked 2026-11-08:
+  FTC sample customer complaint letter (basics and account number, problem, what
+  you want, reply-by, contact); CCW complaint-letter tool (account/reference,
+  outcome wanted, earlier complaint, reply within 10 working days); Georgia AG
+  sample letter (numbered requests); Arkansas AG and PSC complaint pages (name,
+  address, account, complete facts, what the utility already did). WAVE asks for
+  a reply within **5 business days**, matching the existing follow-up reminder
+  (student's choice). The reply line is a request, not a deadline or a threat.
+  `[NEEDS: whether any listed water system is regulated by the Arkansas PSC]`
+  before offering the PSC as an escalation.
+- **Requests start ticked.** The first one or two usual requests for the issue
+  are pre-selected on arrival at screen 3 (observations are never pre-selected).
+- **Account number** is a new optional answer (`answers.account`, max 60 shown;
+  the server whitelist follows `QUESTIONS`). It is not validated or looked up.
+- **Annual-report findings.** `report-findings.ts` exposes the newest report per
+  exact supplier. Only `reviewed` findings can start a message or trigger a push;
+  `aiSummarized` findings are listed with their label only. New issue type
+  `report` (server whitelist updated). Leisure Hills (PWS 747) is currently the
+  only reviewed supplier with findings (4, from the 2025 report, pp. 2).
+- **Report push.** One payload per device, supplier and report year, deduped in
+  the existing per-device `attempts` map (`report:<placeId>:<year>`), limited to
+  reports checked in the last 365 days. Existing advisory push behaviour is
+  unchanged; its retry/claim logic is now shared. Not deployed; no device test.
+- **Nav.** During Help the nav highlights the origin tab, not History.
+- **Dropped:** a suspected "late save after unmount" bug. `RequestWorkspace`
+  flushes on unmount and `persist()` clears the timer first, so there is no
+  late write.
+- **Contacts.** `confirmedOn` on `ProviderContact` is shown only when a person
+  has confirmed the contact (see `CONTACT-CONFIRMATION.md`); none have. The
+  Leisure Hills phone conflict and Springdale's EPA phone remain `[NEEDS: …]`.
+
+Local only; nothing deployed, sent, called or submitted.
+
 ## Measured Spaces motion — November 7, 2026
 
 Local utility-carousel tuning; no deployment or change to advisory data. The

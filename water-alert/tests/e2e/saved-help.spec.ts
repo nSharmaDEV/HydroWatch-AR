@@ -31,28 +31,24 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await page.goto('/')
   await page.getByRole('button', { name: language === 'en' ? 'Places' : 'Lugares', exact: true }).click()
   await page.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true }).first().click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 8' : 'Paso 1 de 8')
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 4' : 'Paso 1 de 4')
   await fits()
-  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 2 of 8' : 'Paso 2 de 8')
-  await fits()
-  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 3 of 8' : 'Paso 3 de 8')
-  await page.getByLabel(language === 'en' ? 'Describe what happened (optional if selected before)' : 'Describe lo que pasó (opcional si ya seleccionaste)', { exact: true }).fill('Synthetic resident issue — no service on Monday')
+  const describe = language === 'en' ? 'Anything else? (optional)' : '¿Algo más? (opcional)'
+  await page.getByLabel(describe, { exact: true }).fill('Synthetic resident issue — no service on Monday')
   const other = language === 'en' ? 'es' : 'en'
   if (outputs) {
     await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
-    await expect(page.getByRole('textbox', { name: other === 'en' ? 'Describe what happened (optional if selected before)' : 'Describe lo que pasó (opcional si ya seleccionaste)', exact: true })).toHaveValue('Synthetic resident issue — no service on Monday')
+    await expect(page.getByRole('textbox', { name: other === 'en' ? 'Anything else? (optional)' : '¿Algo más? (opcional)', exact: true })).toHaveValue('Synthetic resident issue — no service on Monday')
     await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
   }
   await fits()
-  for (const n of [4, 5, 6]) {
+  for (const n of [2, 3]) {
     await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-    await expect(page.locator('.request-progress')).toContainText(language === 'en' ? `Step ${n} of 8` : `Paso ${n} de 8`)
+    await expect(page.locator('.request-progress')).toContainText(language === 'en' ? `Step ${n} of 4` : `Paso ${n} de 4`)
     await fits()
   }
-  await page.getByRole('button', { name: language === 'en' ? 'Review email' : 'Revisar correo', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 7 of 8' : 'Paso 7 de 8')
+  await page.getByRole('button', { name: language === 'en' ? 'Write my email' : 'Escribir mi correo', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 4' : 'Paso 4 de 4')
   await fits()
   if (outputs) {
     await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
@@ -64,7 +60,9 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await expect(page.locator('.request-topline [role=status]')).toHaveText(language === 'en' ? 'Saved on this device' : 'Guardado en este dispositivo')
   await page.getByRole('button', { name: language === 'en' ? 'Open History' : 'Abrir Historial', exact: true }).click()
   await page.reload()
-  await page.getByRole('button', { name: language === 'en' ? 'Resume draft' : 'Reanudar borrador', exact: true }).click()
+  await page.getByRole('button', { name: language === 'en' ? 'Continue draft' : 'Continuar borrador', exact: true }).click()
+  // Continuing opens the screen the resident stopped at.
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 4' : 'Paso 4 de 4')
   await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
   if (outputs) {
     const marker = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
@@ -76,9 +74,7 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
       if (filename.includes('email')) expect(content).toContain('SYNTHETIC EDIT RETAINED')
     }
   }
-  // Step 8 holds the copy/send action and "Where to send it".
-  await page.getByRole('button', { name: language === 'en' ? 'Where to send it' : 'Dónde enviarlo', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 8 of 8' : 'Paso 8 de 8')
+  // Sample mode: the ways to send it are shown but disabled.
   await expect(page.locator('.send-options')).toContainText(language === 'en' ? 'Sample — sending disabled.' : 'Ejemplo — envío desactivado.')
   await expect(page.locator('a[href^="mailto:"], a[href^="tel:"]')).toHaveCount(0)
   await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)

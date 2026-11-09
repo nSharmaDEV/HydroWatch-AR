@@ -8,7 +8,7 @@ export interface HelpState { requests: HelpRequest[] }
 export const emptyHelp = (): HelpState => ({ requests: [] })
 const uuid = /^[a-f0-9-]{36}$/i
 function validate(d: HelpDraft) {
-  if (!d || !uuid.test(d.id) || !d.place || !/^ADH:[a-f0-9]{64}$/.test(d.place.id) || d.place.kind !== 'system' || typeof d.place.name !== 'string' || d.place.name.length > 200 || !['service', 'quality', 'billing', 'legal', 'advisory', 'other'].includes(d.issue) || !['provider', 'adh', 'ag', 'legal'].includes(d.route)) throw new Error('Invalid request')
+  if (!d || !uuid.test(d.id) || !d.place || !/^ADH:[a-f0-9]{64}$/.test(d.place.id) || d.place.kind !== 'system' || typeof d.place.name !== 'string' || d.place.name.length > 200 || !['service', 'quality', 'billing', 'legal', 'advisory', 'other', 'report'].includes(d.issue) || !['provider', 'adh', 'ag', 'legal'].includes(d.route)) throw new Error('Invalid request')
   for (const [key, max] of [['description', 6000], ['dates', 1000], ['subject', 200], ['body', 24000], ['context', 16000]] as const) if (typeof d[key] !== 'string' || d[key].length > max || (key === 'subject' && /[\r\n]/.test(d[key]))) throw new Error('Invalid text')
   if (![1, 2, 3].includes(d.stage) || !Array.isArray(d.evidence) || d.evidence.length > 30 || d.evidence.some(k => typeof k !== 'string' || k.length > 100) || !Array.isArray(d.attachments) || d.attachments.length > 3) throw new Error('Invalid draft')
   let size = 0

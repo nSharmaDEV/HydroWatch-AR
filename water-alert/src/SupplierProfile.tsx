@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useMotionPresence } from './interface-motion'
 import type { Language, Place } from './domain'
 import { PROVIDER_CONTACTS } from './provider-contacts'
@@ -7,27 +7,29 @@ import { SourceLink } from './components'
 import { AnnualReportCard, calendarIcon, formatIsoDate, reportHeaderChip, useReportYear } from './AnnualWaterReport'
 import { ANNUAL_REPORTS } from './annual-reports'
 import { providerProfile } from './provider-profiles'
+import { Icon } from './icons'
 
 const formatCount = (value: string, language: Language) => Number.isFinite(Number(value)) ? Number(value).toLocaleString(language === 'es' ? 'es-US' : 'en-US') : value
 
-export function SupplierInformation({ place, language, sample }: { place: Place; language: Language; sample: boolean; onView?: () => void }) {
-  return <ProviderInformation key={place.id} place={place} language={language} showReports={!sample && place.kind === 'system'} />
+export function SupplierInformation({ place, language, sample, onAsk, openSignal = 0 }: { place: Place; language: Language; sample: boolean; onView?: () => void; onAsk?: (key: string) => void; openSignal?: number }) {
+  return <ProviderInformation key={place.id} place={place} language={language} showReports={!sample && place.kind === 'system'} onAsk={sample ? undefined : onAsk} openSignal={openSignal} />
 }
 
 // The selected report year lives here so the collapsed header can show a
 // dated chip when that report lists findings.
-function ProviderInformation({ place, language, showReports }: { place: Place; language: Language; showReports: boolean }) {
+function ProviderInformation({ place, language, showReports, onAsk, openSignal }: { place: Place; language: Language; showReports: boolean; onAsk?: (key: string) => void; openSignal: number }) {
   const [open, setOpen] = useState(false)
+  useEffect(() => { if (openSignal) setOpen(true) }, [openSignal])
   const motion = useMotionPresence(open, 'slide')
   const id = useId()
   const reports = showReports && Object.hasOwn(ANNUAL_REPORTS, place.id) ? ANNUAL_REPORTS[place.id] : []
   const { report, setYear } = useReportYear(reports)
   const chip = showReports ? reportHeaderChip(report, language) : null
   return <section className="provider-information">
-    <div className="provider-info-header"><h3><button className="provider-info-toggle" aria-controls={id} aria-expanded={open} onClick={() => setOpen(v => !v)}><span className="provider-info-label">{language === 'es' ? 'Información del proveedor' : 'Provider information'}</span>{chip ? <span className="status-pill status-pill-issues provider-info-chip">{chip}</span> : null}<span className="disclosure-icon" aria-hidden="true" /></button></h3></div>
+    <div className="provider-info-header"><h3><button className="provider-info-toggle" aria-controls={id} aria-expanded={open} onClick={() => setOpen(v => !v)}><span className="provider-info-label">{language === 'es' ? 'Información del proveedor' : 'Provider information'}</span>{chip ? <span className="status-pill status-pill-issues provider-info-chip"><Icon name="file-text" size={16} />{chip}</span> : null}<span className="disclosure-icon" aria-hidden="true" /></button></h3></div>
     <div ref={motion.ref} id={id} hidden={!motion.present} inert={!open} aria-hidden={!open || undefined} className="provider-info-content">
       {showReports ? <div className="provider-cards">
-        <AnnualReportCard reports={reports} report={report} onYear={setYear} language={language} />
+        <AnnualReportCard reports={reports} report={report} onYear={setYear} language={language} onAsk={onAsk} openSignal={openSignal} />
         <WaterSystemCard place={place} language={language} />
       </div> : null}
     </div>

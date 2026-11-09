@@ -163,3 +163,25 @@ it('stops starting sends after the function wall-clock budget is exhausted', asy
   await pushes.drain(await observations.read(), async () => { sends++; advance(20000) }, 10, clock() + 10000)
   expect(sends).toBe(1)
 })
+it('sends one report alert per watched supplier and year, once, and never for unwatched places', async () => {
+  const { pushes, observations } = await setup()
+  const { LEISURE_HILLS_ID } = await import('../src/annual-reports')
+  const places = (await observations.read()).places
+  await pushes.enroll({ ...input, watches: [LEISURE_HILLS_ID], liftWatches: [], language: 'es' }, places)
+  const payloads: string[] = []
+  const send = async (_s: unknown, payload: string) => { payloads.push(payload) }
+  const alerts = [
+    { id: `report:${LEISURE_HILLS_ID}:2025`, placeId: LEISURE_HILLS_ID, year: 2025, count: 4, url: 'https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025' },
+    { id: 'report:ADH:unwatched:2025', placeId: 'ADH:unwatched', year: 2025, count: 1, url: 'https://example.test/other.pdf' },
+  ]
+  await pushes.drain(await observations.read(), send, 50, Infinity, alerts)
+  await pushes.drain(await observations.read(), send, 50, Infinity, alerts)
+  expect(payloads).toHaveLength(1)
+  const body = JSON.parse(payloads[0])
+  expect(body).toMatchObject({ tag: `report:${LEISURE_HILLS_ID}:2025`, sourceUrl: alerts[0].url })
+  expect(body.body).toContain('2025')
+  expect(body.body).toContain('4')
+  // Dated document findings, never a safety claim.
+  expect(body.body).toContain('no es el estado actual')
+  expect(body.body).not.toMatch(/insegur|unsafe|peligro/i)
+})

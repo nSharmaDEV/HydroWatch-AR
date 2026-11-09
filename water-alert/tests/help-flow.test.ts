@@ -1,28 +1,31 @@
 import { expect, test } from 'vitest'
-import { factPatch, helpPath, helpStep, initialFacts, savedFacts } from '../src/help-flow'
+import { factPatch, helpPath, helpStep, initialFacts, savedFacts, stepLabel } from '../src/help-flow'
 import { blankRequest } from '../src/help-requests'
 import { samplePlaces } from '../src/sample'
 import { LEISURE_HILLS_ID } from '../src/annual-reports'
 
-test('every issue uses eight one-card steps; records are skipped and legacy drafts resume on the screen holding their answers', () => {
+test('every issue uses four one-card steps; records are skipped and legacy drafts resume on the screen holding their answers', () => {
   const draft = blankRequest(samplePlaces[0])
-  const eight = ['choose', 'experience', 'details', 'timing', 'where', 'response', 'review', 'send']
-  expect(helpPath(draft)).toEqual(eight)
-  expect(helpPath({ ...draft, issue: 'billing' })).toEqual(eight)
-  expect(helpPath({ ...draft, issue: 'other' })).toEqual(eight)
+  const four = ['choose', 'details', 'response', 'send']
+  expect(helpPath(draft)).toEqual(four)
+  expect(helpPath({ ...draft, issue: 'billing' })).toEqual(four)
+  expect(helpPath({ ...draft, issue: 'other' })).toEqual(four)
+  expect(helpPath({ ...draft, issue: 'report' })).toEqual(four)
   expect(helpPath(draft)).not.toContain('records')
-  expect(helpStep({ ...draft, flowStep: 'confirm', stage: 3 })).toBe('review')
-  expect(helpStep({ ...draft, flowStep: 'records' })).toBe('review')
-  expect(helpStep({ ...draft, flowStep: 'timing' })).toBe('timing')
+  expect(helpStep({ ...draft, flowStep: 'confirm', stage: 3 })).toBe('send')
+  expect(helpStep({ ...draft, flowStep: 'records' })).toBe('send')
+  expect(helpStep({ ...draft, flowStep: 'timing' })).toBe('details')
   expect(helpStep({ ...draft, flowStep: 'response' })).toBe('response')
   expect(helpStep({ ...draft, flowStep: 'details' })).toBe('details')
-  expect(helpStep({ ...draft, flowStep: 'where' })).toBe('where')
+  expect(helpStep({ ...draft, flowStep: 'where' })).toBe('details')
   expect(helpStep({ ...draft, flowStep: 'billing' })).toBe('details')
-  expect(helpStep({ ...draft, flowStep: 'experience' })).toBe('experience')
-  expect(helpStep({ ...draft, flowStep: 'review' })).toBe('review')
+  expect(helpStep({ ...draft, flowStep: 'experience' })).toBe('choose')
+  expect(helpStep({ ...draft, flowStep: 'review' })).toBe('send')
   expect(helpStep({ ...draft, flowStep: 'send' })).toBe('send')
-  expect(helpStep({ ...draft, stage: 2 })).toBe('review')
+  expect(helpStep({ ...draft, stage: 2 })).toBe('send')
   expect(helpStep(draft)).toBe('choose')
+  expect(stepLabel({ ...draft, flowStep: 'where' }, 'en')).toBe('Step 2 of 4 · When and where')
+  expect(stepLabel({ ...draft, flowStep: 'response' }, 'es')).toBe('Paso 3 de 4 · ¿Qué deben hacer?')
 })
 test('initial fact previews stay within draft bounds without truncating agency wording', () => {
   const p = samplePlaces[0]

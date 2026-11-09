@@ -3,9 +3,9 @@ import type { HelpDraft, HelpFact, HelpStep } from './help-requests'
 import { advisoryFacts, advisorySources } from './help-facts'
 import { reportEvidence, reportMessage, requiredReportEvidence } from './recovery-evidence'
 
-/** One short card per screen: issue → noticed → details → when → where → response → review → send. */
+/** Four calm screens: what's wrong → when and where → what they should do → send it. */
 export function helpPath(_d: HelpDraft): HelpStep[] {
-  return ['choose', 'experience', 'details', 'timing', 'where', 'response', 'review', 'send']
+  return ['choose', 'details', 'response', 'send']
 }
 /** Billing/other reports have no inferred link to water-quality or service notices. */
 export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
@@ -17,11 +17,24 @@ export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
     return [f]
   })
 }
+/** Screen titles, shared by Help and History. */
+export const HELP_STEP_TITLES: Partial<Record<HelpStep, [string, string]>> = {
+  choose: ['What’s wrong?', '¿Qué pasa?'],
+  details: ['When and where', 'Cuándo y dónde'],
+  response: ['What should they do?', '¿Qué deben hacer?'],
+  send: ['Send it', 'Envíalo'],
+}
+/** "Step 2 of 4 · When and where" for a draft's current screen. */
+export function stepLabel(d: HelpDraft, language: 'en' | 'es') {
+  const path = helpPath(d), step = helpStep(d), n = path.indexOf(step) + 1, title = HELP_STEP_TITLES[step]![language === 'es' ? 1 : 0]
+  return language === 'es' ? `Paso ${n} de ${path.length} · ${title}` : `Step ${n} of ${path.length} · ${title}`
+}
 export function helpStep(d: HelpDraft): HelpStep {
   // Earlier drafts resume on the screen that now holds the same answers.
-  if (d.flowStep === 'billing') return 'details'
-  if (d.flowStep === 'confirm' || d.flowStep === 'records') return 'review'
-  const fallback = d.stage >= 2 ? 'review' : 'choose'
+  if (d.flowStep === 'experience') return 'choose'
+  if (d.flowStep && ['billing', 'timing', 'where'].includes(d.flowStep)) return 'details'
+  if (d.flowStep && ['review', 'confirm', 'records'].includes(d.flowStep)) return 'send'
+  const fallback = d.stage >= 2 ? 'send' : 'choose'
   return d.flowStep && helpPath(d).includes(d.flowStep) ? d.flowStep : fallback
 }
 export function initialFacts(place: Place, notices: Notice[], current: boolean, sample: boolean, language: Language): HelpFact[] {

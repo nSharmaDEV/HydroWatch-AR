@@ -6,6 +6,8 @@ import type { StoredState } from './store.js'
 import type { StateCell } from './postgres.js'
 import { noticeMatchesPlace, withPlaceCatalog } from '../src/place-catalog.js'
 import { withDirectory } from '../src/water-system-directory.js'
+import { ANNUAL_REPORTS } from '../src/annual-reports.js'
+import { reviewedReportAlerts, type ReportAlert } from '../src/report-findings.js'
 export interface DeviceInput { subscription: { endpoint: string; keys: { p256dh: string; auth: string } }; watches: string[]; liftWatches: string[]; language: 'en' | 'es' }
 export type PushSender = (subscription: DeviceInput['subscription'], payload: string) => Promise<unknown>
 interface Attempt { tries: number; nextAt: number; accepted: boolean; claimId?: string }
@@ -72,52 +74,76 @@ export class PushStore {
     })
   }
   async prune(): Promise<void> { await this.update(() => {}) }
-  async drain(observations: StoredState, send: PushSender, budget = 50, deadline = Infinity): Promise<void> {
+  async drain(observations: StoredState, send: PushSender, budget = 50, deadline = Infinity, reports: ReportAlert[] = reviewedReportAlerts(ANNUAL_REPORTS, this.clock())): Promise<void> {
     const devices = await this.update(state => {
-      const eventIds = new Set(observations.events.map(e => e.id))
+      const keep = new Set([...observations.events.map(e => e.id), ...reports.map(r => r.id)])
       for (const device of state.devices) {
-        for (const id of Object.keys(device.attempts)) if (!eventIds.has(id)) delete device.attempts[id]
+        for (const id of Object.keys(device.attempts)) if (!keep.has(id)) delete device.attempts[id]
       }
       return structuredClone(state.devices)
     })
-    for (const device of devices) {
-        for (const event of observations.events) {
-          const age = this.clock() - Date.parse(event.observedAt)
-          if (Date.parse(event.observedAt) <= device.enrolledAt || age < 0 || age >= 3600_000 || !(event.type === 'new' ? device.watches : device.liftWatches).some(id => noticeMatchesPlace(id, event.notice))) continue
-          const prior = device.attempts[event.id]
-          if (prior?.accepted || (prior && prior.nextAt > this.clock())) continue
-          const source = observations.sources.find(s => s.agency === event.notice.agency)
-          const current = source?.records.find(n => n.id === event.notice.id)
-          if (!current || current.liftStatus === 'unknown' || statusFor('', source, this.clock()).state === 'unavailable' || (event.type === 'new' ? !!current.lifted : !current.lifted)) continue
-          if (budget <= 0 || this.clock() >= deadline) return
-          const spanish = device.language === 'es'
-          const action = event.type === 'lifted' ? spanish ? 'La agencia publicó el levantamiento' : 'Agency published a lift' : spanish ? 'Nuevo aviso publicado' : 'New published notice'
-          const payload = JSON.stringify({ title: current.name.slice(0, 120), body: `${action} · ${current.kind === 'boil' ? spanish ? 'Aviso de hervir agua' : 'Boil-water notice' : spanish ? 'Aviso de algas' : 'HAB advisory'} · ${event.type === 'lifted' ? current.lifted : current.issued ?? event.observedAt}\n${spanish ? 'Consulta el área y las instrucciones oficiales.' : 'Check the published area and official guidance.'}`, tag: event.id, url: `/?notice=${encodeURIComponent(current.id)}`, sourceUrl: current.url, observedAt: event.observedAt })
-          const claimId = randomUUID()
-          const claimed = await this.update(state => {
-            const live = state.devices.find(d => d.tokenHash === device.tokenHash && d.enrolledAt === device.enrolledAt)
-            const attempt = live?.attempts[event.id]
-            if (!live || attempt?.accepted || (attempt && attempt.nextAt > this.clock())) return false
-            live.attempts[event.id] = { tries: (attempt?.tries ?? 0) + 1, nextAt: this.clock() + Math.min(15 * 60_000, 60_000 * 2 ** (attempt?.tries ?? 0)), accepted: false, claimId }
-            return true
-          })
-          if (!claimed) continue
-          if (this.clock() >= deadline) return // Persisted backoff leaves the claim retryable later.
-          budget--
-          let accepted = false; let gone = false
-          try { await send(device.subscription, payload); accepted = true }
-          catch (error) {
-            gone = [404, 410].includes((error as { statusCode?: number }).statusCode ?? 0)
-            // Never log endpoints/keys or claim device delivery from provider acceptance.
-          }
-          await this.update(state => {
-            const live = state.devices.find(d => d.tokenHash === device.tokenHash)
-            if (live?.attempts[event.id]?.claimId !== claimId) return
-            if (gone) state.devices = state.devices.filter(d => d !== live)
-            else live.attempts[event.id].accepted = accepted
-          })
-          if (gone) break
-        }
+    const names = new Map(withDirectory(withPlaceCatalog(observations.places)).map(p => [p.id, p.name]))
+    /** Claim, send and record one payload; 'stop' ends the run, 'gone' drops the device. */
+    const deliver = async (device: Device, id: string, payload: string): Promise<'sent' | 'skip' | 'stop' | 'gone'> => {
+      const prior = device.attempts[id]
+      if (prior?.accepted || (prior && prior.nextAt > this.clock())) return 'skip'
+      if (budget <= 0 || this.clock() >= deadline) return 'stop'
+      const claimId = randomUUID()
+      const claimed = await this.update(state => {
+        const live = state.devices.find(d => d.tokenHash === device.tokenHash && d.enrolledAt === device.enrolledAt)
+        const attempt = live?.attempts[id]
+        if (!live || attempt?.accepted || (attempt && attempt.nextAt > this.clock())) return false
+        live.attempts[id] = { tries: (attempt?.tries ?? 0) + 1, nextAt: this.clock() + Math.min(15 * 60_000, 60_000 * 2 ** (attempt?.tries ?? 0)), accepted: false, claimId }
+        return true
+      })
+      if (!claimed) return 'skip'
+      if (this.clock() >= deadline) return 'stop' // Persisted backoff leaves the claim retryable later.
+      budget--
+      let accepted = false; let gone = false
+      try { await send(device.subscription, payload); accepted = true }
+      catch (error) {
+        gone = [404, 410].includes((error as { statusCode?: number }).statusCode ?? 0)
+        // Never log endpoints/keys or claim device delivery from provider acceptance.
       }
+      await this.update(state => {
+        const live = state.devices.find(d => d.tokenHash === device.tokenHash)
+        if (live?.attempts[id]?.claimId !== claimId) return
+        if (gone) state.devices = state.devices.filter(d => d !== live)
+        else live.attempts[id].accepted = accepted
+      })
+      return gone ? 'gone' : 'sent'
+    }
+    for (const device of devices) {
+      let result: Awaited<ReturnType<typeof deliver>> = 'skip'
+      for (const event of observations.events) {
+        const age = this.clock() - Date.parse(event.observedAt)
+        if (Date.parse(event.observedAt) <= device.enrolledAt || age < 0 || age >= 3600_000 || !(event.type === 'new' ? device.watches : device.liftWatches).some(id => noticeMatchesPlace(id, event.notice))) continue
+        const source = observations.sources.find(s => s.agency === event.notice.agency)
+        const current = source?.records.find(n => n.id === event.notice.id)
+        if (!current || current.liftStatus === 'unknown' || statusFor('', source, this.clock()).state === 'unavailable' || (event.type === 'new' ? !!current.lifted : !current.lifted)) continue
+        const spanish = device.language === 'es'
+        const action = event.type === 'lifted' ? spanish ? 'La agencia publicó el levantamiento' : 'Agency published a lift' : spanish ? 'Nuevo aviso publicado' : 'New published notice'
+        const payload = JSON.stringify({ title: current.name.slice(0, 120), body: `${action} · ${current.kind === 'boil' ? spanish ? 'Aviso de hervir agua' : 'Boil-water notice' : spanish ? 'Aviso de algas' : 'HAB advisory'} · ${event.type === 'lifted' ? current.lifted : current.issued ?? event.observedAt}\n${spanish ? 'Consulta el área y las instrucciones oficiales.' : 'Check the published area and official guidance.'}`, tag: event.id, url: `/?notice=${encodeURIComponent(current.id)}`, sourceUrl: current.url, observedAt: event.observedAt })
+        result = await deliver(device, event.id, payload)
+        if (result === 'stop') return
+        if (result === 'gone') break
+      }
+      if (result === 'gone') continue
+      // Hand-checked annual-report findings: one summary per watched supplier and report year.
+      for (const report of reports) {
+        if (!device.watches.includes(report.placeId)) continue
+        const spanish = device.language === 'es'
+        const payload = JSON.stringify({
+          title: (names.get(report.placeId) ?? (spanish ? 'Tu proveedor de agua' : 'Your water supplier')).slice(0, 120),
+          body: spanish
+            ? `El informe anual del agua de ${report.year} indica ${report.count} ${report.count === 1 ? 'problema' : 'problemas'}. Son hallazgos fechados del documento; no es el estado actual.`
+            : `The ${report.year} annual water report lists ${report.count} ${report.count === 1 ? 'issue' : 'issues'}. These are dated report findings, not current status.`,
+          tag: report.id, url: '/', sourceUrl: report.url,
+        })
+        result = await deliver(device, report.id, payload)
+        if (result === 'stop') return
+        if (result === 'gone') break
+      }
+    }
   }
 }

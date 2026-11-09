@@ -9,6 +9,8 @@ export type ContactSource = 'ADH' | 'EPA'
 export interface EmailListing { email: string; source: ContactSource; url: string; checkedOn: string }
 export interface ProviderContact {
   phone: string; dial: string; email?: string; sourceUrl: string; verifiedOn: string
+  /** Set only after a person called or emailed the supplier and confirmed these contacts (see CONTACT-CONFIRMATION.md). */
+  confirmedOn?: string
   /** Which directory the phone/sourceUrl came from; reviewed entries default to ADH. */
   phoneSource?: ContactSource
   /** Provenance of `email`, when it differs from the phone directory check. */

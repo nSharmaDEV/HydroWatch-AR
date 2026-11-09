@@ -8,6 +8,66 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-08 — Compact report findings chip
+
+- Removed the separate supplier-card report callout and “See the issues” action.
+  The existing dated Provider information chip now has a pale yellow background,
+  amber border and leading document icon. Findings and historical context remain
+  inside the expanded report in English and Spanish. Local change; not deployed.
+
+### 2026-11-09 — Four-screen Help, letter-style email and report findings
+
+- **Help is four screens:** What's wrong? → When and where → What should they
+  do? → Send it (replacing eight). The approved plan said three; the combined
+  details screen overflowed 1280×800 by about 340px, so it was split rather than
+  shrinking text. Older drafts open on the screen holding their answers.
+- **Email rewritten as a letter** following FTC, CCW and Arkansas AG/PSC
+  complaint-letter guidance: address and optional account number first, plain
+  sentences for each checkbox, earlier contact and what was tried, a numbered
+  "Could you please:" list, "For reference:" dated records, a polite request for
+  a reply within 5 business days, sign-off and sources. Specific subjects
+  ("Question about my water bill — account N"). Spanish matches. The call script
+  ("What to say when you call") reuses the same sentences.
+- **New optional answers:** account number; "What have you already tried?" for
+  every issue. The usual requests start ticked on screen 3.
+- **Send it:** email and ways to send side by side; normal-case supplier names
+  and emails; one-line "Not resolved?" escalation (its Call link is disabled while
+  the message is incomplete, like the main row); Contact sources beside the
+  "you send it yourself" note; text labels on Update/Download; Copy email is a
+  secondary button; **Add a reminder to my calendar** downloads an `.ics` file.
+- **History:** statuses Not sent yet / Sent – waiting for reply / Resolved /
+  Closed by you; unsent drafts open as a summary card with **Continue draft**
+  (resumes the saved step) and a quieter Delete draft; empty "Original issue"
+  hidden. Nav highlights the tab Help was opened from.
+- **Annual-report findings:** supplier cards show "[Supplier]'s [year] water
+  report lists N issues" with a New label; **Ask about this** on hand-checked
+  findings starts a "Question about a water report" draft that quotes the
+  finding with page and dates and cites the PDF page. AI-summarized findings are
+  listed, labelled, never quoted. New issue type `report` (server whitelist).
+- **Report push:** one notification per watched supplier and hand-checked report
+  year (checked within 365 days), deduped per device; advisory push unchanged.
+  Built and tested locally only; not deployed, no notification sent to a device.
+- **Contacts:** optional `confirmedOn` shows "Confirmed by WAVE on [date]";
+  `CONTACT-CONFIRMATION.md` adds the checklist and call script. No contact is
+  confirmed yet.
+- Dropped a suspected late-save bug after reading the code (unmount flushes and
+  clears the timer).
+- Tests: new email-letter, help-screens, reminder-ics, history-card,
+  report-findings, ask-about-report, report-home-note, contact-confirmed and push
+  report tests; 18 existing unit test files and the help-workspace, saved-help
+  and journey e2e specs updated to the new flow with safety checks kept.
+- Local checks (2026-11-09): `tsc` clean; `npm run build` passes; Vitest
+  **800 passed, 2 failed of 802** (only the known Gurdon en/es WIP in
+  all-supplier-reports). Full Playwright run (both projects, 35.7 min under
+  heavy machine load): 446 passed, 2 skipped, 58 failed. Of those, 36 are the
+  existing Home-layout `home-viewport` and `observed-map` failures; 10 are the
+  other session's uncommitted Places specs (not part of this change); 6 were
+  `glass-surfaces` expectations of the old flow, since updated (8/8 pass); 6
+  (`help-formatting` alignment and five journey tests) pass on targeted rerun.
+  Help fit checks: help-workspace 80/80 (1280×800 and 1440×780, EN/ES, five
+  issues, active and inactive, desktop and phone projects); saved-help 8/8.
+  Not deployed, pushed, sent or submitted.
+
 ### 2026-11-08 — One card per Help screen
 
 - Split Help into eight focused screens, each in one centred 760px card with

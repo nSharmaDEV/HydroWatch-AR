@@ -6,6 +6,7 @@ export const ISSUE_LABELS: Record<IssueType, [string, string]> = {
   quality: ['Water quality', 'Calidad del agua'],
   other: ['Something else', 'Otra cosa'],
   legal: ['Legal help', 'Ayuda legal'],
+  report: ['Question about a water report', 'Pregunta sobre un informe del agua'],
 }
 export const QUESTIONS = {
   approximate: ['Are these dates approximate? (optional)', '¿Son fechas aproximadas? (opcional)'],
@@ -27,6 +28,7 @@ export const QUESTIONS = {
   ongoing: ['Is it ongoing? (optional)', '¿Continúa? (opcional)'],
   area: ['Affected area you know about (optional)', 'Zona afectada que conoces (opcional)'],
   noticed: ['When did you notice it? (optional)', '¿Cuándo lo notaste? (opcional)'],
+  account: ['Account number (optional)', 'Número de cuenta (opcional)'],
 } as const
 export type AnswerKey = keyof typeof QUESTIONS
 export function questionKeys(issue: IssueType): AnswerKey[] {

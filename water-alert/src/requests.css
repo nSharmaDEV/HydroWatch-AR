@@ -611,3 +611,92 @@ body:has(.sample-banner) .request-card .request-review-card .request-review-emai
   /* Phones scroll the page, so the message gets a comfortable editing height. */
   body .request-card .request-review-card .request-review-email textarea.request-message-editor { height: 50dvh; min-height: 240px; max-height: 640px; }
 }
+/* Three screens: What's wrong? → Your details → Send it (2026-11-09). */
+.request-card .request-issue-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.request-card .request-issue-choice { min-height: 64px; padding: .7rem .9rem; gap: .6rem; font-size: 1.05rem; }
+.request-card .request-issue-choice[aria-pressed="true"] { padding: calc(.7rem - 1px) calc(.9rem - 1px); }
+.request-card .request-issue-choice svg { width: 1.5rem; height: 1.5rem; }
+.request-card .request-issue-choice:last-child:nth-child(odd) { grid-column: auto; min-height: 64px; }
+.request-card-body .request-screen-choose .request-wording-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.request-card-body .request-screen-choose .request-description textarea { height: 4.5rem; }
+.request-call-line a { font-weight: 600; }
+.request-card .request-details-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.request-card .request-details-row label, .request-card .request-questions-details label { display: grid; gap: 4px; }
+.request-card .request-questions-details { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.request-card .request-questions-details > p { grid-column: 1 / -1; }
+.request-card-body .request-screen-details .request-wording-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.request-card-body .request-screen-details .request-extras { margin: 0; }
+/* Send it: the email and the ways to send it side by side in one wider card. */
+.request-step-layout:has(.request-screen-send) > .request-frame-topline, .request-card:has(.request-screen-send) { width: min(1100px, 100%); }
+.request-send-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+body .request-card .request-screen-send .request-review-email textarea.request-message-editor { height: clamp(200px, calc(100dvh - 500px), 440px); }
+body:has(.sample-banner) .request-card .request-screen-send .request-review-email textarea.request-message-editor { height: clamp(200px, calc(100dvh - 560px), 440px); }
+.request-card-action .request-primary-action > .secondary { width: 100%; min-height: 48px; }
+.request-card .send-option-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; padding: 8px 14px; background: none; }
+.request-card .send-option-next .send-option-actions > * { min-height: 44px; padding: 8px 4px; }
+.send-option-badge-next { font-weight: 700; }
+.request-card .send-option-script p { margin: 6px 0 0; font-size: .95rem; line-height: 1.45; }
+.send-reminder { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
+@media (max-width: 900px) { .request-send-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .request-card .request-issue-grid, .request-card .request-details-row, .request-card .request-questions-details,
+  .request-card-body .request-screen-choose .request-wording-grid, .request-card-body .request-screen-details .request-wording-grid { grid-template-columns: minmax(0, 1fr); }
+  body .request-card .request-screen-send .request-review-email textarea.request-message-editor { height: 50dvh; min-height: 240px; max-height: 640px; }
+}
+.request-card .request-issue-choice, .request-card .request-issue-choice:last-child:nth-child(odd) { min-height: 52px; padding-block: .45rem; line-height: 1.25; }
+.request-card .request-issue-choice[aria-pressed="true"] { padding-block: calc(.45rem - 1px); }
+.request-card-body .request-wording-choice { min-height: 44px; padding-block: 4px; }
+.request-card-body .request-frequency-grid { margin: 0; }
+.request-card-body .request-wording-choice .checkbox-row { padding-block: 4px; min-height: 40px; }
+.request-card:has(.request-screen-choose), .request-card:has(.request-screen-details) { padding: 24px 28px; gap: 14px; }
+.request-card-body .request-screen-choose .request-description textarea { height: 3.6rem; }
+.request-card:has(.request-screen-response) { padding: 24px 28px; gap: 14px; }
+.request-card-body .request-screen-response .request-extras { margin: 0; }
+/* Send it: the right column is narrow, so each option stacks: who, then the buttons. */
+.request-send-layout .send-option { grid-template-columns: minmax(0, 1fr); }
+.request-send-layout .send-option > .send-option-actions, .request-send-layout .send-option:not(:has(> .send-option-badge)) > .send-option-actions { grid-column: 1; grid-row: auto; justify-content: start; }
+.request-send-layout .send-options > .quiet-note { font-size: .85rem; }
+.request-send-layout .request-review-update { gap: 4px 10px; }
+.request-review-tools .request-icon-action { width: auto; height: 36px; display: inline-flex; gap: 6px; padding: 0 10px; font: inherit; font-size: .85rem; }
+.request-review-tools .request-icon-action svg { width: 18px; height: 18px; }
+body .request-card .request-screen-send .request-review-email textarea.request-message-editor { height: clamp(180px, calc(100dvh - 590px), 440px); }
+body:has(.sample-banner) .request-card .request-screen-send .request-review-email textarea.request-message-editor { height: clamp(180px, calc(100dvh - 650px), 440px); }
+.request-card:has(.request-screen-send) .request-title-row h1 { margin-bottom: 2px; }
+.request-card:has(.request-screen-choose), .request-card:has(.request-screen-details), .request-card:has(.request-screen-response) { gap: 10px; }
+.request-card-body .request-screen-choose, .request-card-body .request-screen-response { gap: 10px; }
+.request-card .request-issue-choice, .request-card .request-issue-choice:last-child:nth-child(odd) { min-height: 48px; }
+/* Title and supplier share one line on wide screens. */
+@media (min-width: 761px) {
+  .request-card > .request-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; }
+  .request-card .request-title-row h1 { margin: 0; }
+  .request-card .request-title-row > .request-supplier-line { justify-content: end; text-align: right; }
+}
+body .request-card .request-screen-send .request-review-email textarea.request-message-editor { height: clamp(180px, calc(100dvh - 600px), 440px); }
+.request-send-layout > * { min-width: 0; }
+.request-review-card .request-review-tools { flex-wrap: wrap; }
+@media (max-width: 760px) { .request-review-card .request-review-tools { margin-left: 0; } }
+.request-frame-topline .request-progress > span { white-space: nowrap; }
+/* History: an unsent draft is one summary card. */
+.request-draft-summary { margin-top: 12px; }
+.request-draft-summary > .back { align-self: start; }
+.request-draft-summary .request-title-row h2 { margin: 0; font-size: 1.4rem; }
+.request-draft-facts { display: grid; gap: 10px; margin: 0; }
+.request-draft-facts > div { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #e3e9ee; }
+.request-draft-facts dt { color: #465769; }
+.request-draft-facts dd { margin: 0; overflow-wrap: anywhere; }
+.request-draft-summary .request-card-action .primary { width: 100%; min-height: 52px; }
+.request-delete-draft { align-self: center; color: #9b2c2c; }
+@media (max-width: 600px) { .request-draft-facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+/* Home: the report findings line on a supplier card. */
+.report-home-note { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 4px 10px; margin: 8px 0; padding: 10px 12px; border: 1px solid #e3c98a; border-radius: 10px; background: #fffaf0; }
+.report-home-note > svg { margin-top: 2px; color: #8a5a00; }
+.report-home-note p { margin: 0; line-height: 1.45; }
+.report-home-note .quiet-note { display: block; font-size: .85rem; }
+.report-home-note .text-button { min-height: 44px; white-space: nowrap; }
+.report-home-new { display: inline-block; margin-right: 6px; padding: 0 6px; border-radius: 999px; background: #8a5a00; color: #fff; font-size: .75rem; font-weight: 700; }
+.report-ask { margin-top: 8px; min-height: 44px; }
+@media (max-width: 520px) { .report-home-note { grid-template-columns: auto minmax(0, 1fr); } .report-home-note .text-button { grid-column: 2; justify-self: start; } }
+.request-card .request-issue-choice { padding-inline: .75rem; gap: .5rem; font-size: 1rem; line-height: 1.2; }
+.send-options-note .text-button { min-height: 0; padding: 0; font-size: inherit; }
+.send-contact-sources { top: 2.5rem; bottom: auto; max-height: min(520px, 60dvh); overflow: auto; }
+.send-option-tools:empty { display: none; }

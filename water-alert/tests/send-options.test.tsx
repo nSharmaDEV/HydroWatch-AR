@@ -35,11 +35,20 @@ describe('send options', () => {
   })
 
   it('writes a call script only from the resident’s answers', () => {
-    const lines = callScript(draft('ROGERS WATER UTILITIES', { answers: { began: '2026-11-01', ongoing: 'Yes' } }), 'en')
-    expect(lines[0]).toBe('Hello, I\'m calling to report: service problem.')
+    const lines = callScript(draft('ROGERS WATER UTILITIES', { answers: { began: '2026-11-01', ongoing: 'Yes' }, wording: { report: {}, response: { first: 'Restore service', second: 'Share an update' } } }), 'en')
+    expect(lines[0]).toBe('Hi, I’m a Rogers Water Utilities customer.')
+    expect(lines[1]).toBe('I’m calling about a problem with my water service.')
     expect(lines.join(' ')).toContain('Low pressure every morning')
-    expect(lines.at(-1)).toMatch(/reference number/)
-    expect(callScript(draft('ROGERS WATER UTILITIES'), 'es')[0]).toBe('Hola, llamo para reportar: problema de servicio.')
+    expect(lines.join(' ')).toContain('November 1, 2026')
+    expect(lines).toContain('Could you please restore service and share an update?')
+    expect(lines.at(-1)).toBe('Could you give me a reference number for this call?')
+    // Nothing the resident did not answer: no requests line without requests.
+    expect(callScript(draft('ROGERS WATER UTILITIES'), 'en').some(l => l.startsWith('Could you please'))).toBe(false)
+    const es = callScript(draft('ROGERS WATER UTILITIES', { wording: { report: {}, response: { first: 'Restablecer el servicio' } } }), 'es')
+    expect(es[0]).toBe('Hola, soy cliente de Rogers Water Utilities.')
+    expect(es[1]).toBe('Llamo por un problema con mi servicio de agua.')
+    expect(es).toContain('¿Podrían, por favor, restablecer el servicio?')
+    expect(es.at(-1)).toBe('¿Me pueden dar un número de referencia para esta llamada?')
   })
 })
 

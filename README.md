@@ -16,9 +16,9 @@ published records, not testing water.
   observed advisory history, and see changes since a previous visit.
 - Provides dated supplier facts and annual-report findings where reviewed,
   separate from current advisory status.
-- Offers eight short, single-card Help screens from choosing an issue through
-  observations, details, dates, location, requested response, email review and sending,
-  with relevant source records, downloads, saved drafts
+- Offers four short Help screens (what's wrong, when and where, what they should
+  do, send it) that write a letter-style email, with relevant source records,
+  downloads, a calendar reminder, saved drafts
   and private request History. The observed advisory map has its own **Map** tab.
   Account storage and email delivery require explicit operator configuration;
   unconfigured services are unavailable, and sample drafts cannot send.

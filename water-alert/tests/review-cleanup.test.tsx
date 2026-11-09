@@ -14,11 +14,12 @@ test('Review uses compact actions, a records popup and a citations popup without
   // The per-answer "What you provided" table and its Edit/Add links were removed.
   expect(document.querySelector('.request-answer-missing')).toBeNull()
   expect(screen.queryByRole('row', { name: /First noticed/ })).not.toBeInTheDocument()
-  expect(document.querySelector('.request-review-card')?.firstElementChild).toHaveClass('request-signature')
-  expect(screen.getByRole('region', { name: 'Name / reply contact (optional)' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Resident name (optional)')).toBeVisible()
-  expect(screen.getByLabelText('Preferred reply contact (optional)')).toBeVisible()
-  expect(document.querySelector('.request-signature summary')).toBeNull()
+  // Name and reply contact are asked on "What should they do?"; Review opens on the email itself.
+  expect(document.querySelector('.request-review-card')?.firstElementChild).toHaveClass('request-composer')
+  expect(document.querySelector('.request-signature')).toBeNull()
+  expect(screen.queryByLabelText(/Your name|Resident name/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/How can they reach you|Preferred reply contact/)).not.toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Your email' })).toContainElement(screen.getByLabelText('Message'))
   // Records are behind one compact button and open in a dialog.
   expect(screen.queryByRole('dialog', { name: 'Records' })).not.toBeInTheDocument()
   const recordsButton = screen.getByRole('button', { name: 'Records (1 of 1 included)' })
@@ -34,8 +35,10 @@ test('Review uses compact actions, a records popup and a citations popup without
   fireEvent.click(within(records).getByRole('button', { name: 'Close records' }))
   expect(screen.queryByRole('dialog', { name: 'Records' })).not.toBeInTheDocument()
   expect(recordsButton).toHaveFocus()
-  for (const name of ['Update draft from answers', 'Download email', 'Download report']) {
-    expect(screen.getByRole('button', { name }).querySelector('svg')).not.toBeNull()
+  for (const [name, visible] of [['Update draft from answers', 'Update from answers'], ['Download email', 'Download email'], ['Download report', 'Download report']]) {
+    const tool = screen.getByRole('button', { name })
+    expect(tool.querySelector('svg')).not.toBeNull()
+    expect(tool).toHaveTextContent(visible)
   }
   expect(screen.getByRole('button', { name: 'Update draft from answers' })).toHaveAttribute('title', expect.stringContaining('including manual edits'))
   expect(screen.queryByText('Replaces your subject and message, including manual edits.')).not.toBeInTheDocument()

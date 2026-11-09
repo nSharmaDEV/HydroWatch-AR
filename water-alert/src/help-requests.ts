@@ -4,7 +4,7 @@ import { ADH_ENGINEERING_SOURCE, RECOVERY_RESOURCES } from './recovery-resources
 import type { AnswerKey } from './help-questions.js'
 import { emailOutput } from './help-outputs.js'
 export type HelpRoute = 'provider' | 'adh' | 'ag' | 'legal'
-export type IssueType = 'service' | 'quality' | 'billing' | 'legal' | 'advisory' | 'other'
+export type IssueType = 'service' | 'quality' | 'billing' | 'legal' | 'advisory' | 'other' | 'report'
 export interface HelpAttachment { id: string; name: string; type: string; data: string }
 export interface HelpSource { recordId: string; url: string; label: string }
 export type HelpStep = 'choose' | 'billing' | 'timing' | 'experience' | 'details' | 'where' | 'response' | 'records' | 'review' | 'send' | 'confirm'

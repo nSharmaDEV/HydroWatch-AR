@@ -18,7 +18,7 @@ export function updateDraft(previous: HelpDraft, patch: Partial<HelpDraft>, lang
   next.bodyEdited = regenerated ? false : patch.body !== undefined ? true : previous.bodyEdited ?? !!previous.body
   if (regenerated) return next
   const changed = answerFingerprint(previous) !== answerFingerprint(next)
-  if ((changed && (previous.body || previous.subject)) || (!next.body && next.flowStep === 'review' && !next.bodyEdited)) {
+  if ((changed && (previous.body || previous.subject)) || (!next.body && (next.flowStep === 'review' || next.flowStep === 'send') && !next.bodyEdited)) {
     const generated = generateMessage(next, language)
     if (!next.subjectEdited) next.subject = generated.subject
     if (!next.bodyEdited) next.body = generated.body

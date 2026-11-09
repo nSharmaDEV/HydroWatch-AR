@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useMotionPresence } from './interface-motion'
 import type { Language } from './domain'
 import { isSummarized, type AnnualReport, type AnnualReportIssue, type SummarizedReport } from './annual-reports'
@@ -25,8 +25,9 @@ export function AnnualWaterReport({ reports, language }: { reports: readonly Ann
   </section>
 }
 
-export function AnnualReportCard({ reports, report, onYear, language }: { reports: readonly AnnualReport[]; report?: AnnualReport; onYear: (year: number) => void; language: Language }) {
+export function AnnualReportCard({ reports, report, onYear, language, onAsk, openSignal = 0 }: { reports: readonly AnnualReport[]; report?: AnnualReport; onYear: (year: number) => void; language: Language; onAsk?: (key: string) => void; openSignal?: number }) {
   const [open, setOpen] = useState(false)
+  useEffect(() => { if (openSignal) setOpen(true) }, [openSignal])
   const motion = useMotionPresence(open, 'slide')
   const id = useId()
   const es = language === 'es'
@@ -74,7 +75,7 @@ export function AnnualReportCard({ reports, report, onYear, language }: { report
       <div className="report-toggle-row"><button className="report-toggle" aria-controls={id} aria-expanded={open} onClick={() => setOpen(v => !v)}>{open
         ? summary!.mixedFindings ? es ? 'Ocultar hallazgos' : 'Hide findings' : es ? 'Ocultar problemas' : 'Hide issues'
         : es ? `Ver ${count} ${summary!.noun}` : `View ${count} ${summary!.noun}`}<span className="disclosure-icon" aria-hidden="true" /></button></div>
-      <div ref={motion.ref} id={id} hidden={!motion.present} inert={!open} aria-hidden={!open || undefined} className="report-issues"><IssueList report={report} findings={summary!.findings} language={language} /></div>
+      <div ref={motion.ref} id={id} hidden={!motion.present} inert={!open} aria-hidden={!open || undefined} className="report-issues"><IssueList report={report} findings={summary!.findings} language={language} onAsk={onAsk} /></div>
     </> : null}
     {isSummarized(report) && report.note ? <p className="report-review-note">{report.note[language]}</p> : null}
     {report && !isSummarized(report) && report.note ? <p className="provider-card-note report-check-note">{report.note[language]}</p> : null}
@@ -180,7 +181,7 @@ function categoryLabels(es: boolean): Record<AnnualReportIssue['category'], stri
   }
 }
 
-function IssueList({ report, findings, language }: { report: SummarizedReport; findings: readonly FindingGroup[]; language: Language }) {
+function IssueList({ report, findings, language, onAsk }: { report: SummarizedReport; findings: readonly FindingGroup[]; language: Language; onAsk?: (key: string) => void }) {
   const es = language === 'es'
   const kinds = {
     monitoring: es ? 'Infracción de monitoreo/informes' : 'Monitoring/reporting violation',
@@ -203,6 +204,8 @@ function IssueList({ report, findings, language }: { report: SummarizedReport; f
           <div><dt>{calendarIcon}{deficiency ? es ? 'Finalización reportada' : 'Reported completion' : es ? 'Hasta (según el informe)' : 'Reported through'}</dt><dd>{issue.currentAsPrinted ? es ? '“Current” (según el informe)' : '“Current” (as printed in the report)' : issue.reportedThrough ?? notProvided}</dd></div></>}
           <div><dt><Icon name="file-text" size={16} />{es ? 'Qué se reportó' : 'What was reported'}</dt><dd>{issue.title[language]}</dd></div>
           <div><dt><Icon name="wrench" size={16} />{deficiency ? es ? 'Avance reportado' : 'Reported progress' : es ? 'Acción correctiva reportada' : 'Reported corrective action'}</dt><dd>{issue.action[language]}</dd></div></dl>
+        {/* Only hand-checked findings can start a message; AI summaries are never quoted. */}
+        {onAsk && report.state === 'reviewed' ? <button className="secondary report-ask" aria-label={`${es ? 'Preguntar sobre esto' : 'Ask about this'}: ${issue.heading[language]}`} onClick={() => onAsk(`${report.year}:${report.issues.indexOf(issue)}`)}>{es ? 'Preguntar sobre esto' : 'Ask about this'}</button> : null}
       </li>
     })}</ol>
   </>

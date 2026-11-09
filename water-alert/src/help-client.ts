@@ -20,4 +20,4 @@ export async function saveRequest(sample: boolean, draft: HelpDraft, revision: n
   localStorage.setItem(key, JSON.stringify([record, ...records.filter(r => r.id !== draft.id)].slice(0, 20))); return record
 }
 export async function removeRequest(sample: boolean, id?: string, deviceOnly = false) { if (!sample && !deviceOnly) return helpApi(id ? `/requests/${id}` : '/requests', undefined, 'DELETE'); const key = sample ? SAMPLE_HELP_KEY : LIVE_LOCAL_HELP_KEY, records = sample ? sampleRequests() : liveLocalRequests(); localStorage.setItem(key, JSON.stringify(id ? records.filter(r => r.id !== id) : [])) }
-export function downloadText(name: string, text: string) { const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }
+export function downloadText(name: string, text: string, type = 'text/plain;charset=utf-8') { const url = URL.createObjectURL(new Blob([text], { type })); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }

@@ -39,7 +39,7 @@ export function CatalogCoverage({ placeId, t }: { placeId: string; t: Strings })
   if (!entry) return null
   return <div className="info"><p>{entry.place.kind === 'lake' ? t.catalogWaterbody : t.catalogSupplier}</p><SourceLink url={entry.url}>{t.catalogSource}</SourceLink></div>
 }
-export function StatusCard({ place, source, archive = [], now, t, language = 'en', sample = false, onView, onHelp, onViewNotice, onRefresh, onSources, checking = false }: { place: Place; source?: SourceSnapshot; archive?: Notice[]; now: number; t: Strings; language?: Language; sample?: boolean; onView: () => void; onHelp?: () => void; onViewNotice?: (id: string) => void; onRefresh?: () => void; onSources?: () => void; checking?: boolean }) {
+export function StatusCard({ place, source, archive = [], now, t, language = 'en', sample = false, onView, onHelp, onAsk, onViewNotice, onRefresh, onSources, checking = false }: { place: Place; source?: SourceSnapshot; archive?: Notice[]; now: number; t: Strings; language?: Language; sample?: boolean; onView: () => void; onHelp?: () => void; onAsk?: (key: string) => void; onViewNotice?: (id: string) => void; onRefresh?: () => void; onSources?: () => void; checking?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const finding = useRef<HTMLDivElement>(null)
   useStableStatus(finding)
@@ -72,7 +72,7 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
       }) : <p className="status-explanation">{status.state === 'unavailable' ? reason === 'never' ? t.uncheckedExplanation : explanation : t.noNoticeExplanation}</p>}
     </div></div>
     <div className="card-check-actions">{!sample && onRefresh ? <button className="secondary check-now-action" disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow} <Icon name="refresh-cw" size={16} /></button> : null}<a className="official-source-action official-list" href={SOURCES.ADH} target="_blank" rel="noreferrer">{t.officialSource} <Icon name="external-link" size={16} /></a></div>
-    <SupplierInformation key={`profile:${place.id}`} place={place} language={language} sample={sample} onView={onView} />
+    <SupplierInformation key={`profile:${place.id}`} place={place} language={language} sample={sample} onView={onView} onAsk={onAsk} />
     <SupplierAlertHistory key={place.id} place={place} archive={archive} source={source} now={now} t={t} language={language} onViewNotice={onViewNotice} coverageNote={!sample && status.state === 'none' && directorySystem(place.id) && !catalogEntry(place.id) ? <p className="quiet-note directory-match-note">{language === 'es'
       ? `Coincidencia solo por nombre exacto: WAVE muestra avisos de ADH para este sistema solo si ADH lo nombra “${place.name}”. Un aviso con otro nombre no aparecería aquí; revisa la lista de ADH.`
       : `Matched by exact name only: WAVE shows ADH notices for this system only when ADH lists it as “${place.name}”. A notice under another name would not appear here — check the ADH list.`}</p> : null} />

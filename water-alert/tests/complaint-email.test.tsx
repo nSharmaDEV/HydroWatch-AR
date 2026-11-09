@@ -21,11 +21,18 @@ test('selected requests and observations become complete connected prose in both
   const d = { ...blankRequest(samplePlaces[0]), issue: 'quality' as const, wording: { report: { first: 'An unusual color', second: 'An unusual smell', third: 'Particles in the water' }, response: { first: 'Investigate the reported concern', second: 'Clarify applicable water-use instructions' } }, answers: { frequency: 'Occasional' } }
   const text = generateMessage(d, 'en').body
   expect(text).toContain('I observed an unusual color, an unusual smell, and particles in the water.')
-  expect(text).toContain('Please investigate the reported concern and clarify applicable water-use instructions.')
+  expect(text).toContain('Could you please:\n1. Investigate the reported concern\n2. Clarify applicable water-use instructions')
+  expect(text).toContain('I’m a Sample Creek Water customer. I’m writing about the quality of my tap water.')
   expect(text).toContain('I observed this occasionally.')
+  // Letter order: who → what happened → numbered requests → reply window → sign-off.
+  const order = ['Hello Sample Creek Water team,', 'I’m a Sample Creek Water customer', 'I observed an unusual color', 'Could you please:', 'I’d appreciate a reply within 5 business days.', 'Thank you.']
+  expect(order.map(s => text.indexOf(s))).toEqual(order.map(s => text.indexOf(s)).slice().sort((x, y) => x - y))
+  expect(order.every(s => text.includes(s))).toBe(true)
   const spanish = generateMessage({ ...d, wording: { report: { first: 'Un color inusual', second: 'Un olor inusual' }, response: { first: 'Investigar la inquietud reportada' } } }, 'es').body
   expect(spanish).toContain('Observé un color inusual y un olor inusual.')
-  expect(spanish).toContain('Por favor, investiguen la inquietud reportada.')
+  expect(spanish).toContain('Les pido, por favor:\n1. Investigar la inquietud reportada')
+  expect(spanish).toContain('Agradecería una respuesta en un plazo de 5 días hábiles.')
+  expect(spanish).toContain('Gracias.')
   expect(spanish).toContain('Lo observé ocasionalmente.')
   expect(spanish).not.toContain('Occasional')
 })
@@ -57,17 +64,20 @@ test('manual fields are protected independently; removed facts and files disappe
 
 test('confirmed dates, locations, contact and requests agree in email and report without invented outcomes', () => {
   const d = { ...blankRequest(samplePlaces[0]), locations: ['123 Example St', '456 Sample St'], answers: { began: '2026-10-01', ongoing: 'No', ended: '2026-10-03', contacted: 'Yes', contactDate: '2026-10-02', contactMethod: 'Phone', contactResponse: 'They recorded my concern.', frequency: 'Constant' }, wording: { report: { first: 'No water' }, response: { first: 'Share an update' } } }
-  for (const text of [generateMessage(d, 'en').body, generateReport(d, 'en')]) for (const confirmed of ['October 1, 2026', 'October 3, 2026', 'October 2, 2026', '123 Example St', '456 Sample St', 'They recorded my concern.', 'Please share an update.']) expect(text).toContain(confirmed)
+  for (const text of [generateMessage(d, 'en').body, generateReport(d, 'en')]) for (const confirmed of ['October 1, 2026', 'October 3, 2026', 'October 2, 2026', '123 Example St', '456 Sample St', 'They recorded my concern.', '1. Share an update']) expect(text).toContain(confirmed)
+  const email = generateMessage(d, 'en').body
+  expect(email).toContain('I’m a Sample Creek Water customer at 123 Example St.')
+  expect(email).toContain('I also experienced this at 456 Sample St.')
   const empty = generateMessage(blankRequest(samplePlaces[0]), 'en').body
-  expect(empty).not.toMatch(/Please|contacted|follow up|restored|investigat|safe to drink|ongoing/)
+  expect(empty).not.toMatch(/Please|Could you please|contacted|follow up|restored|investigat|safe to drink|ongoing/)
 })
 
 test('ADH request is addressed to the agency and does not ask it to restore supplier service', () => {
   const d = { ...blankRequest(samplePlaces[0]), recipientRoutes: ['adh' as const], wording: { report: { first: 'No water' }, response: { first: 'Restore service' } } }
   const text = generateMessage(d, 'en').body
   expect(text).toMatch(/^Hello Arkansas Department of Health,/)
-  expect(text).toContain('Please advise on how to pursue restoration of service with the provider.')
-  expect(text).not.toContain('Please restore service')
+  expect(text).toContain('Could you please:\n1. Advise on how to pursue restoration of service with the provider')
+  expect(text).not.toMatch(/Restore service|restore service/)
   expect(generateMessage({ ...d, recipientRoutes: ['provider', 'adh'] }, 'en').body).toMatch(/^Hello,\n/)
 })
 
@@ -76,7 +86,7 @@ test('Spanish service observations are resident sentences rather than form fragm
   const text = generateMessage(d, 'es').body
   expect(text).toContain('No tengo agua.')
   expect(text).toContain('Tengo menos presión de lo habitual.')
-  expect(text).toContain('Por favor, restablezcan el servicio y compartan una actualización.')
+  expect(text).toContain('Les pido, por favor:\n1. Restablecer el servicio\n2. Compartir una actualización')
 })
 
 test('facts are supporting context, not a second first-person letter or email headings', () => {
@@ -92,26 +102,24 @@ test('untouched email follows category, recipient and answer changes; manual edi
   render(<RequestWorkspace place={samplePlaces[0]} sample currentAdvisory language="en" onBack={() => {}} onHistory={() => {}} />)
   await screen.findByRole('button', { name: 'Current advisory' })
   const next = () => fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  next()
   fireEvent.click(screen.getByRole('checkbox', { name: 'My usual water use is affected' }))
-  for (let i = 0; i < 4; i++) next()
-  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
-  for (let i = 0; i < 6; i++) fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+  next(); next()
+  fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
+  for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button', { name: 'Back' }))
   fireEvent.click(screen.getByRole('button', { name: 'Water-quality concern' }))
-  next()
   fireEvent.click(screen.getByRole('checkbox', { name: 'An unusual smell' }))
-  for (let i = 0; i < 4; i++) next()
-  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
-  expect((screen.getByLabelText('Subject') as HTMLInputElement).value).toContain('Water quality')
+  next(); next()
+  fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
+  expect((screen.getByLabelText('Subject') as HTMLInputElement).value).toContain('Concern about my tap water')
   expect((screen.getByLabelText('Message') as HTMLTextAreaElement).value).toContain('Hello Arkansas Department of Health,')
   expect((screen.getByLabelText('Message') as HTMLTextAreaElement).value).not.toContain('My usual water use is affected')
   expect(screen.queryByRole('tab', { name: 'Report' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Download report' })).toBeVisible()
   fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'My own wording.' } })
   fireEvent.click(screen.getByRole('button', { name: 'Back' }))
-  expect(screen.getByRole('heading', { name: 'What response would help?' })).toBeVisible()
-  fireEvent.change(screen.getByLabelText('Additional wording (optional)'), { target: { value: 'Please provide an update.' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
+  expect(screen.getByRole('heading', { name: 'What should they do?' })).toBeVisible()
+  fireEvent.change(screen.getByLabelText('Anything else to ask? (optional)'), { target: { value: 'Please provide an update.' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
   expect(screen.getByLabelText('Message')).toHaveValue('My own wording.')
   expect(screen.getByText('Your answers changed. Update the draft to include them.')).toBeVisible()
 })

@@ -38,21 +38,25 @@ test.each(['en', 'es'] as const)('sample copy and both downloads stay labeled af
   render(<RequestWorkspace place={samplePlaces[0]} language={language} sample onBack={() => {}} onHistory={() => {}} />)
   expect(await screen.findByLabelText(language === 'en' ? 'Message' : 'Mensaje')).toHaveValue('My manual text')
   const label = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
-  // Downloads stay on Review (step 4).
+  // A legacy "review" draft resumes on Send it, which holds the email tools and the send options together.
+  expect(screen.getByText(language === 'en' ? 'Step 4 of 4 · Send it' : 'Paso 4 de 4 · Envíalo')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Download email' : 'Descargar correo' }))
   fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Download report' : 'Descargar reporte' }))
   expect(download.mock.calls.map(([name]) => name)).toEqual(['sample-water-email.txt', 'sample-water-report.txt'])
   for (const [, text] of download.mock.calls) expect(text).toContain(label)
   expect(download.mock.calls[0][1]).toContain('My manual text')
   expect(screen.queryByRole('button', { name: /Send message|Enviar mensaje/ })).not.toBeInTheDocument()
-  // Copy is the sample primary action on "Send it" (step 5).
-  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Where to send it' : 'Dónde enviarlo' }))
-  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo' }))
+  // Copy is the sample bottom action on "Send it", styled secondary because nothing is sent.
+  const copy = screen.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo' })
+  expect(copy).toHaveClass('secondary')
+  expect(screen.getAllByText(language === 'en' ? 'Sample — sending disabled.' : 'Ejemplo — envío desactivado.').length).toBeGreaterThan(0)
+  fireEvent.click(copy)
   await waitFor(() => expect(copied).toHaveLength(1))
   expect(copied[0]).toContain(label)
   expect(copied[0]).toContain('My subject\n\nMy manual text')
   expect(screen.queryByRole('button', { name: /Send message|Enviar mensaje/ })).not.toBeInTheDocument()
   expect(document.querySelector('a[href^="tel:"], a[href^="mailto:"]')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Back' : 'Atrás' }))
+  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Write my email' : 'Escribir mi correo' }))
   expect(screen.getByLabelText(language === 'en' ? 'Message' : 'Mensaje')).toHaveValue('My manual text')
 })
