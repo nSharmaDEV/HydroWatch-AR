@@ -17,7 +17,7 @@ test('icon issue buttons, date controls and only explicitly confirmed editable w
   expect(screen.queryByRole('button', { name: 'Edit wording: No water' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expect(screen.getByRole('heading', { level: 1, name: 'When and where' })).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'When, Where, + Action' })).toBeVisible()
   // Dates are always visible; no collapsed disclosure.
   expect(document.querySelector('details.request-optional')).toBeNull()
   expect(screen.getByLabelText('When did it begin? (optional)')).toHaveAttribute('type', 'date')
@@ -25,9 +25,6 @@ test('icon issue buttons, date controls and only explicitly confirmed editable w
   fireEvent.change(screen.getByLabelText('Is it ongoing? (optional)'), { target: { value: 'No' } })
   expect(screen.getByLabelText('When did it end? (optional)')).toBeEnabled()
   fireEvent.change(screen.getByLabelText('When did it begin? (optional)'), { target: { value: '2026-10-20' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expect(screen.getByRole('heading', { level: 1, name: 'What should they do?' })).toBeVisible()
-  expect(screen.getByRole('button', { name: /Add a photo or document/ })).toBeVisible()
   // The usual two requests start ticked; they are not free-edited.
   expect(screen.getByRole('checkbox', { name: 'Restore service' })).toBeChecked()
   expect(screen.getByRole('checkbox', { name: 'Share an update' })).toBeChecked()
@@ -36,6 +33,9 @@ test('icon issue buttons, date controls and only explicitly confirmed editable w
   fireEvent.click(screen.getByRole('checkbox', { name: 'Share an update' }))
   fireEvent.click(screen.getByRole('checkbox', { name: 'Something else' }))
   fireEvent.change(screen.getByLabelText('Edit request: Something else'), { target: { value: 'Please restore service when possible' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expect(screen.getByRole('heading', { level: 1, name: 'Your details' })).toBeVisible()
+  expect(screen.getByRole('button', { name: /Add a photo or document/ })).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
   const message = (await screen.findByLabelText<HTMLTextAreaElement>('Message')).value
    expect(message).not.toContain('Your report:')

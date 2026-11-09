@@ -20,7 +20,7 @@ test('a saved draft opens as one summary card that continues at the saved step',
   expect(within(card).getByText(/A charge appears more than once/)).toBeVisible()
   expect(within(card).getByText(/Charged twice in October\./)).toBeVisible()
   expect(within(card).getByText('1908 SW Huntwick Ave')).toBeVisible()
-  expect(within(card).getByText('Step 2 of 4 · When and where')).toBeVisible()
+  expect(within(card).getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
   // No empty disclosure for drafts that have nothing extra saved.
   expect(screen.queryByText('Original issue')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Delete draft' })).toHaveClass('text-button')

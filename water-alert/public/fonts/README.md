@@ -13,3 +13,14 @@ Unmodified font and license from `@fontsource/montserrat@5.2.6`:
 
 Served locally, with no runtime request to a font service. See
 `montserrat-LICENSE.txt` for the SIL Open Font License 1.1.
+
+## Body-font trial
+
+Noto Sans normal, variable weights 400–700, Latin WOFF2 (Google Fonts v42),
+is used for non-heading interface text in English and Spanish. Existing heading
+families and logo artwork are preserved. Size and line-spacing rules are unchanged.
+The font is self-hosted; no runtime Google Fonts requests are made.
+
+- Font: https://fonts.gstatic.com/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7duw.woff2
+- License source: https://github.com/google/fonts/blob/main/ofl/notosans/OFL.txt
+- Local license: `noto-sans-LICENSE.txt` (SIL Open Font License 1.1).

@@ -1,0 +1,15 @@
+/* Body-font trial: local Latin Noto Sans covers English and Spanish.
+   Keep heading families and existing logo artwork unchanged. */
+@font-face {
+  font-family: 'Noto Sans';
+  src: url('/fonts/noto-sans-latin-400-700-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+:root { --body-font: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-family: var(--body-font); }
+h1, h2, h3, h4, h5, h6 { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+button, input, select, textarea { font-family: inherit; }
+.wave-marquee { font-family: var(--body-font); }
+/* Let enlarged navigation labels wrap as a group rather than widen the page. */
+.header-inner { flex-wrap: wrap; }

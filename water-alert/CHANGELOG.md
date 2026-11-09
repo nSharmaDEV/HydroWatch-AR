@@ -8,6 +8,67 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-09 — Shorter remaining Help screens
+
+- Removed repeated supplier and “Not sent yet” lines from screens 2–4, the
+  timing/location and reply-detail introductions, and the review email's repeated
+  title, Edit answers link and introductory sentence in English and Spanish.
+  Reduced title-to-content spacing; answers remain editable through the step bar.
+  Kept recipient identity in the email/contact panel, source controls, sending
+  safeguards and sample warnings. Local change only; not deployed or sent.
+
+### 2026-11-09 — Shorter first Help screen
+
+- Removed repeated supplier/phone text and the issue-selection introduction from
+  screen 1 in English and Spanish. Tightened first-screen spacing and the optional
+  text box without reducing font sizes. Contact options remain on Review and send;
+  fictional sample warnings remain visible. The app header can wrap at enlarged
+  text sizes rather than overflow horizontally. Local change, not deployed.
+
+### 2026-11-09 — Noto Sans body-font trial
+
+- Tried self-hosted Noto Sans for non-heading text and form controls, retaining
+  existing heading families and WAVE logo artwork. Includes Latin English/Spanish
+  characters and weights 400–700, with swap fallback and no runtime font-service
+  request. Existing size and spacing rules remain unchanged. Local trial only;
+  not deployed.
+
+### 2026-11-09 — Compact inline Help steps
+
+- Fit the smaller step bar between Back and Open History inside the card on
+  desktop; narrow screens wrap it below. Removed visible saved-confirmation text
+  while retaining its accessible status and visible saving/error feedback.
+  Local layout change only; save behavior is unchanged.
+
+### 2026-11-09 — Step navigation inside Help card
+
+- Moved the four-step navigation into the white card below Back and save/history
+  controls on all Help screens, removing the separate bar above the card. Kept
+  clickable steps, English/Spanish and mobile wrapping. Local change only.
+
+### 2026-11-09 — Compact Help card controls
+
+- Moved Back into the card's top left and the existing save status/Open History
+  controls into its top right on all four Help screens. Removed the separate
+  control row above the steps to bring content upward. Save wording and behavior
+  remain unchanged; long content still scrolls naturally. Local change only.
+
+### 2026-11-09 — Approved Help design implemented
+
+- Applied the approved design preview to the active Help flow: clickable four-step
+  navigation, flat navy/teal controls, equal desktop question columns and stacked
+  mobile layouts. Actions now accompany timing/location on screen 2; optional
+  personal details, documents, prior attempts and questions occupy screen 3.
+- Review shows the full editable subject/message beside checked contact options,
+  one primary email-app handoff and secondary copy/call actions. Records and tools
+  use supporting disclosures; configured account sending stays separately opt-in.
+- Preserved English/Spanish, existing draft keys and saves, manual edits, source
+  provenance, attachment limits and explicit outcome recording. Opening an app is
+  not sending, verified delivery or resolution. Sample sending remains disabled.
+- Local build passed; 44 synthetic workspace/save/export browser checks passed.
+  Unit suite: 803 passed, with two unrelated annual-report disclaimer assertions
+  also failing on pristine HEAD. No deployment or real sending.
+
 ### 2026-11-08 — Compact report findings chip
 
 - Removed the separate supplier-card report callout and “See the issues” action.

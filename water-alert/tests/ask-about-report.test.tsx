@@ -12,9 +12,9 @@ test('Ask about this starts a report question with the finding quoted and cited'
   expect(await screen.findByRole('button', { name: 'Ask about a water report' })).toHaveAttribute('aria-pressed', 'true')
   expect((screen.getByLabelText('Your question') as HTMLTextAreaElement).value).toContain('Failed to provide Public Education Notice')
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(screen.getByRole('checkbox', { name: 'Tell me whether this has been resolved' })).toBeChecked()
   expect(screen.getByRole('checkbox', { name: 'Send me a copy of any notice about it' })).toBeChecked()
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
   const body = (screen.getByLabelText('Message') as HTMLTextAreaElement).value
   expect(body).toContain('I’m writing with a question about your annual water quality report.')

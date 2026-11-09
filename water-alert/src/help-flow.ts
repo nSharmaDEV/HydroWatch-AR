@@ -20,9 +20,9 @@ export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
 /** Screen titles, shared by Help and History. */
 export const HELP_STEP_TITLES: Partial<Record<HelpStep, [string, string]>> = {
   choose: ['What’s wrong?', '¿Qué pasa?'],
-  details: ['When and where', 'Cuándo y dónde'],
-  response: ['What should they do?', '¿Qué deben hacer?'],
-  send: ['Send it', 'Envíalo'],
+  details: ['When, Where, + Action', 'Cuándo, dónde y acción'],
+  response: ['Your details', 'Tus datos'],
+  send: ['Review and send', 'Revisar y enviar'],
 }
 /** "Step 2 of 4 · When and where" for a draft's current screen. */
 export function stepLabel(d: HelpDraft, language: 'en' | 'es') {

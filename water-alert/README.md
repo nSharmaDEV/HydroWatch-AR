@@ -213,23 +213,34 @@ not verify production feeds or device delivery. Nothing deployed or sent.
 
 ## Advisory help
 
-Help uses four short screens (since November 9, 2026). Every answer either enters
-the email or decides where it goes. There are no folding form sections.
+Help uses four screens with clickable step navigation (since November 9, 2026).
+The first three use equal desktop columns, stacked left then right on mobile.
+Back and save/history controls sit inside the card's top left and top right,
+respectively. Compact step navigation sits between Back and Open History on
+desktop and wraps below on narrower screens. The saved confirmation is available
+to assistive technology without occupying visible space; saving/error feedback
+remains visible.
+Every answer either enters the email or decides where it goes.
 1. **What's wrong?** Issue tiles, 2–4 observation checkboxes and "Anything else?"
    (for Other: "What happened?"). An observation or a description is required.
-   Live suppliers with a phone show "Prefer to call?" beside the supplier name.
+    The first screen omits repeated supplier/contact and issue-introduction text;
+    checked contact options remain available on Review and send.
    Advisory asks "My water service is also affected" as one more checkbox.
    "Ask about a water report" appears only for suppliers whose newest report is
    hand-checked and lists findings.
-2. **When and where.** Address where it happened (the first saved location),
+2. **When, Where, + Action.** Address where it happened (the first saved location),
    optional account number, then dates (an invalid range disables Continue) or,
-   for bills, which bill and amount. Service and quality add how often.
-3. **What should they do?** The usual one or two requests start ticked the first
-   time; the resident can untick them. Anything else to ask, what they already
-   tried, name, how to reach them and attachments.
-4. **Send it.** A wider card (up to 1100px): the editable email (To, Subject,
-   Message, **Records** popup with required records locked, cited sources, stale
-   warning, Update/Download buttons with text labels) beside **How to send it**.
+    for bills, which bill and amount. Service and quality add how often. Actions
+    and optional action details sit on the right. The usual requests start ticked
+    on first entry; deliberately unticked choices stay unticked on revisits.
+3. **Your details.** Optional name, reply contact and attachments on the left;
+    prior attempts and additional questions on the right, with contextual prompts.
+4. **Review and send.** A card up to 1144px wide: the full editable subject and
+    message beside **How to send it**. Open in email app is the primary handoff;
+    copy and call are secondary. Opening an app is not sending or delivery proof.
+    Included records and Downloads and tools are supporting disclosures. Required
+    evidence stays locked, exact citations remain available, and manual edits are
+    preserved. Configured account sending remains a separate optional disclosure.
 
 The email follows public complaint-letter guidance (FTC sample letter, CCW
 complaint-letter tool, Arkansas AG and PSC complaint pages): who and where (with
@@ -241,12 +252,11 @@ number when given. The call script ("What to say when you call") reuses the same
 sentences. Nothing threatens action or claims a violation or safety status.
 
 Older drafts open on the screen that now holds their answers: `experience` →
-What's wrong; `billing`/`timing`/`where` → When and where; `review`/`confirm`/
-`records` → Send it. During Help the nav highlights the tab it was opened from.
-Desktop layout targets 1280×800 and 1440×780 without page scrolling for the
-synthetic fixture in English and Spanish. Long custom wording, attachment lists
-or the advisory "service also affected" branch can still add height. Mobile and
-enlarged text scroll naturally rather than clipping controls.
+What's wrong; `billing`/`timing`/`where` → When, Where, + Action;
+`review`/`confirm`/`records` → Review and send. During Help the nav highlights the
+tab it was opened from. Desktop checks cover 1280×800 and 1440×780 in English and
+Spanish, with responsive checks down to 320px and enlarged text. All screens
+scroll naturally; long email content is not clipped into a nested editor scroller.
 
 ### Did you send it? and follow-up
 

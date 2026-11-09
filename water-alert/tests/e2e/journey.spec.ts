@@ -663,7 +663,7 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await expect(page.locator('.request-progress')).toContainText('Step 3 of 4')
   await page.getByRole('button', { name: 'Write my email', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Send it', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Review and send', exact: true })).toBeVisible()
   await expect(page.getByRole('textbox', { name: 'Message', exact: true })).not.toHaveValue('')
   await expect(page.getByText('Sample — fictional. Sending disabled.', { exact: true })).toBeVisible()
   const sendIt = page.getByRole('region', { name: 'How to send it', exact: true })

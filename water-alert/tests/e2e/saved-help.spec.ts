@@ -26,7 +26,8 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
     if (await page.locator('.request-review-email').count()) {
       expect(await page.locator('.request-message-editor').evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16)
     }
-    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(801)
+    // The approved full email scrolls with the document, not inside a clipped editor.
+    if (await page.locator('.request-message-editor').count()) expect(await page.locator('.request-message-editor').evaluate(el => el.scrollHeight <= el.clientHeight + 2)).toBe(true)
   }
   await page.goto('/')
   await page.getByRole('button', { name: language === 'en' ? 'Places' : 'Lugares', exact: true }).click()
@@ -66,6 +67,7 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
   if (outputs) {
     const marker = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
+    await page.locator('.help-downloads-disclosure > summary').click()
     for (const [label, filename] of [[language === 'en' ? 'Download email' : 'Descargar correo', 'sample-water-email.txt'], [language === 'en' ? 'Download report' : 'Descargar reporte', 'sample-water-report.txt']]) {
       const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: label, exact: true }).click()])
       expect(download.suggestedFilename()).toBe(filename)

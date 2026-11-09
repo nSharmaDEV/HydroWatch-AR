@@ -35,6 +35,33 @@ shown as written, never narrowed to an address.
 
 ## Screens in this set
 
+### Four-screen Help preview (November 9, 2026)
+
+[`wave-help-four-screen.html`](wave-help-four-screen.html) is a clickable,
+English-only design preview, separate from the working app. It covers **What's
+wrong?**, **When, Where, + Action**, **Your details**, and **Review and send**.
+Issue-specific prompts feed an editable fictional email. Step navigation and
+the **Phone preview** toggle let reviewers inspect the desktop and stacked
+mobile layouts. Answers and draft edits exist only in tab memory and reset on
+reload; returning to earlier steps preserves manual email edits.
+
+Use made-up information only. Contacts are fictional; email, copy, call,
+attachment, record, download and reminder controls are simulated. No external
+contact, upload, persistent storage or live-app API is used. This preview is not
+shipped UI and does not change the app’s English/Spanish behavior.
+
+Serve from the **repository root** so the existing logo asset resolves:
+
+```sh
+python3 -m http.server 8773 --bind 127.0.0.1
+# http://127.0.0.1:8773/docs/wireframes/wave-help-four-screen.html
+```
+
+With that server running and the app’s Playwright/Chromium installed, run
+`node --test docs/wireframes/wave-help-four-screen.test.mjs`. Local checks cover
+navigation, contextual prompts, edit retention, simulated actions and responsive
+layout at 1440, 390 and 320 pixels. They do not verify production or delivery.
+
 ### Observation screen reflow (October 25, 2026)
 
 [`wave-observation-screen-wireframe.html`](wave-observation-screen-wireframe.html)

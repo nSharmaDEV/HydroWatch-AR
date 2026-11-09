@@ -10,6 +10,7 @@ import { reportQuestion } from './report-findings'
 import { blankRequest, generateMessage, type HelpDraft, type HelpRequest, type HelpStep } from './help-requests'
 import { downloadText, helpApi, listRequests, saveRequest } from './help-client'
 import './requests.css'
+import './help-four-screen.css'
 import { answerFingerprint } from './help-outputs'
 import { localizeDraft, updateDraft } from './help-draft'
 import { exportedText } from './help-exports'
@@ -82,7 +83,7 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
     let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' || value === 'send' ? 2 : 1 }
     if (value === 'review' || value === 'send') { const { sources, context, evidence } = factPatch(relevantFacts(draft)); patch = { ...patch, sources, context, evidence } }
     // The usual requests for this issue start ticked the first time; the resident can untick them.
-    if (value === 'response' && helpStep(draft) === 'details' && !Object.keys(draft.wording?.response ?? {}).length) patch = { ...patch, wording: { report: draft.wording?.report ?? {}, response: defaultRequests(draft.issue, language) } }
+    if (value === 'details' && helpStep(draft) === 'choose' && !Object.keys(draft.wording?.response ?? {}).length) patch = { ...patch, wording: { report: draft.wording?.report ?? {}, response: { ...defaultRequests(draft.issue, language), details: '' } } }
     const path = helpPath(draft)
     changeStep(() => {
       // Moving between steps is not an edit: keep a confirmed send so Back and forward cannot send twice.
@@ -118,11 +119,12 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
   const extras = <section className="request-extras" aria-label={say('Add a photo or document', 'Añade una foto o documento')}>
       <button className="request-attachment-button secondary" disabled={readingFiles} onClick={() => fileInput.current?.click()}><span aria-hidden="true">＋</span>{say('Add a photo or document', 'Añade una foto o documento')}</button>
       <label className="sr-only">{say('Attachments (optional)', 'Archivos adjuntos (opcional)')}<input ref={fileInput} type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" multiple disabled={readingFiles} onChange={e => void files(e.currentTarget)} /></label>
-      {readingFiles ? <p role="status">{say('Reading files…', 'Leyendo archivos…')}</p> : null}
+       <p className="quiet-note">{say('Optional: up to 3 PDF, PNG, JPG or text files, 1 MB total. Avoid sensitive account or medical details. Attach files yourself when using your email app.', 'Opcional: hasta 3 archivos PDF, PNG, JPG o texto, 1 MB en total. Evita datos de cuenta o médicos. Adjunta los archivos tú al usar tu app de correo.')}</p>
+       {readingFiles ? <p role="status">{say('Reading files…', 'Leyendo archivos…')}</p> : null}
       {draft.attachments.map(a => <p key={a.id} className="request-file-row"><span aria-hidden="true">▤</span> {a.name} ({a.type}) — {say('Ready', 'Listo')} <button className="text-button" aria-label={`${say('Remove attachment', 'Eliminar archivo')}: ${a.name}`} onClick={() => edit({ attachments: draft.attachments.filter(f => f.id !== a.id) })}>{say('Remove', 'Eliminar')}</button></p>)}
        </section>
   const step = helpStep(draft), path = helpPath(draft), index = path.indexOf(step)
-  const topLine = <div className="request-topline"><button className="back" aria-label={say('Back', 'Atrás')} disabled={sending} onClick={() => index > 0 ? void stage(path[index - 1]) : void leave(onBack)}><Icon name="chevron-left" size={18} />{say(index ? 'Back to previous step' : 'Back', index ? 'Volver al paso anterior' : 'Atrás')}</button><div className="request-actions"><p role="status">{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p><button className="text-button" onClick={() => void leave(() => onHistory(draft.id))}>{say('Open History', 'Abrir Historial')}</button></div></div>
+   const topLine = <div className="request-topline"><button className="back" aria-label={say('Back', 'Atrás')} disabled={sending} onClick={() => index > 0 ? void stage(path[index - 1]) : void leave(onBack)}><Icon name="chevron-left" size={18} />{say(index ? 'Back to previous step' : 'Back', index ? 'Volver al paso anterior' : 'Atrás')}</button><div className="request-actions"><p role="status" className={saving === 'saved' ? 'sr-only' : undefined}>{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p><button className="text-button" onClick={() => void leave(() => onHistory(draft.id))}>{say('Open History', 'Abrir Historial')}</button></div></div>
   return <section ref={stepContent} className="request-workspace request-guided-workspace">
       <GuidedHelp topLine={topLine} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} edit={edit} changeFacts={facts => edit(factPatch(facts))} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
     {sent ? <p role="status">{say('Message accepted by the email processor, not confirmed delivered or resolved. Open History for updates.', 'Mensaje aceptado por el procesador, no confirma entrega ni solución. Abre Historial para ver actualizaciones.')}</p> : null}

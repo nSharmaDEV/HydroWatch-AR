@@ -48,26 +48,27 @@ export function SendOptions({ draft, language, sample, blocked, copy, record }: 
       {o.otherListings?.map(l => <span key={l.email}> {say(`The ${l.source === 'ADH' ? 'ADH directory' : 'EPA record'} lists a different address (${l.email}); WAVE does not use it.`, `El ${l.source === 'ADH' ? 'directorio de ADH' : 'registro de la EPA'} indica otra dirección (${l.email}); WAVE no la usa.`)}</span>)}
     </p>
   }
-  function row(o: SendOption, escalation = false) {
+  function row(o: SendOption, escalation = false, lead = true) {
     const mail = !sample && o.email ? mailtoUrl(o.email, draft.subject, draft.body) : undefined
     const script = callScript(draft, language)
     if (escalation) return <article key={o.route} className="send-option send-option-next" aria-label={o.name}>
-      <p><span className="send-option-badge-next">{say('Not resolved?', '¿No se resolvió?')}</span> {say(`You can also contact ${supplierDisplayName(o.name)}`, `También puedes contactar a ${supplierDisplayName(o.name)}`)}{o.phone ? ` · ${o.phone}` : ''}</p>
+      <p><span className="send-option-badge-next">{say('Need another contact?', '¿Necesitas otro contacto?')}</span> {say(`You can also contact ${supplierDisplayName(o.name)}`, `También puedes contactar a ${supplierDisplayName(o.name)}`)}{o.phone ? ` · ${o.phone}` : ''}</p>
       {sample ? null : <div className="send-option-actions">
         {o.dial ? blocked ? <button className="text-button" disabled>{say('Call', 'Llamar')}</button> : <a className="text-button" href={`tel:${o.dial}`} onClick={() => ask(o, 'called')} aria-label={`${say('Call', 'Llamar')} ${o.phone}`}>{say('Call', 'Llamar')}</a> : null}
         {o.formUrl ? <button className="text-button" disabled={blocked} onClick={() => void openForm(o)}>{say('Copy message & open form', 'Copiar mensaje y abrir formulario')}</button> : null}
       </div>}
     </article>
     return <article key={o.route} className={`send-option${o.recommended ? ' send-option-recommended' : ''}`} aria-label={o.name}>
-      {o.recommended ? <p className="send-option-badge">★ {say('Recommended', 'Recomendado')}</p> : escalation ? <p className="send-option-badge send-option-badge-next">{say('If this isn’t resolved', 'Si no se resuelve')}</p> : null}
       <h3>{supplierDisplayName(o.name)}</h3>
       <p className="send-option-contact">{[o.email?.toLowerCase(), o.phone].filter(Boolean).join(' · ') || (o.formUrl ? say('Official online form', 'Formulario oficial en línea') : say('No checked contact on file', 'Sin contacto verificado'))}{o.emailKind === 'staff' ? <span className="quiet-note"> — {say('a staff member’s listed address', 'dirección de un empleado listada')}</span> : null}</p>
       {o.confirmedOn ? <p className="quiet-note send-option-confirmed">{say(`Confirmed by WAVE on ${readableDate(o.confirmedOn, language)}`, `Confirmado por WAVE el ${readableDate(o.confirmedOn, language)}`)}</p> : null}
-      {sample ? <p className="quiet-note request-sample">{say('Sample — sending disabled.', 'Ejemplo — envío desactivado.')}</p> : <div className="send-option-actions">
-        {o.email ? mail && !blocked ? <a className="primary" href={mail.url} onClick={() => ask(o, 'emailed')}><Icon name="mail" size={18} />{say('Open in email app', 'Abrir en app de correo')}</a> : <button className="primary" disabled><Icon name="mail" size={18} />{say('Open in email app', 'Abrir en app de correo')}</button> : null}
+      {sample ? <><p className="quiet-note request-sample">{say('Sample — sending disabled.', 'Ejemplo — envío desactivado.')}</p><div className="send-option-actions"><button className={lead ? 'primary' : 'secondary'} disabled><Icon name="mail" size={18} />{say('Open in email app', 'Abrir en app de correo')}</button>{lead ? <button className="secondary" disabled={blocked} onClick={() => void copy()}><Icon name="file-text" size={18} />{say('Copy email', 'Copiar correo')}</button> : null}</div></> : <div className="send-option-actions">
+        {o.email ? mail && !blocked ? <a className={lead ? 'primary' : 'secondary'} href={mail.url} onClick={() => ask(o, 'emailed')}><Icon name="mail" size={18} />{say('Open in email app', 'Abrir en app de correo')}</a> : <button className={lead ? 'primary' : 'secondary'} disabled><Icon name="mail" size={18} />{say('Open in email app', 'Abrir en app de correo')}</button> : null}
+        {lead ? <button className="secondary" disabled={blocked} onClick={() => void copy()}><Icon name="file-text" size={18} />{say('Copy email', 'Copiar correo')}</button> : null}
         {o.dial ? blocked ? <button className="secondary" disabled><Icon name="phone" size={18} />{say('Call', 'Llamar')}</button> : <a className="secondary" href={`tel:${o.dial}`} onClick={() => ask(o, 'called')} aria-label={`${say('Call', 'Llamar')} ${o.phone}`}><Icon name="phone" size={18} />{say('Call', 'Llamar')}</a> : null}
         {o.formUrl ? <button className="secondary" disabled={blocked} onClick={() => void openForm(o)}><Icon name="external-link" size={18} />{say('Copy message & open form', 'Copiar mensaje y abrir formulario')}</button> : null}
       </div>}
+      <p className="quiet-note send-handoff-note">{say('Opening an app does not send anything. WAVE cannot confirm delivery or a reply.', 'Abrir una app no envía nada. WAVE no puede confirmar la entrega ni una respuesta.')}</p>
       {!sample && o.email && mail && !mail.full ? <p className="quiet-note">{say('This message is too long for an email link. Copy it and paste it into the email.', 'El mensaje es demasiado largo para un enlace de correo. Cópialo y pégalo en el correo.')}</p> : null}
       {!sample && o.email && draft.attachments.length ? <p className="quiet-note">{say('Attach your photos or documents in your email app; email links cannot include files.', 'Adjunta tus fotos o documentos en tu app de correo; los enlaces de correo no incluyen archivos.')}</p> : null}
       {o.route === 'provider' && !o.email && !sample ? <p className="quiet-note">{o.dial ? say('No checked email on file — WAVE will not guess one. Call, or copy the message for their website or office.', 'No hay correo verificado; WAVE no lo adivina. Llama o copia el mensaje para su sitio web u oficina.') : say('WAVE has no checked contact for this system yet. Check your bill for the customer-service number.', 'WAVE aún no tiene un contacto verificado para este sistema. Revisa tu factura para el número de servicio al cliente.')}</p> : null}
@@ -78,7 +79,7 @@ export function SendOptions({ draft, language, sample, blocked, copy, record }: 
     <h2 id="send-options-heading">{say('How to send it', 'Cómo enviarlo')}</h2>
     <p className="quiet-note send-options-note">{say('You send it yourself. WAVE does not send, call or file anything, and cannot confirm delivery or a reply.', 'Tú lo envías. WAVE no envía, llama ni presenta nada, y no puede confirmar la entrega ni una respuesta.')} <button ref={sourcesButton} className="text-button" aria-expanded={showSources} aria-controls="send-contact-sources" onClick={() => setShowSources(!showSources)}>{say('Contact sources', 'Fuentes de contacto')}</button></p>
     {blocked ? <p className="quiet-note">{say('Finish the subject and message first; replace any bracketed placeholders.', 'Primero completa el asunto y el mensaje; reemplaza los campos entre corchetes.')}</p> : null}
-    {/* While the resident answers "Did you send it?", the question replaces the cards so the screen never scrolls. */}
+    {/* Replace handoff cards with the resident's explicit outcome question; opening an app records nothing. */}
     {asked ? <div className="send-confirm" role="group" aria-labelledby="send-confirm-heading">
       <h3 id="send-confirm-heading">{asked.kind === 'called' ? say(`Did you reach ${asked.o.name}?`, `¿Pudiste hablar con ${asked.o.name}?`) : say(`Did you send it to ${asked.o.name}?`, `¿Lo enviaste a ${asked.o.name}?`)}</h3>
       <p className="quiet-note">{say('WAVE can’t see your email app, phone or the form, so it only saves what you tell it here.', 'WAVE no puede ver tu app de correo, teléfono ni el formulario; solo guarda lo que nos digas aquí.')}</p>
@@ -88,7 +89,7 @@ export function SendOptions({ draft, language, sample, blocked, copy, record }: 
         <button className="secondary" onClick={() => answer(null)}>{say('Not yet', 'Todavía no')}</button>
         <button className="secondary" onClick={() => answer('unreachable')}>{say('I couldn’t reach them', 'No pude comunicarme')}</button>
       </div>
-    </div> : <div className="send-option-grid">{primary.map(o => row(o))}{next ? row(next, true) : null}</div>}
+    </div> : <div className="send-option-grid">{primary.map((o, index) => row(o, false, index === 0))}{next ? row(next, true) : null}</div>}
     <div className="send-option-tools">{!sample && record && !asked && primary[0] ? <button className="text-button send-record-other" onClick={() => ask(primary[0], 'emailed')}>{say('Sent it another way? Record it', '¿Lo enviaste de otra forma? Regístralo')}</button> : null}
     </div>
     {showSources ? <div id="send-contact-sources" role="dialog" aria-label={say('Contact sources', 'Fuentes de contacto')} className="request-citations-popup send-contact-sources" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closeSources() } }}>

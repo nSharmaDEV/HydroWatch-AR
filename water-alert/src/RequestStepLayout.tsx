@@ -5,12 +5,12 @@ export function RequestStepLayout({ title, heading, action, supplier, status, pr
   title: string; heading: RefObject<HTMLHeadingElement | null>; action: ReactNode;
   supplier: string; status: ReactNode; progress: ReactNode; topLine?: ReactNode; children: ReactNode;
 }) {
-  return <div className="request-step-layout">
-    <div className="request-frame-topline">{topLine}{progress}</div>
+  return <div className="request-step-layout request-four-screen">
     <section className="request-card" aria-label={title}>
-      <header className="request-title-row"><h1 ref={heading} tabIndex={-1}>{title}</h1><div className="request-supplier-line"><p className="request-provider">{supplier}</p>{status}</div></header>
+      <div className="request-card-toolbar">{topLine}<div className="request-frame-topline">{progress}</div></div>
+      <header className="request-title-row"><h1 ref={heading} tabIndex={-1}>{title}</h1>{supplier || status ? <div className="request-supplier-line">{supplier ? <p className="request-provider">{supplier}</p> : null}{status}</div> : null}</header>
       <div className="request-card-body">{children}</div>
-      <div className="request-card-action">{action}</div>
+      {action ? <div className="request-card-action">{action}</div> : null}
     </section>
   </div>
 }

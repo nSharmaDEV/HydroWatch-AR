@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; form-action 'none'; object-src 'none'; base-uri 'none'">
+  <title>WAVE · Help flow design preview</title>
+  <link rel="icon" href="../../water-alert/public/icon-32.png">
+  <link rel="stylesheet" href="wave-help-four-screen.css">
+  <script src="wave-help-four-screen.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#screen-title-1">Skip to preview</a>
+  <header class="preview-bar">
+    <div><b>Design preview</b><span>Four-screen Help flow · November 9, 2026</span></div>
+    <div class="view-switch" role="group" aria-label="Preview size">
+      <button type="button" data-view="desktop" aria-pressed="true">Desktop preview</button>
+      <button type="button" data-view="phone" aria-pressed="false">Phone preview</button>
+    </div>
+  </header>
+  <p class="preview-warning">Fictional example only. Use made-up information. Nothing is sent, uploaded, copied, downloaded, or saved.</p>
+  <div id="prototype">
+    <div class="app-header">
+      <img src="../../water-alert/public/wave-logo.png" width="200" height="66" alt="WellPower: WAVE">
+      <span class="help-label">A little help with your next step</span>
+      <span class="prototype-tag">Prototype</span>
+    </div>
+    <main>
+      <div class="journey-top"><button type="button" class="text-button back" id="back"><span data-icon="chevron-left"></span> Back</button><span>Preview only · Not saved on this device</span></div>
+      <nav aria-label="Help steps" class="steps">
+        <button type="button" data-step="1" aria-current="step"><span class="step-number">1</span><span>What's wrong?</span></button>
+        <button type="button" data-step="2"><span class="step-number">2</span><span>When, where, + action</span></button>
+        <button type="button" data-step="3"><span class="step-number">3</span><span>Your details</span></button>
+        <button type="button" data-step="4"><span class="step-number">4</span><span>Review and send</span></button>
+      </nav>
+      <div class="outer-card">
+        <section class="screen" data-screen="1" aria-labelledby="screen-title-1">
+          <div class="screen-heading"><p class="supplier-reference">For <strong>Clearwater Example Water</strong><span class="fictional">Fictional supplier</span></p><h1 id="screen-title-1" tabindex="-1">What's wrong?</h1><p>Start with the issue. We’ll help you put it into words.</p></div>
+          <div class="columns">
+            <section class="issue-column" aria-labelledby="issue-heading">
+              <h2 id="issue-heading">What would you like help with?</h2>
+              <p class="hint">Choose the closest match.</p>
+              <div class="issue-grid">
+                <button type="button" class="issue" data-issue="advisory" aria-pressed="false"><span data-icon="triangle-alert"></span><span>Current advisory</span></button>
+                <button type="button" class="issue" data-issue="billing" aria-pressed="true"><span data-icon="receipt"></span><span>Bill or charge</span></button>
+                <button type="button" class="issue" data-issue="service" aria-pressed="false"><span data-icon="gauge"></span><span>Service interruption / low pressure</span></button>
+                <button type="button" class="issue" data-issue="quality" aria-pressed="false"><span data-icon="water"></span><span>Water-quality concern</span></button>
+              </div>
+              <div class="other-issues">
+                <button type="button" data-issue="report" aria-pressed="false"><span data-icon="file-text"></span><span>Ask about a water report</span><span data-icon="chevron-right"></span></button>
+                <button type="button" data-issue="other" aria-pressed="false"><span data-icon="ellipsis"></span><span>Other issue</span><span data-icon="chevron-right"></span></button>
+              </div>
+            </section>
+            <section aria-labelledby="observations-heading">
+              <h2 id="observations-heading">What looks wrong with the bill?</h2>
+              <p class="hint">Choose any that apply.</p>
+              <div id="observations" class="check-list"></div>
+              <label class="field" for="issue-detail"><span>Anything else? <small>Optional</small></span><textarea id="issue-detail" rows="4"></textarea></label>
+              <p class="hint field-hint">Only include what you know. You can edit the email later.</p>
+            </section>
+          </div>
+          <footer class="screen-footer"><span><span data-icon="mail"></span> You review the email before taking any action.</span><button type="button" class="primary" data-next="2">Continue <span data-icon="arrow-right"></span></button></footer>
+        </section>
+        <section class="screen" data-screen="2" aria-labelledby="screen-title-2" hidden>
+          <div class="screen-heading"><p class="supplier-reference">For <strong>Clearwater Example Water</strong><span class="fictional">Fictional supplier</span></p><h1 id="screen-title-2" tabindex="-1">When, Where, + Action</h1><p>Give them the details they need, and tell them what would help.</p></div>
+          <div class="columns">
+            <section aria-labelledby="where-heading"><h2 id="where-heading">When and where</h2><p class="hint">Leave anything you don’t know blank.</p><div id="context-fields" class="field-stack"></div></section>
+            <section aria-labelledby="action-heading"><h2 id="action-heading">What should they do?</h2><p class="hint">Choose the response you’d like.</p><div id="actions" class="check-list"></div><label class="field" for="action-detail"><span>Additional action details <small>Optional</small></span><textarea id="action-detail" rows="4"></textarea></label><p class="hint field-hint">Ask for a specific explanation or next step, in your own words.</p></section>
+          </div>
+          <footer class="screen-footer"><span>These details will help shape your email.</span><button type="button" class="primary" data-next="3">Continue <span data-icon="arrow-right"></span></button></footer>
+        </section>
+        <section class="screen" data-screen="3" aria-labelledby="screen-title-3" hidden>
+          <div class="screen-heading"><p class="supplier-reference">For <strong>Clearwater Example Water</strong><span class="fictional">Fictional supplier</span></p><h1 id="screen-title-3" tabindex="-1">Your details</h1><p>Add a way to reply, and anything that would help them understand.</p></div>
+          <div class="columns">
+            <section aria-labelledby="contact-heading"><h2 id="contact-heading">Who should they reply to?</h2><p class="hint">All details on this screen are optional.</p>
+              <div class="field-stack">
+                <label class="field" for="resident-name"><span>Your name <small>Optional</small></span><input id="resident-name" autocomplete="off" placeholder="The name you’d like to sign the message with." value="Alex Morgan"></label>
+                <label class="field" for="reply-contact"><span>Email or phone <small>Optional</small></span><input id="reply-contact" autocomplete="off" placeholder="An email address or phone number where you’d like a reply." value="alex@example.invalid"></label>
+                <div class="attachment"><h3>Add something helpful <small>Optional</small></h3><p class="hint">A bill, a photo, or earlier correspondence.</p><button type="button" class="secondary" data-mock="attachment"><span data-icon="plus"></span> Add photo or document</button><p class="hint">Preview only: no file is opened or uploaded. Files would not be sent automatically.</p></div>
+              </div>
+            </section>
+            <section aria-labelledby="background-heading"><h2 id="background-heading">A little more context</h2><p class="hint">It’s fine if this is your first time asking.</p><div class="field-stack">
+              <label class="field" for="attempts"><span>What have you already tried? <small>Optional</small></span><textarea id="attempts" rows="4" placeholder="Mention any calls or emails, approximate dates, who you contacted, and what they said or did. Leave this blank if you haven’t contacted anyone yet."></textarea></label>
+              <label class="field" for="questions"><span>Anything else to ask? <small>Optional</small></span><textarea id="questions" rows="4" placeholder="Add another question you want answered. For example, ask for a written explanation of the charge or a copy of any notice that applies to it."></textarea></label>
+            </div></section>
+          </div>
+          <footer class="screen-footer"><span><span data-icon="mail"></span> Next, read and edit your email.</span><button type="button" class="primary" data-next="4">Write my email <span data-icon="arrow-right"></span></button></footer>
+        </section>
+        <section class="screen review" data-screen="4" aria-labelledby="screen-title-4" hidden>
+          <div class="screen-heading"><p class="supplier-reference">For <strong>Clearwater Example Water</strong><span class="fictional">Fictional supplier</span></p><h1 id="screen-title-4" tabindex="-1">Review and send</h1><p>Make it sound like you. Then choose how you’d like to get in touch.</p></div>
+          <div class="columns">
+            <section class="email-column" aria-labelledby="email-heading">
+              <div class="section-title"><h2 id="email-heading">Your email</h2><button type="button" class="text-button" data-go="1">Edit answers</button></div>
+              <div class="email-paper">
+                <div class="email-to"><span>To</span><span>Clearwater Example Water<br><span class="hint">billing@example.invalid</span></span></div>
+                <label class="email-subject" for="email-subject"><span>Subject</span><textarea id="email-subject" rows="2"></textarea></label>
+                <label class="sr-only" for="email-message">Email message</label><textarea id="email-message" spellcheck="false"></textarea>
+              </div>
+              <p class="hint email-note">Editable fictional draft. Check the details and remove anything you don’t want to share.</p>
+              <div class="draft-update" id="draft-update" hidden><p>Your answers changed. Your email edits have been kept.</p><button type="button" class="text-button" id="rebuild">Replace email with updated answers</button></div>
+            </section>
+            <aside class="send-column" aria-labelledby="send-heading">
+              <h2 id="send-heading">Send it your way</h2><div class="supplier-contact"><h3>Clearwater Example Water</h3><p>Fictional billing office</p><div><span data-icon="mail"></span><span>billing@example.invalid</span></div><div><span data-icon="phone"></span><span>(501) 555-0142</span></div><span class="hint">Example contacts only · Not verified</span></div>
+              <button type="button" class="primary full" data-mock="email"><span data-icon="mail"></span> Open in email app</button>
+              <div class="secondary-actions"><button type="button" class="secondary" data-mock="copy"><span data-icon="file-text"></span> Copy email</button><button type="button" class="secondary" data-mock="call"><span data-icon="phone"></span> Call</button></div>
+              <p class="send-disclaimer">WAVE does not send this email or confirm delivery. In this preview, all contact actions are simulated.</p>
+              <details class="call-script"><summary>What to say when you call</summary><p id="call-text"></p><p class="hint">Fictional practice script. No call is placed.</p></details>
+              <div class="another-contact"><h3>Need another contact?</h3><p>Arkansas Attorney General</p><button type="button" class="text-button" data-mock="contact">View contact option <span data-icon="chevron-right"></span></button><p class="hint">Preview only; no agency is contacted.</p></div>
+              <p class="record-action">Sent it another way? <button type="button" class="text-button" data-mock="record">Record it</button></p>
+            </aside>
+          </div>
+          <div class="bottom-tools">
+            <details><summary><span data-icon="file-text"></span> Included records <span class="record-count">0</span></summary><p>No official records are attached to this fictional billing example. Preview inputs are not agency evidence. Annual-report findings, if used, would be dated historical evidence, not current safety assessments.</p></details>
+            <details><summary><span data-icon="file-down"></span> Downloads and tools</summary><p>These prototype controls show placement only. Nothing is downloaded or added to a calendar.</p><div class="tool-buttons"><button type="button" class="secondary" data-mock="download">Download email</button><button type="button" class="secondary" data-mock="download">Download summary</button><button type="button" class="secondary" data-mock="reminder">Add a reminder</button></div></details>
+          </div>
+        </section>
+      </div>
+      <p class="project-note">Independent, AI-assisted student project. Not an agency service. This English-language design preview does not replace the app’s English/Spanish flow.</p>
+    </main>
+  </div>
+  <div id="feedback" role="status" aria-live="polite" hidden></div>
+  <noscript><p>This clickable prototype needs JavaScript. It never connects to the working app.</p></noscript>
+</body>
+</html>

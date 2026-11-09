@@ -14,8 +14,8 @@ function Locations() {
 }
 /** Screen 2 ("When and where") holds a plain manual address field; nothing is preselected or looked up. */
 function expectWhere() {
-  expect(screen.getByText('Step 2 of 4 · When and where')).toBeVisible()
-  expect(screen.getByRole('heading', { level: 1, name: 'When and where' })).toBeVisible()
+  expect(screen.getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'When, Where, + Action' })).toBeVisible()
   expect(document.querySelector('details.request-optional')).toBeNull()
 }
 /** From screen 1, give a minimal report so Continue is enabled, then advance to screen 2. */
@@ -33,7 +33,8 @@ function expectOneCard(title: string, primary = true) {
   expect(cards[0].querySelector(':scope > .request-title-row h1')).toHaveTextContent(title)
   expect(cards[0].querySelector(':scope > .request-card-body')).not.toBeNull()
   const action = cards[0].querySelector(':scope > .request-card-action')
-  expect(action?.querySelector(primary ? 'button.primary' : 'button')).not.toBeNull()
+   if (primary) expect(action?.querySelector('button.primary')).not.toBeNull()
+   else expect(action).toBeNull()
   expect(cards[0].querySelector('.request-title-row button.primary')).toBeNull()
   expect(document.querySelector('.request-split, .request-panel')).toBeNull()
 }
@@ -45,18 +46,18 @@ test('shared composition is one bounded card per step, no legacy area field, and
   expect(screen.queryByLabelText('Affected area you know about (optional)')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('checkbox', { name: 'My usual water use is affected' }))
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expectOneCard('When and where')
+  expectOneCard('When, Where, + Action')
   expect(screen.queryByLabelText('Affected area you know about (optional)')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expectOneCard('What should they do?')
+  expectOneCard('Your details')
   const attachmentButton = screen.getByRole('button', { name: 'Add a photo or document' })
   expect(document.querySelector('.request-card-body')?.contains(attachmentButton)).toBe(true)
   expect(screen.queryByText('File types and limits')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
   // Sample send screen: the bottom action is a secondary "Copy email", never a primary send.
-  expectOneCard('Send it', false)
+  expectOneCard('Review and send', false)
   expect(document.querySelector('.request-card-action button.primary')).toBeNull()
-  expect(screen.getByRole('button', { name: 'Copy email' }).closest('.request-card-action')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'Copy email' }).closest('.send-options')).not.toBeNull()
   const composer = document.querySelector('.request-composer')!
   expect(composer).not.toBeNull()
   expect(composer.contains(screen.getByLabelText('Subject'))).toBe(true)
@@ -170,7 +171,7 @@ test('a saved address survives back and reload, and a removed address stays remo
   await waitFor(() => expect(screen.getByText('Saved on this device')).toBeVisible())
   view.unmount()
   render(<RequestWorkspace {...props} />)
-  expect(await screen.findByText('Step 2 of 4 · When and where')).toBeVisible()
+  expect(await screen.findByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
   expectWhere()
   expect(address()).toHaveValue('Community centre')
   expect(screen.queryByText(/Oak Street/)).not.toBeInTheDocument()
@@ -194,11 +195,11 @@ test('details, timing and where offer manual answers without preselection and ke
   const primary = screen.getByRole('button', { name: 'Continue' })
   expect(primary.closest('.request-card-action')).not.toBeNull()
   expect(primary.closest('.request-title-row')).toBeNull()
-  fireEvent.click(primary)
   // Quality pre-ticks only its first usual request.
   expect(screen.getByRole('checkbox', { name: 'Investigate the reported concern' })).toBeChecked()
   expect(screen.getByRole('checkbox', { name: 'Clarify applicable water-use instructions' })).not.toBeChecked()
   expect(screen.getByRole('checkbox', { name: 'Share an update' })).not.toBeChecked()
+  fireEvent.click(primary)
   expect(screen.getByRole('button', { name: 'Write my email' }).closest('.request-card-action')).not.toBeNull()
 })
 test('the flow address field never contacts Census; the location picker searches only on request', async () => {

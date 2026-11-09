@@ -17,7 +17,7 @@ const requests = {
   legal: [['Explain available help options', 'Explicar opciones de ayuda disponibles']],
   report: [['Tell me whether this has been resolved', 'Decirme si esto ya se resolvió'], ['Send me a copy of any notice about it', 'Enviarme una copia de cualquier aviso al respecto']],
 }
-/** The usual requests for an issue, ticked when the resident first reaches Your details. Observations are never preselected. */
+/** The usual requests, ticked on first entering context and action. Observations are never preselected. */
 export function defaultRequests(issue: keyof typeof requests, language: 'en' | 'es'): Record<string, string> {
   const keys = ['first', 'second'], i = language === 'es' ? 1 : 0
   return Object.fromEntries(requests[issue].slice(0, issue === 'quality' ? 1 : 2).map(([en, es], n) => [keys[n], [en, es][i]]))

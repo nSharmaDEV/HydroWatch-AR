@@ -1,0 +1,134 @@
+/* Approved WAVE Help design. Scoped to the active flow; legacy/history styles
+   and the shared application stylesheet remain unchanged. */
+.request-four-screen { --help-line: #dbe5e9; --help-muted: #506573; gap: 18px; }
+.request-four-screen .request-frame-topline, .request-four-screen .request-card { width: min(1144px, 100%); }
+.request-four-screen .request-frame-topline { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.request-four-screen .request-topline { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 12px; }
+.request-four-screen .request-topline > .request-actions { display: flex; width: auto; margin-left: auto; justify-content: end; align-items: center; flex-wrap: wrap; gap: 6px 16px; }
+.request-four-screen .request-frame-topline .request-topline > .request-actions { grid-column: auto; grid-row: auto; }
+.request-four-screen .request-frame-topline > .request-progress { grid-column: 1; grid-row: 1; }
+.request-four-screen .request-progress { display: block; margin: 0; width: 100%; }
+.request-four-screen .request-step-nav { position: static; inset: auto; z-index: auto; padding: 0; border: 0; background: transparent; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.request-four-screen .request-step-nav button { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 0 14px; border: 0; border-bottom: 2px solid var(--help-line); border-radius: 0; background: transparent; color: var(--help-muted); font: inherit; font-size: .9rem; font-weight: 600; text-align: left; }
+.request-four-screen .request-step-nav [aria-current="step"] { color: #06686e; border-bottom-color: #087f83; }
+.request-four-screen .request-step-number { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border: 1px solid #b6c7cf; border-radius: 50%; font-size: .85rem; }
+.request-four-screen .request-step-nav [aria-current] .request-step-number { background: #087f83; border-color: #087f83; color: #fff; }
+.request-four-screen .request-card { padding: 16px 32px 32px; gap: 16px; border-color: var(--help-line); box-shadow: none; }
+.request-four-screen .request-card > .request-topline { margin-bottom: -16px; }
+.request-four-screen .request-card > .request-frame-topline { width: 100%; margin: 0; }
+.request-four-screen .request-card-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 20px; }
+.request-four-screen .request-card-toolbar .request-topline { display: contents; }
+.request-four-screen .request-card-toolbar .request-topline > .back { grid-column: 1; grid-row: 1; white-space: nowrap; font-size: .8rem; }
+.request-four-screen .request-card-toolbar .request-topline > .request-actions { grid-column: 3; grid-row: 1; gap: 6px; font-size: .8rem; }
+.request-four-screen .request-card-toolbar .request-frame-topline { grid-column: 2; grid-row: 1; width: 100%; }
+.request-four-screen .request-card-toolbar .request-step-nav { gap: 10px; }
+.request-four-screen .request-card-toolbar .request-step-nav button { min-height: 44px; gap: 6px; padding: 6px 0; font-size: .72rem; line-height: 1.35; }
+.request-four-screen .request-card-toolbar .request-step-number { width: 22px; height: 22px; font-size: .72rem; }
+.request-four-screen .request-card-toolbar .request-actions > .text-button { font-size: .8rem; white-space: nowrap; }
+@media (max-width: 900px) {
+  .request-four-screen .request-card-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .request-four-screen .request-card-toolbar .request-topline > .request-actions { grid-column: 2; }
+  .request-four-screen .request-card-toolbar .request-frame-topline { grid-column: 1 / -1; grid-row: 2; }
+}
+.request-four-screen .request-card > .request-title-row { display: block; }
+.request-four-screen .request-card .request-title-row h1 { font-size: 1.85rem; margin: 0; line-height: 1.25; }
+.request-four-screen .request-card .request-title-row > .request-supplier-line { justify-content: start; text-align: left; }
+.request-four-screen .quiet-note { color: var(--help-muted); line-height: 1.6; }
+.request-four-screen .help-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: start; }
+.request-four-screen .help-column { display: grid; min-width: 0; gap: 18px; }
+.request-four-screen .help-column-right { border-left: 1px solid var(--help-line); padding-left: 36px; }
+.request-four-screen .help-column h2 { font-size: 1.15rem; line-height: 1.4; }
+.request-four-screen .help-column h2 + .quiet-note { margin-top: -10px; }
+.request-four-screen .request-card .request-issue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.request-four-screen .request-card .request-issue-choice { flex-direction: column; align-items: start; justify-content: center; min-height: 122px; padding: 16px; font-size: 1rem; line-height: 1.45; border: 1px solid #b6c7cf; border-radius: 8px; background: #fff; box-shadow: none; }
+.request-four-screen .request-card .request-issue-choice[aria-pressed="true"] { border: 2px solid #087f83; padding: 15px; background: #edf7f6; }
+.request-four-screen .request-card .request-issue-choice[aria-pressed="false"] { background: #fff; border-color: #b6c7cf; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.request-four-screen .request-card .request-issue-choice:nth-child(n+5) { flex-direction: row; align-items: center; justify-content: start; grid-column: 1 / -1; min-height: 56px; }
+.request-four-screen .request-card .request-issue-choice svg { width: 24px; height: 24px; }
+.request-four-screen .request-card .request-wording-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.request-four-screen .request-wording-choice { padding: 5px 12px; border: 1px solid var(--help-line); border-radius: 7px; }
+.request-four-screen .request-wording-choice.is-selected { background: #edf7f6; border-color: #b9d8d7; }
+.request-four-screen .request-wording-choice .checkbox-row { align-items: start; gap: 11px; line-height: 1.5; font-size: .95rem; font-weight: 400; }
+.request-four-screen input[type=checkbox] { accent-color: #087f83; margin-top: 2px; }
+.request-four-screen .request-fields label { line-height: 1.5; gap: 8px; }
+.request-four-screen .request-fields input:not([type=checkbox]), .request-four-screen .request-fields select { min-height: 48px; }
+.request-four-screen .request-fields textarea { min-height: 154px; height: auto; font-size: 1rem; line-height: 1.65; padding: 12px 14px; }
+.request-four-screen .request-fields textarea::placeholder, .request-four-screen .request-fields input::placeholder { color: #586d79; opacity: 1; }
+/* First screen: remove repeated introduction space, not readable text size. */
+.request-four-screen .request-card:has(.request-screen-choose) { gap: 16px; padding-bottom: 20px; }
+.request-four-screen .request-card:has(.request-screen-choose) .request-title-row h1 { margin-bottom: 0; }
+.request-four-screen .request-screen-choose .help-column { gap: 12px; }
+.request-four-screen .request-screen-choose .help-column h2 + .quiet-note { margin-top: 0; margin-bottom: 0; }
+.request-four-screen .request-screen-choose .request-description textarea { min-height: 120px; height: 120px; }
+.request-four-screen .request-screen-choose .request-issue-choice { min-height: 106px; }
+.request-four-screen .request-card:has(.request-screen-choose) .request-card-action { padding-top: 12px; }
+.request-four-screen .request-card .request-details-row, .request-four-screen .request-card .request-questions-details { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.request-four-screen .request-card-action { padding-top: 22px; border-top: 1px solid var(--help-line); }
+.request-four-screen .request-card-action .request-primary-action { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.request-four-screen .request-primary-action > .quiet-note { max-width: 50ch; font-size: .85rem; }
+.request-four-screen .request-card-action .request-primary-action > .primary { width: auto; min-width: 190px; min-height: 50px; display: inline-flex; justify-content: center; align-items: center; gap: 16px; white-space: nowrap; }
+.request-four-screen .primary, .request-four-screen .secondary { box-shadow: none; border-radius: 7px; text-decoration: none; }
+.request-four-screen .primary { background: #087f83; color: #fff; }
+.request-four-screen .secondary { background: #fff; color: #102e43; border: 1px solid #b6c7cf; }
+.request-four-screen .request-extras { display: grid; gap: 12px; margin: 4px 0 0; }
+.request-four-screen .request-attachment-button { border-style: solid; min-height: 50px; justify-content: start; gap: 12px; }
+.request-four-screen .request-extras .quiet-note { font-size: .82rem; }
+/* Review: email and sidebar share row 1. Supporting disclosures span row 2. */
+.request-four-screen .request-send-layout { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 28px; }
+.request-four-screen .request-review-card { display: contents; }
+.request-four-screen .request-review-card .request-review-email { grid-column: 1; grid-row: 1; padding: 0; border: 0; background: none; }
+.request-four-screen .help-email-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-right: 32px; }
+.request-four-screen .help-email-heading .text-button { font-size: .85rem; white-space: nowrap; }
+.request-four-screen .request-review-email > .quiet-note { margin: 6px 0 18px; }
+.request-four-screen .request-review-card .request-citation-control { top: 10px; right: 0; }
+.request-four-screen .request-review-email .request-output-email { border: 1px solid var(--help-line); border-radius: 8px; padding: 16px 20px; }
+.request-four-screen .request-review-card .request-review-email .request-subject { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--help-line); }
+.request-four-screen .request-subject textarea { min-height: 58px; border: 0; padding: 0; resize: none; overflow: hidden; font-weight: 600; }
+body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 460px; max-height: none; padding: 20px 0 0; line-height: 1.85; resize: none; overflow: hidden; border: 0; border-radius: 0; }
+.request-four-screen .request-review-update { grid-column: 1 / -1; display: grid; gap: 0; padding-top: 12px; border-top: 1px solid var(--help-line); }
+.request-four-screen .request-review-update details { padding: 8px 0; }
+.request-four-screen details > summary { min-height: 44px; padding-block: 10px; font-size: .9rem; }
+.request-four-screen .request-review-card .request-review-tools { margin-left: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+.request-four-screen .help-account-send { grid-column: 1 / -1; }
+.request-four-screen .request-records-popup { position: fixed; inset: 12dvh max(20px, calc((100vw - 900px)/2)) auto; width: auto; max-height: 75dvh; overflow: auto; }
+.request-four-screen .send-options { grid-column: 2; grid-row: 1; border-left: 1px solid var(--help-line); padding: 0 0 0 28px; gap: 16px; }
+.request-four-screen .request-card .send-options > h2 { position: static; width: auto; height: auto; clip-path: none; overflow: visible; white-space: normal; font-size: 1.15rem; }
+.request-four-screen .request-card .send-option { display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; gap: 12px; border: 0; background: none; border-radius: 0; }
+.request-four-screen .request-card .send-option h3 { font-size: 1rem; line-height: 1.5; }
+.request-four-screen .request-card .send-option .quiet-note { font-size: .82rem; line-height: 1.6; }
+.request-four-screen .send-option-contact { overflow-wrap: anywhere; font-size: .9rem; line-height: 1.6; }
+.request-four-screen .request-card .send-option-grid { gap: 24px; }
+.request-four-screen .request-card .send-option > .send-option-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: start; }
+.request-four-screen .request-card .send-option-actions > .primary { flex: 1 1 100%; justify-content: center; white-space: nowrap; }
+.request-four-screen .request-card .send-option-actions > .secondary { flex: 1 1 auto; justify-content: center; font-size: .85rem; }
+.request-four-screen .request-card .send-option-next { padding-top: 20px; border-top: 1px solid var(--help-line); font-size: .85rem; }
+.request-four-screen .send-option-next p { line-height: 1.7; }
+.request-four-screen .send-option-script { border-top: 1px solid var(--help-line); }
+.request-four-screen .request-card .send-option-script > summary { min-height: 44px; padding-top: 12px; }
+.request-four-screen .send-option-tools .text-button { font-size: .85rem; text-align: left; }
+@media (max-width: 767px) {
+  .request-four-screen .request-frame-topline { gap: 0; }
+  .request-four-screen .request-step-nav { gap: 8px; }
+  .request-four-screen .request-step-nav button { flex-direction: column; align-items: start; font-size: .72rem; gap: 8px; padding-block: 8px 12px; }
+  .request-four-screen .request-step-number { width: 25px; height: 25px; }
+  .request-four-screen .request-card { padding: 12px 18px 24px; gap: 24px; border-radius: 12px; }
+  .request-four-screen .request-card > .request-topline { margin-bottom: -12px; }
+  .request-four-screen .request-card .request-title-row h1 { font-size: 1.5rem; }
+  .request-four-screen .help-columns, .request-four-screen .request-send-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .request-four-screen .help-column-right, .request-four-screen .send-options { border-left: 0; border-top: 1px solid var(--help-line); padding: 26px 0 0; }
+  .request-four-screen .request-card .request-issue-choice { padding: 12px; min-height: 116px; font-size: .9rem; }
+  .request-four-screen .request-card .request-issue-choice[aria-pressed="true"] { padding: 11px; }
+  .request-four-screen .request-card-action .request-primary-action { flex-direction: column-reverse; align-items: stretch; gap: 14px; }
+  .request-four-screen .request-card-action .request-primary-action > .primary { width: 100%; }
+  .request-four-screen .request-topline { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  .request-four-screen .request-topline .request-actions { width: auto; justify-content: end; gap: 2px 10px; text-align: right; }
+  .request-four-screen .request-topline .request-actions > p { font-size: .75rem; }
+  .request-four-screen .request-topline .back { text-align: left; }
+  .request-four-screen .request-topline .request-actions > button { flex: none; padding: 0; font-size: .8rem; }
+  .request-four-screen .request-topline .back { font-size: .8rem; }
+  .request-four-screen .request-review-card .request-review-email, .request-four-screen .send-options { grid-column: 1; grid-row: auto; }
+  .request-four-screen .request-review-email .request-output-email { padding: 12px; }
+  .request-four-screen .request-review-update { order: 2; }
+  .request-four-screen .help-account-send { order: 3; }
+  .request-four-screen .request-records-popup { inset: 8dvh 12px auto; max-height: 80dvh; }
+}

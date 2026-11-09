@@ -8,43 +8,62 @@ import type { HelpRequest } from '../../src/help-requests'
 test.use({ reducedMotion: 'reduce' })
 
 async function expectFits(page: import('@playwright/test').Page) {
-  // One centred card per screen: 760px for questions, wider for the email beside the ways to send it.
+  // One centred card with equal question columns or a wider email column.
   const card = page.locator('.request-card')
   await expect(card).toHaveCount(1)
   await expect(page.locator('.request-split, .request-panel')).toHaveCount(0)
+  expect(await page.locator('.request-step-nav').evaluate(el => getComputedStyle(el).position)).toBe('static')
   const box = (await card.boundingBox())!, width = page.viewportSize()!.width
+  await expect(card.locator('.request-topline')).toBeVisible()
+  await expect(card.locator('.request-step-nav')).toBeVisible()
+  await expect(page.locator('.request-step-layout > .request-frame-topline')).toHaveCount(0)
+  await expect(page.locator('.request-frame-topline .request-topline')).toHaveCount(0)
+  const back = (await card.locator('.request-topline .back').boundingBox())!
+  const controls = (await card.locator('.request-topline .request-actions').boundingBox())!
+  expect(controls.x).toBeGreaterThan(back.x + back.width)
+  expect(Math.abs(controls.y - back.y)).toBeLessThan(12)
+  if (width > 900) {
+    const steps = (await card.locator('.request-step-nav').boundingBox())!
+    expect(steps.x).toBeGreaterThanOrEqual(back.x + back.width)
+    expect(steps.x + steps.width).toBeLessThanOrEqual(controls.x)
+    expect(Math.abs(steps.y - back.y)).toBeLessThan(16)
+  }
   const send = await page.locator('.request-screen-send').count()
-  expect(box.width).toBeLessThanOrEqual(send ? 1100.5 : 760.5)
+  expect(box.width).toBeLessThanOrEqual(1144.5)
   if (width > 800) expect(Math.abs(box.x + box.width / 2 - width / 2)).toBeLessThanOrEqual(1)
   expect(await card.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('1px')
-  // The primary action sits at the bottom of the card, full width.
-  const action = (await card.locator('.request-card-action .primary, .request-card-action .secondary').first().boundingBox())!
-  expect(action.y).toBeGreaterThan(box.y + box.height / 2)
-  expect(action.width).toBeGreaterThan(box.width * .8)
+  if (!send) {
+    const action = (await card.locator('.request-card-action .primary').boundingBox())!
+    expect(action.y).toBeGreaterThan(box.y + box.height / 2)
+    expect(action.width).toBeGreaterThanOrEqual(190)
+    const columns = card.locator('.help-column')
+    const left = (await columns.nth(0).boundingBox())!, right = (await columns.nth(1).boundingBox())!
+    expect(right.x).toBeGreaterThan(left.x + left.width)
+    expect(right.y).toBeCloseTo(left.y, 0)
+  }
   const composer = page.locator('.request-composer')
   if (await composer.count()) {
-    await expect(composer.locator('.request-subject input')).toBeVisible()
+    await expect(composer.locator('.request-subject textarea')).toBeVisible()
     expect((await composer.locator('.request-message-editor').boundingBox())!.height).toBeGreaterThanOrEqual(180)
     await expect(page.locator('.request-review-table')).toHaveCount(0)
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  // Desktop sizes: the whole step, including its button, fits without scrolling.
-  const layout = await page.evaluate(() => {
-    const card = document.querySelector('.request-card')!
-    const parents = []
-    for (let el: Element | null = card; el; el = el.parentElement) {
-      const style = getComputedStyle(el)
-      parents.push({ tag: el.tagName, class: el.className, bottom: el.getBoundingClientRect().bottom, padding: style.padding, margin: style.margin, minHeight: style.minHeight })
-    }
-    return { height: document.documentElement.scrollHeight, card: card.getBoundingClientRect().toJSON(), parents }
-  })
-  expect(layout.height, JSON.stringify(layout)).toBeLessThanOrEqual(page.viewportSize()!.height + 1)
-  expect(action.y + action.height).toBeLessThanOrEqual(page.viewportSize()!.height)
+  // Content scrolls naturally: long emails are fully visible, not a nested scroller.
+  if (send) expect(await page.locator('.request-message-editor').evaluate(el => el.scrollHeight <= el.clientHeight + 2)).toBe(true)
 }
 async function expectNarrow(page: import('@playwright/test').Page) {
   for (const width of [640, 390, 320]) {
     await page.setViewportSize({ width, height: 700 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    expect(await page.locator('.request-step-nav').evaluate(el => getComputedStyle(el).position)).toBe('static')
+    const back = (await page.locator('.request-card .request-topline .back').boundingBox())!
+    const controls = (await page.locator('.request-card .request-topline .request-actions').boundingBox())!
+    expect(controls.x).toBeGreaterThanOrEqual(back.x + back.width)
+    const columns = page.locator('.help-column')
+    if (await columns.count()) {
+      const left = (await columns.nth(0).boundingBox())!, right = (await columns.nth(1).boundingBox())!
+      expect(right.y).toBeGreaterThanOrEqual(left.y + left.height)
+    }
     if (await page.locator('.request-review-email').count()) {
       const subject = (await page.locator('.request-review-email .request-subject').boundingBox())!
       const editor = (await page.locator('.request-message-editor').boundingBox())!
@@ -100,6 +119,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     const first = await tiles.nth(0).boundingBox(), second = await tiles.nth(1).boundingBox()
     expect(Number.parseFloat(await tiles.first().evaluate(el => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16)
     expect(Number.parseFloat(await tiles.first().locator('svg').evaluate(el => getComputedStyle(el).width))).toBeGreaterThanOrEqual(24)
+    expect(await tiles.first().evaluate(el => getComputedStyle(el).boxShadow)).toBe('none')
+    expect(await tiles.first().evaluate(el => getComputedStyle(el).backgroundImage)).toBe('none')
     expect(second!.y).toBeCloseTo(first!.y, 0)
     expect(second!.x).toBeGreaterThan(first!.x + first!.width)
     await page.locator('.request-guided-workspace h1').focus()
@@ -108,6 +129,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await tiles.first().focus()
     expect(await tiles.first().evaluate(el => getComputedStyle(el).outlineStyle)).not.toBe('none')
     const capture = process.env.WAVE_HELP_CAPTURE_DIR && viewport.width === 1280 && language === 'en' && active && test.info().project.name === 'desktop'
+    const captureScreen = async (step: number) => {
+      if (!capture) return
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-${step}.png`, fullPage: true })
+      if (issue === 'billing') {
+        await page.setViewportSize({ width: 390, height: 844 })
+        await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-${step}-mobile.png`, fullPage: true })
+        await page.setViewportSize(viewport)
+      }
+    }
     const next = () => page.locator('.request-card-action .primary').click()
     const step = (n: number) => expect(page.locator('.request-progress')).toContainText(es ? `Paso ${n} de 4` : `Step ${n} of 4`)
     // Screen 1: what's wrong. No folding sections on any screen.
@@ -115,7 +146,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     if (issue !== 'other') await page.locator('.request-wording input[type=checkbox]').first().check()
     await page.getByRole('textbox', { name: issue === 'other' ? es ? '¿Qué pasó?' : 'What happened?' : es ? '¿Algo más? (opcional)' : 'Anything else? (optional)', exact: true }).fill('Synthetic resident issue, no actual submission')
     await expectFits(page)
-    if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-1.png` })
+    if (issue === 'billing') {
+      const continueBox = (await page.locator('.request-card-action .primary').boundingBox())!
+      expect(continueBox.y + continueBox.height).toBeLessThanOrEqual(viewport.height)
+      await expect(page.locator('.request-provider, .request-call-line')).toHaveCount(0)
+    }
+    await captureScreen(1)
     await expectNarrow(page)
     await page.setViewportSize(viewport)
     await page.evaluate(() => { document.documentElement.style.fontSize = '32px' })
@@ -135,18 +171,18 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       expect(await page.locator('input[type=date]').first().evaluate(el => getComputedStyle(el, '::-webkit-calendar-picker-indicator').opacity)).toBe('1')
     }
     await expectFits(page)
-    if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-2.png` })
+    await captureScreen(2)
     await expectNarrow(page)
     await page.setViewportSize(viewport)
-    await next()
-    // Screen 3: what they should do. The usual request starts ticked.
-    await step(3)
     await expect(page.locator('.request-wording input[type=checkbox]').first()).toBeChecked()
+    await next()
+    // Screen 3: optional personal details, prior attempts and additional questions.
+    await step(3)
     if (issue === 'billing') await page.getByRole('textbox', { name: es ? '¿Qué has intentado? (opcional)' : 'What have you already tried? (optional)', exact: true }).fill('Synthetic billing-desk question')
     await page.getByLabel(es ? 'Archivos adjuntos (opcional)' : 'Attachments (optional)', { exact: true }).setInputFiles({ name: 'synthetic.txt', mimeType: 'text/plain', buffer: Buffer.from('Synthetic attachment only') })
     await page.getByRole('textbox', { name: es ? 'Tu nombre (opcional)' : 'Your name (optional)', exact: true }).fill('Synthetic Resident')
     await expectFits(page)
-    if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-3.png` })
+    await captureScreen(3)
     await expectNarrow(page)
     await page.setViewportSize(viewport)
     await page.getByRole('button', { name: es ? 'Escribir mi correo' : 'Write my email', exact: true }).click()
@@ -154,6 +190,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await step(4)
     const activeRecords = active && !['billing', 'other'].includes(issue)
     if (activeRecords) {
+      await page.locator('.help-records-disclosure > summary').click()
       await page.locator('.request-records-button').click()
       await expect(page.locator('.request-review-record').first()).toContainText('Synthetic test incident')
       await expect(page.locator('.request-review-record a').first()).toHaveAttribute('href', SOURCES.ADH)
@@ -166,6 +203,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await expect(editor).toHaveValue(/SYN-0001/)
     await expect(editor).toHaveValue(/Synthetic Resident/)
     await expect(page.getByRole('tab')).toHaveCount(0)
+    await page.locator('.help-downloads-disclosure > summary').click()
     await expect(page.getByRole('button', { name: es ? 'Descargar reporte' : 'Download report', exact: true })).toBeVisible()
     expect((await editor.boundingBox())!.width).toBeGreaterThan(450)
     await expect(page.getByLabel(es ? 'Asunto' : 'Subject', { exact: true })).toBeVisible()
@@ -175,7 +213,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await expect(editor).not.toHaveValue(/WAVE references|Agency-reported problem:|\(optional\)/)
     await expect(page.getByRole('region', { name: es ? 'Cómo enviarlo' : 'How to send it', exact: true })).toBeVisible()
     await expectFits(page)
-    if (capture) await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-4.png` })
+    await captureScreen(4)
     await expectNarrow(page)
     if (capture && issue === 'billing') { await page.setViewportSize({ width: 390, height: 844 }); await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-send-mobile.png`, fullPage: true }) }
     await page.setViewportSize(viewport)
@@ -186,7 +224,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       const longMessage = 'SYNTHETIC long message, no actual submission.\n'.repeat(100)
       await editor.fill(longMessage)
       await expectFits(page)
-      expect(await editor.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true)
+      expect(await editor.evaluate(el => el.scrollHeight <= el.clientHeight + 2)).toBe(true)
       await editor.focus()
       await page.keyboard.press('End')
       await expect(editor).toHaveValue(longMessage)
@@ -201,6 +239,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       await page.getByRole('button', { name: es ? 'Abrir Historial' : 'Open History', exact: true }).click()
       await page.getByRole('button', { name: es ? 'Continuar borrador' : 'Continue draft', exact: true }).click()
       await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
+      await page.locator('.help-records-disclosure > summary').click()
       await page.locator('.request-records-button').click()
       const include = page.getByRole('checkbox', { name: es ? 'Incluir en el correo' : 'Include in email', exact: true }).filter({ visible: true })
       for (const checkbox of await include.all()) if (await checkbox.isEnabled()) await checkbox.uncheck()
@@ -226,6 +265,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await step(3)
     await page.getByRole('button', { name: es ? 'Escribir mi correo' : 'Write my email', exact: true }).click()
     await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
+    await page.locator('.help-downloads-disclosure > summary').click()
     await expect(page.getByText(/synthetic.txt/, { exact: false }).first()).toBeVisible()
     // Narrow screens and enlarged text may naturally scroll, never horizontally.
     for (const width of [640, 390, 320]) {

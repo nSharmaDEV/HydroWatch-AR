@@ -46,10 +46,10 @@ test('catalog matches appear while typing and arrows/Enter select without enteri
 test('invalid date ranges show guidance and prevent advancing; ongoing clears the end date without disabling its picker', () => {
   render(<Guide initial={{ ...base(), flowStep: 'timing', answers: { began: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
   // A legacy "timing" draft resumes on "When and where".
-  expect(screen.getByText('Step 2 of 4 · When and where')).toBeVisible()
+  expect(screen.getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
   // Inline field error on the always-visible "When and where" card.
   expect(screen.getAllByRole('alert').map(a => a.textContent)).toEqual(['The end date must be on or after the start date.'])
-  expect(screen.getByRole('heading', { level: 1, name: 'When and where' })).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'When, Where, + Action' })).toBeVisible()
   expect(document.querySelector('details.request-optional')).toBeNull()
   expect(screen.getByLabelText('When did it end? (optional)')).toBeVisible()
   expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
@@ -63,21 +63,21 @@ test('invalid date ranges show guidance and prevent advancing; ongoing clears th
 
 test.each(['quality', 'advisory'] as const)('%s dates validate the first-noticed date against the end on the timing screen', issue => {
   render(<Guide initial={{ ...base(), issue, flowStep: 'timing', answers: { noticed: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
-  expect(screen.getByText('Step 2 of 4 · When and where')).toBeVisible()
+  expect(screen.getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
   expect(screen.getAllByRole('alert')).toHaveLength(1)
   for (const alert of screen.getAllByRole('alert')) expect(alert).toHaveTextContent(/end date.*start date/i)
   expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveAttribute('min', '2026-10-14')
 })
 
-test('observation step omits provider contact cards and safety guidance; only live drafts offer the optional call line', () => {
+test('observation step omits provider contact cards, call line and repeated supplier text', () => {
   const { unmount } = render(<Guide sample={false} initial={{ ...base(), flowStep: 'experience' }} />)
   expect(screen.getByText('Step 1 of 4 · What’s wrong?')).toBeVisible()
   expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
-  // One optional "Prefer to call?" line with the checked supplier number, nothing more.
+  // Contact options remain on Review, not above the issue choices.
   const calls = document.querySelectorAll('a[href^="tel:"]')
-  expect(calls).toHaveLength(1)
-  expect(calls[0].closest('.request-call-line')).toHaveTextContent(/^Prefer to call\?/)
+  expect(calls).toHaveLength(0)
+  expect(document.querySelector('.request-provider')).toBeNull()
   expect(screen.queryByRole('heading', { name: 'Contact water provider' })).not.toBeInTheDocument()
   expect(screen.queryByText(/Emergency\? Call 911/)).not.toBeInTheDocument()
   unmount()

@@ -39,7 +39,8 @@ test.each(['en', 'es'] as const)('sample copy and both downloads stay labeled af
   expect(await screen.findByLabelText(language === 'en' ? 'Message' : 'Mensaje')).toHaveValue('My manual text')
   const label = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
   // A legacy "review" draft resumes on Send it, which holds the email tools and the send options together.
-  expect(screen.getByText(language === 'en' ? 'Step 4 of 4 · Send it' : 'Paso 4 de 4 · Envíalo')).toBeVisible()
+  expect(screen.getByText(language === 'en' ? 'Step 4 of 4 · Review and send' : 'Paso 4 de 4 · Revisar y enviar')).toBeVisible()
+  fireEvent.click(screen.getByText(language === 'en' ? 'Downloads and tools' : 'Descargas y herramientas'))
   fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Download email' : 'Descargar correo' }))
   fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Download report' : 'Descargar reporte' }))
   expect(download.mock.calls.map(([name]) => name)).toEqual(['sample-water-email.txt', 'sample-water-report.txt'])

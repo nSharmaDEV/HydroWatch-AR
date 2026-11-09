@@ -35,7 +35,7 @@ test('saved draft is shown as an aligned row with one supplier and a clear resum
   expect(within(summary).getByText('Problem').nextElementSibling).toHaveTextContent('Service problem')
   expect(within(summary).getByText('What you noticed').nextElementSibling).toHaveTextContent('Not filled in yet')
   expect(within(summary).getByText('Where').nextElementSibling).toHaveTextContent('Not filled in yet')
-  expect(within(summary).getByText('You stopped at').nextElementSibling).toHaveTextContent('Step 4 of 4 · Send it')
+  expect(within(summary).getByText('You stopped at').nextElementSibling).toHaveTextContent('Step 4 of 4 · Review and send')
   expect(within(summary).getByText('Last saved').nextElementSibling?.querySelector('time')).toHaveAttribute('datetime', new Date(record.updatedAt).toISOString())
   expect(within(summary).getByText('Not sent yet', { exact: false })).toBeVisible()
   expect(screen.queryByText('Original issue')).not.toBeInTheDocument()

@@ -24,8 +24,8 @@ test('every issue uses four one-card steps; records are skipped and legacy draft
   expect(helpStep({ ...draft, flowStep: 'send' })).toBe('send')
   expect(helpStep({ ...draft, stage: 2 })).toBe('send')
   expect(helpStep(draft)).toBe('choose')
-  expect(stepLabel({ ...draft, flowStep: 'where' }, 'en')).toBe('Step 2 of 4 · When and where')
-  expect(stepLabel({ ...draft, flowStep: 'response' }, 'es')).toBe('Paso 3 de 4 · ¿Qué deben hacer?')
+  expect(stepLabel({ ...draft, flowStep: 'where' }, 'en')).toBe('Step 2 of 4 · When, Where, + Action')
+  expect(stepLabel({ ...draft, flowStep: 'response' }, 'es')).toBe('Paso 3 de 4 · Tus datos')
 })
 test('initial fact previews stay within draft bounds without truncating agency wording', () => {
   const p = samplePlaces[0]
