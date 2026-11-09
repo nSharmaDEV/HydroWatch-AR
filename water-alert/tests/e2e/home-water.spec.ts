@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 test.beforeEach(async ({ page, context, baseURL }) => {
   await context.route('**/*', route => {
@@ -13,17 +13,21 @@ test.beforeEach(async ({ page, context, baseURL }) => {
   await page.addInitScript(() => sessionStorage.setItem('wave:logo-intro:v1', 'seen'))
 })
 
+/** Waits for Home's entrance animation (elements falling in, the strip rising) to finish. */
+const settled = (page: Page) => page.evaluate(() => Promise.all(document.getAnimations()
+  .filter(animation => ['fallIn', 'waveRise'].includes((animation as CSSAnimation).animationName))
+  .map(animation => animation.finished)).then(() => undefined))
+
 test('water stays below the header, reacts without moving content, and persists on navigation', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/')
   const canvas = page.locator('.home-water canvas')
   await expect(canvas).toBeVisible()
+  await settled(page)
   const water = (await page.locator('.home-water').boundingBox())!
   const header = (await page.locator('.app-header').boundingBox())!
-  const marquee = (await page.locator('.wave-marquee').boundingBox())!
   expect(water.y).toBeGreaterThanOrEqual(header.y + header.height)
-  expect(water.y).toBeGreaterThanOrEqual(marquee.y + marquee.height)
   expect(water.x).toBeCloseTo(0, 0)
   expect(water.width).toBe(page.viewportSize()!.width)
   await expect(page.locator('.home-water')).toHaveCSS('pointer-events', 'none')
@@ -33,8 +37,10 @@ test('water stays below the header, reacts without moving content, and persists 
   const before = await place()
   await page.waitForTimeout(200)
   const still = await canvas.screenshot()
-  if (test.info().project.use.hasTouch) await page.touchscreen.tap(water.width * .18, water.y + 90)
-  else await page.mouse.click(water.width * .18, water.y + 90)
+  // Drop into the open strip band at the bottom of the hero (it lets pointer events through).
+  const gap = await page.locator('.wave-hero').evaluate(el => el.getBoundingClientRect().bottom - 40)
+  if (test.info().project.use.hasTouch) await page.touchscreen.tap(water.width * .18, gap)
+  else await page.mouse.click(water.width * .18, gap)
   await page.waitForTimeout(350)
   const after = await canvas.screenshot()
   expect(after.equals(still)).toBe(false)
@@ -127,23 +133,88 @@ test('a drop produces a localized circular wave and fades back to the exact clea
   expect(result.clean).toBe(true)
 })
 
-test('Home fills the screen without a bottom strip and retains its original content position', async ({ page }) => {
+test('Home hero spans the width under the standard header, with cards in its right column', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/')
-  const marquee = (await page.locator('.wave-marquee').boundingBox())!
-  const water = (await page.locator('.home-water').boundingBox())!
-  const group = (await page.locator('.wave-home').boundingBox())!
-  expect(water.y + water.height).toBeCloseTo(800, 0)
-  expect(group.x + group.width / 2).toBeCloseTo(640, 0)
-  expect(group.y).toBeCloseTo(marquee.y + marquee.height + 40 + 28, 0)
-  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(800)
-  await page.screenshot({ path: test.info().outputPath('home-centered.png'), fullPage: true })
+  await settled(page)
+  const header = (await page.locator('.app-header').boundingBox())!
+  const hero = (await page.locator('.wave-hero').boundingBox())!
+  const search = (await page.locator('.wave-hero-search').boundingBox())!
+  const pill = (await page.locator('.wave-hero-pill').boundingBox())!
+  const [mapCard, helpCard] = await Promise.all([0, 1].map(async index => (await page.locator('.wave-home-action').nth(index).boundingBox())!))
+  // Home keeps the same header as every other tab. The hero has no fill of its own, so the shared
+  // background and its droplet canvas show through, and the strip keeps its original look.
+  await expect(page.locator('.app-header')).not.toHaveCSS('background-color', 'rgb(14, 42, 71)')
+  await expect(page.locator('.wave-hero')).toHaveCSS('background-image', 'none')
+  await expect(page.locator('.wave-hero')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(page.locator('.home-water canvas')).toHaveCount(1)
+  await expect(page.locator('.wave-hero-water .welcome-strip svg')).toHaveCSS('opacity', '0.64')
+  await expect(page.locator('.wave-hero-water .welcome-band--aqua')).toHaveAttribute('fill', /^url\(#/)
+  await expect(page.locator('.wave-hero-water .welcome-floor')).toHaveCount(0)
+  await expect(page.locator('.wave-hero h1')).toHaveCSS('color', 'rgb(14, 42, 71)')
+  const headlineLines = await page.locator('.wave-hero h1').evaluate((h1) => Math.round(h1.getBoundingClientRect().height / parseFloat(getComputedStyle(h1).lineHeight)))
+  expect(headlineLines).toBe(2)
+  expect(hero.x).toBe(0)
+  expect(hero.width).toBe(1280)
+  expect(hero.y).toBeCloseTo(header.y + header.height, 0)
+  // No "How it works" section: the hero fills the first screen and only the see-through footer
+  // follows, so the strip ends at the bottom of the window with no white edge.
+  await expect(page.locator('.wave-steps')).toHaveCount(0)
+  const footer = (await page.locator('.wave-home-footer').boundingBox())!
+  expect(footer.y).toBeCloseTo(hero.y + hero.height, 0)
+  expect(footer.y + footer.height).toBeCloseTo(800, 0)
+  await expect(page.locator('.wave-home-footer')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  // The label is screen-reader only; the magnifier on the right is the named submit button.
+  await expect(page.locator('.wave-hero-field label')).toHaveClass(/sr-only/)
+  await expect(page.locator('.wave-hero-search-icon')).toHaveCount(0)
+  const submitButton = page.getByRole('button', { name: 'Search', exact: true })
+  const desktopSubmit = (await submitButton.boundingBox())!
+  expect(desktopSubmit.width).toBeGreaterThanOrEqual(48)
+  expect(desktopSubmit.height).toBeGreaterThanOrEqual(48)
+  expect(desktopSubmit.x + desktopSubmit.width).toBeGreaterThan(search.x + search.width - 16)
+  await expect(submitButton.locator('svg')).toHaveCount(1)
+  // Cards sit inside the hero, right of the search column, stacked 18px apart.
+  expect(mapCard.x).toBeGreaterThan(search.x + search.width)
+  expect(helpCard.x).toBeCloseTo(mapCard.x, 0)
+  expect(helpCard.y - (mapCard.y + mapCard.height)).toBeCloseTo(18, 0)
+  expect(helpCard.y + helpCard.height).toBeLessThan(hero.y + hero.height)
+  // "Browse all places" clears the strip's highest possible crest (~13% down its box).
+  const water = (await page.locator('.wave-hero-water').boundingBox())!
+  expect(pill.y + pill.height).toBeLessThanOrEqual(water.y + water.height * .13)
+  await expect(page.locator('.wave-hero-water')).toHaveCSS('pointer-events', 'none')
+  await expect(page.getByRole('navigation')).toBeVisible()
+  // Hover lift still works after the "backwards" entrance animation.
+  await page.locator('.wave-home-action').first().hover()
+  await expect(page.locator('.wave-home-action').first()).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -2)')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1280)
+  await page.screenshot({ path: test.info().outputPath('home-hero.png'), fullPage: true })
+  await page.setViewportSize({ width: 800, height: 900 })
+  await page.locator('.wave-hero h1').hover()
+  await expect(page.locator('.wave-home-action').first()).toHaveCSS('transform', 'none')
+  const [tabletMap, tabletHelp] = await Promise.all([0, 1].map(async index => (await page.locator('.wave-home-action').nth(index).boundingBox())!))
+  expect(tabletHelp.y).toBeCloseTo(tabletMap.y, 0)
+  expect(tabletMap.y).toBeGreaterThan((await page.locator('.wave-hero-links').boundingBox())!.y)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(800)
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.locator('.wave-home-action').last().scrollIntoViewIfNeeded()
-  const last = (await page.locator('.wave-home-action').last().boundingBox())!
-  const nav = (await page.locator('nav').boundingBox())!
-  expect(last.y + last.height).toBeLessThanOrEqual(nav.y)
+  const phoneSearch = (await page.locator('.wave-hero-search').boundingBox())!
+  const submit = (await page.locator('.wave-hero-search button').boundingBox())!
+  // The magnifier stays inside the box, on the same row as the input.
+  expect(submit.width).toBeGreaterThanOrEqual(44)
+  expect(submit.width).toBeLessThan(60)
+  expect(submit.x + submit.width).toBeLessThanOrEqual(phoneSearch.x + phoneSearch.width)
+  expect(submit.y).toBeGreaterThanOrEqual(phoneSearch.y)
+  expect(submit.y + submit.height).toBeLessThanOrEqual(phoneSearch.y + phoneSearch.height)
+  expect(phoneSearch.height).toBeLessThan(80)
+  const [phoneMap, phoneHelp] = await Promise.all([0, 1].map(async index => (await page.locator('.wave-home-action').nth(index).boundingBox())!))
+  expect(phoneHelp.y).toBeGreaterThan(phoneMap.y + phoneMap.height)
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+  await page.screenshot({ path: test.info().outputPath('home-hero-phone.png'), fullPage: true })
+})
+
+test('reduced motion turns off the Home entrance animation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  for (const selector of ['.wave-hero h1', '.wave-hero-water', '.wave-home-action']) await expect(page.locator(selector).first()).toHaveCSS('animation-name', 'none')
 })
 
 test('the shared background remains behind every main navigation page and settings details', async ({ page }) => {

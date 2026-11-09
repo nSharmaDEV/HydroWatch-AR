@@ -24,14 +24,14 @@ test('selected requests and observations become complete connected prose in both
   expect(text).toContain('Could you please:\n1. Investigate the reported concern\n2. Clarify applicable water-use instructions')
   expect(text).toContain('I’m a Sample Creek Water customer. I’m writing about the quality of my tap water.')
   expect(text).toContain('I observed this occasionally.')
-  // Letter order: who → what happened → numbered requests → reply window → sign-off.
-  const order = ['Hello Sample Creek Water team,', 'I’m a Sample Creek Water customer', 'I observed an unusual color', 'Could you please:', 'I’d appreciate a reply within 5 business days.', 'Thank you.']
+  // Letter order: who → what happened → numbered requests → sign-off; no imposed deadline.
+  const order = ['Hello Sample Creek Water team,', 'I’m a Sample Creek Water customer', 'What happened', 'I observed an unusual color', 'What I’m requesting', 'Could you please:', 'Thank you.']
   expect(order.map(s => text.indexOf(s))).toEqual(order.map(s => text.indexOf(s)).slice().sort((x, y) => x - y))
   expect(order.every(s => text.includes(s))).toBe(true)
   const spanish = generateMessage({ ...d, wording: { report: { first: 'Un color inusual', second: 'Un olor inusual' }, response: { first: 'Investigar la inquietud reportada' } } }, 'es').body
   expect(spanish).toContain('Observé un color inusual y un olor inusual.')
   expect(spanish).toContain('Les pido, por favor:\n1. Investigar la inquietud reportada')
-  expect(spanish).toContain('Agradecería una respuesta en un plazo de 5 días hábiles.')
+  expect(spanish).not.toContain('5 días hábiles')
   expect(spanish).toContain('Gracias.')
   expect(spanish).toContain('Lo observé ocasionalmente.')
   expect(spanish).not.toContain('Occasional')
@@ -86,7 +86,7 @@ test('Spanish service observations are resident sentences rather than form fragm
   const text = generateMessage(d, 'es').body
   expect(text).toContain('No tengo agua.')
   expect(text).toContain('Tengo menos presión de lo habitual.')
-  expect(text).toContain('Les pido, por favor:\n1. Restablecer el servicio\n2. Compartir una actualización')
+  expect(text).toContain('Les pido, por favor:\n1. Restablecer el servicio: investigar el problema de servicio reportado e indicar los próximos pasos para restablecerlo\n2. Compartir una actualización')
 })
 
 test('facts are supporting context, not a second first-person letter or email headings', () => {

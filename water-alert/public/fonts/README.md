@@ -24,3 +24,16 @@ The font is self-hosted; no runtime Google Fonts requests are made.
 - Font: https://fonts.gstatic.com/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7duw.woff2
 - License source: https://github.com/google/fonts/blob/main/ofl/notosans/OFL.txt
 - Local license: `noto-sans-LICENSE.txt` (SIL Open Font License 1.1).
+
+## Home display headings
+
+Manrope Bold (700) and ExtraBold (800), Latin WOFF2, are used only for the Home page's
+display headings (800: hero headline, footer name; 700: action-card titles). Self-hosted, because the app's
+Content-Security-Policy allows fonts from `'self'` only; no runtime Google Fonts requests.
+
+Unmodified fonts and license from `@fontsource/manrope@5.2.8`:
+- https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.2.8/files/manrope-latin-700-normal.woff2
+- https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.2.8/files/manrope-latin-800-normal.woff2
+- https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.2.8/LICENSE
+
+See `manrope-LICENSE.txt` for the SIL Open Font License 1.1.

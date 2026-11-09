@@ -244,12 +244,22 @@ Every answer either enters the email or decides where it goes.
 
 The email follows public complaint-letter guidance (FTC sample letter, CCW
 complaint-letter tool, Arkansas AG and PSC complaint pages): who and where (with
-account number), what happened in plain sentences, earlier contact and what was
-tried, a numbered **Could you please:** list, **For reference:** dated records,
-"I'd appreciate a reply within 5 business days" and how to reach the resident,
-then the sign-off and source links. The subject names the concern and the account
-number when given. The call script ("What to say when you call") reuses the same
-sentences. Nothing threatens action or claims a violation or safety status.
+account number), **What happened**, **What I’ve already tried**, **What I’m
+requesting** (a numbered **Could you please:** list), and **Related records**.
+Empty sections are omitted. Optional reply contact, sign-off and exact source links
+follow. Subjects name the concern, one brief selected observation where applicable,
+and the supplied bill period/address/account rather than only the supplier.
+Only selected stock requests are expanded: service investigation/restoration or
+known causes, billing explanation/correction if incorrect, and report notices with
+available supporting documentation. Resident-written comments, action details and
+questions remain distinct and are preserved. No unselected deadline or demand is
+added. The call script ("What to say when you call") shares the selected requests
+as numbered items without lowercasing resident wording. English and Spanish follow
+the same structure. Historical evidence remains dated, saved records remain
+unverified as current, and AI-only report summaries are not verified evidence.
+Nothing threatens action or claims a violation or safety status. Manual subject
+and message edits (including blank fields) remain protected; updating from answers
+requires confirmation before replacing them. Feedback stays separate from emails.
 
 Older drafts open on the screen that now holds their answers: `experience` →
 What's wrong; `billing`/`timing`/`where` → When, Where, + Action;
@@ -430,8 +440,8 @@ Recommendation stars and contact explanations stay inside the recipient selector
 The citation popup retains full attribution alongside record details.
 Only directory contacts are offered; an
 external-only selection blocks WAVE email sending rather than being silently omitted.
-Email uses natural paragraphs, with source-attributed agency information rather than
-internal form headings. Inline numbered citations correspond to clickable source links
+Email uses readable, conditional sections and natural paragraphs, with source-attributed
+agency information. Inline numbered citations correspond to clickable source links
 beside each record and in the composer. Numbered citations share each source URL once. Attachment
 names stay in the information column; source links appear there and beneath the message. Official
 records show agency, readable date, listed problem, published area and verification

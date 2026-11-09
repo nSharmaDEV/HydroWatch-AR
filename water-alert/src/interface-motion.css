@@ -16,6 +16,16 @@ html[data-wave-motion=back]::view-transition-new(wave-content){animation-name:wa
 html[data-wave-motion] .home-water{view-transition-name:wave-water}
 html[data-wave-motion]::view-transition-old(wave-water){animation:none;opacity:0}
 html[data-wave-motion]::view-transition-new(wave-water){animation:none}
+/* Home -> supplier search: the hero's flowing strip and the search strip share one snapshot (the
+   search strip continues the same shape, see WelcomeStrip), which stretches from the thin band at
+   the hero's foot to the tall band behind the search card. The image fills the box (no aspect
+   lock) because the strip itself is drawn with preserveAspectRatio="none". */
+html[data-wave-strip] .wave-hero-water .welcome-strip svg,
+html[data-wave-strip] .search-stage>.welcome-strip:not(.welcome-strip--still) svg{view-transition-name:wave-strip}
+html[data-wave-motion]::view-transition-group(wave-strip){z-index:1;animation-duration:640ms;animation-timing-function:cubic-bezier(.31,.24,.14,1)}
+html[data-wave-motion]::view-transition-new(wave-strip){height:100%;object-fit:fill;animation:none;mix-blend-mode:normal}
+/* Same shape on both sides, so only the live new strip is shown (no doubled, darker overlap). */
+html[data-wave-motion]::view-transition-old(wave-strip){animation:none;opacity:0}
 @keyframes wave-content-out{to{opacity:0}}
 @keyframes wave-content-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes wave-forward-out{to{opacity:0;transform:translateX(-24px)}}

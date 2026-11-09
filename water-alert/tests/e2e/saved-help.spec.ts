@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 test.use({ reducedMotion: 'reduce' })
-for (const language of ['en', 'es'] as const) for (const outputs of [false, true]) test(`${outputs ? 'sample outputs and language' : 'saved guided help, Map and History'} (${language})`, async ({ page, context, baseURL }) => {
+for (const language of ['en', 'es'] as const) for (const outputs of [false, true]) test(`${outputs ? 'sample outputs and language' : 'saved guided help, Map and History'} (${language})`, async ({ page, context, baseURL }, testInfo) => {
   const unexpected: string[] = [], errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
   await context.addInitScript(language => {
@@ -51,6 +51,17 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await page.getByRole('button', { name: language === 'en' ? 'Write my email' : 'Escribir mi correo', exact: true }).click()
   await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 4' : 'Paso 4 de 4')
   await fits()
+  const message = page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })
+  await expect(message).toHaveValue(new RegExp(language === 'en' ? 'What happened\n' : 'Qué pasó\n'))
+  await expect(message).toHaveValue(new RegExp(language === 'en' ? 'What I’m requesting\n' : 'Lo que solicito\n'))
+  await expect(message).not.toHaveValue(/5 business days|5 días hábiles/)
+  if (!outputs) {
+    const phone = testInfo.project.name === 'phone-sized'
+    await page.setViewportSize({ width: phone ? 390 : 1280, height: 900 })
+    await fits()
+    await page.locator('.request-review-email').scrollIntoViewIfNeeded()
+    await page.screenshot({ path: testInfo.outputPath(`structured-email-${language}.png`), fullPage: true })
+  }
   if (outputs) {
     await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
     await expect(page.getByRole('textbox', { name: other === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue(new RegExp(other === 'en' ? 'I’m writing' : 'Le escribo'))
@@ -65,9 +76,26 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   // Continuing opens the screen the resident stopped at.
   await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 4' : 'Paso 4 de 4')
   await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
+  const subject = page.getByRole('textbox', { name: language === 'en' ? 'Subject' : 'Asunto', exact: true })
+  await subject.fill('SYNTHETIC MANUAL SUBJECT')
+  await page.locator('.help-downloads-disclosure > summary').click()
+  const regenerate = page.getByRole('button', { name: language === 'en' ? 'Update draft from answers' : 'Actualizar borrador desde las respuestas', exact: true })
+  page.once('dialog', async dialog => {
+    expect(dialog.type()).toBe('confirm')
+    expect(dialog.message()).toContain(language === 'en' ? 'manual edits' : 'cambios manuales')
+    await dialog.dismiss()
+  })
+  await regenerate.click()
+  await expect(subject).toHaveValue('SYNTHETIC MANUAL SUBJECT')
+  await expect(message).toHaveValue('SYNTHETIC EDIT RETAINED')
+  page.once('dialog', dialog => dialog.accept())
+  await regenerate.click()
+  await expect(subject).not.toHaveValue('SYNTHETIC MANUAL SUBJECT')
+  await expect(message).toHaveValue(/Synthetic resident issue — no service on Monday/)
+  await expect(message).toHaveValue(new RegExp(language === 'en' ? 'What happened\n' : 'Qué pasó\n'))
+  await message.fill('SYNTHETIC EDIT RETAINED')
   if (outputs) {
     const marker = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
-    await page.locator('.help-downloads-disclosure > summary').click()
     for (const [label, filename] of [[language === 'en' ? 'Download email' : 'Descargar correo', 'sample-water-email.txt'], [language === 'en' ? 'Download report' : 'Descargar reporte', 'sample-water-report.txt']]) {
       const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: label, exact: true }).click()])
       expect(download.suggestedFilename()).toBe(filename)

@@ -180,7 +180,7 @@ it('retains deletion credentials and choices until server removal succeeds on re
     await user.click(screen.getByRole('button', { name: 'Confirm removal' }))
     expect(localStorage.getItem('water-alert:push-device:v1')).toBeNull()
     expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
-    expect(screen.getByRole('link', { name: /Check your supplier/ })).toBeVisible()
+    expect(screen.getByRole('searchbox', { name: 'Search by supplier or county' })).toBeVisible()
   } finally { vi.unstubAllGlobals() }
 })
 

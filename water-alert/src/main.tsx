@@ -5,6 +5,7 @@ import './styles.css'
 import './glass-surfaces.css'
 import './icons.css'
 import './typography.css'
+import './home-hero.css'
 import { preparePushWorker } from './push'
 void preparePushWorker().catch(() => {}) // Permission and enrollment are still strictly user-initiated.
 createRoot(document.getElementById('root')!).render(<><ConnectedApp /><LogoIntro /></>)

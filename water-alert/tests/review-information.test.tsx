@@ -195,17 +195,17 @@ test('official information is a concise records table with source wording and ex
 test('email prose turns selected observations and explanation/update into a natural request', () => {
   const draft = { ...example(), locations: ['Oak Street'], wording: { report: { first: 'No water', third: 'Service keeps stopping' }, response: { second: 'Share an update', third: 'Explain what is happening' } }, answers: { began: '2026-10-09', ongoing: 'No', ended: '2026-10-11', frequency: 'At particular times' } }
   const { subject, body } = generateMessage(draft, 'en')
-  expect(subject).toContain('Leisure Hills Mobile Home Park')
+  expect(subject).toContain('Oak Street')
   expect(body).toContain('Hello Leisure Hills Mobile Home Park team,')
   expect(subject).toContain('water service')
-  expect(subject).toContain('Leisure Hills Mobile Home Park')
+  expect(subject).not.toContain('Leisure Hills Mobile Home Park')
   expect(body).toContain('I first noticed this on October 9, 2026')
   expect(body).toContain('It ended on October 11, 2026')
   expect(body).toContain('Oak Street')
   expect(body).toContain('At particular times, my water service is interrupted and no water is available.')
   expect(body).toContain('I’m a Leisure Hills Mobile Home Park customer at Oak Street.')
   expect(body).toContain('Could you please:\n1. Share any available update on next steps\n2. Explain what may be contributing to these interruptions')
-  expect(body).toMatch(/For reference:\nFor context,[\s\S]*?\[1\][\s\S]*?https:\/\/example\.test\/official-notice/)
+  expect(body).toMatch(/Related records\nFor context,[\s\S]*?\[1\][\s\S]*?https:\/\/example\.test\/official-notice/)
   expect(body).not.toMatch(/No water\. I observed this at particular times|Share an update and explain what is happening|\d\. Share an update\n|\d\. Explain what is happening\n/)
 })
 

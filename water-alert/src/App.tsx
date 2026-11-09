@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { EMPTY_SOURCES, SOURCES, statusFor, type Mode, type Notice, type Place, type SourceSnapshot } from './domain'
 import { defaults, loadPreferences, savePreferences, type Preferences } from './storage'
 import { SAMPLE_NOW, sampleArchive, samplePlaces, sampleSources } from './sample'
@@ -22,9 +22,7 @@ import type { HelpRequest } from './help-requests'
 import { LIVE_LOCAL_HELP_KEY, SAMPLE_HELP_KEY } from './help-client'
 import { ProviderCarousel } from './ProviderCarousel'
 import { HomeWater } from './HomeWater'
-import { ARKANSAS_OUTLINE } from './arkansas-outline'
 import { useContentMotion, useDisclosureMotion } from './interface-motion'
-import './home-card-marks.css'
 
 type Page = 'home' | 'browse' | 'managePlaces' | 'map' | 'history' | 'settings' | 'search' | 'confirm' | 'sampleIntro' | 'detail' | 'help' | 'alerts' | 'sources' | 'privacy' | 'installation'
 type RemovedPlace = { id: string; index: number; lifted: boolean }
@@ -43,6 +41,10 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
   const leaveHelp = useRef<(() => Promise<boolean>) | null>(null)
   const registerLeave = useCallback((handler: (() => Promise<boolean>) | null) => { leaveHelp.current = handler }, [])
   const [query, setQuery] = useState('')
+  // Home hero search text; submitting hands it to the existing supplier search step.
+  const [heroQuery, setHeroQuery] = useState('')
+  // The header drops in only with the first Home load; returning to Home keeps the chrome still.
+  const [headerIntro, setHeaderIntro] = useState(page === 'home')
   const [kind, setKind] = useState<Place['kind']>('system')
   const [candidate, setCandidate] = useState<Place | null>(null)
   const [helpIntent, setHelpIntent] = useState(false)
@@ -66,7 +68,8 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     destination.current = next
     const tabs: Page[] = ['home', 'browse', 'map', 'history', 'settings']
     const direction = tabs.includes(next) ? tabs.includes(page) ? 'tab' : 'back' : page === 'confirm' && next === 'search' ? 'back' : 'forward'
-    changeContent(() => setPageState(next), direction)
+    // Home's thin hero wave grows into the supplier search's tall wave.
+    changeContent(() => setPageState(next), direction, page === 'home' && next === 'search')
   }
   const detailReturn = useRef<'home' | 'browse' | 'map'>('home')
   const helpReturn = useRef<{ page: Page; noticeId: string | null }>({ page: 'home', noticeId: null })
@@ -134,9 +137,9 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     window.scrollTo?.(0, 0)
   }, [page, mode, selected])
 
-  function commitNavigation(next: Page) { if (next === 'map') setMapVisited(true); if (next === 'detail') detailReturn.current = page === 'map' ? 'map' : page === 'browse' ? 'browse' : 'home'; setRequestId(undefined); setResumingRequest(null); window.history.replaceState(null, '', window.location.pathname + window.location.search); setPage(next); setLinkedId(null); setMessage(''); setConfirmDelete(false) }
+  function commitNavigation(next: Page) { if (next === 'map') setMapVisited(true); if (next === 'detail') detailReturn.current = page === 'map' ? 'map' : page === 'browse' ? 'browse' : 'home'; setRequestId(undefined); setResumingRequest(null); window.history.replaceState(null, '', window.location.pathname + window.location.search); setPage(next); setLinkedId(null); setMessage(''); setConfirmDelete(false); setHeaderIntro(false) }
   function navigate(next: Page) { if (page === 'help' && leaveHelp.current) { void leaveHelp.current().then(saved => { if (saved) commitNavigation(next) }); return }; commitNavigation(next) }
-  // Home's "Check your supplier" link is the only in-app step that adds a browser history entry,
+  // Home's supplier search is the only in-app step that adds a browser history entry,
   // so browser Back from the supplier glass card (or a step reached from it) returns to Home.
   function historyNavigate(next: 'home' | 'search') { const leaving = page === 'help' && leaveHelp.current; if (next === 'search') search('system'); else navigate(next); if (!leaving) window.history.replaceState({ wavePage: next }, '', window.location.pathname + window.location.search + (next === 'search' ? '#search' : '')) }
   const historyNavigateRef = useRef(historyNavigate)
@@ -146,11 +149,12 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
-  function openSupplierCheck(event: ReactMouseEvent<HTMLAnchorElement>) {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  function openSupplierCheck(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const base = window.location.pathname + window.location.search
     search('system')
+    // The typed text pre-fills the existing supplier search (name, county or alias matches).
+    setQuery(heroQuery.trim())
     window.history.replaceState({ wavePage: 'home' }, '', base)
     window.history.pushState({ wavePage: 'search' }, '', base + '#search')
   }
@@ -235,8 +239,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
 
   return <>
     <a className="skip-link" href="#main">{prefs.language === 'en' ? 'Skip to content' : 'Ir al contenido'}</a>
-    <header className="app-header"><div className="header-inner"><button className="brand" onClick={() => navigate('home')} aria-label={APP_NAME}><img className="brand-logo" src="/wave-logo.png" alt={APP_NAME} width="1830" height="416" /></button><nav aria-label={prefs.language === 'en' ? 'Main navigation' : 'Navegación principal'}>{nav}</nav><div className="lang-switch" aria-label={t.language}><button aria-pressed={prefs.language === 'en'} onClick={() => setPrefs(p => ({ ...p, language: 'en' }))}>EN</button><button aria-pressed={prefs.language === 'es'} onClick={() => setPrefs(p => ({ ...p, language: 'es' }))}>ES</button></div></div></header>
-    {page === 'home' ? <div className="wave-marquee" tabIndex={0} aria-label="WAVE: Water Awareness, Verification, and Empowerment"><div className="wave-marquee-track">{[false, true].map(hidden => <span className="wave-marquee-copy" aria-hidden={hidden || undefined} key={String(hidden)}>{Array.from({ length: 6 }, (_, index) => <span className="wave-marquee-unit" key={index}><span>WAVE: Water Awareness, Verification, and Empowerment</span><span className="wave-marquee-separator" aria-hidden="true">●</span></span>)}</span>)}</div></div> : null}
+    <header className={page === 'home' && headerIntro ? 'app-header fall' : 'app-header'} onAnimationEnd={event => { if (event.target === event.currentTarget) setHeaderIntro(false) }}><div className="header-inner"><button className="brand" onClick={() => navigate('home')} aria-label={APP_NAME}><img className="brand-logo" src="/wave-logo.png" alt={APP_NAME} width="1830" height="416" /></button><nav aria-label={prefs.language === 'en' ? 'Main navigation' : 'Navegación principal'}>{nav}</nav><div className="lang-switch" aria-label={t.language}><button aria-pressed={prefs.language === 'en'} onClick={() => setPrefs(p => ({ ...p, language: 'en' }))}>EN</button><button aria-pressed={prefs.language === 'es'} onClick={() => setPrefs(p => ({ ...p, language: 'es' }))}>ES</button></div></div></header>
     {sample ? <section className="sample-banner" aria-label={t.sample}><div><b>{t.sample}</b><span>{t.sampleText}</span><button onClick={() => changeMode('live')}>{t.exit}</button></div></section> : null}
     <main id="main" ref={main} tabIndex={-1}>
       <HomeWater paused={page === 'search' || page === 'confirm'} />
@@ -253,14 +256,27 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
         : <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={setQuery} t={t} onBack={() => navigate('home')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
       {page === 'confirm' && candidate ? <ConfirmPlace place={candidate} t={t} onConfirm={confirmWatch} onBack={() => navigate('search')} /> : null}
       {page === 'sampleIntro' ? <SampleIntro t={t} onStart={() => search('system')} onList={sampleList} /> : null}
-      {page === 'home' ? <section className="wave-home">
-        <div className="wave-home-intro"><h1>{prefs.language === 'es' ? 'Información sobre el agua, más fácil.' : 'Water information, made easier.'}</h1><p>{prefs.language === 'es' ? 'Encuentra avisos públicos sobre el agua, entiende de dónde viene la información y comunícate con tu proveedor de agua.' : 'Find public water advisories, understand where the information comes from, and contact your water provider about a concern.'}</p></div>
-        <a className="welcome-option welcome-option--primary wave-home-supplier" href="#search" onClick={openSupplierCheck}><span className="welcome-option-icon"><Icon name="search" /></span><span className="welcome-option-text"><b>{prefs.language === 'es' ? 'Consulta tu proveedor' : 'Check your supplier'}</b><small>{prefs.language === 'es' ? 'Encuentra avisos oficiales sobre el agua para tu zona' : 'Find official water notices for your area'}</small></span><span className="welcome-option-arrow" aria-hidden="true"><Icon name="chevron-right" size={20} /></span></a>
-        <div className="wave-home-actions">
-          <button className="wave-home-action" onClick={() => navigate('map')}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Consultar avisos de agua' : 'Check water advisories'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-arkansas" aria-hidden="true"><svg viewBox="0 0 620 620"><path d={ARKANSAS_OUTLINE} /></svg></span></span><span>{prefs.language === 'es' ? 'Explora el mapa y consulta avisos de fuentes oficiales.' : 'Explore the map and view notices from official sources.'}</span><b>{prefs.language === 'es' ? 'Abrir el mapa' : 'Open the map'} <Icon name="arrow-right" size={18} /></b></button>
-          <button className="wave-home-action" onClick={() => watched[0] ? openHelp(watched[0].id) : search('system', true)}><span className="wave-home-card-heading"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Obtener ayuda con un problema de agua' : 'Get help with a water issue'}</span><span className="wave-card-leader" aria-hidden="true" /><span className="wave-card-mark wave-card-mark-issue" aria-hidden="true"><Icon name="water" size={40} strokeWidth={1.5} /></span></span><span>{prefs.language === 'es' ? 'Describe lo que ocurre y prepara un mensaje para tu proveedor.' : 'Describe what you’re experiencing and prepare a message to your provider.'}</span><b>{prefs.language === 'es' ? 'Iniciar un informe' : 'Start a report'} <Icon name="arrow-right" size={18} /></b></button>
-        </div>
-      </section> : null}
+      {page === 'home' ? <div className="wave-home">
+        <section className="wave-hero" aria-labelledby="wave-hero-title">
+          <div className="wave-hero-inner">
+            <div className="wave-hero-main">
+            <h1 id="wave-hero-title" className="fall fall-headline">{prefs.language === 'es' ? <>Encuentra avisos sobre el agua{' '}<span>en Arkansas.</span></> : <>Find water advisories{' '}<span>in Arkansas.</span></>}</h1>
+            <p className="wave-hero-lede fall fall-lede">{prefs.language === 'es' ? 'Busca avisos públicos oficiales, ve de dónde viene la información y comunícate con tu proveedor de agua sobre una inquietud.' : 'Search official public notices, see where the information comes from, and contact your water provider about a concern.'}</p>
+            <form className="wave-hero-search fall fall-search" role="search" onSubmit={openSupplierCheck}>
+              <div className="wave-hero-field"><label className="sr-only" htmlFor="home-supplier-search">{prefs.language === 'es' ? 'Busca por proveedor o condado' : 'Search by supplier or county'}</label><input id="home-supplier-search" name="home-supplier-search" type="search" autoComplete="off" value={heroQuery} onChange={event => setHeroQuery(event.target.value)} placeholder={prefs.language === 'es' ? 'Nombre del proveedor o condado' : 'Supplier name or county'} /></div>
+              <button type="submit" aria-label={prefs.language === 'es' ? 'Buscar' : 'Search'}><Icon name="search" size={24} /></button>
+            </form>
+            <div className="wave-hero-links fall fall-links"><button type="button" className="wave-hero-pill" onClick={() => navigate('browse')}><Icon name="list" size={18} />{prefs.language === 'es' ? 'Ver todos los lugares' : 'Browse all places'}</button></div>
+            </div>
+            <div className="wave-home-actions">
+              <button className="wave-home-action fall fall-card-1" onClick={() => navigate('map')}><span className="wave-home-icon wave-home-icon--map" aria-hidden="true"><Icon name="map" size={24} /></span><span className="wave-home-action-text"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Explorar el mapa de avisos' : 'Browse the advisory map'}</span><span className="wave-home-action-desc">{prefs.language === 'es' ? 'Ve en un mapa los avisos de todo el estado, con avisos de fuentes oficiales.' : 'See advisories across the state on a map, with notices from official sources.'}</span><b>{prefs.language === 'es' ? 'Abrir el mapa' : 'Open the map'} <Icon name="arrow-right" size={18} /></b></span></button>
+              <button className="wave-home-action wave-home-action--help fall fall-card-2" onClick={() => watched[0] ? openHelp(watched[0].id) : search('system', true)}><span className="wave-home-icon wave-home-icon--help" aria-hidden="true"><Icon name="water" size={24} /></span><span className="wave-home-action-text"><span className="wave-home-action-title">{prefs.language === 'es' ? 'Obtener ayuda con un problema de agua' : 'Get help with a water issue'}</span><span className="wave-home-action-desc">{prefs.language === 'es' ? 'Describe lo que ocurre y prepara un mensaje para tu proveedor.' : 'Describe what you’re experiencing and prepare a message to your provider.'}</span><b>{prefs.language === 'es' ? 'Iniciar un informe' : 'Start a report'} <Icon name="arrow-right" size={18} /></b></span></button>
+            </div>
+          </div>
+          <div className="wave-hero-water" aria-hidden="true"><WelcomeStrip /></div>
+        </section>
+        <footer className="wave-home-footer"><div className="wave-home-footer-inner"><b>WellPower: WAVE</b><p>{prefs.language === 'es' ? 'Solo con fines informativos. En una emergencia, comunícate con tu proveedor de agua o con los servicios de emergencia locales.' : 'For awareness only. In an emergency, contact your water provider or local emergency services.'}</p></div></footer>
+      </div> : null}
       {page === 'browse' ? <>
         <WelcomeStrip still />
         <h1 className="sr-only">{t.myWater}</h1>

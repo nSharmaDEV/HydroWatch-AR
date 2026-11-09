@@ -19,7 +19,7 @@ test('Ask about this starts a report question with the finding quoted and cited'
   const body = (screen.getByLabelText('Message') as HTMLTextAreaElement).value
   expect(body).toContain('I’m writing with a question about your annual water quality report.')
   expect(body).toContain('1. Tell me whether this has been resolved')
-  expect(body).toContain('For reference:')
+  expect(body).toContain('Related records')
   expect(body).toContain('For historical context (not current status)')
   expect(body).toContain('https://health.arkansas.gov/eng/d.aspx?P=747&YEAR=2025#page=2')
   expect((screen.getByLabelText('Subject') as HTMLInputElement).value).toMatch(/^Question about your annual water report — /)

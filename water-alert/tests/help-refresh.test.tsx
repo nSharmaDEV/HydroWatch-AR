@@ -107,7 +107,7 @@ test('email does not infer a full day or drop extra requested actions', () => {
   const body = generateMessage(draft, 'en').body
   expect(body).not.toMatch(/throughout the day|during the day/)
   expect(body).toMatch(/constantly/)
-  expect(body).toContain('Could you please:\n1. Restore service\n2. Share any available update on next steps\n3. Explain what may be contributing to these interruptions')
+  expect(body).toContain('Could you please:\n1. Restore service: investigate the reported service problem and advise on next steps toward restoration\n2. Share any available update on next steps\n3. Explain what may be contributing to these interruptions, including any known cause of the reported service problem')
   expect(generateMessage(base(), 'en').body).not.toMatch(/Could you let me know the appropriate next step\?|Could you please/)
 })
 

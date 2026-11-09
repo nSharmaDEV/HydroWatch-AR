@@ -41,7 +41,8 @@ test('a billing complaint takes four screens and the email carries every answer'
 
   expect(screen.getByText('Step 4 of 4 · Review and send')).toBeVisible()
   const body = (screen.getByLabelText('Message') as HTMLTextAreaElement).value
-  for (const text of ['1908 SW Huntwick Ave', 'account number 4421-07', 'October 2026', 'A charge appears more than once on my bill.', '1. Review the charge', '2. Explain the bill', 'I called once.', 'within 5 business days', 'ana@example.test', 'Ana']) expect(body).toContain(text)
+  for (const text of ['1908 SW Huntwick Ave', 'account number 4421-07', 'October 2026', 'A charge appears more than once on my bill.', '1. Review the charge', '2. Explain the bill', 'I called once.', 'ana@example.test', 'Ana']) expect(body).toContain(text)
+  expect(body).not.toContain('within 5 business days')
   const send = screen.getByRole('region', { name: 'How to send it' })
   expect(within(send).getAllByText('Sample — sending disabled.').length).toBeGreaterThan(0)
   expect(document.querySelectorAll('a[href^="mailto:"], a[href^="tel:"]')).toHaveLength(0)

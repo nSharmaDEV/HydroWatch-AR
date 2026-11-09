@@ -201,6 +201,9 @@ test('unsupported snapshots still navigate without transforming live content', a
 test('navigation uses bounded snapshots and preserves stationary chrome', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
+  // Start from a tab with the shared header: Home collapses its navigation into a menu on phones.
+  await page.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
   const nav = page.getByRole('navigation')
   const before = await nav.boundingBox()
   await page.evaluate(() => {
@@ -228,6 +231,41 @@ test('navigation uses bounded snapshots and preserves stationary chrome', async 
   await nav.getByRole('button', { name: 'Home', exact: true }).click()
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
   expect(await page.locator('main').evaluate(el => el.style.viewTransitionName)).toBe('')
+  expect(errors).toEqual([])
+})
+
+test('Home supplier search grows the hero wave into the search wave; tab changes do not', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', e => errors.push(e.message))
+  const stripGroups = () => page.evaluate(() => document.getAnimations().filter(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === '::view-transition-group(wave-strip)').map(a => (a.effect as KeyframeEffect).getKeyframes().map(k => parseFloat(String(k.height)))))
+  // Hold every snapshot animation at its start so the morph can be read before it finishes.
+  await page.evaluate(() => {
+    const start = document.startViewTransition.bind(document)
+    document.startViewTransition = ((update: () => void) => {
+      const transition = start(update)
+      void transition.ready.then(() => { for (const animation of document.getAnimations()) { if (animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement) animation.pause() } })
+      return transition
+    }) as typeof document.startViewTransition
+  })
+  const hero = await page.locator('.wave-hero-water .welcome-strip svg').boundingBox()
+  await page.getByRole('searchbox', { name: 'Search by supplier or county' }).fill('Bull')
+  await page.getByRole('button', { name: 'Search', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBe('')
+  await expect.poll(async () => (await stripGroups()).length).toBe(1)
+  const [heights] = await stripGroups()
+  await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBeUndefined()
+  const search = await page.locator('.search-stage > .welcome-strip svg').boundingBox()
+  expect(heights[0]).toBeCloseTo(hero!.height, 0)
+  expect(heights.at(-1)).toBeCloseTo(search!.height, 0)
+  expect(search!.height).toBeGreaterThan(hero!.height)
+  // Leaving search (and ordinary tab changes) keeps the wave inside the page snapshot.
+  await page.getByRole('navigation').getByRole('button', { name: 'Home', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBe('back')
+  expect(await page.evaluate(() => document.documentElement.dataset.waveStrip)).toBeUndefined()
+  expect(await stripGroups()).toEqual([])
+  await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
   expect(errors).toEqual([])
 })
 

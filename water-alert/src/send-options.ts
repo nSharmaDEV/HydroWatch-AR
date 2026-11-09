@@ -60,12 +60,11 @@ export function callScript(draft: HelpDraft, language: Language): string[] {
   const es = language === 'es', s = confirmedSections(draft, language), { who, opener } = letterOpening(draft, language)
   const lower = (t: string) => t ? `${t[0].toLocaleLowerCase()}${t.slice(1)}` : t
   const calling = es ? opener.replace(/^Le escribo sobre /, 'Llamo por ').replace(/^Le escribo con /, 'Llamo con ') : opener.replace(/^I’m writing /, 'I’m calling ')
-  const asks = s.requestItems.length ? new Intl.ListFormat(language, { type: 'conjunction' }).format(s.requestItems.map(lower)) : ''
   return [
     es ? `Hola, ${lower(who)}` : `Hi, ${who}`,
     calling,
     [s.observations, s.description, s.timing].filter(Boolean).join(' '),
-    asks ? es ? `¿Podrían, por favor, ${asks}?` : `Could you please ${asks}?` : '',
+    s.requests ? `${es ? 'Les pido, por favor:' : 'Could you please:'}\n${s.requests}` : '',
     es ? '¿Me pueden dar un número de referencia para esta llamada?' : 'Could you give me a reference number for this call?',
   ].filter(Boolean)
 }

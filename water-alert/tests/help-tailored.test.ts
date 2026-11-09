@@ -33,10 +33,10 @@ describe('tailored help messages', () => {
   it('generates billing-specific facts without invented claims or irrelevant boilerplate', () => {
     const d = { ...blankRequest(place), issue: 'billing' as const, description: 'A charge appears twice', answers: { chargeKind: 'Duplicate charge', billingPeriod: 'October', amount: '$12', charge: 'Service charge', tried: 'Asked by phone', response: 'Please review this charge' } }
     const message = generateMessage(d, 'en')
-    expect(message.subject).toBe('Question about my water bill — Fictional supplier')
+    expect(message.subject).toBe('Question about my water bill — October')
     expect(message.body).toContain('I’m writing about my water bill for October.')
     expect(message.body).toContain('Could you please:\n1. Please review this charge')
-    expect(message.body).toContain('What I have already tried: Asked by phone.')
+    expect(message.body).toContain('What I’ve already tried\nAsked by phone.')
     for (const value of Object.values(d.answers)) expect(message.body).toContain(value)
     expect(message.body).not.toMatch(/entitlement|reference number|applicable policy/)
     expect(message.body).not.toMatch(/Resident-reported|Billing period \(optional\):|WAVE references/)

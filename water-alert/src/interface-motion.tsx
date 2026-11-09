@@ -16,7 +16,9 @@ let currentTransition: { transition: NativeTransition; finishUpdate: () => void;
  * Updates without this explicit boundary (typing, refreshes) never animate.
  */
 export function useContentMotion(ref: RefObject<HTMLElement | null>) {
-  return useCallback((update: () => void, direction: Direction = 'tab') => {
+  // morphStrip: the flowing wave strip on both pages becomes one shared snapshot, so it
+  // stretches and moves from its old size/position to the new one (Home hero -> supplier search).
+  return useCallback((update: () => void, direction: Direction = 'tab', morphStrip = false) => {
     if (currentTransition) {
       currentTransition.transition.skipTransition()
       currentTransition.finishUpdate()
@@ -33,9 +35,10 @@ export function useContentMotion(ref: RefObject<HTMLElement | null>) {
     const previousName = element.style.viewTransitionName
     element.style.viewTransitionName = 'wave-content'
     document.documentElement.dataset.waveMotion = direction
+    if (morphStrip) document.documentElement.dataset.waveStrip = ''
     const media = window.matchMedia?.('(prefers-reduced-motion: reduce)')
     const preference = () => { if (media?.matches) currentTransition?.transition.skipTransition() }
-    const clean = () => { element.style.viewTransitionName = previousName; delete document.documentElement.dataset.waveMotion; media?.removeEventListener('change', preference) }
+    const clean = () => { element.style.viewTransitionName = previousName; delete document.documentElement.dataset.waveMotion; delete document.documentElement.dataset.waveStrip; media?.removeEventListener('change', preference) }
     let transition: NativeTransition
     try { transition = start.call(document, finishUpdate) }
     catch { clean(); finishUpdate(); return }

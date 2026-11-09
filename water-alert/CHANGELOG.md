@@ -8,6 +8,90 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-09 — Match Home help card to map colors
+
+- The Home help card now shares the map card's teal icon, pale teal icon background,
+  and teal action text. Scoped to Home; local change, not deployed.
+
+### 2026-11-09 — Home hero with supplier search and action cards on the shared water background
+
+- Home now opens on a hero below the standard header (same white header, logo and
+  navigation as every other tab; it drops in only on the first Home load). The hero has
+  no fill of its own: the shared light background and its WebGL droplet layer
+  (`HomeWater`, unchanged) show through. Headline "Find water advisories in Arkansas."
+  in navy with a #087F83 accent (self-hosted Manrope 700/800, OFL; CSP still
+  fonts-from-self only), a description, and a white "Search by supplier or county" box
+  that opens the existing supplier search with the typed text (name or county; no ZIP or
+  location lookup, so no boundary inference), plus a "Browse all places" outline pill.
+  The earlier badge and "Use my location" from the design briefs were not kept. The
+  "Browse the advisory map" and "Get help with a water issue" cards use the shared
+  frosted glass surface in the hero's right column (two columns under 1024px, one under
+  640px), still one button each with unchanged destinations. Follow-up the same day: on
+  desktop the headline sits on two lines ("Find water advisories" / teal "in Arkansas.";
+  left column widened to 1.4fr and the headline set at clamp(46px, 4.4vw, 58px)), so the
+  search box sits higher. Card shadows were softened to a light contact shadow, and the
+  search box keeps a lighter shadow that is still the strongest in the hero. Searching
+  from the Home hero now grows the thin hero wave into the supplier search's tall wave:
+  during that one page change (native view transition, 640ms) both strips share a
+  `wave-strip` snapshot that stretches from the hero's foot to behind the search card, and
+  a flowing strip mounted within 1s of another continues its shape and position
+  (`WelcomeStrip` handoff; path drawn in a layout effect before the snapshot). Other page
+  changes, browsers without view transitions and reduced motion are unchanged. Local
+  checks only: a new interface-motion e2e test (desktop and phone) passed, home-water
+  and interface-motion specs passed, and unit tests show 827 passing with the same 2
+  all-supplier-reports failures as before. Removed the old Home ticker and card artwork
+  (`home-card-marks.css`). English/Spanish copy for all new text.
+- Later the same day: removed the interim "How it works" section (its white band cut the
+  wave off). The hero now grows to fill the window under the header, so the strip sits at
+  the bottom of the first screen, followed only by the awareness-only footer, now
+  see-through with a faint hairline. The search box no longer shows its
+  "Search by supplier or county" label (kept as a screen-reader label, EN/ES); the
+  placeholder sits alone in the box, the left magnifier was removed, and the "Search"
+  text button became a 52px teal magnifier submit button on the right (48px on phones,
+  where it now stays inside the box), named "Search"/"Buscar". Local checks: TypeScript
+  and build passed; unit tests 827 passing with the same 2 `all-supplier-reports`
+  failures; `home-water`, `interface-motion` and `logo-intro` specs passed in both
+  projects (the wave-morph test timed out once under parallel load on phone and passed
+  6/6 alone). `home-viewport.spec.ts` still shows the same Places add-place, service-contact
+  and provider-title failures (16 per project) on rules this change does not touch. Desktop
+  and phone screenshots checked. No deployment or commit.
+- The original moving WelcomeStrip (unchanged colours, gradients and strength) sits as a
+  band along the hero's foot and rises/fades in on load. An interim navy hero, recoloured
+  strip with a solid floor layer, and separate `HeroRipples` droplet rings were tried
+  the same day and removed; `Journey.tsx` and `welcome-strip.ts` are back to their
+  committed versions. Entrance animations and the strip's rise are off under reduced
+  motion.
+- Local verification: TypeScript and production build passed; 827 unit tests passed,
+  with the two pre-existing `all-supplier-reports.test.tsx` failures unchanged.
+  `home-water`, `interface-motion` and `logo-intro` specs: 33/34 in both Playwright
+  projects; the one failure (desktop "water stays below the header…") passed 3/3 when
+  rerun alone, matching an earlier load-related timeout. An earlier run of
+  `home-viewport.spec.ts` showed Places add-place colour, provider-contact height and
+  provider-title icon failures on rules this change does not touch; not compared against
+  a clean baseline. Full e2e suite not re-run. Desktop and phone screenshots checked by
+  eye. No deployment, commit or delivery verification.
+
+### 2026-11-09 — Structured, selected-answer Help emails
+
+- Kept the four-screen workflow and deterministic English/Spanish generation.
+  Subjects now include a brief selected billing/quality observation and supplied
+  bill period/address; nonempty What happened, What I’ve already tried,
+  What I’m requesting and Related records sections separate resident input from
+  dated evidence. Removed the automatically added five-business-day reply request.
+- Expanded only selected stock service, billing and report-document requests;
+  preserved free-written action details/questions, including their casing and
+  punctuation in the numbered call script. Evidence provenance/inclusion rules,
+  saved-current disclaimers, recipient routing and confirmation before replacing
+  manual edits remain unchanged. Feedback is not included in generated emails.
+- Added bilingual synthetic regression coverage and isolated sample-mode browser
+  checks for structured rendering, saved edits, exports and explicit regeneration.
+  Local verification: 826 unit tests passed; the two pre-existing English/Spanish
+  historical-disclaimer failures in `all-supplier-reports.test.tsx` remain unchanged.
+  All 8 selected Playwright checks passed; desktop/mobile captures were inspected.
+  TypeScript/Vite build passed with the existing >500 kB bundle warning; the full
+  unit run also logs jsdom's unsupported navigation warning. No deployment,
+  delivery verification or real messages.
+
 ### 2026-11-09 — Shorter remaining Help screens
 
 - Removed repeated supplier and “Not sent yet” lines from screens 2–4, the

@@ -42,7 +42,7 @@ test('icon issue buttons, date controls and only explicitly confirmed editable w
   expect(message).toContain('I have no water')
   expect(message).toContain('October 20, 2026')
    expect(message).not.toContain('Requested response:')
-  expect(message).toContain('Could you please:\n1. Restore service\n2. Please restore service when possible')
+  expect(message).toContain('Could you please:\n1. Restore service: investigate the reported service problem and advise on next steps toward restoration\n2. Please restore service when possible')
   expect(message).not.toContain('Share an update')
   expect(message).not.toContain('Lower pressure than usual')
   fireEvent.click(screen.getByText(/^To:/))

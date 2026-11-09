@@ -30,6 +30,23 @@ test.beforeEach(async ({ page, context, baseURL }) => {
   }, places.map(place => place.id))
 })
 
+test('Home help card matches map card colors in default, hover and focus states', async ({ page }) => {
+  await page.goto('/')
+  const map = page.locator('.wave-home-action').filter({ has: page.locator('.wave-home-icon--map') })
+  const help = page.locator('.wave-home-action--help')
+  const colors = (card: typeof map) => card.evaluate(element => {
+    const icon = getComputedStyle(element.querySelector('.wave-home-icon')!)
+    const action = getComputedStyle(element.querySelector('b')!)
+    return { icon: icon.color, background: icon.backgroundColor, action: action.color }
+  })
+  const expected = await colors(map)
+  expect(await colors(help)).toEqual(expected)
+  await help.hover()
+  expect(await colors(help)).toEqual(expected)
+  await help.focus()
+  expect(await colors(help)).toEqual(expected)
+})
+
 for (const width of [1440, 390, 320]) {
   for (const language of ['EN', 'ES']) {
     test(`Home sidebar uses aligned background sections at ${width}px (${language})`, async ({ page }) => {
@@ -151,7 +168,7 @@ for (const viewport of [{ width: 1280, height: 650 }, { width: 1440, height: 700
     for (const language of ['EN', 'ES']) {
       await page.getByRole('button', { name: language, exact: true }).click()
       for (const tab of [1, 2, 3, 0]) {
-        await page.locator('.app-header nav button').nth(tab).click()
+        await page.getByRole('navigation').getByRole('button').nth(tab).click()
         await expect(page.locator('.app-header nav button').nth(tab)).toHaveAttribute('aria-current', 'page')
         expect(await dimensions()).toEqual(home)
       }

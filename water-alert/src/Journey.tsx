@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react'
+import { useId, useLayoutEffect, useRef } from 'react'
 import './welcome.css'
 import { STRIP_HEIGHT, STRIP_MAX_STEP_MS, STRIP_SPEED, STRIP_WIDTH, stripPaths } from './welcome-strip'
 import { SOURCES, resolvePlaces, type Place } from './domain'
@@ -14,13 +14,20 @@ import { catalogEntry } from './place-catalog'
 // once and never animates (Settings and History, where the controls should get attention first),
 // always from the same fixed seed so the still strip has one identical shape on every page/visit.
 export const STILL_STRIP_SEED = 0x5a7e
+// A flowing strip that replaces another within a moment (Home hero -> supplier search, search ->
+// confirm) continues the same shape and position, so the page-change morph between them is one
+// continuous wave rather than two unrelated ones.
+const STRIP_HANDOFF_MS = 1000
+let stripHandoff: { seed: number; offset: number; at: number } | undefined
 export function WelcomeStrip({ still = false }: { still?: boolean } = {}) {
   const id = useId().replace(/:/g, '')
   const aqua = useRef<SVGPathElement>(null)
   const teal = useRef<SVGPathElement>(null)
-  useEffect(() => {
-    const seed = still ? STILL_STRIP_SEED : Math.floor(Math.random() * 0x100000000)
-    let offset = 0, previous: number | undefined, frame = 0
+  // Layout effect: the path is drawn before a page-change snapshot of the new page is taken.
+  useLayoutEffect(() => {
+    const handoff = !still && stripHandoff && performance.now() - stripHandoff.at < STRIP_HANDOFF_MS ? stripHandoff : undefined
+    const seed = still ? STILL_STRIP_SEED : handoff?.seed ?? Math.floor(Math.random() * 0x100000000)
+    let offset = handoff?.offset ?? 0, previous: number | undefined, frame = 0
     const draw = () => {
       const paths = stripPaths(offset, seed)
       aqua.current?.setAttribute('d', paths.aqua)
@@ -44,7 +51,7 @@ export function WelcomeStrip({ still = false }: { still?: boolean } = {}) {
     sync()
     motion?.addEventListener('change', sync)
     document.addEventListener('visibilitychange', sync)
-    return () => { cancelAnimationFrame(frame); motion?.removeEventListener('change', sync); document.removeEventListener('visibilitychange', sync) }
+    return () => { cancelAnimationFrame(frame); motion?.removeEventListener('change', sync); document.removeEventListener('visibilitychange', sync); stripHandoff = { seed, offset, at: performance.now() } }
   }, [still])
   return <div className={still ? 'welcome-strip welcome-strip--still' : 'welcome-strip'} aria-hidden="true">
     <svg viewBox={`0 0 ${STRIP_WIDTH} ${STRIP_HEIGHT}`} preserveAspectRatio="none" focusable="false">

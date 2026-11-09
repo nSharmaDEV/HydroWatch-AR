@@ -145,7 +145,7 @@ test('confirmed multiple locations enter prose and subject without implying a su
   const message = generateMessage(draft, 'en')
   expect(message.body).toContain('I’m a Sample Creek Water customer at Oak Street.')
   expect(message.body).toContain('I also experienced this at Community centre.')
-  expect(message.subject).toContain('Sample Creek Water')
+  expect(message.subject).toContain('Oak Street')
   expect(message.body).not.toMatch(/\[LOCATION\]|service area|boundary/)
 })
 test('custom requested wording is preserved instead of rewritten by a partial verb match', () => {
