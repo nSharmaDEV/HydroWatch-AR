@@ -37,7 +37,7 @@ function validate(d: HelpDraft) {
   }
   const sources = d.sources?.map(sourceValue)
   if (d.locations !== undefined && (!Array.isArray(d.locations) || d.locations.length > 10 || d.locations.some(s => typeof s !== 'string' || !s.trim() || s.length > 200 || /[\r\n\x00-\x1f]/.test(s)) || new Set(d.locations).size !== d.locations.length)) throw new Error('Invalid locations')
-  if (d.flowStep !== undefined && !['choose', 'billing', 'timing', 'experience', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
+  if (d.flowStep !== undefined && !['choose', 'billing', 'timing', 'experience', 'details', 'where', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
   if (d.recipientRoutes !== undefined && (!Array.isArray(d.recipientRoutes) || d.recipientRoutes.length > 4 || new Set(d.recipientRoutes).size !== d.recipientRoutes.length || d.recipientRoutes.some(r => !['provider', 'adh', 'ag', 'legal'].includes(r)))) throw new Error('Invalid recipients')
   let wording: HelpDraft['wording']
   if (d.wording !== undefined) {

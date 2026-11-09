@@ -28,18 +28,19 @@ test('selection stays a row until Edit wording is explicitly opened', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Edit wording: No water' }))
   expect(screen.getByRole('textbox')).toHaveValue('No water')
 })
-test('Other keeps the same five steps and Review derives a report without replacing manual email', async () => {
+test('Other keeps the same eight steps and Review derives a report without replacing manual email', async () => {
   render(<RequestWorkspace place={samplePlaces[0]} sample language="en" onBack={() => {}} onHistory={() => {}} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Other issue' }))
-  expect(screen.getByText('Step 1 of 5')).toBeVisible()
+  expect(screen.getByText('Step 1 of 8')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  fireEvent.change(screen.getByLabelText('Describe what happened (optional if selected above)'), { target: { value: 'Resident observation' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  fireEvent.change(screen.getByLabelText('Describe what happened'), { target: { value: 'Resident observation' } })
+  for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
   fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'My edited email' } })
   fireEvent.click(screen.getByRole('button', { name: 'Back' }))
-  // "What response would help?" is a visible panel on step 3 for every issue, including Other.
-  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+  // "What response would help?" is its own step 6 for every issue, including Other.
+  expect(screen.getByText('Step 6 of 8')).toBeVisible()
   expect(screen.getByRole('heading', { name: 'What response would help?' })).toBeVisible()
   fireEvent.change(screen.getByLabelText('Additional wording (optional)'), { target: { value: 'Please explain next steps.' } })
   fireEvent.click(screen.getByRole('button', { name: 'Review email' }))

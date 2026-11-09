@@ -8,6 +8,28 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-08 — One card per Help screen
+
+- Split Help into eight focused screens, each in one centred 760px card with
+  supplier/title inside, progress and save controls above and a full-width action
+  below. Dates, location and requested response no longer compete in three panels.
+- Review focuses on the email; Records opens the full source evidence and locked
+  inclusion controls. Kept citations, signature, attachments, downloads, stale
+  warnings, English/Spanish, saved-step migration and sample sending restrictions.
+- Contact sources opens the full per-field provenance and alternate listings in
+  a popup, keeping the sending actions uncluttered without dropping evidence.
+- Desktop layout targets no page scrolling at 1280×800 for the synthetic fixture;
+  mobile, enlarged text and long custom content may scroll naturally.
+- Local browser suite: 470 passed, 2 skipped, 34 failed. All Help checks pass;
+  remaining failures are the previously baseline-confirmed Home layout and observed
+  map checks. Production build and whitespace checks pass. These are synthetic
+  local checks, not production or device-delivery verification.
+- Updated unit walkthroughs, card geometry, Records and Contact sources popup
+  checks for eight steps, retaining sample, source, placeholder and delivery guards.
+  Full unit suite: 775 passed, 2 failed (the known Gurdon English/Spanish report
+  checks); two obsolete answer-table tests were folded into replacement coverage.
+- Local implementation only. Not deployed; no messages, calls or submissions made.
+
 ### 2026-11-08 — Directory matching note inside Advisory history
 
 - Moved the directory-only exact-name warning from the status panel into expandable

@@ -7,7 +7,7 @@ export type HelpRoute = 'provider' | 'adh' | 'ag' | 'legal'
 export type IssueType = 'service' | 'quality' | 'billing' | 'legal' | 'advisory' | 'other'
 export interface HelpAttachment { id: string; name: string; type: string; data: string }
 export interface HelpSource { recordId: string; url: string; label: string }
-export type HelpStep = 'choose' | 'billing' | 'timing' | 'experience' | 'response' | 'records' | 'review' | 'send' | 'confirm'
+export type HelpStep = 'choose' | 'billing' | 'timing' | 'experience' | 'details' | 'where' | 'response' | 'records' | 'review' | 'send' | 'confirm'
 export interface HelpFactRecord { agency: string; date: string; problem: string; area: string; status: string; verified: boolean; year?: string }
 export interface HelpFact { id: string; text: string; kind: 'active' | 'saved' | 'historical'; included: boolean; sources: HelpSource[]; record?: HelpFactRecord }
 export interface HelpDraft {

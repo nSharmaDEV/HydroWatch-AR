@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
+test.use({ reducedMotion: 'reduce' })
 for (const language of ['en', 'es'] as const) for (const outputs of [false, true]) test(`${outputs ? 'sample outputs and language' : 'saved guided help, Map and History'} (${language})`, async ({ page, context, baseURL }) => {
   const unexpected: string[] = [], errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
@@ -21,32 +22,37 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   const fits = async () => {
     if (outputs) return
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    if (await page.locator('.request-review-grid').count()) {
-      const left = (await page.locator('.request-review-information').boundingBox())!, right = (await page.locator('.request-review-email').boundingBox())!
-      expect(left.width / (left.width + right.width)).toBeCloseTo(0.35, 1)
+    await expect(page.locator('.request-card')).toHaveCount(1)
+    if (await page.locator('.request-review-email').count()) {
       expect(await page.locator('.request-message-editor').evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16)
-    } else expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(801)
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(801)
   }
   await page.goto('/')
   await page.getByRole('button', { name: language === 'en' ? 'Places' : 'Lugares', exact: true }).click()
   await page.getByRole('button', { name: language === 'en' ? 'Get help with a water issue' : 'Obtener ayuda con un problema de agua', exact: true }).first().click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 5' : 'Paso 1 de 5')
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 1 of 8' : 'Paso 1 de 8')
   await fits()
   await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 2 of 5' : 'Paso 2 de 5')
-  await page.getByLabel(language === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', { exact: true }).fill('Synthetic resident issue — no service on Monday')
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 2 of 8' : 'Paso 2 de 8')
+  await fits()
+  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 3 of 8' : 'Paso 3 de 8')
+  await page.getByLabel(language === 'en' ? 'Describe what happened (optional if selected before)' : 'Describe lo que pasó (opcional si ya seleccionaste)', { exact: true }).fill('Synthetic resident issue — no service on Monday')
   const other = language === 'en' ? 'es' : 'en'
   if (outputs) {
     await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
-    await expect(page.getByRole('textbox', { name: other === 'en' ? 'Describe what happened (optional if selected above)' : 'Describe lo que pasó (opcional si seleccionaste arriba)', exact: true })).toHaveValue('Synthetic resident issue — no service on Monday')
+    await expect(page.getByRole('textbox', { name: other === 'en' ? 'Describe what happened (optional if selected before)' : 'Describe lo que pasó (opcional si ya seleccionaste)', exact: true })).toHaveValue('Synthetic resident issue — no service on Monday')
     await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
   }
   await fits()
-  await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 3 of 5' : 'Paso 3 de 5')
-  await fits()
+  for (const n of [4, 5, 6]) {
+    await page.getByRole('button', { name: language === 'en' ? 'Continue' : 'Continuar', exact: true }).click()
+    await expect(page.locator('.request-progress')).toContainText(language === 'en' ? `Step ${n} of 8` : `Paso ${n} de 8`)
+    await fits()
+  }
   await page.getByRole('button', { name: language === 'en' ? 'Review email' : 'Revisar correo', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 5' : 'Paso 4 de 5')
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 7 of 8' : 'Paso 7 de 8')
   await fits()
   if (outputs) {
     await page.getByRole('button', { name: other.toUpperCase(), exact: true }).click()
@@ -70,9 +76,9 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
       if (filename.includes('email')) expect(content).toContain('SYNTHETIC EDIT RETAINED')
     }
   }
-  // Step 5 holds the copy/send action and "Where to send it".
+  // Step 8 holds the copy/send action and "Where to send it".
   await page.getByRole('button', { name: language === 'en' ? 'Where to send it' : 'Dónde enviarlo', exact: true }).click()
-  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 5 of 5' : 'Paso 5 de 5')
+  await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 8 of 8' : 'Paso 8 de 8')
   await expect(page.locator('.send-options')).toContainText(language === 'en' ? 'Sample — sending disabled.' : 'Ejemplo — envío desactivado.')
   await expect(page.locator('a[href^="mailto:"], a[href^="tel:"]')).toHaveCount(0)
   await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)

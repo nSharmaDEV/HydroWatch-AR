@@ -42,7 +42,7 @@ Browser tests distinguish shipped-app journeys from retained-component checks.
 components for lake/tap separation, agency wording, dates and local-output checks.
 It is a test-only Vite fixture, not an application route or evidence that the
 current supplier-only app exposes lake cards or the older help flow. Current
-five-step help and Places navigation are tested through the application itself.
+eight-step help and Places navigation are tested through the application itself.
 
 Test recovery check (November 3, 2026, Node 24.22.1): **651 unit/integration tests
 pass**, with zero failures or pending cases, using
@@ -213,30 +213,29 @@ not verify production feeds or device delivery. Nothing deployed or sent.
 
 ## Advisory help
 
-Help uses the existing Map-aligned shell in five short steps (since November 8,
-2026): **Choose issue → What happened? → When, where and what you want → Review
-your email → Send it**. There are no folding sections.
-- **What happened?** shows observations and attachments beside the details. For billing,
-  that includes the charge questions and "What have you already tried?".
-- **When, where and what you want** puts dates and notes, observed locations and
-  the response choices in three panels side by side. An invalid date range
-  disables **Review email**.
-- **Review your email** holds the answers, records, composer and downloads.
-- **Send it** holds Where to send it and "Did you send it?", with a header Send
-  action only when supported for every selected recipient. Otherwise the header
-  offers Copy email.
+Help uses eight short screens (since November 8, 2026), each in one centred card
+up to 760px wide: **Choose issue → What did you notice? → Tell us more → When did
+it happen? → Where did you observe it? → What response would help? → Review your
+email → Send it**. There are no folding form sections.
+- Observations and optional attachments have their own screen; details and a
+  description follow. Select an observation or describe the issue to continue.
+- Dates and locations each have their own screen. An invalid date range disables
+  Continue. Billing's "What have you already tried?" is on the response screen.
+- Review holds optional signature fields, the composer and downloads. **Records**
+  opens the dated source evidence and inclusion controls; required historical
+  records remain locked. Cited sources, stale-draft warnings and manual edits remain.
+- Send it holds Where to send it and "Did you send it?". The full-width bottom
+  action offers Send message only when supported for every recipient; otherwise
+  it offers Copy email. **Contact sources** opens the per-field directory links,
+  check dates and conflicting listings. Sample sending remains disabled.
 
-Drafts saved on the old billing step resume on What happened?; old response
-steps resume on step 3. Every screen shares the same
-heading–leader–primary-action layout, with Back, progress and save status in one
-compact row. The supplier name and status sit in that title row. Middle screens use
-matching bordered panels with 20px desktop padding; choices are full bordered rows
-and writing prompts are rounded chips. Progress shows the actual **Step n of m**,
-and Back preserves answers and email edits. No relevant records means omitting that
-tool, not an all-clear claim. With the synthetic browser fixture, every step fits
-without page scrolling at 1280×800 and 1440×780. Larger record sets, long notes
-or attachments can still add scrolling. Mobile and enlarged text use one column
-and natural page scrolling.
+Old `billing` steps resume on Tell us more; `confirm`/`records` resume on Review.
+Other saved step IDs remain valid. Back, progress, save status and History sit
+above the card; title and supplier/status sit inside it. Progress shows the actual
+**Step n of m**, and Back preserves answers and email edits. No relevant records
+is not an all-clear claim. Desktop layout targets 1280×800 without page scrolling
+for the synthetic fixture. Long custom wording or attachment lists can still add
+height. Mobile and enlarged text scroll naturally rather than clipping controls.
 
 ### Did you send it? and follow-up
 

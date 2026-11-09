@@ -45,27 +45,27 @@ test('catalog matches appear while typing and arrows/Enter select without enteri
 
 test('invalid date ranges show guidance and prevent advancing; ongoing clears the end date without disabling its picker', () => {
   render(<Guide initial={{ ...base(), flowStep: 'timing', answers: { began: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
-  expect(screen.getByText('Step 3 of 5')).toBeVisible()
-  // Inline field error inside the always-visible "When and where" panel.
+  expect(screen.getByText('Step 4 of 8')).toBeVisible()
+  // Inline field error on the always-visible "When did it happen?" card.
   expect(screen.getAllByRole('alert').map(a => a.textContent)).toEqual(['The end date must be on or after the start date.'])
-  expect(screen.getByRole('heading', { name: 'When and where' })).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'When did it happen?' })).toBeVisible()
   expect(document.querySelector('details.request-optional')).toBeNull()
   expect(screen.getByLabelText('When did it end? (optional)')).toBeVisible()
-  expect(screen.getByRole('button', { name: 'Review email' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
   fireEvent.change(screen.getByLabelText('When did it end? (optional)'), { target: { value: '2026-10-15' } })
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Review email' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
   fireEvent.change(screen.getByLabelText('Is it ongoing? (optional)'), { target: { value: 'Yes' } })
   expect(screen.getByLabelText('When did it end? (optional)')).toBeEnabled()
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveValue('')
 })
 
-test.each(['quality', 'advisory'] as const)('%s dates validate the first-noticed date against the end (legacy response step resumes on the timing screen)', issue => {
-  render(<Guide initial={{ ...base(), issue, flowStep: 'response', answers: { noticed: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
-  expect(screen.getByText('Step 3 of 5')).toBeVisible()
+test.each(['quality', 'advisory'] as const)('%s dates validate the first-noticed date against the end on the timing screen', issue => {
+  render(<Guide initial={{ ...base(), issue, flowStep: 'timing', answers: { noticed: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
+  expect(screen.getByText('Step 4 of 8')).toBeVisible()
   expect(screen.getAllByRole('alert')).toHaveLength(1)
   for (const alert of screen.getAllByRole('alert')) expect(alert).toHaveTextContent(/end date.*start date/i)
-  expect(screen.getByRole('button', { name: 'Review email' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveAttribute('min', '2026-10-14')
 })
 
@@ -80,12 +80,16 @@ test('observation step omits provider contacts and safety guidance in live and s
   expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
 })
 
-test('Review highlights missing answers and omits source detail and deletion rows', () => {
+test('Review keeps records in a popup without an answers table, source detail or deletion rows', () => {
   const facts = initialFacts(place, [{ id: 'notice', placeId: place.id, name: place.name, county: place.county, agency: 'ADH', kind: 'boil', issued: '2026-10-14', lifted: null, reason: 'Published problem', area: 'Published area', url: 'https://example.test/notice' }], true, false, 'en')
   const changeFacts = vi.fn()
   render(<ReviewEmail draft={{ ...base(), facts }} language="en" extras={null} edit={() => {}} changeFacts={changeFacts} go={() => {}} regenerate={() => {}} />)
-  const row = screen.getByRole('row', { name: /First noticed/ })
-  expect(within(row).getByRole('button', { name: 'Add reported start date' })).toHaveTextContent('Not provided')
+  expect(screen.queryByRole('table', { name: 'What you provided' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('row', { name: /First noticed/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Add reported start date' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /^Records \(\d+ of \d+ included\)$/ }))
+  const records = screen.getByRole('dialog', { name: 'Records' })
+  expect(within(records).getByText('Published problem')).toBeVisible()
   expect(screen.queryByText('View source details')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Remove source record' })).not.toBeInTheDocument()
 })

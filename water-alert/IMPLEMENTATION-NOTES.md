@@ -76,6 +76,25 @@ or boundary source. Matching uses the exact PWS ID only.
   Local `tsx` and the Vite build both load it. The client bundle grew by about
   145 KB raw, roughly 35 KB gzipped.
 
+### One card per screen — same day
+
+The five-step panel layout above was superseded after visual review: each screen
+now has one centred card (maximum 760px), with title/supplier inside, quiet progress
+and save controls above, and a full-width primary action below the question.
+`helpPath` is `choose → experience → details → timing → where → response → review
+→ send`. `billing` now maps to `details`; `confirm`/`records` still map to `review`.
+The server accepts the new `details` and `where` IDs. Existing answers are preserved.
+
+Review replaces the answer-summary table with the email itself. Source records
+and locked inclusion controls are in the Records popup; citations, signature,
+downloads, stale warning and sample restrictions remain. The response screen keeps
+billing's prior-attempt field; its two optional text fields sit side by side on
+desktop, stacked on phones. Contact sources opens every sending option's directory
+links, check dates and alternate listings in a nonmodal popup with Escape/close
+and focus return. Small screens and enlarged text scroll naturally.
+Local only; nothing deployed, sent or submitted. Verification is recorded in the
+matching changelog entry.
+
 ## Measured Spaces motion — November 7, 2026
 
 Local utility-carousel tuning; no deployment or change to advisory data. The

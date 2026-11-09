@@ -4,18 +4,20 @@ import { blankRequest } from '../src/help-requests'
 import { samplePlaces } from '../src/sample'
 import { LEISURE_HILLS_ID } from '../src/annual-reports'
 
-test('every issue uses five steps; records are skipped and legacy drafts resume on the screen holding their answers', () => {
+test('every issue uses eight one-card steps; records are skipped and legacy drafts resume on the screen holding their answers', () => {
   const draft = blankRequest(samplePlaces[0])
-  const five = ['choose', 'experience', 'timing', 'review', 'send']
-  expect(helpPath(draft)).toEqual(five)
-  expect(helpPath({ ...draft, issue: 'billing' })).toEqual(five)
-  expect(helpPath({ ...draft, issue: 'other' })).toEqual(five)
+  const eight = ['choose', 'experience', 'details', 'timing', 'where', 'response', 'review', 'send']
+  expect(helpPath(draft)).toEqual(eight)
+  expect(helpPath({ ...draft, issue: 'billing' })).toEqual(eight)
+  expect(helpPath({ ...draft, issue: 'other' })).toEqual(eight)
   expect(helpPath(draft)).not.toContain('records')
   expect(helpStep({ ...draft, flowStep: 'confirm', stage: 3 })).toBe('review')
   expect(helpStep({ ...draft, flowStep: 'records' })).toBe('review')
   expect(helpStep({ ...draft, flowStep: 'timing' })).toBe('timing')
-  expect(helpStep({ ...draft, flowStep: 'response' })).toBe('timing')
-  expect(helpStep({ ...draft, flowStep: 'billing' })).toBe('experience')
+  expect(helpStep({ ...draft, flowStep: 'response' })).toBe('response')
+  expect(helpStep({ ...draft, flowStep: 'details' })).toBe('details')
+  expect(helpStep({ ...draft, flowStep: 'where' })).toBe('where')
+  expect(helpStep({ ...draft, flowStep: 'billing' })).toBe('details')
   expect(helpStep({ ...draft, flowStep: 'experience' })).toBe('experience')
   expect(helpStep({ ...draft, flowStep: 'review' })).toBe('review')
   expect(helpStep({ ...draft, flowStep: 'send' })).toBe('send')

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Icon } from './icons'
 import type { Language } from './domain'
 import type { HelpDraft, HelpOutcomeKind } from './help-requests'
@@ -16,6 +16,9 @@ export function SendOptions({ draft, language, sample, blocked, copy, record }: 
   const [status, setStatus] = useState('')
   const [asked, setAsked] = useState<{ o: SendOption; kind: HelpOutcomeKind } | null>(null)
   const [reference, setReference] = useState('')
+  const [showSources, setShowSources] = useState(false)
+  const sourcesButton = useRef<HTMLButtonElement>(null)
+  const closeSources = () => { setShowSources(false); sourcesButton.current?.focus() }
   const ask = (o: SendOption, kind: HelpOutcomeKind) => { if (record && !sample) { setAsked({ o, kind }); setReference('') } }
   function answer(kind: HelpOutcomeKind | null) {
     if (!asked || !record) return
@@ -59,8 +62,7 @@ export function SendOptions({ draft, language, sample, blocked, copy, record }: 
       {!sample && o.email && draft.attachments.length ? <p className="quiet-note">{say('Attach your photos or documents in your email app; email links cannot include files.', 'Adjunta tus fotos o documentos en tu app de correo; los enlaces de correo no incluyen archivos.')}</p> : null}
       {o.route === 'provider' && !o.email && !sample ? <p className="quiet-note">{o.dial ? say('No checked email on file — WAVE will not guess one. Call, or copy the message for their website or office.', 'No hay correo verificado; WAVE no lo adivina. Llama o copia el mensaje para su sitio web u oficina.') : say('WAVE has no checked contact for this system yet. Check your bill for the customer-service number.', 'WAVE aún no tiene un contacto verificado para este sistema. Revisa tu factura para el número de servicio al cliente.')}</p> : null}
       {o.dial && !sample ? <details className="send-option-script"><summary>{say('Show call script', 'Mostrar guion de llamada')}</summary><ol>{script.map(line => <li key={line}>{line}</li>)}</ol></details> : null}
-      {escalation ? <p className="quiet-note">{say('Your message is addressed to your current recipients. To contact this office, add it in To and update the draft first.', 'Tu mensaje está dirigido a los destinatarios actuales. Para contactar esta oficina, añádela en Para y actualiza el borrador.')}</p> : null}
-      {source(o)}
+      {escalation && (o.email || o.formUrl) ? <p className="quiet-note">{say('Your message is addressed to your current recipients. To contact this office, add it in To and update the draft first.', 'Tu mensaje está dirigido a los destinatarios actuales. Para contactar esta oficina, añádela en Para y actualiza el borrador.')}</p> : null}
     </article>
   }
   return <section className="send-options" aria-labelledby="send-options-heading">
@@ -78,7 +80,14 @@ export function SendOptions({ draft, language, sample, blocked, copy, record }: 
         <button className="secondary" onClick={() => answer('unreachable')}>{say('I couldn’t reach them', 'No pude comunicarme')}</button>
       </div>
     </div> : <div className="send-option-grid">{primary.map(o => row(o))}{next ? row(next, true) : null}</div>}
-    {!sample && record && !asked && primary[0] ? <button className="text-button send-record-other" onClick={() => ask(primary[0], 'emailed')}>{say('Sent it another way? Record it', '¿Lo enviaste de otra forma? Regístralo')}</button> : null}
+    <div className="send-option-tools">{!sample && record && !asked && primary[0] ? <button className="text-button send-record-other" onClick={() => ask(primary[0], 'emailed')}>{say('Sent it another way? Record it', '¿Lo enviaste de otra forma? Regístralo')}</button> : null}
+      <button ref={sourcesButton} className="text-button" aria-expanded={showSources} aria-controls="send-contact-sources" onClick={() => setShowSources(!showSources)}>{say('Contact sources', 'Fuentes de contacto')}</button>
+    </div>
+    {showSources ? <div id="send-contact-sources" role="dialog" aria-label={say('Contact sources', 'Fuentes de contacto')} className="request-citations-popup send-contact-sources" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closeSources() } }}>
+      <button autoFocus className="text-button" aria-label={say('Close contact sources', 'Cerrar fuentes de contacto')} onClick={closeSources}><Icon name="x" size={20} /></button>
+      <h3>{say('Contact sources', 'Fuentes de contacto')}</h3>
+      {[...primary, ...(next ? [next] : [])].map(o => <section key={o.route}><h4>{o.name}</h4>{source(o)}</section>)}
+    </div> : null}
     {last ? <p className="quiet-note send-last">{say('Last recorded', 'Último registro')}: {outcomeLabel(last, language)}, {readableDate(last.on, language)}{last.reference ? ` (${say('ref.', 'ref.')} ${last.reference})` : ''}.{draft.followUpOn ? ` ${say('Follow-up reminder', 'Recordatorio de seguimiento')}: ${readableDate(draft.followUpOn, language)}.` : ''}</p> : null}
     {status ? <p role="status">{status}</p> : null}
   </section>

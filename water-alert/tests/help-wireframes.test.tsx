@@ -7,94 +7,112 @@ import { blankRequest, generateMessage } from '../src/help-requests'
 import { samplePlaces } from '../src/sample'
 import { savePreferences, defaults } from '../src/storage'
 afterEach(() => { cleanup(); localStorage.clear() })
-/** Dates and locations live on step 3 ("When, where and what you want"), always visible. */
-function expectWhenWhere() {
-  expect(screen.getByText('Step 3 of 5')).toBeVisible()
-  expect(screen.getByRole('heading', { name: 'When and where' })).toBeVisible()
+/** Locations live on step 5 ("Where did you observe it?"), always visible. */
+function expectWhere() {
+  expect(screen.getByText('Step 5 of 8')).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'Where did you observe it?' })).toBeVisible()
   expect(document.querySelector('details.request-optional')).toBeNull()
 }
-/** From step 2, give a minimal report so Continue is enabled, then advance to step 3. */
-function continueToTiming() {
-  expect(screen.getByText('Step 2 of 5')).toBeVisible()
-  fireEvent.change(screen.getByLabelText('Describe what happened (optional if selected above)'), { target: { value: 'Resident observation' } })
+/** From step 2, give a minimal report on step 3 so Continue is enabled, then advance through dates to step 5. */
+function continueToWhere() {
+  expect(screen.getByText('Step 2 of 8')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expectWhenWhere()
+  expect(screen.getByText('Step 3 of 8')).toBeVisible()
+  fireEvent.change(screen.getByLabelText('Describe what happened (optional if selected before)'), { target: { value: 'Resident observation' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expect(screen.getByText('Step 4 of 8')).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expectWhere()
 }
-test('shared composition has bounded panels, no legacy area field, and a unified email surface', async () => {
+/** Every step is one card: title row at the top, the question in the body, the primary action at the bottom. */
+function expectOneCard(title: string) {
+  const cards = [...document.querySelectorAll('.request-card')]
+  expect(cards).toHaveLength(1)
+  expect(cards[0]).toHaveAttribute('aria-label', title)
+  expect(cards[0].querySelector(':scope > .request-title-row h1')).toHaveTextContent(title)
+  expect(cards[0].querySelector(':scope > .request-card-body')).not.toBeNull()
+  const action = cards[0].querySelector(':scope > .request-card-action')
+  expect(action?.querySelector('button.primary')).not.toBeNull()
+  expect(cards[0].querySelector('.request-title-row button.primary')).toBeNull()
+  expect(document.querySelector('.request-split, .request-panel')).toBeNull()
+}
+test('shared composition is one bounded card per step, no legacy area field, and a unified email surface', async () => {
   render(<RequestWorkspace place={samplePlaces[0]} sample language="en" onBack={() => {}} onHistory={() => {}} />)
-   expect((await screen.findByRole('heading', { level: 1 })).closest('.request-step-layout')).not.toBeNull()
-   fireEvent.click(screen.getByRole('button', { name: 'Current advisory' }))
+  expect((await screen.findByRole('heading', { level: 1 })).closest('.request-step-layout')).not.toBeNull()
+  expectOneCard('What do you need help with?')
+  fireEvent.click(screen.getByRole('button', { name: 'Current advisory' }))
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  // "What happened?" is one bounded split of two panels: observations and details.
-  let splits = [...document.querySelectorAll('.request-split')]
-  expect(splits).toHaveLength(1)
-  expect(splits[0].querySelectorAll(':scope > .request-panel')).toHaveLength(2)
+  expectOneCard('What did you notice?')
   expect(screen.queryByLabelText('Affected area you know about (optional)')).not.toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Add details' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Add supporting material (optional)' })).toBeVisible()
   const attachmentButton = screen.getByRole('button', { name: 'Add a photo or document' })
-  expect(document.querySelector('.request-experience-observations')?.contains(attachmentButton)).toBe(true)
+  expect(document.querySelector('.request-card-body')?.contains(attachmentButton)).toBe(true)
   expect(screen.queryByText('File types and limits')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('checkbox', { name: 'My usual water use is affected' }))
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  // Step 3 is one bounded split of three panels: when and where, locations, response.
-  splits = [...document.querySelectorAll('.request-split')]
-  expect(splits).toHaveLength(1)
-  expect(splits[0].querySelectorAll(':scope > .request-panel')).toHaveLength(3)
+  expectOneCard('Tell us more')
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expectOneCard('When did it happen?')
   expect(screen.queryByLabelText('Affected area you know about (optional)')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expectOneCard('Where did you observe it?')
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expectOneCard('What response would help?')
   fireEvent.click(screen.getByRole('button', { name: 'Review email' }))
+  expectOneCard('Review your email')
   const composer = document.querySelector('.request-composer')!
   expect(composer).not.toBeNull()
   expect(composer.contains(screen.getByLabelText('Subject'))).toBe(true)
   expect(composer.contains(screen.getByLabelText('Message'))).toBe(true)
-  expect(screen.getByRole('region', { name: 'Information provided' }).contains(screen.getByRole('button', { name: 'Add a photo or document' }))).toBe(true)
+  expect(screen.queryByRole('region', { name: 'Information provided' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('table', { name: 'What you provided' })).not.toBeInTheDocument()
   expect(composer.querySelector('input[type=file]')).toBeNull()
 })
-test('observation step combines issue choices and attachments and stretches full-width details fields', () => {
+const renderStep = (draft: Parameters<typeof GuidedHelp>[0]['draft']) => render(<GuidedHelp
+  draft={draft} place={draft.place} language="en" sample={false} deviceOnly delivery={false} sending={false} saveFailed={false}
+  heading={createRef<HTMLHeadingElement>()}
+  extras={<section className="request-extras"><button>Add a photo or document</button></section>}
+  edit={() => {}} changeFacts={() => {}} go={() => {}} send={() => {}} regenerate={() => {}}
+/>)
+test('observation step combines issue choices and attachments; details step stretches full-width fields', () => {
   const place = samplePlaces[0]
   const draft = { ...blankRequest(place), issue: 'service' as const, flowStep: 'experience' as const, locations: ['Oak Street', 'Pine Street'], wording: { report: { first: 'No water' }, response: {} }, answers: { frequency: 'Occasional', observationLocation: 'Oak Street', contacted: 'Yes' } }
-  render(<GuidedHelp
-    draft={draft} place={place} language="en" sample={false} deviceOnly delivery={false} sending={false} saveFailed={false}
-    heading={createRef<HTMLHeadingElement>()}
-    extras={<section className="request-extras"><button>Add a photo or document</button></section>}
-    edit={() => {}} changeFacts={() => {}} go={() => {}} send={() => {}} regenerate={() => {}}
-  />)
-  const experience = document.querySelector('.request-screen-experience')
-  const primary = experience?.querySelector('.request-experience-primary')
-  expect(primary).toBeTruthy()
-  const observations = primary?.querySelector('.request-experience-observations')
-  const details = primary?.querySelector('.request-experience-details')
-  expect(primary?.querySelectorAll(':scope > .request-panel')).toHaveLength(2)
-  expect(experience?.querySelector('.request-experience-support')).toBeNull()
-  expect(observations?.contains(screen.getByRole('heading', { name: 'Choose what you observed' }))).toBe(true)
-  expect(observations?.contains(screen.getByRole('heading', { name: 'Add supporting material' }))).toBe(true)
-  expect(observations?.querySelector('.request-extras')).toBeTruthy()
-  const description = screen.getByLabelText('Describe what happened (optional if selected above)')
-  expect(details?.contains(description)).toBe(true)
+  const view = renderStep(draft)
+  const experience = document.querySelector('.request-screen-experience')!
+  expect(experience).toBeTruthy()
+  expect(screen.getByRole('checkbox', { name: 'No water' })).toBeChecked()
+  expect(experience.contains(screen.getByRole('heading', { name: 'Add supporting material (optional)' }))).toBe(true)
+  expect(experience.querySelector('.request-extras')).toBeTruthy()
+  expect(screen.queryByLabelText(/Describe what happened/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('How often does it happen? (optional)')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
+  expect(experience.querySelector('.request-safety, .request-experience-provider')).toBeNull()
+  view.unmount()
+  renderStep({ ...draft, flowStep: 'details' })
+  const details = document.querySelector('.request-screen-details')!
+  const description = screen.getByLabelText('Describe what happened (optional if selected before)')
+  expect(details.contains(description)).toBe(true)
   expect(description).toHaveAttribute('rows', '4')
   const frequency = screen.getByLabelText('How often does it happen? (optional)')
-  expect(details?.contains(frequency)).toBe(true)
+  expect(details.contains(frequency)).toBe(true)
   expect(frequency.closest('.request-question-grid')).toHaveClass('request-frequency-grid')
   expect(screen.queryByLabelText('Which locations, if different from those selected? (optional)')).not.toBeInTheDocument()
   expect(screen.queryByText('Prior provider contact (optional)')).not.toBeInTheDocument()
-  expect(experience?.querySelector('.request-safety, .request-experience-provider')).toBeNull()
+  expect(details.querySelector('.request-safety, .request-experience-provider')).toBeNull()
+  expect(details.querySelector('.request-extras')).toBeNull()
 })
-test('billing details remain available without prior-provider questions in observation step', () => {
+test('billing details remain available without prior-provider questions on the details step', () => {
   const place = samplePlaces[0]
-  const draft = { ...blankRequest(place), issue: 'billing' as const, flowStep: 'experience' as const }
-  render(<GuidedHelp
-    draft={draft} place={place} language="en" sample={false} deviceOnly delivery={false} sending={false} saveFailed={false}
-    heading={createRef<HTMLHeadingElement>()}
-    extras={<section className="request-extras"><button>Add a photo or document</button></section>}
-    edit={() => {}} changeFacts={() => {}} go={() => {}} send={() => {}} regenerate={() => {}}
-  />)
+  renderStep({ ...blankRequest(place), issue: 'billing' as const, flowStep: 'details' as const })
   expect(screen.getByLabelText('What kind of bill problem?')).toBeVisible()
   expect(screen.queryByText('Prior provider contact (optional)')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('What have you already tried? (optional)')).not.toBeInTheDocument()
 })
 test('saved supplier suggestions are explicit choices, never selected locations or addresses', async () => {
   savePreferences('sample', { ...defaults(), watches: [samplePlaces[0].id] })
   render(<RequestWorkspace place={samplePlaces[0]} places={samplePlaces} sample language="en" onBack={() => {}} onHistory={() => {}} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
-  continueToTiming()
+  continueToWhere()
   expect(screen.queryByRole('button', { name: /Remove location/ })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('option', { name: `${samplePlaces[0].name} ${samplePlaces[0].county}` }))
   expect(screen.getByRole('button', { name: `Remove location: ${samplePlaces[0].name}` })).toBeVisible()
@@ -115,45 +133,49 @@ test('multiple locations survive back and reload, and removed locations stay rem
   const props = { place: samplePlaces[0], places: samplePlaces, sample: true, language: 'en' as const, onBack() {}, onHistory() {} }
   const view = render(<RequestWorkspace {...props} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
-  continueToTiming()
+  continueToWhere()
   for (const name of ['Oak Street', 'Community centre']) {
     fireEvent.change(screen.getByLabelText('Enter any affected location in Arkansas'), { target: { value: name } })
     fireEvent.keyDown(screen.getByLabelText('Enter any affected location in Arkansas'), { key: 'Enter' })
   }
   fireEvent.click(screen.getByRole('button', { name: 'Remove location: Oak Street' }))
   fireEvent.click(screen.getByRole('button', { name: 'Back' }))
-  expect(screen.getByText('Step 2 of 5')).toBeVisible()
+  expect(screen.getByText('Step 4 of 8')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expectWhenWhere()
+  expectWhere()
   expect(screen.queryByRole('button', { name: 'Remove location: Oak Street' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Remove location: Community centre' })).toBeVisible()
   await waitFor(() => expect(screen.getByText('Saved on this device')).toBeVisible())
   view.unmount()
   render(<RequestWorkspace {...props} />)
-  expect(await screen.findByText('Step 3 of 5')).toBeVisible()
-  expectWhenWhere()
+  expect(await screen.findByText('Step 5 of 8')).toBeVisible()
+  expectWhere()
   expect(screen.getByRole('button', { name: 'Remove location: Community centre' })).toBeVisible()
   expect(screen.queryByRole('button', { name: 'Remove location: Oak Street' })).not.toBeInTheDocument()
 })
-test('timing offers manual locations without preselection and keeps the primary action in the heading', async () => {
+test('details, timing and where offer manual answers without preselection and keep the primary action at the bottom of the card', async () => {
   render(<RequestWorkspace place={samplePlaces[0]} sample language="en" onBack={() => {}} onHistory={() => {}} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Water-quality concern' }))
   fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
-  // Confirmed wording does not preselect frequency or description on "What happened?".
+  // Confirmed wording does not preselect frequency or description on the next card.
   fireEvent.click(screen.getByRole('checkbox', { name: 'An unusual color' }))
-  expect(screen.getByLabelText('How often does it happen? (optional)')).toHaveValue('')
-  expect(screen.getByLabelText('Describe what happened (optional if selected above)')).toHaveValue('')
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expectWhenWhere()
-  const input = screen.getByLabelText('Enter any affected location in Arkansas')
+  expect(screen.getByLabelText('How often does it happen? (optional)')).toHaveValue('')
+  expect(screen.getByLabelText('Describe what happened (optional if selected before)')).toHaveValue('')
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveAttribute('type', 'date')
   expect(screen.getByLabelText('When did it end? (optional)')).toBeEnabled()
+  fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expectWhere()
+  const input = screen.getByLabelText('Enter any affected location in Arkansas')
   expect(screen.getByText(/Enter any Arkansas location: town, neighborhood, street, business, school, or home/)).toBeVisible()
   expect(screen.queryByRole('button', { name: /Remove location/ })).not.toBeInTheDocument()
   fireEvent.change(input, { target: { value: 'Pine Bluff apartment complex' } })
   fireEvent.click(screen.getByRole('button', { name: 'Add this location' }))
   expect(screen.getByRole('button', { name: 'Remove location: Pine Bluff apartment complex' })).toBeVisible()
-  expect(screen.getByRole('button', { name: 'Review email' }).closest('.request-title-row')).not.toBeNull()
+  const primary = screen.getByRole('button', { name: 'Continue' })
+  expect(primary.closest('.request-card-action')).not.toBeNull()
+  expect(primary.closest('.request-title-row')).toBeNull()
 })
 test('can search Census for an Arkansas address and choose the returned match', async () => {
   const previousFetch = globalThis.fetch
@@ -161,7 +183,7 @@ test('can search Census for an Arkansas address and choose the returned match', 
   try {
     render(<RequestWorkspace place={samplePlaces[0]} places={samplePlaces} sample language="en" onBack={() => {}} onHistory={() => {}} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
-    continueToTiming()
+    continueToWhere()
     expect(screen.getByText(/your text is sent to the U\.S\. Census Bureau/i)).toBeVisible()
     expect(screen.getByText(/Avoid including private addresses in the search/i)).toBeVisible()
     expect(screen.queryByText(/WAVE does not save the search/i)).not.toBeInTheDocument()

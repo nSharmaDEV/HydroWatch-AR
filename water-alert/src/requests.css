@@ -524,3 +524,90 @@ body:has(.sample-banner) .request-screen-review .request-review-email .request-m
 .request-timing-response-choices .request-writing-prompts > .request-actions { gap: .3rem .5rem; }
 .request-step-layout:has(.request-screen-timing) { gap: 8px; }
 .request-timing-locations .request-location-panel { gap: 8px; }
+
+/* One card per Help step (2026-11-08): a centred card the width of the Places
+   supplier card, title and supplier on top, the step's question, then one
+   full-width primary action. These rules follow and override the older panel grids. */
+.request-step-layout { min-height: 0; gap: 12px; }
+.request-workspace:has(.request-card) { padding-bottom: 0; }
+main:has(.request-card) { padding-bottom: 12px; }
+body:has(.sample-banner) .request-step-layout { min-height: 0; }
+.request-frame-topline, .request-card { width: min(760px, 100%); margin-inline: auto; }
+.request-card { position: relative; display: flex; flex-direction: column; gap: 18px; padding: 28px 32px; background: #fff; border: 1px solid #dce3e9; border-radius: 16px; box-shadow: 0 1px 2px #102e430d; }
+.request-card > .request-title-row { display: block; }
+.request-card .request-title-row h1 { font-size: 1.65rem; line-height: 1.2; margin: 0 0 6px; }
+.request-card .request-title-row > .request-supplier-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; max-width: none; justify-content: start; text-align: left; }
+.request-card .request-provider { margin: 0; color: #465769; font-weight: 400; }
+.request-card .request-supplier-line .request-sample { margin: 0; }
+.request-card-body { min-width: 0; }
+.request-card-body > .request-fields { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.request-card-body .request-card-subheading { font-size: 1rem; margin: 6px 0 0; }
+.request-card-body .quiet-note { margin: 0; }
+.request-card-body .request-wording-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.request-card-body textarea { min-height: 0; }
+.request-response-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.request-response-notes > :only-child { grid-column: 1 / -1; }
+.request-response-notes label { display: grid; gap: 4px; }
+.request-response-notes textarea { height: 76px; }
+.request-card-body .request-screen-response .request-wording-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.request-card-body .request-description textarea { height: 7.5rem; }
+.request-card .request-location-panel > h2 { display: none; }
+.request-card .request-location-panel { padding: 0; border: 0; background: none; }
+.request-card .request-issue-grid { flex: none; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; gap: 12px; }
+.request-card .request-issue-choice { min-height: 84px; padding: 1rem 1.1rem; font-size: 1.25rem; }
+.request-card .request-issue-choice:last-child:nth-child(odd) { grid-column: 1 / -1; min-height: 64px; }
+.request-card-action .request-primary-action { display: grid; gap: 6px; }
+.request-card-action .request-primary-action > .primary { width: 100%; min-height: 52px; font-size: 1.05rem; }
+.request-card-action .request-primary-action > small { text-align: center; }
+/* Review: signature, email composer, one row of record and download tools. */
+.request-card:has(.request-review-card) { padding-block: 20px; gap: 10px; }
+.request-review-card { display: flex; flex-direction: column; gap: 8px; }
+.request-review-card .request-signature { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; border: 0; max-width: none; font-size: .9rem; }
+.request-review-card .request-signature label { display: grid; gap: 4px; }
+.request-review-card .request-composer { position: relative; min-height: 0; padding: 0 18px; }
+.request-review-card .request-citation-control { top: 6px; right: 6px; }
+.request-review-card .request-review-email { display: block; padding: 4px 18px; }
+.request-review-card .request-output-email, .request-review-card .request-output-email > label:has(.request-message-editor) { flex: none; display: block; }
+.request-review-card .request-review-email .request-subject { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 12px; padding: 4px 0; }
+.request-review-card .request-review-email .request-recipient-dropdown > summary { padding: 8px 0; }
+.request-review-card .request-signature input { min-height: 44px; padding-block: 8px; }
+body .request-card .request-review-card .request-review-email textarea.request-message-editor { flex: none; width: 100%; height: clamp(140px, calc(100dvh - 640px), 320px); min-height: 140px; border: 0; border-radius: 0; padding: 8px 0; resize: vertical; }
+.request-review-card .request-review-update { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0; }
+.request-review-card .request-review-tools { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+.request-review-card .request-review-attachments { font-size: .85rem; }
+.request-records-popup { left: 0; right: 0; top: auto; bottom: 48px; width: auto; max-height: min(520px, 70dvh); z-index: 3; }
+/* Send it: options stacked in the card. */
+.request-card:has(.send-options) { padding-block: 18px; gap: 6px; }
+.request-card .send-option-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.request-card .send-options { padding: 0; border: 0; background: none; gap: 10px; }
+.send-options { position: relative; }
+.send-option-tools { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
+.send-contact-sources { top: auto; bottom: 44px; left: 0; width: 100%; z-index: 3; }
+.send-contact-sources h4 { margin-bottom: 4px; }
+body:has(.sample-banner) .request-card .request-review-card .request-review-email textarea.request-message-editor { height: clamp(140px, calc(100dvh - 704px), 320px); }
+/* The card title already says "Send it"; keep the section heading for screen readers only. */
+.request-card .send-options > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* Each option is one compact row: who and how to reach them on the left, the handoff buttons on the right. */
+.request-card .send-option { grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; row-gap: 4px; padding: 12px 16px; }
+.request-card .send-option > * { grid-column: 1 / -1; }
+.request-card .send-option > .send-option-badge, .request-card .send-option > h3, .request-card .send-option > .send-option-contact { grid-column: 1; }
+.request-card .send-option > .send-option-actions { grid-column: 2; grid-row: 1 / span 3; align-self: center; justify-content: end; }
+.request-card .send-option:not(:has(> .send-option-badge)) > .send-option-actions { grid-row: 1 / span 2; }
+.request-card .send-option h3 { font-size: 1rem; }
+.request-card .send-option-actions > * { min-height: 44px; padding: 8px 14px; }
+.request-card .send-option-script { padding: 0; border: 0; }
+.request-card .send-option-script > summary { min-height: 32px; padding: 2px 0; font-size: .85rem; }
+.request-card .send-option .quiet-note { font-size: .78rem; line-height: 1.4; }
+@media (max-width: 600px) {
+  .request-card .send-option { grid-template-columns: minmax(0, 1fr); }
+  .request-card .send-option > .send-option-actions { grid-column: 1; grid-row: auto; justify-content: start; }
+}
+@media (max-width: 760px) {
+  .request-response-notes, .request-card-body .request-screen-response .request-wording-grid { grid-template-columns: minmax(0, 1fr); }
+  .request-card { padding: 20px 16px; gap: 14px; border-radius: 12px; }
+  .request-card .request-title-row h1 { font-size: 1.4rem; }
+  .request-card .request-issue-grid, .request-review-card .request-signature { grid-template-columns: minmax(0, 1fr); }
+  .request-card .request-issue-choice:last-child:nth-child(odd) { grid-column: auto; }
+  /* Phones scroll the page, so the message gets a comfortable editing height. */
+  body .request-card .request-review-card .request-review-email textarea.request-message-editor { height: 50dvh; min-height: 240px; max-height: 640px; }
+}

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { SendOptions } from '../src/SendOptions'
 import { blankRequest, type HelpDraft } from '../src/help-requests'
@@ -49,15 +49,35 @@ describe('SendOptions panel', () => {
     const row = within(screen.getByRole('article', { name: 'FAYETTEVILLE WATERWORKS' }))
     expect(row.getByRole('link', { name: language === 'en' ? /Open in email app/ : /Abrir en app de correo/ }).getAttribute('href')).toMatch(/^mailto:tnyander@fayetteville-ar\.gov\?subject=Low%20water%20pressure&body=/)
     expect(row.getByRole('link', { name: language === 'en' ? 'Call (479) 575-8386' : 'Llamar (479) 575-8386' })).toHaveAttribute('href', 'tel:+14795758386')
-    expect(row.getByRole('link', { name: language === 'en' ? 'EPA water-system record' : 'registro federal de la EPA' })).toHaveAttribute('href', 'https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000569/JSON')
+    expect(row.queryByRole('link', { name: language === 'en' ? 'EPA water-system record' : 'registro federal de la EPA' })).toBeNull()
     expect(screen.getByText(language === 'en' ? /WAVE does not send, call or file anything/ : /WAVE no envía, llama ni presenta nada/)).toBeVisible()
+    // Contact provenance lives behind a "Contact sources" popup.
+    const label = language === 'en' ? 'Contact sources' : 'Fuentes de contacto'
+    expect(screen.queryByRole('dialog', { name: label })).not.toBeInTheDocument()
+    const trigger = screen.getByRole('button', { name: label })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    const sources = within(screen.getByRole('dialog', { name: label }))
+    expect(sources.getByRole('heading', { name: 'FAYETTEVILLE WATERWORKS' })).toBeVisible()
+    expect(sources.getByRole('link', { name: language === 'en' ? 'EPA water-system record' : 'registro federal de la EPA' })).toHaveAttribute('href', 'https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000569/JSON')
+    fireEvent.keyDown(screen.getByRole('dialog', { name: label }), { key: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: label })).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
   })
 
   it('shows the disagreeing Leisure Hills listing without using it', () => {
     render(<SendOptions draft={draft('LEISURE HILLS MOBILE HOME PARK')} language="en" sample={false} blocked={false} copy={copy} />)
-    expect(screen.getByText(/lists a different address \(SUPERCLAIO@YAHOO\.COM\); WAVE does not use it/)).toBeVisible()
     expect(document.querySelector('a[href^="mailto:SUPERCLAIO"]')).toBeNull()
     expect(document.querySelector('a[href^="mailto:LEISUREHILLSWATERCO@GMAIL.COM"]')).not.toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Contact sources' }))
+    const sources = screen.getByRole('dialog', { name: 'Contact sources' })
+    expect(within(sources).getByText(/lists a different address \(SUPERCLAIO@YAHOO\.COM\); WAVE does not use it/)).toBeVisible()
+    expect(document.querySelector('a[href^="mailto:SUPERCLAIO"]')).toBeNull()
+    expect(sources.querySelector('a[href^="mailto:"]')).toBeNull()
+    fireEvent.click(within(sources).getByRole('button', { name: 'Close contact sources' }))
+    expect(screen.queryByRole('dialog', { name: 'Contact sources' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Contact sources' })).toHaveFocus()
   })
 
   it('says no email is on file instead of guessing one', () => {
