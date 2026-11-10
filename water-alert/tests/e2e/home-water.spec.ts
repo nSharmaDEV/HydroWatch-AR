@@ -37,6 +37,13 @@ test('water stays below the header, reacts without moving content, and persists 
   const before = await place()
   await page.waitForTimeout(200)
   const still = await canvas.screenshot()
+  // No automatic drops: without a click the surface stays exactly as it was. (The moving strip
+  // and content are hidden for this comparison so only the canvas is captured.)
+  await page.addStyleTag({ content: '.wave-home { visibility: hidden !important }' })
+  const quiet = await canvas.screenshot()
+  await page.waitForTimeout(2500)
+  expect((await canvas.screenshot()).equals(quiet)).toBe(true)
+  await page.evaluate(() => document.querySelectorAll('style').forEach(style => { if (style.textContent?.includes('.wave-home { visibility')) style.remove() }))
   // Drop into the open strip band at the bottom of the hero (it lets pointer events through).
   const gap = await page.locator('.wave-hero').evaluate(el => el.getBoundingClientRect().bottom - 40)
   if (test.info().project.use.hasTouch) await page.touchscreen.tap(water.width * .18, gap)

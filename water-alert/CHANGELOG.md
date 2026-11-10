@@ -8,10 +8,24 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-09 — Update Home search description
+
+- Updated the Home hero description in English and Spanish to focus on finding official notices by supplier or county. Local change, not deployed.
+
 ### 2026-11-09 — Match Home help card to map colors
 
 - The Home help card now shares the map card's teal icon, pale teal icon background,
   and teal action text. Scoped to Home; local change, not deployed.
+
+### 2026-11-09 — Background ripples only on click or tap
+
+- The shared WebGL water background (`HomeWater`, every tab) no longer drops a random
+  ripple every 1–2 seconds. Ripples now start only where someone clicks or taps (and from
+  the existing ripple event); they still spread and fade as before. Reduced motion and
+  the no-WebGL fallback are unchanged. Local checks only: TypeScript passed,
+  `home-water` unit tests (new "never drops on its own" test) and the `home-water` e2e
+  spec on desktop and phone (new check that the canvas stays unchanged with no input)
+  passed. Not deployed.
 
 ### 2026-11-09 — Home hero with supplier search and action cards on the shared water background
 

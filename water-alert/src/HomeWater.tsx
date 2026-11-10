@@ -27,8 +27,6 @@ export function HomeWater({ paused = false }: { paused?: boolean }) {
       let frame = 0
       let resizeTimer: ReturnType<typeof setTimeout> | undefined
       let width = -1, height = -1
-      let nextAmbient = 0
-      const ambientDelay = () => 1000 + Math.random() * 1000
       const resize = () => {
         // A busy frame can exceed the debounce interval even mid-expansion.
         // Never reallocate the buffer until height animations actually finish.
@@ -50,18 +48,12 @@ export function HomeWater({ paused = false }: { paused?: boolean }) {
       }
       const animate = (now: number) => {
         if (document.hidden) return
-        // Low-amplitude drops, not DOM layers, with no catch-up burst on return.
-        if (!nextAmbient) nextAmbient = now + ambientDelay()
-        if (now >= nextAmbient) {
-          surface.drop(.08 + Math.random() * .84, .08 + Math.random() * .84, .005)
-          nextAmbient = now + ambientDelay()
-        }
+        // No automatic drops: ripples start only from a click/tap (or a ripple event).
         surface.frame(now)
         frame = requestAnimationFrame(animate)
       }
       const visibility = () => {
         cancelAnimationFrame(frame)
-        nextAmbient = 0
         if (!document.hidden) frame = requestAnimationFrame(animate)
       }
       const drop = (event: PointerEvent) => {

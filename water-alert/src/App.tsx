@@ -261,7 +261,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
           <div className="wave-hero-inner">
             <div className="wave-hero-main">
             <h1 id="wave-hero-title" className="fall fall-headline">{prefs.language === 'es' ? <>Encuentra avisos sobre el agua{' '}<span>en Arkansas.</span></> : <>Find water advisories{' '}<span>in Arkansas.</span></>}</h1>
-            <p className="wave-hero-lede fall fall-lede">{prefs.language === 'es' ? 'Busca avisos públicos oficiales, ve de dónde viene la información y comunícate con tu proveedor de agua sobre una inquietud.' : 'Search official public notices, see where the information comes from, and contact your water provider about a concern.'}</p>
+            <p className="wave-hero-lede fall fall-lede">{prefs.language === 'es' ? 'Busca por proveedor de agua o condado para encontrar avisos oficiales.' : 'Search by water supplier or county to find official notices.'}</p>
             <form className="wave-hero-search fall fall-search" role="search" onSubmit={openSupplierCheck}>
               <div className="wave-hero-field"><label className="sr-only" htmlFor="home-supplier-search">{prefs.language === 'es' ? 'Busca por proveedor o condado' : 'Search by supplier or county'}</label><input id="home-supplier-search" name="home-supplier-search" type="search" autoComplete="off" value={heroQuery} onChange={event => setHeroQuery(event.target.value)} placeholder={prefs.language === 'es' ? 'Nombre del proveedor o condado' : 'Supplier name or county'} /></div>
               <button type="submit" aria-label={prefs.language === 'es' ? 'Buscar' : 'Search'}><Icon name="search" size={24} /></button>

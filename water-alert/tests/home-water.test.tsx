@@ -189,24 +189,23 @@ it('never draws a requested ripple under reduced motion', () => {
   expect(createWaterSurface).not.toHaveBeenCalled()
 })
 
-it.each([0, .5, 1])('creates one softer ambient drop every 1–2 seconds (random=%s)', random => {
+it('never drops on its own: ripples start only from a press, and keep animating afterwards', () => {
   motion()
   const surface = { resize: vi.fn(), drop: vi.fn(), frame: vi.fn(), dispose: vi.fn() }
   vi.mocked(createWaterSurface).mockReturnValue(surface)
   let callback: FrameRequestCallback = () => {}
   vi.stubGlobal('requestAnimationFrame', vi.fn(next => { callback = next; return 42 }))
   vi.stubGlobal('cancelAnimationFrame', vi.fn())
-  vi.spyOn(Math, 'random').mockReturnValue(random)
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 100, top: 100, left: 0, right: 1000, bottom: 800, width: 1000, height: 700, toJSON() {} })
   render(<main><HomeWater /></main>)
-  const delay = 1000 + random * 1000
-  callback(100)
-  callback(100 + delay - 1)
+  for (let now = 100; now <= 10_100; now += 16) callback(now)
   expect(surface.drop).not.toHaveBeenCalled()
-  callback(100 + delay)
-  expect(surface.drop).toHaveBeenNthCalledWith(1, .08 + random * .84, .08 + random * .84, .005)
-  callback(100 + delay * 2 - 1)
+  const press = new Event('pointerdown', { bubbles: true, cancelable: true })
+  Object.assign(press, { pointerType: 'mouse', clientX: 400, clientY: 300, isPrimary: true, button: 0 })
+  document.querySelector('main')!.dispatchEvent(press)
   expect(surface.drop).toHaveBeenCalledTimes(1)
-  callback(100 + delay * 2)
-  expect(surface.drop).toHaveBeenCalledTimes(2)
-  expect(surface.drop.mock.calls[1][2]).toBe(.005)
+  const frames = surface.frame.mock.calls.length
+  callback(10_200)
+  expect(surface.frame).toHaveBeenCalledTimes(frames + 1)
+  expect(surface.drop).toHaveBeenCalledTimes(1)
 })
