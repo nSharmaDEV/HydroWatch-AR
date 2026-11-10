@@ -30,7 +30,7 @@ it('offers only suppliers at setup and in sample mode', async () => {
   expect(screen.queryByRole('checkbox', { name: /HAB/ })).not.toBeInTheDocument()
 })
 
-it('goes straight from Home "Search by supplier or county" to the supplier search, with no source-choice step', async () => {
+it('goes straight from Home supplier/county/ZIP search to supplier results without a source-choice step', async () => {
   render(<App />)
   const user = userEvent.setup()
   await user.click(screen.getByRole('button', { name: 'Search' }))
@@ -39,13 +39,13 @@ it('goes straight from Home "Search by supplier or county" to the supplier searc
   expect(screen.queryByRole('heading', { name: 'How do you get your water?' })).not.toBeInTheDocument()
   expect(window.location.hash).toBe('#search')
   await user.click(screen.getByRole('button', { name: /Back/ }))
-  expect(screen.getByRole('searchbox', { name: 'Search by supplier or county' })).toBeVisible()
+  expect(screen.getByRole('searchbox', { name: 'Supplier name, county, or ZIP code' })).toBeVisible()
 })
 
 it('carries the Home search text into the existing supplier search', async () => {
   render(<App liveData={{ sources: [], places: [{ id: 'ADH:hero-test', name: 'Hero Test Water', kind: 'system', county: 'Benton' }], archive: [], coverageStart: null }} />)
   const user = userEvent.setup()
-  await user.type(screen.getByRole('searchbox', { name: 'Search by supplier or county' }), 'Hero Test{Enter}')
+  await user.type(screen.getByRole('searchbox', { name: 'Supplier name, county, or ZIP code' }), 'Hero Test{Enter}')
   expect(screen.getByRole('heading', { level: 1, name: 'Find your public water supplier' })).toBeVisible()
   expect(screen.getByRole('searchbox')).toHaveValue('Hero Test')
   expect(screen.getByRole('heading', { level: 2, name: 'Hero Test Water' })).toBeVisible()

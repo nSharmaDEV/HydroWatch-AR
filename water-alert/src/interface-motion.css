@@ -26,6 +26,23 @@ html[data-wave-motion]::view-transition-group(wave-strip){z-index:1;animation-du
 html[data-wave-motion]::view-transition-new(wave-strip){height:100%;object-fit:fill;animation:none;mix-blend-mode:normal}
 /* Same shape on both sides, so only the live new strip is shown (no doubled, darker overlap). */
 html[data-wave-motion]::view-transition-old(wave-strip){animation:none;opacity:0}
+/* Supplier confirm -> Places ("settle"): the confirm page's tall flowing strip shrinks and moves to
+   the still Places strip. The Places strip starts as the confirm strip's shape and brightness and
+   reshapes/dims into its own fixed shape during the move (see settleStrip in Journey.tsx), so as
+   with "grow" only the live new image is shown. The supplier card moves with it: the
+   confirm preview card becomes the selected card in the Places carousel. */
+html[data-wave-strip=settle] main:has(>.home-layout)>.welcome-strip--still svg{view-transition-name:wave-strip}
+html[data-wave-strip=settle] .result-preview>.status-card,
+html[data-wave-strip=settle] .home-layout .carousel-slide:not([inert])>.status-card{view-transition-name:wave-place-card}
+html[data-wave-strip=settle]::view-transition-old(wave-content){animation-duration:240ms}
+/* The card box grows from the preview to the Places card and clips both images to it, so the
+   longer Places card is revealed as the box grows. The two layouts wrap differently, so instead of
+   an even crossfade (doubled, ghosted text) the opaque Places card sits underneath and the
+   preview fades off the top early, so the card is never see-through mid-move. */
+html[data-wave-motion]::view-transition-group(wave-place-card){z-index:3;overflow:clip;border-radius:16px;animation-duration:640ms;animation-timing-function:cubic-bezier(.31,.24,.14,1)}
+html[data-wave-motion]::view-transition-old(wave-place-card){mix-blend-mode:normal;animation:wave-card-out 640ms linear both}
+html[data-wave-motion]::view-transition-new(wave-place-card){mix-blend-mode:normal;opacity:1;animation:none}
+@keyframes wave-card-out{0%{opacity:1}40%,100%{opacity:0}}
 @keyframes wave-content-out{to{opacity:0}}
 @keyframes wave-content-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes wave-forward-out{to{opacity:0;transform:translateX(-24px)}}

@@ -31,12 +31,18 @@ it.each(['en', 'es'] as const)('keeps every %s step and its navigation in one co
   }
 })
 
-// Hiding contact values behind icons or removing the direct guide entry must fail.
-it('keeps contact values and help directly available', async () => {
+// Short labels retain exact destinations, accessible contact values and hover details.
+it('keeps contact actions and help directly available', async () => {
   render(<StatusCard place={place} now={now} t={en} onView={() => {}} onHelp={() => {}} />)
   expect(document.querySelector('.supplier-contact-section .provider-contact')).toBeVisible()
-  expect(screen.getByRole('link', { name: /Call.*479/ })).toHaveTextContent('(479) 549-2158')
-  expect(screen.getByRole('link', { name: /LEISUREHILLSWATERCO@GMAIL.COM/ })).toHaveTextContent('LEISUREHILLSWATERCO@GMAIL.COM')
+  const call = screen.getByRole('link', { name: /Call.*479/ })
+  expect(call).toHaveTextContent('Call')
+  expect(call).toHaveAttribute('href', 'tel:+14795492158')
+  expect(call).toHaveAttribute('title', '(479) 549-2158')
+  const email = screen.getByRole('link', { name: /LEISUREHILLSWATERCO@GMAIL.COM/ })
+  expect(email).toHaveTextContent('Email')
+  expect(email).toHaveAttribute('href', 'mailto:LEISUREHILLSWATERCO@GMAIL.COM')
+  expect(email).toHaveAttribute('title', 'LEISUREHILLSWATERCO@GMAIL.COM')
   expect(screen.getByRole('button', { name: 'Get help with a water issue' })).toBeVisible()
   expect(screen.getByRole('button', { name: /^Provider information/ })).toBeVisible()
 })

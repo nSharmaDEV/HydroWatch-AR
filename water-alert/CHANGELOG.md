@@ -8,6 +8,99 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-09 — Remove large-supplier heading from supplier search
+
+- Removed the "Large Arkansas suppliers" heading and its hint ("By directory population served—not your location. Match your water bill.") and the Spanish equivalents above the default supplier list on an empty search. The list itself, its population ordering and the "Directory matches" heading for typed searches are unchanged. Local checks only, not deployed: TypeScript, `tests/ux-refresh.test.tsx` and the Playwright "supplier directory labels and acronyms stay readable" test (desktop and phone, EN/ES) passed.
+
+### 2026-11-09 — Add weight to Home wave
+
+- Slightly thickened the two Home wave bands using their existing gradients, without changing the wave's placement or animation. Other pages retain their original strip weight. Local change only, not deployed.
+
+### 2026-11-09 — Wave and card settle into Places after confirming a supplier
+
+- Pressing Next on the supplier confirm screen now runs a "settle" page-change morph. The bright flowing wave shrinks and moves to the Places wave position, reshaping and dimming into the usual fixed Places shape as it travels, so it ends clear of the sidebar text. The confirmed supplier card moves from the confirm preview into its Places carousel slot, and the confirm actions fade out quickly. Reduced motion, hidden tabs and browsers without view transitions switch instantly, as before. The confirm page no longer clears its candidate before leaving, so the snapshot keeps the card.
+- Local checks only, not deployed: the new Playwright test "confirming a supplier settles its wave and moves its card into Places" passed on desktop and phone sizes; `npm run build` passed; mid-transition frames were reviewed manually. `npm test` had unrelated failures: `tests/all-supplier-reports.test.tsx` (annual-report historical wording, 2 tests) failed reproducibly, and App/footer tests failed in the full run but passed when rerun on their own. The full e2e suites were not rerun.
+
+### 2026-11-09 — Restore original Home footer
+
+- Restored the original short bilingual Home footer and its responsive styling, including the project name and emergency reminder. Local change only, not deployed.
+
+### 2026-11-09 — Remove Home footer
+
+- Removed the Home footer and its compact-layout overrides, restoring the original hero spacing and wave. Existing privacy and source information remains available in Settings. Local change only, not deployed.
+
+### 2026-11-09 — Fit Home footer on desktop
+
+- Reduced desktop Home spacing and arranged footer links horizontally so the main actions and footer fit in a typical desktop viewport, while retaining the original wave size. Smaller or enlarged layouts remain scrollable rather than clipping content. Local change only, not deployed.
+
+### 2026-11-09 — Home footer design
+
+- Redesigned the bilingual Home footer with a clear project identity, grouped information navigation, and a separate emergency reminder. Preserved existing destinations and draft-policy limitations. Local change only, not deployed.
+
+### 2026-11-09 — Home footer information
+
+- Added English/Spanish Home footer navigation to existing privacy/deletion and source/coverage information, plus draft terms describing product limitations. The terms require project-owner and legal review; the existing privacy screen is not represented as a finalized legal policy. Local change only, not deployed.
+
+### 2026-11-09 — Compact scrollable ZIP matches
+
+- Replaced ZIP-result pagination with all candidates in an alphabetical, keyboard-focusable internally scrollable list; preserved each Select action. Removed the repeated ZIP heading and moved the incomplete-coverage caveat and name-search fallback inside Suggestion sources.
+- Bounded the frosted search panel to the viewport so the input, list and collapsed source/coverage controls remain accessible without page scrolling at tested desktop/phone sizes. Expanded evidence and enlarged text can still scroll rather than clip. English/Spanish and selection-without-saving behavior preserved. Local change, not deployed.
+
+### 2026-11-09 — Optional ZIP supplier suggestions
+
+- Added English/Spanish ZIP lookup on Home and supplier search, with three candidates per page, retained search/page when returning from the preview, and a focused name-search fallback. Selecting a suggestion does not save a place or enable notifications; the existing preview's Next action saves it.
+- Generated a pinned EPA community-system boundary/Census 2020 ZCTA overlap index, reconciled by PWSID to the active directory. Preserved modeled origins, historical source dates, wholesale qualifications, missing/unmatched records and small-overlap audit evidence. ZIP suggestions are incomplete geographic hints, not household service assignments or advisory evidence; private wells remain outside coverage.
+- Added offline regeneration tooling, source hashes/attribution and data documentation. Fixed ZIP pagination inheriting mobile bottom-navigation positioning. Local implementation and synthetic desktop/phone English/Spanish browser checks only; not deployed or device-delivery verified.
+- Updated older browser contact assertions to the approved equal-width Call/Email design while retaining destination/accessibility checks. Broader browser verification still exposes separate report-download timeouts; no fully-green suite claim.
+
+### 2026-11-09 — Show large suppliers before searching
+
+- Empty supplier searches now rank the top three by recorded EPA directory population served: Central Arkansas Water, Fayetteville Waterworks and Springdale Water Utilities in the current snapshot. English/Spanish labels explain this is not location matching; typed search and sample-only ordering remain unchanged. ZIP-to-service-area lookup is not implemented. Local change, not deployed.
+### 2026-11-09 — Clarify supplier directory matches
+
+- Preserved POA/LLC/PWA capitalization in supplier display names without modifying published records, IDs, selection or advisory matching. Added English/Spanish directory-match labels and a bill-versus-county reminder; retained the three-result limit.
+- Rechecked EPA records AR0000899/AR0000913: their published names remain AUTHORITY4/AUTHORITY5. No unsupported friendly aliases or number removal introduced. Exact search-result names remain available on hover. Local change, not deployed.
+### 2026-11-09 — Uniform supplier contact actions
+
+- Connected the service-questions heading to source links with a decorative dotted leader. Call/Email now share equal-width buttons on desktop and mobile; single actions span the row. Contact destinations and dates remain available through accessible labels/tooltips. Local change, not deployed.
+
+### 2026-11-09 — Group contact source links
+
+- Grouped directory and email-source links in one consistently spaced, wrapping row below the contact actions. Removed the visible email checked date, retaining dates in source-link tooltips. English/Spanish preserved; local change, not deployed.
+
+### 2026-11-09 — Shorten email source note
+
+- Shortened the English/Spanish EPA email-source label while retaining the source link and checked date. Local copy change, not deployed.
+
+### 2026-11-09 — Normalize supplier contact spacing
+
+- Added consistent 16px spacing above supplier contacts and before the help button, with 8px before contact source notes. Corrected selectors for the grouped card sections while preserving source provenance and responsive layouts. Local change, not deployed.
+
+### 2026-11-09 — Restore filled supplier help button
+
+- Restored the full-width teal/white Get help button to match Add a place, including responsive spacing after the card sections were grouped. Local change, not deployed.
+
+### 2026-11-09 — Keep preview controls visible and open the chosen place
+
+- Supplier previews retain the full card styling with evidence/history/contact content collapsed under Details. Back and Next stay outside the scrollable evidence region, with tighter spacing and no repeated result heading. Essential status explanations and retained-record warnings remain visible.
+- Next saves without duplicates and opens the Places carousel on the selected supplier, including suppliers already watched. English/Spanish copy and separate notification enrollment remain intact. Verified locally with focused unit and desktop/phone synthetic browser checks; not deployed.
+
+### 2026-11-09 — Full-card preview to Places
+
+- Restored the full supplier status card as the search preview. Next explicitly saves the supplier to the watch list and opens Places without enabling push notifications. Back retains the search. Local implementation, not deployed.
+
+### 2026-11-09 — Compact supplier result
+
+- The selected supplier now appears in a compact status summary with Next leading to full details and an optional Watch action. No watch or notification is enabled by continuing. Local change, not deployed.
+
+### 2026-11-09 — Match supplier result styling
+
+- Gave the supplier result the search screen's wave backdrop and frosted panel, with a scrolling layout for longer results. Local change, not deployed.
+
+### 2026-11-09 — Show supplier status before watching
+
+- Supplier lookup now opens a status result without saving a watch. Watching remains an explicit action in the details; local implementation, not deployed.
+
 ### 2026-11-09 — Update Home search description
 
 - Updated the Home hero description in English and Spanish to focus on finding official notices by supplier or county. Local change, not deployed.

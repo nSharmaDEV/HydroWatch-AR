@@ -649,10 +649,26 @@ Sample checks remain explicitly fictional and never enter live storage.
 
 ## Review the sample journey
 
+Supplier search labels results as directory matches, not recommendations or verified
+household coverage. Display formatting preserves POA/LLC/PWA; underlying published
+names, PWS IDs and advisory matching are unchanged. EPA record endpoints for
+[AR0000899](https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000899/JSON)
+and [AR0000913](https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000913/JSON)
+were rechecked on 2026-11-09 and still publish BENTON COUNTY WATER AUTHORITY4/5.
+No alternative names or meanings for those suffixes were verified, so no friendly
+aliases were added. The original search-result name is retained in its tooltip.
+
+Before typing, supplier search shows three large suppliers ranked by the stored
+EPA population-served field, with an explicit not-your-location qualification.
+Typed queries retain normal relevance. This is not a popularity ranking or ZIP
+lookup; directory office mailing addresses cannot establish household service areas.
+
 1. Choose **Try sample mode**, then **Start sample journey**. Search “Sample
-   Creek” to see two possible suppliers. Select the exact system, review the
-   confirmation, then choose **Yes — watch this place**. Selection alone does
-   not save a watch; **Choose a different place** returns to the search.
+   Creek” to see two possible suppliers. Select the exact system to view its status,
+   then choose **Next** to save the supplier and open **Places**. Selection alone does
+   not save a watch or enable notifications; **Back** returns to the search.
+   Preview evidence is collapsed under **Details**, with Back/Next outside its scroll area.
+   Places opens on the chosen supplier, including an existing watch without duplication.
 2. Use the supplier's info button, then **Notice details** to see the published area and reason,
    guidance verification gap, source link and share action. The side disclosures
    contain record metadata, extracted published fields and alert options.
@@ -879,3 +895,37 @@ This implementation was AI-assisted, including generated code, tests and UI copy
 [NEEDS: student reviews and records their actual contribution and AI assistance.]
 [NEEDS: student confirms 2026 CAC eligibility and submission requirements.]
 No account creation, publication, deployment, merge or submission was performed.
+## ZIP supplier suggestions — 2026-11-09 local / 2026-11-10 UTC snapshot
+
+Home and live supplier search now accept a five-digit ZIP as an optional directory
+lookup. Suggestions use positive full-polygon overlap between pinned EPA CWS
+boundaries and Census 2020 ZCTAs, not utility mailing ZIPs, city/county names or
+centroids. The index reconciles exact PWSIDs to the existing active directory;
+657 of 658 directory systems have geometry, while missing/unmatched records remain
+audited and name search remains available. Modeled boundaries, wholesale flags,
+source dates and small overlaps retain their qualifications.
+
+English/Spanish results now show all candidates alphabetically in an internally
+scrollable list, retain the query when returning from a preview, and offer a
+focused name-search fallback inside Suggestion sources alongside the coverage
+caveat. The repeated ZIP heading and pagination have been removed. The bounded
+frosted panel keeps the search, list and collapsed source/coverage controls within
+the viewport at tested desktop/phone sizes; expanded evidence can scroll without
+clipping. A suggestion
+selection only opens the existing preview; Next saves the selected place, without
+enabling notifications. ZIP input is not persisted. Samples and lake lookup remain
+separate. No-match and unavailable states never establish supplier absence or
+water safety. See [ZIP supplier data](docs/ZIP-SUPPLIER-DATA.md) for pinned hashes,
+provenance, limitations, reconciliation, licenses and offline refresh instructions.
+This is local implementation, not a deployment or verified notification delivery.
+
+Local checks: the Node 24 production build passes with the existing bundle-size
+warning. All four ZIP-specific browser checks pass (desktop/phone, English/Spanish).
+The full unit suite reports 861 passed and two existing Gurdon historical-report
+assertion failures in `tests/all-supplier-reports.test.tsx`; it is not fully green.
+The broader journey browser run found stale contact-layout/text expectations;
+these now assert the approved equal-width Call/Email actions, exact destinations
+and accessible labels. Both contact-hierarchy checks pass. Twelve expanded-guide
+variants subsequently reach a separate timeout waiting for the Download report
+button; the broader browser suite is not fully green. No report-download behavior
+was changed as part of ZIP lookup.

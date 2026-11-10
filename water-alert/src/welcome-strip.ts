@@ -68,16 +68,50 @@ function outline(top: Array<[number, number]>, bottom: Array<[number, number]>) 
   return 'M' + top.concat(bottom.reverse()).map(([x, y]) => `${x},${y.toFixed(1)}`).join('L') + 'Z'
 }
 
-/** SVG path data for both bands at a travel offset. */
-export function stripPaths(offset: number, seed: number) {
+function pathsFrom(sample: (x: number) => StripSample) {
   const aquaTop: Array<[number, number]> = [], aquaBottom: Array<[number, number]> = []
   const tealTop: Array<[number, number]> = [], tealBottom: Array<[number, number]> = []
   for (let x = -8; x <= STRIP_WIDTH + 8; x += STEP) {
-    const s = sampleAt(x, offset, seed)
+    const s = sample(x)
     aquaTop.push([x, s.aquaTop]); aquaBottom.push([x, s.aquaBottom])
     tealTop.push([x, s.tealTop]); tealBottom.push([x, s.tealBottom])
   }
   return { aqua: outline(aquaTop, aquaBottom), teal: outline(tealTop, tealBottom) }
+}
+
+/** SVG path data for both bands at a travel offset. */
+export function stripPaths(offset: number, seed: number) {
+  return pathsFrom(x => sampleAt(x, offset, seed))
+}
+
+export interface StripShape { offset: number; seed: number }
+
+/** Path data part-way (t in [0, 1]) from one strip shape to another, blended slice by slice on the
+ * same x grid, so one wave reshapes into the other without its bands crossing or tearing. */
+export function blendedStripPaths(from: StripShape, to: StripShape, t: number) {
+  const k = Math.min(1, Math.max(0, t))
+  if (k === 1) return stripPaths(to.offset, to.seed)
+  const mix = (a: number, b: number) => a + (b - a) * k
+  return pathsFrom(x => {
+    const a = sampleAt(x, from.offset, from.seed), b = sampleAt(x, to.offset, to.seed)
+    return { x, centre: mix(a.centre, b.centre), aquaTop: mix(a.aquaTop, b.aquaTop), aquaBottom: mix(a.aquaBottom, b.aquaBottom), tealTop: mix(a.tealTop, b.tealTop), tealBottom: mix(a.tealBottom, b.tealBottom) }
+  })
+}
+
+/** CSS cubic-bezier(x1, y1, x2, y2) easing as a function of linear progress (solved by bisection). */
+export function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
+  const curve = (a: number, b: number, s: number) => 3 * a * s * (1 - s) ** 2 + 3 * b * s * s * (1 - s) + s ** 3
+  return (progress: number) => {
+    const p = Math.min(1, Math.max(0, progress))
+    let lo = 0, hi = 1, s = p
+    for (let i = 0; i < 24; i++) {
+      const x = curve(x1, x2, s)
+      if (Math.abs(x - p) < 1e-5) break
+      if (x < p) lo = s; else hi = s
+      s = (lo + hi) / 2
+    }
+    return curve(y1, y2, s)
+  }
 }
 
 /** Travel speed in viewBox units per millisecond (right to left). */

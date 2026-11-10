@@ -32,10 +32,33 @@ load runtime `.env` files.
 | `npm run build` | TypeScript checks and production UI build |
 | `npm run preview` | Preview built UI; does not start the API |
 | `npm run test:e2e` | Synthetic Playwright journeys with an isolated UI server |
+| `npm run directory:zip -- --cache /absolute/external/cache --download` | Download public geography and print the ZIP-candidate reconciliation audit; add `--write` after review |
 
 Install Chromium once with `npx playwright install chromium` before browser tests.
 Those tests intercept API requests and block external requests/service workers;
 they do not verify real agency retrieval or notification delivery.
+
+## ZIP supplier suggestions
+
+Home and live supplier search accept a five-digit ZIP. All mapped candidates appear
+alphabetically in a bounded, internally scrollable list, without pagination.
+Choose the supplier named on your bill. The selected supplier is only saved by
+the preview's **Next**, which opens Places; it does not enable notifications.
+“My supplier isn’t listed,” inside **Suggestion sources**, returns to unrestricted
+name/county/PWS-ID search. That disclosure also contains the incomplete-coverage
+caveat and provenance. The existing bill reminder stays above the search field.
+Lake and fictional sample searches do not use ZIP geography.
+
+The browser uses a precomputed index, not a third-party geocoder. Entered ZIPs are
+not persisted. Mapped service-area overlap with a Census 2020 ZCTA is a suggestion,
+not household verification, complete coverage, or advisory/safety evidence. Private
+wells are outside coverage. Wholesaler-flagged records carry a warning and are not
+automatically treated as household retail suppliers. Missing matches and unavailable
+data retain name-search fallback.
+
+Sources, limitations, attribution and offline refresh procedure:
+[ZIP supplier data](docs/ZIP-SUPPLIER-DATA.md). Review the generated reconciliation
+before accepting a refresh. Keep raw geometry in an external cache, not in git.
 
 Browser tests distinguish shipped-app journeys from retained-component checks.
 `tests/e2e/components.html` mounts the retained status-card and four-step help

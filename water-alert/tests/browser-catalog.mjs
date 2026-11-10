@@ -29,7 +29,6 @@ try {
     await page.goto(url)
     const nav = name => page.getByRole('navigation').getByRole('button', { name, exact: true })
     const select = name => page.getByRole('button', { name: `${language === 'en' ? 'Select' : 'Elegir'} ${name}`, exact: true })
-    const confirm = language === 'en' ? 'Yes — watch this place' : 'Sí — seguir este lugar'
     for (const [i, name] of names.entries()) {
       if (i === 0) await page.getByRole('button', { name: language === 'en' ? /A lake or waterbody/ : /Un lago o cuerpo de agua/ }).click()
       else {
@@ -38,9 +37,11 @@ try {
       }
       await page.getByRole('searchbox').fill(i === 1 ? 'Buffalo River' : name)
       await select(name).click()
-      await page.getByRole('link', { name: language === 'en' ? /Catalog source/ : /Fuente del catálogo/ }).waitFor()
+      if (i < 2) await page.getByRole('link', { name: language === 'en' ? /Catalog source/ : /Fuente del catálogo/ }).waitFor()
       assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('water-alert:live:v1')).watches.length), i)
-      await page.getByRole('button', { name: confirm }).click()
+      if (i >= 2) await page.getByRole('button', { name: language === 'en' ? 'Next' : 'Siguiente', exact: true }).click()
+      if (i < 2) await page.getByRole('button', { name: language === 'en' ? 'Yes — watch this place' : 'Sí — seguir este lugar' }).click()
+      if (i >= 2) await nav(language === 'en' ? 'Places' : 'Lugares').click()
       await page.locator('.status-card').nth(i).waitFor()
     }
     assert.equal(await page.locator('.status-card.unavailable').count(), 6)

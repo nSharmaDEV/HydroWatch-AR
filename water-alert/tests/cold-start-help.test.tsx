@@ -51,7 +51,7 @@ it('keeps the normal follow-onboarding search unchanged after a help visit', asy
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
   expect(screen.getByRole('heading', { name: 'Find your public water supplier' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: `Select ${supplier.name}` }))
-  expect(screen.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()
+  expect(screen.getByRole('article')).toBeVisible()
 })
 
 it('routes the Spanish card to a Spanish provider picker', async () => {

@@ -9,7 +9,7 @@ it('shows the welcome landing page at Home and keeps the watched advisory dashbo
   const notice = { id: 'ADH:event', placeId: 'ADH:real', agency: 'ADH' as const, kind: 'boil' as const, name: 'Watched water', area: 'Agency area', county: 'Benton', issued: '10/13/2026', lifted: null, reason: '', url: SOURCES.ADH }
   render(<App liveData={{ sources: EMPTY_SOURCES, places: [{ id: notice.placeId, name: notice.name, kind: 'system', county: notice.county }], archive: [notice], coverageStart: null }} />)
   expect(screen.getByRole('heading', { name: 'Find water advisories in Arkansas.' })).toBeVisible()
-  expect(screen.getByRole('searchbox', { name: 'Search by supplier or county' })).toBeVisible()
+  expect(screen.getByRole('searchbox', { name: 'Supplier name, county, or ZIP code' })).toBeVisible()
   expect(screen.queryByText('Water Awareness, Verification, and Empowerment')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Search' })).toBeVisible()
   expect(screen.queryByText('How it works')).not.toBeInTheDocument()

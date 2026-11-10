@@ -16,9 +16,11 @@ let currentTransition: { transition: NativeTransition; finishUpdate: () => void;
  * Updates without this explicit boundary (typing, refreshes) never animate.
  */
 export function useContentMotion(ref: RefObject<HTMLElement | null>) {
-  // morphStrip: the flowing wave strip on both pages becomes one shared snapshot, so it
-  // stretches and moves from its old size/position to the new one (Home hero -> supplier search).
-  return useCallback((update: () => void, direction: Direction = 'tab', morphStrip = false) => {
+  // morphStrip: the wave strip on both pages becomes one shared snapshot, so it stretches and
+  // moves from its old size/position to the new one. 'grow' (or true): Home hero -> supplier
+  // search, same flowing shape on both sides. 'settle': supplier confirm -> Places, where the
+  // still Places strip starts as the flowing strip and reshapes/dims into place; the card moves too.
+  return useCallback((update: () => void, direction: Direction = 'tab', morphStrip: boolean | 'grow' | 'settle' = false) => {
     if (currentTransition) {
       currentTransition.transition.skipTransition()
       currentTransition.finishUpdate()
@@ -35,7 +37,7 @@ export function useContentMotion(ref: RefObject<HTMLElement | null>) {
     const previousName = element.style.viewTransitionName
     element.style.viewTransitionName = 'wave-content'
     document.documentElement.dataset.waveMotion = direction
-    if (morphStrip) document.documentElement.dataset.waveStrip = ''
+    if (morphStrip) document.documentElement.dataset.waveStrip = morphStrip === 'settle' ? 'settle' : ''
     const media = window.matchMedia?.('(prefers-reduced-motion: reduce)')
     const preference = () => { if (media?.matches) currentTransition?.transition.skipTransition() }
     const clean = () => { element.style.viewTransitionName = previousName; delete document.documentElement.dataset.waveMotion; delete document.documentElement.dataset.waveStrip; media?.removeEventListener('change', preference) }

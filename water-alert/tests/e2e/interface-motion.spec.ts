@@ -248,7 +248,7 @@ test('Home supplier search grows the hero wave into the search wave; tab changes
     }) as typeof document.startViewTransition
   })
   const hero = await page.locator('.wave-hero-water .welcome-strip svg').boundingBox()
-  await page.getByRole('searchbox', { name: 'Search by supplier or county' }).fill('Bull')
+  await page.getByRole('searchbox', { name: 'Supplier name, county, or ZIP code' }).fill('Bull')
   await page.getByRole('button', { name: 'Search', exact: true }).click()
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBe('')
   await expect.poll(async () => (await stripGroups()).length).toBe(1)
@@ -266,6 +266,55 @@ test('Home supplier search grows the hero wave into the search wave; tab changes
   expect(await stripGroups()).toEqual([])
   await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
+  expect(errors).toEqual([])
+})
+
+test('confirming a supplier settles its wave and moves its card into Places', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', e => errors.push(e.message))
+  const groups = (name: string) => page.evaluate(name => document.getAnimations().filter(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === `::view-transition-group(${name})`).map(a => (a.effect as KeyframeEffect).getKeyframes().map(k => ({ width: parseFloat(String(k.width)), height: parseFloat(String(k.height)) }))), name)
+  const images = (name: string) => page.evaluate(name => document.getAnimations().filter(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === name).length, name)
+  const stillShape = () => page.locator('main > .welcome-strip--still .welcome-band--aqua').getAttribute('d')
+  await page.getByRole('navigation').getByRole('button', { name: 'Places', exact: true }).click()
+  const fixedShape = await stillShape()
+  await page.getByRole('button', { name: /Add a place/ }).click()
+  await page.getByRole('searchbox').fill(place.name)
+  await page.getByRole('button', { name: `Select ${place.name}`, exact: true }).click()
+  await expect(page.getByText('Does this match your water bill?')).toBeVisible()
+  const strip = await page.locator('.result-stage > .welcome-strip svg').boundingBox()
+  const card = await page.locator('.result-preview > .status-card').boundingBox()
+  // Hold every snapshot animation at its start so the morph can be read before it finishes.
+  await page.evaluate(() => {
+    const start = document.startViewTransition.bind(document)
+    document.startViewTransition = ((update: () => void) => {
+      const transition = start(update)
+      void transition.ready.then(() => { for (const animation of document.getAnimations()) { if (animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement) animation.pause() } })
+      return transition
+    }) as typeof document.startViewTransition
+  })
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBe('settle')
+  await expect.poll(async () => (await groups('wave-place-card')).length).toBe(1)
+  const [[cardFrom, cardTo]] = [await groups('wave-place-card')].map(g => [g[0][0], g[0].at(-1)!])
+  const [stripFrames] = await groups('wave-strip')
+  // Both sides were captured: the confirm card and wave are still on the old snapshot.
+  expect(await images('::view-transition-old(wave-place-card)')).toBe(1)
+  // Held at the start, the Places wave is still the confirm wave's shape and brightness.
+  expect(await stillShape()).not.toBe(fixedShape)
+  expect(await page.locator('main > .welcome-strip--still svg').evaluate(el => getComputedStyle(el).opacity)).toBe('0.64')
+  await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBeUndefined()
+  const still = await page.locator('main > .welcome-strip--still svg').boundingBox()
+  const placed = await page.locator('.carousel-slide:not([inert]) > .status-card').boundingBox()
+  expect(stripFrames[0].height).toBeCloseTo(strip!.height, 0)
+  expect(stripFrames.at(-1)!.height).toBeCloseTo(still!.height, 0)
+  expect(cardFrom.width).toBeCloseTo(card!.width, 0)
+  expect(cardTo.width).toBeCloseTo(placed!.width, 0)
+  await expect(page.getByRole('article')).toContainText(place.name)
+  expect(await page.locator('main').evaluate(el => el.style.viewTransitionName)).toBe('')
+  // It ends in the fixed Places shape and opacity, clear of the sidebar text.
+  await expect.poll(stillShape).toBe(fixedShape)
+  expect(await page.locator('main > .welcome-strip--still svg').evaluate(el => (el as SVGElement).style.opacity)).toBe('')
   expect(errors).toEqual([])
 })
 

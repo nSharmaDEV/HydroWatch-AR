@@ -7,6 +7,8 @@ import { appTimestamp, DateRow, Icon, Panel, SourceLink, StatusCard } from './co
 import { PushPanel } from './PushPanel'
 import { disablePush, enablePush, pushDevice, pushSignature, supportsPush, PushSetupError } from './push'
 import { ConfirmPlace, SampleIntro, SearchPlace, WelcomeStrip } from './Journey'
+import zipSnapshot from './directory/zip-suppliers.json' with { type: 'json' }
+import type { ZipIndex } from './zip-suppliers'
 import { NoticeDetail } from './NoticeDetail'
 import { ObservedHistory } from './ObservedHistory'
 import { MapSources } from './MapSources'
@@ -24,7 +26,7 @@ import { ProviderCarousel } from './ProviderCarousel'
 import { HomeWater } from './HomeWater'
 import { useContentMotion, useDisclosureMotion } from './interface-motion'
 
-type Page = 'home' | 'browse' | 'managePlaces' | 'map' | 'history' | 'settings' | 'search' | 'confirm' | 'sampleIntro' | 'detail' | 'help' | 'alerts' | 'sources' | 'privacy' | 'installation'
+type Page = 'home' | 'browse' | 'managePlaces' | 'map' | 'history' | 'settings' | 'search' | 'confirm' | 'sampleIntro' | 'detail' | 'help' | 'alerts' | 'sources' | 'privacy' | 'terms' | 'installation'
 type RemovedPlace = { id: string; index: number; lifted: boolean }
 const PLACE_CATALOG = FULL_PLACE_CATALOG.filter(entry => entry.place.kind === 'system')
 export interface LiveData { sources: SourceSnapshot[]; places: Place[]; archive: Notice[]; coverageStart: string | null; recentChanges?: ObservedChange[] }
@@ -41,6 +43,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
   const leaveHelp = useRef<(() => Promise<boolean>) | null>(null)
   const registerLeave = useCallback((handler: (() => Promise<boolean>) | null) => { leaveHelp.current = handler }, [])
   const [query, setQuery] = useState('')
+  const updateSearchQuery = (value: string) => setQuery(value)
   // Home hero search text; submitting hands it to the existing supplier search step.
   const [heroQuery, setHeroQuery] = useState('')
   // The header drops in only with the first Home load; returning to Home keeps the chrome still.
@@ -68,10 +71,11 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     destination.current = next
     const tabs: Page[] = ['home', 'browse', 'map', 'history', 'settings']
     const direction = tabs.includes(next) ? tabs.includes(page) ? 'tab' : 'back' : page === 'confirm' && next === 'search' ? 'back' : 'forward'
-    // Home's thin hero wave grows into the supplier search's tall wave.
-    changeContent(() => setPageState(next), direction, page === 'home' && next === 'search')
+    // Home's thin hero wave grows into the supplier search's tall wave; a confirmed supplier's
+    // wave settles into the still Places wave while its card moves into the Places carousel.
+    changeContent(() => setPageState(next), direction, page === 'home' && next === 'search' ? 'grow' : page === 'confirm' && next === 'browse' ? 'settle' : false)
   }
-  const detailReturn = useRef<'home' | 'browse' | 'map'>('home')
+  const detailReturn = useRef<'home' | 'browse' | 'map' | 'confirm'>('home')
   const helpReturn = useRef<{ page: Page; noticeId: string | null }>({ page: 'home', noticeId: null })
   const restoreHelpFocus = useRef(false)
   const sample = mode === 'sample'
@@ -137,7 +141,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     window.scrollTo?.(0, 0)
   }, [page, mode, selected])
 
-  function commitNavigation(next: Page) { if (next === 'map') setMapVisited(true); if (next === 'detail') detailReturn.current = page === 'map' ? 'map' : page === 'browse' ? 'browse' : 'home'; setRequestId(undefined); setResumingRequest(null); window.history.replaceState(null, '', window.location.pathname + window.location.search); setPage(next); setLinkedId(null); setMessage(''); setConfirmDelete(false); setHeaderIntro(false) }
+  function commitNavigation(next: Page) { if (next === 'map') setMapVisited(true); if (next === 'detail') detailReturn.current = page === 'map' ? 'map' : page === 'browse' ? 'browse' : page === 'confirm' ? 'confirm' : 'home'; setRequestId(undefined); setResumingRequest(null); window.history.replaceState(null, '', window.location.pathname + window.location.search); setPage(next); setLinkedId(null); setMessage(''); setConfirmDelete(false); setHeaderIntro(false) }
   function navigate(next: Page) { if (page === 'help' && leaveHelp.current) { void leaveHelp.current().then(saved => { if (saved) commitNavigation(next) }); return }; commitNavigation(next) }
   // Home's supplier search is the only in-app step that adds a browser history entry,
   // so browser Back from the supplier glass card (or a step reached from it) returns to Home.
@@ -153,8 +157,8 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     event.preventDefault()
     const base = window.location.pathname + window.location.search
     search('system')
-    // The typed text pre-fills the existing supplier search (name, county or alias matches).
-    setQuery(heroQuery.trim())
+    // Hand the typed text to supplier search (name/county matches or optional ZIP hints).
+    updateSearchQuery(heroQuery.trim())
     window.history.replaceState({ wavePage: 'home' }, '', base)
     window.history.pushState({ wavePage: 'search' }, '', base + '#search')
   }
@@ -173,11 +177,16 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
     commitNavigation(next === 'sample' ? 'sampleIntro' : 'home')
     try { localStorage.setItem('water-alert:mode', next) } catch { setMessage(t.storageError) }
   }
-  function search(kind: Place['kind'], forHelp = false) { setHelpIntent(forHelp); setKind(kind); setQuery(''); setCandidate(null); navigate('search') }
+  function search(kind: Place['kind'], forHelp = false) { setHelpIntent(forHelp); setKind(kind); updateSearchQuery(''); setCandidate(null); navigate('search') }
   function confirmWatch() {
     if (!candidate) return
     setPrefs(p => ({ ...p, watches: p.watches.includes(candidate.id) ? p.watches : [...p.watches, candidate.id] }))
-    setRemoved(null); setCandidate(null); navigate('browse')
+    setRemoved(null)
+    setSelected(candidate.id)
+    // Keep the candidate until the page changes: clearing it here would empty the confirm page
+    // before the page-change snapshot, so the card would have nothing to move from. Only the
+    // confirm page reads it, and every route into confirm sets a fresh one.
+    navigate('browse')
   }
   function removeWatch(id: string) {
     setRemoved({ id, index: prefs.watches.indexOf(id), lifted: prefs.liftWatches.includes(id) })
@@ -249,21 +258,21 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
       </div>
       {!sample && page !== 'home' && page !== 'alerts' && device && device.signature !== pushSignature(prefs) ? <p className="info">{t.pushDirty} <button className="text-button" onClick={() => navigate('alerts')}>{t.alertOptions}</button></p> : null}
       {page === 'search' ? helpIntent
-        ? <SearchPlace key={`${mode}:${kind}:help`} kind={kind} places={places} query={query} onQuery={setQuery} t={t}
+        ? <SearchPlace key={`${mode}:${kind}:help`} kind={kind} places={places} query={query} onQuery={updateSearchQuery} t={t} enableZip={!sample} zipIndex={zipSnapshot as ZipIndex}
             heading={prefs.language === 'es' ? 'Elige tu proveedor de agua' : 'Choose your water provider'}
             intro={prefs.language === 'es' ? 'Elige el proveedor sobre el que quieres escribir. Te ayudaremos a preparar un mensaje que puedes revisar y copiar. No tienes que seguir a este proveedor.' : 'Pick the provider your message is about. We’ll help you prepare a message you can review and copy. You don’t have to follow this provider.'}
             onBack={() => { setHelpIntent(false); navigate('home') }} onSelect={p => openHelp(p.id, 'home')} />
-        : <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={setQuery} t={t} onBack={() => navigate('home')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
-      {page === 'confirm' && candidate ? <ConfirmPlace place={candidate} t={t} onConfirm={confirmWatch} onBack={() => navigate('search')} /> : null}
+        : <SearchPlace key={`${mode}:${kind}`} kind={kind} places={places} query={query} onQuery={updateSearchQuery} t={t} enableZip={!sample} zipIndex={zipSnapshot as ZipIndex} onBack={() => navigate('home')} onSelect={p => { setCandidate(p); navigate('confirm') }} /> : null}
+      {page === 'confirm' && candidate ? candidate.kind !== 'system' ? <ConfirmPlace place={candidate} t={t} onConfirm={confirmWatch} onBack={() => navigate('search')} /> : <div className="search-stage result-stage"><WelcomeStrip /><Panel className="journey-panel search-glass result-glass"><div className="result-preview"><StatusCard preview place={candidate} archive={archive} source={sources.find(s => s.agency === 'ADH')} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onSources={() => navigate('sources')} onHelp={() => openHelp(candidate.id)} onAsk={key => openHelp(candidate.id, 'confirm', key)} onView={() => { setSelected(candidate.id); navigate('detail') }} onViewNotice={id => { setSelected(candidate.id); navigate('detail'); setLinkedId(id) }} /></div><div className="result-actions"><p>{t.confirmBill}</p><p className="quiet-note">{prefs.language === 'es' ? 'Siguiente guarda este proveedor en Lugares. No activa las notificaciones.' : 'Next saves this supplier to Places. It does not enable notifications.'}</p><div className="result-buttons"><button className="secondary" onClick={() => navigate('search')}><Icon name="chevron-left" size={18} />{prefs.language === 'es' ? 'Atrás' : 'Back'}</button><button className="primary" onClick={confirmWatch}>{prefs.language === 'es' ? 'Siguiente' : 'Next'}</button></div></div></Panel></div> : null}
       {page === 'sampleIntro' ? <SampleIntro t={t} onStart={() => search('system')} onList={sampleList} /> : null}
       {page === 'home' ? <div className="wave-home">
         <section className="wave-hero" aria-labelledby="wave-hero-title">
           <div className="wave-hero-inner">
             <div className="wave-hero-main">
             <h1 id="wave-hero-title" className="fall fall-headline">{prefs.language === 'es' ? <>Encuentra avisos sobre el agua{' '}<span>en Arkansas.</span></> : <>Find water advisories{' '}<span>in Arkansas.</span></>}</h1>
-            <p className="wave-hero-lede fall fall-lede">{prefs.language === 'es' ? 'Busca por proveedor de agua o condado para encontrar avisos oficiales.' : 'Search by water supplier or county to find official notices.'}</p>
+            <p className="wave-hero-lede fall fall-lede">{sample ? prefs.language === 'es' ? 'Busca por proveedor de agua o condado para encontrar avisos oficiales.' : 'Search by water supplier or county to find official notices.' : prefs.language === 'es' ? 'Busca por proveedor, condado o código postal para encontrar avisos oficiales.' : 'Search by water supplier, county, or ZIP to find official notices.'}</p>
             <form className="wave-hero-search fall fall-search" role="search" onSubmit={openSupplierCheck}>
-              <div className="wave-hero-field"><label className="sr-only" htmlFor="home-supplier-search">{prefs.language === 'es' ? 'Busca por proveedor o condado' : 'Search by supplier or county'}</label><input id="home-supplier-search" name="home-supplier-search" type="search" autoComplete="off" value={heroQuery} onChange={event => setHeroQuery(event.target.value)} placeholder={prefs.language === 'es' ? 'Nombre del proveedor o condado' : 'Supplier name or county'} /></div>
+              <div className="wave-hero-field"><label className="sr-only" htmlFor="home-supplier-search">{sample ? prefs.language === 'es' ? 'Busca por proveedor o condado' : 'Search by supplier or county' : t.supplierZipSearch}</label><input id="home-supplier-search" name="home-supplier-search" type="search" autoComplete="off" value={heroQuery} onChange={event => setHeroQuery(event.target.value)} placeholder={sample ? prefs.language === 'es' ? 'Nombre del proveedor o condado' : 'Supplier name or county' : t.supplierZipSearch} /></div>
               <button type="submit" aria-label={prefs.language === 'es' ? 'Buscar' : 'Search'}><Icon name="search" size={24} /></button>
             </form>
             <div className="wave-hero-links fall fall-links"><button type="button" className="wave-hero-pill" onClick={() => navigate('browse')}><Icon name="list" size={18} />{prefs.language === 'es' ? 'Ver todos los lugares' : 'Browse all places'}</button></div>
@@ -282,7 +291,7 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
         <h1 className="sr-only">{t.myWater}</h1>
         <div className="home-layout"><button className="primary add-place" onClick={() => search('system')}>+ {t.add}</button><div className="home-main">
           {recent.length ? <Panel><h2>{t.sinceVisit}</h2><p>{t.sinceVisitInfo}</p>{recent.map(e => <div key={e.id} className="watched-row"><span>{e.notice.name} · {e.type === 'lifted' ? t.agencyLifted : t.active} · {appTimestamp(e.observedAt, prefs.language)}</span><button className="text-button" onClick={() => { setSelected(e.notice.placeId); navigate('detail'); setLinkedId(e.notice.id) }}>{t.view}</button></div>)}</Panel> : null}
-          {!prefs.watches.length ? <Panel><p>{t.noWatches}</p><button className="primary" onClick={() => search('system')}>{t.setup}</button></Panel> : <ProviderCarousel language={prefs.language}>{[...watched.map(p => <StatusCard key={p.id} place={p} archive={archive} source={sources.find(s => s.agency === (p.kind === 'system' ? 'ADH' : 'ADEQ'))} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onSources={() => navigate('sources')} onHelp={() => openHelp(p.id)} onAsk={key => openHelp(p.id, 'home', key)} onView={() => { setSelected(p.id); navigate('detail') }} onViewNotice={id => { setSelected(p.id); navigate('detail'); setLinkedId(id) }} />), ...missingWatches.map(id => <Panel className="status-card unavailable" key={`missing:${id}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">?</span>{t.unavailable}</p><p>{t.missingPlace}</p><p className="quiet-note">{id}</p><button className="secondary" onClick={() => navigate('managePlaces')}>{t.watched}</button></Panel>)]}</ProviderCarousel>}
+          {!prefs.watches.length ? <Panel><p>{t.noWatches}</p><button className="primary" onClick={() => search('system')}>{t.setup}</button></Panel> : <ProviderCarousel language={prefs.language} initialIndex={Math.max(0, watched.findIndex(p => p.id === selected))}>{[...watched.map(p => <StatusCard key={p.id} place={p} archive={archive} source={sources.find(s => s.agency === (p.kind === 'system' ? 'ADH' : 'ADEQ'))} now={clock} t={t} language={prefs.language} sample={sample} checking={busy} onRefresh={onRefresh ? refresh : undefined} onSources={() => navigate('sources')} onHelp={() => openHelp(p.id)} onAsk={key => openHelp(p.id, 'home', key)} onView={() => { setSelected(p.id); navigate('detail') }} onViewNotice={id => { setSelected(p.id); navigate('detail'); setLinkedId(id) }} />), ...missingWatches.map(id => <Panel className="status-card unavailable" key={`missing:${id}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">?</span>{t.unavailable}</p><p>{t.missingPlace}</p><p className="quiet-note">{id}</p><button className="secondary" onClick={() => navigate('managePlaces')}>{t.watched}</button></Panel>)]}</ProviderCarousel>}
         </div><aside className="home-sidebar"><section className="home-alert-options"><div className="sidebar-heading-row"><h2><Icon name="bell" />{t.waterUpdates}</h2><button type="button" role="switch" aria-label={t.waterUpdates} aria-checked={!sample && !!device} disabled={busy || sample || pushConfig.state === 'loading'} className="notification-switch" onClick={() => void togglePush()}><span aria-hidden="true" /></button></div></section><section className="about-results"><h2><Icon name="info" />{t.aboutResults}</h2><p>{t.resultsSummary}</p></section></aside></div>
       </> : null}
       {page === 'detail' ? linkedId && !linkedNotice ? <Panel><p>{prefs.language === 'es' ? 'No se puede abrir este aviso guardado con los registros disponibles actualmente. No se ha sustituido por otro aviso.' : 'This saved notice cannot be opened from the currently available records. It has not been replaced with another notice.'}</p><button className="secondary" onClick={() => navigate('browse')}>{t.back}</button></Panel> : place ? <NoticeDetail place={place} source={source} now={clock} linkedNotice={linkedNotice} t={t} language={prefs.language} sample={sample} onBack={() => navigate(detailReturn.current)} onShare={n => void share(n)} onAlerts={askLift} onHelp={() => openHelp(place.id)} /> : null : null}
@@ -300,7 +309,8 @@ export default function App({ liveData = emptyLive, onRefresh, onLiveOpen }: { l
             data lives on Privacy and stored data; auto-refresh lives on Alert Options. */}
         <button className="choice" onClick={() => changeMode(sample ? 'live' : 'sample')}><span className="choice-icon"><Icon name="test-tube" /></span><span><b>{sample ? t.exit : t.trySample}</b><small>{t.sampleText}</small></span><span aria-hidden="true"><Icon name="chevron-right" size={20} /></span></button></div>
       </Panel></div> : null}
-      {['alerts', 'sources', 'privacy', 'installation'].includes(page) ? <div className="search-stage settings-stage"><WelcomeStrip still /><Panel className="settings-glass settings-detail"><button className="back" onClick={() => navigate('settings')}><Icon name="chevron-left" size={18} />{t.settings}</button>
+      {['alerts', 'sources', 'privacy', 'terms', 'installation'].includes(page) ? <div className="search-stage settings-stage"><WelcomeStrip still /><Panel className="settings-glass settings-detail"><button className="back" onClick={() => navigate(page === 'terms' ? 'home' : 'settings')}><Icon name="chevron-left" size={18} />{page === 'terms' ? (prefs.language === 'es' ? 'Inicio' : 'Home') : t.settings}</button>
+        {page === 'terms' ? <><h1>{prefs.language === 'es' ? 'Borrador de términos de uso' : 'Draft terms of use'}</h1><Panel>{prefs.language === 'es' ? <><p>Este borrador requiere revisión del responsable del proyecto y revisión legal antes de considerarse términos definitivos.</p><h2>Uso de WAVE</h2><p>WAVE es un proyecto estudiantil independiente, no un servicio gubernamental. La información es orientativa y no sustituye los avisos oficiales ni el consejo profesional.</p><h2>Límites de la información</h2><p>Los avisos pueden estar incompletos, desactualizados o no disponibles. No encontrar un aviso no demuestra que el agua sea segura. Confirma la información con tu proveedor y las autoridades correspondientes.</p><h2>Alertas y mensajes</h2><p>La entrega de alertas no está garantizada. Revisa cualquier mensaje antes de enviarlo; las copias enviadas no se pueden retirar.</p></> : <><p>This draft requires project-owner and legal review before it can be treated as final terms.</p><h2>Using WAVE</h2><p>WAVE is an independent student project, not a government service. Information is for awareness and does not replace official notices or professional advice.</p><h2>Information limits</h2><p>Notices may be incomplete, outdated, or unavailable. Finding no advisory does not mean water is safe. Confirm information with your water provider and the relevant authorities.</p><h2>Alerts and messages</h2><p>Alert delivery is not guaranteed. Review any message before sending; sent copies cannot be recalled.</p></>}</Panel></> : null}
         {page === 'sources' ? <><h1>{t.sources}</h1><Panel><h2>{t.advisorySources}</h2><p>{t.resultsSummary}</p>{sources.map(s => <div className="source-entry" key={s.agency}><h3>{s.agency === 'ADH' ? 'Arkansas Department of Health (ADH)' : 'Arkansas Division of Environmental Quality (ADEQ)'}</h3><SourceLink url={SOURCES[s.agency]}>{t.sourceLink}</SourceLink><dl><DateRow label={t.checked} value={s.retrievedAt} app language={prefs.language} />{s.lastSuccessAt ? <DateRow label={t.lastSuccess} value={s.lastSuccessAt} app language={prefs.language} /> : <div><dt>{t.lastSuccess}</dt><dd>{t.noSuccessfulCheck}</dd></div>}</dl><p>{statusFor('', s, clock).state === 'unavailable' ? t.unavailable : t.sourceRetrieved}</p></div>)}</Panel><Panel><h2>{t.coverageHeading}</h2><p>{t.sourceCoverage}</p><p>{t.catalogWaterbody}</p><p>{t.catalogSupplier}</p>{!sample ? <details><summary>{t.catalogSource}<span className="disclosure-icon" aria-hidden="true" /></summary>{PLACE_CATALOG.map(entry => <p key={entry.place.id}><SourceLink url={entry.url}>{entry.place.name}</SourceLink></p>)}</details> : null}</Panel><Panel><h2>{t.cannotTell}</h2><p>{t.limits}</p></Panel><Panel><AnnualReportAiDisclaimer language={prefs.language} as="h2" /></Panel><Panel className="about-wave"><h2>{t.aboutWave}</h2><p>{t.purpose}</p><p>{t.verificationLimit}</p><p>{t.setupIntro}</p><p>{t.coverage}</p></Panel></> : null}
         {page === 'sources' ? <Panel><h2>{prefs.language === 'es' ? 'Referencias seleccionadas — no son fuentes de avisos en vivo' : 'Curated references — not live advisory feeds'}</h2><p>{prefs.language === 'es' ? 'Revisadas el 14 de octubre de 2026. No determinan el estado actual, la responsabilidad, el derecho a reembolso ni la elegibilidad para asistencia legal.' : 'Checked October 14, 2026. These do not determine current advisory status, liability, reimbursement entitlement or legal-aid eligibility.'}</p>{[['CDC — general drinking-water advisory guidance', CDC_GUIDANCE_URL], ['Arkansas Attorney General', RECOVERY_RESOURCES.complaint], ['AG complaint form — English', RECOVERY_RESOURCES.englishForm], ['Formulario de queja — español', RECOVERY_RESOURCES.spanishForm], ['Arkansas Law Help', RECOVERY_RESOURCES.legalHelp], ['Legal-aid intake', RECOVERY_RESOURCES.intake], ['Small-claims process and forms', RECOVERY_RESOURCES.court], ['ADH annual drinking-water reports', RECOVERY_RESOURCES.annualReports]].map(([label, url]) => <p key={url}><SourceLink url={url}>{label}</SourceLink></p>)}<p>{prefs.language === 'es' ? 'Los perfiles de proveedores son datos de directorio, no mediciones actuales. Verifique el proveedor y el año de cada informe. Las plantillas son texto de preparación editable, no consejo legal ni reclamaciones presentadas.' : 'Supplier profiles are directory facts, not live measurements. Verify the system and year of each report. Templates are editable preparation text, not legal advice or submitted claims.'}</p></Panel> : null}
         {page === 'sources' ? <Panel><MapSources language={prefs.language} archive={archive} /></Panel> : null}

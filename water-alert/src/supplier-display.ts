@@ -5,6 +5,14 @@ export function supplierCounty(county: string) {
   return county === county.toUpperCase() ? county.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()) : county
 }
 
+// Typography only, not aliases: retain numbers, punctuation and exact names in
+// records/selection. Do not guess expansions of directory abbreviations.
+const supplierAcronyms = new Set(['POA', 'LLC', 'PWA'])
+export function supplierName(name: string) {
+  return supplierCounty(name).replace(/\b(?:poa|llc|pwa)\b/gi, word =>
+    supplierAcronyms.has(word.toUpperCase()) ? word.toUpperCase() : word)
+}
+
 export function supplierArea(area: string, place: Place, language: Language) {
   const normalized = area.trim().replace(/\s+/g, ' ').toLowerCase()
   const name = place.name.trim().replace(/\s+/g, ' ').toLowerCase()

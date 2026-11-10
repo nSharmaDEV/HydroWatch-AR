@@ -1,6 +1,6 @@
 /* WAVE Home: a hero on the shared light background and WebGL droplet layer, below the standard
    header (headline and supplier search on the left; two action cards on the right), ending in the
-   original flowing WelcomeStrip band, then a short see-through footer. Imported after the global styles in main.tsx so these Home-only rules take precedence. */
+   original flowing WelcomeStrip band. Imported after the global styles in main.tsx so these Home-only rules take precedence. */
 
 /* Manrope Bold (700) and ExtraBold (800), Latin WOFF2, self-hosted: the CSP allows fonts from
    'self' only. */
@@ -27,8 +27,7 @@
   --heading-display: 'Manrope', var(--body-font);
 }
 
-/* ---- Home fills the window: the hero grows so its wave sits at the bottom of the first screen,
-   with the short footer under it ---- */
+/* ---- Home fills the window: the hero grows so its wave sits at the bottom of the first screen ---- */
 #root:has(> main > .wave-home) { display: flex; flex-direction: column; min-height: 100dvh; }
 #root:has(> main > .wave-home) > .app-header { flex-shrink: 0; }
 main:has(> .wave-home) { display: flex; flex: 1 0 auto; flex-direction: column; width: 100%; max-width: none; margin: 0; padding: 0; min-height: 0; }
@@ -67,6 +66,7 @@ main:has(> .wave-home) { display: flex; flex: 1 0 auto; flex-direction: column; 
    itself. Its highest crest stays under the hero's 170px bottom padding. */
 .wave-hero-water { position: absolute; right: 0; bottom: 0; left: 0; z-index: 0; height: 160px; pointer-events: none; }
 .wave-hero-water .welcome-strip { --strip-h: 160px; }
+.wave-hero-water .welcome-band { stroke-width: 4px; stroke-linejoin: round; paint-order: stroke fill; }
 
 /* ---- Action cards: frosted panels (the shared glass surface) in the hero's right column ---- */
 .wave-home-actions { display: grid; gap: 18px; min-width: 0; }

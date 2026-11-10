@@ -21,8 +21,8 @@ function fixture(failed = false) {
   return { places, archive: records, coverageStart: at, sources: ['ADH', 'ADEQ'].map(agency => ({ agency, records: records.filter(n => n.agency === agency), retrievedAt: at, lastSuccessAt: at, error: failed ? 'Simulated failed retrieval' : null })) }
 }
 const labels = {
-  en: { supplier: /My public water supplier/, select: 'Select Review Water Supplier', confirm: 'Yes — watch this place', home: 'My Water', settings: 'Settings', places: 'Places', history: 'History', sample: 'Try sample mode', sampleIntro: 'Try a resident journey', sampleList: 'Use sample watch list', exit: 'Exit sample', remove: 'Remove Review Water Supplier', undo: 'Undo', noMatch: 'No matching supplier', edit: 'Edit search', unavailable: 'Data unavailable', previous: /Previously observed/, privacy: /Privacy and stored data/, deletion: 'Remove saved data', more: /All observed places/, alerts: /Alert Options/ },
-  es: { supplier: /Mi proveedor público de agua/, select: 'Elegir Review Water Supplier', confirm: 'Sí — seguir este lugar', home: 'Mi agua', settings: 'Ajustes', places: 'Lugares', history: 'Historial', sample: 'Probar modo de muestra', sampleIntro: 'Prueba un recorrido de residente', sampleList: 'Usar lista de muestra', exit: 'Salir de muestra', remove: 'Quitar Review Water Supplier', undo: 'Deshacer', noMatch: 'Ningún proveedor coincide', edit: 'Editar búsqueda', unavailable: 'Datos no disponibles', previous: /observad[oa].*anteriormente/, privacy: /Privacidad y datos guardados/, deletion: 'Eliminar datos guardados', more: /Todos los lugares observados/, alerts: /Opciones de avisos/ },
+  en: { supplier: /My public water supplier/, select: 'Select Review Water Supplier', confirm: 'Watch this place', home: 'My Water', settings: 'Settings', places: 'Places', history: 'History', sample: 'Try sample mode', sampleIntro: 'Try a resident journey', sampleList: 'Use sample watch list', exit: 'Exit sample', remove: 'Remove Review Water Supplier', undo: 'Undo', noMatch: 'No matching supplier', edit: 'Edit search', unavailable: 'Data unavailable', previous: /Previously observed/, privacy: /Privacy and stored data/, deletion: 'Remove saved data', more: /All observed places/, alerts: /Alert Options/ },
+  es: { supplier: /Mi proveedor público de agua/, select: 'Elegir Review Water Supplier', confirm: 'Seguir este lugar', home: 'Mi agua', settings: 'Ajustes', places: 'Lugares', history: 'Historial', sample: 'Probar modo de muestra', sampleIntro: 'Prueba un recorrido de residente', sampleList: 'Usar lista de muestra', exit: 'Salir de muestra', remove: 'Quitar Review Water Supplier', undo: 'Deshacer', noMatch: 'Ningún proveedor coincide', edit: 'Editar búsqueda', unavailable: 'Datos no disponibles', previous: /observad[oa].*anteriormente/, privacy: /Privacidad y datos guardados/, deletion: 'Eliminar datos guardados', more: /Todos los lugares observados/, alerts: /Opciones de avisos/ },
 }
 async function visible(locator) { await locator.waitFor({ state: 'visible' }); assert(await locator.isVisible()) }
 async function layout(page) {
@@ -67,10 +67,9 @@ try {
     await page.getByRole('button', { name: t.select, exact: true }).focus()
     await page.keyboard.press('Enter')
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('water-alert:live:v1')).watches), [])
-    await page.keyboard.press('Tab') // Back to search
-    await page.keyboard.press('Tab') // Confirm this exact place
-    assert(await page.getByRole('button', { name: t.confirm }).evaluate(el => el === document.activeElement))
+    await page.getByRole('button', { name: language === 'en' ? 'Next' : 'Siguiente', exact: true }).focus()
     await page.keyboard.press('Enter')
+    await page.getByRole('navigation').getByRole('button', { name: t.places, exact: true }).click()
     await visible(page.getByRole('heading', { name: t.home }))
     // Use the real journeys, not injected preferences, to add the remaining places.
     const nav = name => page.getByRole('navigation').getByRole('button', { name, exact: true })
@@ -78,11 +77,12 @@ try {
     const addLake = language === 'en' ? /Add a lake or waterbody/ : /Añadir un lago o cuerpo de agua/
     await page.getByRole('button', { name: addLake }).click()
     await page.getByRole('button', { name: `${language === 'en' ? 'Select' : 'Elegir'} Review Cove Lake` }).click()
-    await page.getByRole('button', { name: t.confirm }).click()
+    await page.getByRole('button', { name: language === 'en' ? 'Yes — watch this place' : 'Sí — seguir este lugar' }).click()
     await nav(t.places).click()
     await page.getByRole('button', { name: language === 'en' ? /Add a public water supplier/ : /Añadir un proveedor público de agua/ }).click()
     await page.getByRole('button', { name: `${language === 'en' ? 'Select' : 'Elegir'} Review Ridge Supplier` }).click()
-    await page.getByRole('button', { name: t.confirm }).click()
+    await page.getByRole('button', { name: language === 'en' ? 'Next' : 'Siguiente', exact: true }).click()
+    await nav(t.places).click()
     assert.equal(await page.locator('.status-card.boil').count(), 1)
     assert.equal(await page.locator('.status-card.hab').count(), 1)
     assert.equal(await page.locator('.status-card.none').count(), 1)

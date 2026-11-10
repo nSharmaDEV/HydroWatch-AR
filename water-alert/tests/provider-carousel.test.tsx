@@ -9,6 +9,12 @@ function track() {
   return screen.getByRole('region', { name: 'Watched places' })
 }
 
+it('opens on the requested saved supplier rather than the first card', () => {
+  render(<ProviderCarousel initialIndex={1}><article>First place</article><article>Selected supplier</article></ProviderCarousel>)
+  expect(screen.getByText('2 of 2 places')).toBeVisible()
+  expect(screen.getByText('Selected supplier').closest('.carousel-slide')).not.toHaveAttribute('aria-hidden')
+})
+
 beforeEach(() => {
   Element.prototype.scrollTo = vi.fn()
 })

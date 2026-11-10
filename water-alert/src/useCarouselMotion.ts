@@ -5,10 +5,10 @@ type Drag = { id: number; x: number; y: number; origin: number; lastX: number; l
 const interactive = 'button,a,input,textarea,select,summary,[contenteditable],[role="button"],[role="slider"],dialog'
 
 /** Imperative transforms keep drag/animation frames out of React rendering. */
-export function useCarouselMotion(count: number) {
+export function useCarouselMotion(count: number, initialIndex = 0) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const [index, setIndex] = useState(0)
-  const indexRef = useRef(0)
+  const [index, setIndex] = useState(() => Math.max(0, Math.min(count - 1, initialIndex)))
+  const indexRef = useRef(index)
   const motion = useRef({ x: 0, step: 0, frame: 0 })
   const reducedMotion = useRef<MediaQueryList | null>(null)
   const drag = useRef<Drag | null>(null)

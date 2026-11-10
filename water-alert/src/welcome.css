@@ -86,7 +86,33 @@ main:has(.search-stage) { display: flex; flex-direction: column; flex: 1 0 auto;
 /* No rule between the matches and Coverage details: drop the last row's divider and the
    summary's top border. */
 .search-glass .place-row:last-child { border-bottom: 0; }
+.directory-match-heading { margin-top: 8px; font-size: .875rem; line-height: 1.4; }
+.directory-match-heading p { margin: 2px 0 0; color: var(--muted); }
 .search-glass details > summary { border-top: 0; }
+
+/* Full supplier-card preview; preserve natural scrolling for expanded evidence and zoom. */
+.panel.result-glass.journey-panel { width: min(100%, 860px); padding-bottom: 20px; }
+.result-glass .status-card { margin: 12px 0; }
+.result-glass > .primary { margin-top: 8px; }
+.supplier-card-sections { display: contents; }
+.panel.result-glass.journey-panel { display: flex; flex-direction: column; max-height: calc(100dvh - 130px); padding: 16px 20px; }
+.result-preview { min-height: 0; overflow-y: auto; }
+.result-glass .status-card { margin: 0; padding: 16px; }
+.result-glass .supplier-heading { margin-bottom: 10px; }
+.result-glass .supplier-finding { margin-bottom: 8px; }
+.result-glass .preview-details > summary { min-height: 44px; align-items: center; cursor: pointer; }
+.result-actions { flex-shrink: 0; padding-top: 10px; }
+.result-actions > p { margin: 0 0 6px; }
+.result-actions .quiet-note { font-size: .85rem; }
+.result-buttons { display: flex; justify-content: space-between; gap: 12px; }
+.result-buttons > button { min-height: 44px; flex: 1; }
+@media (max-width: 760px) {
+  .panel.result-glass.journey-panel { padding: 12px; max-height: calc(100dvh - 170px); }
+  .result-glass .status-card { padding: 12px; }
+  .result-glass .supplier-heading > p { font-size: .85rem; }
+  .result-glass .status-explanation { font-size: .9rem; }
+  .result-actions > p { font-size: .9rem; }
+}
 
 /* Settings: the same strip and frosted card, holding only the heading and six link rows (sample
    mode is the sixth). Wider than search to fit the link descriptions. Rows are compact so the card
@@ -124,6 +150,7 @@ main:has(.search-stage) { display: flex; flex-direction: column; flex: 1 0 auto;
   .search-glass .place-row { padding: 10px 0; }
   .search-glass details { padding: 4px 0; }
   .panel.confirm-glass.journey-panel { padding-bottom: 18px; }
+  .panel.result-glass.journey-panel { padding-bottom: 18px; }
   .welcome-option { min-height: 52px; }
   .welcome-option--primary { min-height: 64px; }
 }
@@ -137,3 +164,11 @@ main .welcome-strip.welcome-strip--still svg { top: calc(50vh - 31.5px); }
   .welcome-strip.welcome-strip--still { --strip-h: clamp(200px, 52vh, 420px); }
   main .welcome-strip.welcome-strip--still svg { top: calc(50vh - 68px); }
 }
+.zip-search-stage .search-glass { display: flex; flex-direction: column; max-height: calc(100dvh - 180px); overflow-y: auto; }
+.zip-search-stage .search-glass > :not(.zip-results) { flex-shrink: 0; }
+.zip-results { min-height: 0; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #748e9a transparent; overscroll-behavior-y: contain; margin-top: 4px; }
+.zip-results:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.zip-results .place-row { padding-block: 12px; }
+.zip-results .place-row:last-child { border-bottom: 0; }
+.zip-fallback { display: block; min-height: 44px; margin-top: 4px; text-align: left; }
+.zip-provenance { font-size: .875rem; overflow-wrap: anywhere; }

@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": "24.x" },
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "concurrently -k \"tsx server/index.ts\" \"vite --host 127.0.0.1\"",
     "dev:ui": "vite --host 127.0.0.1",
@@ -13,6 +15,7 @@
     "verify:hosting": "tsx scripts/verify-hosting.ts",
     "ccr:sync": "tsx --env-file-if-exists=.env scripts/ccr-sync.ts",
     "directory:epa": "tsx scripts/epa-directory.ts",
+    "directory:zip": "tsx scripts/zip-index.ts",
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
@@ -34,6 +37,8 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@turf/area": "^7.3.5",
+    "@turf/intersect": "^7.3.5",
     "@types/express": "^5.0.3",
     "@types/node": "^24.3.0",
     "@types/pg": "^8.23.1",

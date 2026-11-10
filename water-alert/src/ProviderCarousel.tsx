@@ -26,11 +26,11 @@ const copy = {
  * controls, keyboard and horizontal pointer gestures move a spring-driven track.
  * Vertical touch scrolling and descendant controls retain their native behavior.
  */
-export function ProviderCarousel({ children, language = 'en' }: { children: ReactNode; language?: Language }) {
+export function ProviderCarousel({ children, language = 'en', initialIndex = 0 }: { children: ReactNode; language?: Language; initialIndex?: number }) {
   const slides = Children.toArray(children)
   const count = slides.length
   const strings = copy[language]
-  const { trackRef, index, indexRef, showIndex, pointerHandlers } = useCarouselMotion(count)
+  const { trackRef, index, indexRef, showIndex, pointerHandlers } = useCarouselMotion(count, initialIndex)
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     // Descendant controls own their native text, select and disclosure keys.

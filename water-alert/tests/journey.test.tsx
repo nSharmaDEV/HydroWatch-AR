@@ -23,20 +23,52 @@ afterEach(() => {
   window.history.replaceState(null, '', '/')
 })
 
-it('requires confirmation before saving an exact supplier and supports choosing another place', async () => {
+it('previews the full supplier card then saves it and opens Places with Next', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }))
   await user.click(screen.getByRole('button', { name: /Add a place/ }))
   expect(screen.getByRole('heading', { name: 'Find your public water supplier' })).toBeVisible()
   await user.type(screen.getByRole('searchbox'), 'Real supplier')
   await user.click(screen.getByRole('button', { name: 'Select Real supplier' }))
-  expect(screen.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()
+  const resultStage = screen.getByRole('article').closest('.search-stage')
+  expect(resultStage?.querySelector('.welcome-strip')).toBeInTheDocument()
+  expect(within(resultStage as HTMLElement).getByRole('article')).toBeVisible()
+  expect(within(resultStage as HTMLElement).getByText('Details', { selector: 'summary' }).closest('details')).not.toHaveAttribute('open')
+  expect(within(resultStage as HTMLElement).getAllByText('Real supplier')[0]).toBeVisible()
+  expect(screen.queryByRole('button', { name: 'Watch this place' })).not.toBeInTheDocument()
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
-  await user.click(screen.getByRole('button', { name: 'Choose a different place' }))
+  await user.click(screen.getByRole('button', { name: 'Back' }))
+  expect(screen.getByRole('searchbox')).toHaveValue('Real supplier')
   await user.click(screen.getByRole('button', { name: 'Select Real supplier' }))
-  await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
-  expect(screen.getByRole('heading', { name: 'My Water' })).toBeVisible()
+  await user.click(screen.getByRole('button', { name: 'Next' }))
+  expect(nav('Places')).toHaveAttribute('aria-current', 'page')
   expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([place.id])
+  expect(localStorage.getItem('water-alert:push-device:v1')).toBeNull()
+  await user.click(screen.getByRole('button', { name: /Add a place/ }))
+  await user.type(screen.getByRole('searchbox'), 'Real supplier')
+  await user.click(screen.getByRole('button', { name: 'Select Real supplier' }))
+  await user.click(screen.getByRole('button', { name: 'Next' }))
+  expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([place.id])
+})
+
+it('finds suppliers from Home ZIP input and retains the query on Back', async () => {
+  const user = userEvent.setup(); render(<App liveData={data} />)
+  await user.type(screen.getByRole('searchbox'), '72712')
+  await user.click(screen.getByRole('button', { name: 'Search' }))
+  expect(screen.getAllByRole('button', { name: /^Select / })).toHaveLength(8)
+  const select = screen.getAllByRole('button', { name: /^Select / })[0]
+  const label = select.getAttribute('aria-label')!
+  await user.click(select)
+  expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
+  await user.click(screen.getByRole('button', { name: 'Back' }))
+  expect(screen.getByRole('searchbox')).toHaveValue('72712')
+  expect(screen.getByRole('button', { name: label })).toBeVisible()
+  expect(screen.queryByRole('button', { name: 'Previous results' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: label }))
+  await user.click(screen.getByRole('button', { name: 'Next' }))
+  expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toHaveLength(1)
+  expect(localStorage.getItem('water-alert:push-device:v1')).toBeNull()
+  expect(localStorage.getItem('water-alert:live:v1')).not.toContain('72712')
 })
 
 it('shows a supplier no-match warning with edit search and an official-source escape', async () => {
@@ -49,6 +81,20 @@ it('shows a supplier no-match warning with edit search and an official-source es
   expect(screen.getByRole('link', { name: /Check ADH directly/ })).toHaveAttribute('href', SOURCES.ADH)
   await user.click(screen.getByRole('button', { name: 'Edit search' }))
   expect(screen.getByRole('searchbox')).toHaveFocus()
+})
+
+it('opens Places on the chosen supplier even when other suppliers were saved first', async () => {
+  const other = { ...place, id: 'ADH:other', name: 'Other supplier' }
+  localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: [other.id, place.id], liftWatches: [], language: 'en', checkOnOpen: false }))
+  const user = userEvent.setup(); render(<App liveData={{ ...data, places: [other, place] }} />)
+  await user.click(nav('Places'))
+  await user.click(screen.getByRole('button', { name: /Add a place/ }))
+  await user.type(screen.getByRole('searchbox'), place.name)
+  await user.click(screen.getByRole('button', { name: `Select ${place.name}` }))
+  await user.click(screen.getByRole('button', { name: 'Next' }))
+  expect(screen.getByText('2 of 2 places')).toBeVisible()
+  expect(screen.getByRole('heading', { name: place.name }).closest('.carousel-slide')).not.toHaveAttribute('aria-hidden')
+  expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([other.id, place.id])
 })
 
 it('removes and restores a watched place including its explicit-lift preference', async () => {
@@ -156,7 +202,7 @@ it('introduces a fictional sample journey and keeps removal/undo isolated from l
   expect(screen.getByRole('heading', { name: 'Try a resident journey' })).toBeVisible()
   await user.click(screen.getByRole('button', { name: 'Start sample journey' }))
   await user.click(screen.getByRole('button', { name: 'Select Sample Creek Water' }))
-  await user.click(screen.getByRole('button', { name: 'Yes — watch this place' }))
+  await user.click(screen.getByRole('button', { name: 'Next' }))
   await user.click(nav('Settings'))
   await user.click(screen.getByRole('button', { name: /Your Places/ }))
   await user.click(screen.getByRole('button', { name: 'Remove Sample Creek Water' }))
@@ -180,11 +226,11 @@ it('retains deletion credentials and choices until server removal succeeds on re
     await user.click(screen.getByRole('button', { name: 'Confirm removal' }))
     expect(localStorage.getItem('water-alert:push-device:v1')).toBeNull()
     expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([])
-    expect(screen.getByRole('searchbox', { name: 'Search by supplier or county' })).toBeVisible()
+    expect(screen.getByRole('searchbox', { name: 'Supplier name, county, or ZIP code' })).toBeVisible()
   } finally { vi.unstubAllGlobals() }
 })
 
-it('allows keyboard-only entry to supplier selection and confirmation', async () => {
+it('allows keyboard-only entry to supplier selection and optional watch', async () => {
   const user = userEvent.setup(); render(<App liveData={data} />)
   within(screen.getByRole('navigation')).getByRole('button', { name: 'Places' }).focus()
   await user.keyboard('{Enter}')
@@ -194,10 +240,11 @@ it('allows keyboard-only entry to supplier selection and confirmation', async ()
   await user.keyboard('Real supplier')
   screen.getByRole('button', { name: 'Select Real supplier' }).focus()
   await user.keyboard('{Enter}')
-  expect(screen.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()
-  screen.getByRole('button', { name: 'Yes — watch this place' }).focus()
+  expect(screen.getByRole('article')).toBeVisible()
+  screen.getByRole('button', { name: 'Next' }).focus()
   await user.keyboard('{Enter}')
-  expect(screen.getByRole('heading', { name: 'My Water' })).toBeVisible()
+  expect(nav('Places')).toHaveAttribute('aria-current', 'page')
+  expect(JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches).toEqual([place.id])
 })
 
 it('does not present a lifted deep-linked record as the active notice for that place', async () => {

@@ -10,6 +10,7 @@ import { en } from '../src/strings'
 import { defaults } from '../src/storage'
 import { SOURCES, type Place } from '../src/domain'
 import { es } from '../src/strings'
+import { withDirectory } from '../src/water-system-directory'
 
 const place: Place = { id: 'ADH:test', name: 'TEST WATER SYSTEM', county: 'Benton', kind: 'system' }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
@@ -93,7 +94,27 @@ it('lists at most three supplier matches with no extra instruction line', () => 
   expect(container.querySelector('.search-stage > .welcome-strip')).not.toBeNull()
 })
 
+it.each([en, es])('labels supplier directory matches and preserves exact selection names', async t => {
+  const selected = vi.fn()
+  const supplier = { ...place, name: 'BELLA VISTA POA' }
+  render(<SearchPlace kind="system" places={[supplier]} query="" t={t} onQuery={vi.fn()} onSelect={selected} onBack={vi.fn()} />)
+  expect(screen.getByText(t === en ? 'Directory matches' : 'Coincidencias del directorio')).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Bella Vista POA' })).toBeVisible()
+  expect(screen.getByText(t === en ? 'Match your water bill; county alone does not confirm coverage.' : 'Compara con tu factura; el condado por sí solo no confirma la cobertura.')).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: `${t.select} BELLA VISTA POA` }))
+  expect(selected).toHaveBeenCalledWith(supplier)
+})
+
 const confirm = (t = en) => render(<ConfirmPlace place={place} t={t} onConfirm={vi.fn()} onBack={vi.fn()} />)
+
+it('starts with the largest directory suppliers, not alphabetical matches', () => {
+  const { container, rerender } = render(<SearchPlace kind="system" places={withDirectory([])} query="" t={en} onQuery={vi.fn()} onSelect={vi.fn()} onBack={vi.fn()} />)
+  expect([...container.querySelectorAll('.place-row h2')].map(node => node.textContent)).toEqual(['Central Arkansas Water', 'Fayetteville Waterworks', 'Springdale Water Utilities'])
+  expect(container.querySelector('.directory-match-heading')).toBeNull()
+  rerender(<SearchPlace kind="system" places={withDirectory([])} query="Bella Vista" t={en} onQuery={vi.fn()} onSelect={vi.fn()} onBack={vi.fn()} />)
+  expect(screen.queryByText('Central Arkansas Water')).not.toBeInTheDocument()
+  expect(screen.getByText('Directory matches')).toBeVisible()
+})
 
 it('draws a decorative teal and aqua wave strip behind the confirm card (no navy band)', () => {
   const { container } = confirm()

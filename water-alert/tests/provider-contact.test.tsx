@@ -24,6 +24,9 @@ it('offers verified Leisure Hills call and email directly on an unavailable supp
   const directory = contact.getByRole('link', { name: /ADH directory contact/ })
   expect(directory).toHaveAttribute('href', 'https://health.arkansas.gov/Eng/WS.aspx?ID=747')
   expect(directory).toHaveAttribute('title', expect.stringContaining('2026-10-14'))
+  expect(contact.getByRole('link', { name: /Call.*479.*549-2158/ })).toHaveTextContent(/^Call$/)
+  expect(contact.getByRole('link', { name: /Email provider:/ })).toHaveTextContent(/^Email$/)
+  expect(directory.closest('.contact-bar')?.querySelector('.contact-leader')).toHaveAttribute('aria-hidden', 'true')
   expect(document.querySelector('.contact-provenance')).toBeNull()
 })
 
@@ -76,12 +79,25 @@ it.each([
   if (listed[name]) {
     expect(screen.getByRole('link', { name: new RegExp(`Email provider: ${listed[name]}`) })).toHaveAttribute('href', `mailto:${listed[name]}`)
     // The ADH page misspells Fayetteville's domain; WAVE uses the EPA record and says so.
-    if (name === 'FAYETTEVILLE WATERWORKS') expect(screen.getByRole('link', { name: 'Email from the EPA water-system record' })).toHaveAttribute('href', 'https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000569/JSON')
-    else expect(screen.queryByText('Email from the EPA water-system record')).toBeNull()
+    if (name === 'FAYETTEVILLE WATERWORKS') expect(screen.getByRole('link', { name: 'Email source: EPA' })).toHaveAttribute('href', 'https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/AR0000569/JSON')
+    else expect(screen.queryByText('Email source: EPA')).toBeNull()
   } else {
     expect(document.querySelector('a[href^="mailto:"]')).toBeNull()
     expect(screen.queryByText(/No verified email address is available/i)).not.toBeInTheDocument()
   }
+})
+
+it.each([
+  ['en', 'Email source: EPA', 'Checked'],
+  ['es', 'Fuente del correo: EPA', 'Verificado'],
+] as const)('groups contact sources without a visible check date (%s)', (language, label, checked) => {
+  card(leisure, false, language)
+  const link = screen.getByRole('link', { name: label })
+  expect(link).toHaveAttribute('href', expect.stringContaining('https://data.epa.gov/'))
+  expect(link).toHaveAttribute('title', `${checked}: 2026-11-08`)
+  const sources = link.closest('.contact-sources')!
+  expect(within(sources as HTMLElement).getByRole('link', { name: /ADH/ })).toBeInTheDocument()
+  expect(sources).not.toHaveTextContent('2026-11-08')
 })
 
 it('keeps the same contact actions on the notice detail page', () => {

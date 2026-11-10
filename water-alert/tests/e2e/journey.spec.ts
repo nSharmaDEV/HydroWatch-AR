@@ -4,6 +4,7 @@ import { SOURCES, type Notice, type Place, type SourceSnapshot } from '../../src
 import { en, es } from '../../src/strings'
 import { PLACE_CATALOG } from '../../src/place-catalog'
 import { LEISURE_HILLS_ID } from '../../src/annual-reports'
+import zipSnapshot from '../../src/directory/zip-suppliers.json' with { type: 'json' }
 
 // Synthetic incident on the exact directory-backed supplier ID. Not a live record.
 const at = '2026-10-17T12:00:00Z'
@@ -60,10 +61,123 @@ async function watchSupplier(page: Page, supplier = place) {
   await page.getByRole('button', { name: /Add a place/ }).click()
   await page.getByRole('searchbox').fill(supplier.name)
   await page.getByRole('button', { name: `Select ${supplier.name}`, exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Confirm your public water supplier' })).toBeVisible()
+  await expect(page.getByRole('article')).toBeVisible()
   await expect(page.getByText('Does this match your water bill?')).toBeVisible()
-  await page.getByRole('button', { name: 'Yes — watch this place', exact: true }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
+  await page.getByRole('navigation').getByRole('button', { name: 'Places', exact: true }).click()
 }
+
+for (const language of ['en', 'es'] as const) {
+  test(`ZIP suggestions remain optional and reachable (${language})`, async ({ page }) => {
+    const t = language === 'en' ? en : es
+    await page.goto('/')
+    await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+    await page.getByRole('searchbox').fill('72712')
+    await page.getByRole('button', { name: language === 'en' ? 'Search' : 'Buscar', exact: true }).click()
+    await expect(page.getByText(`${t.zipHeading} 72712`, { exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: t.zipNext, exact: true })).toHaveCount(0)
+    const viewport = page.viewportSize()!
+    for (const control of [page.locator('.search-field'), page.locator('.zip-results'), page.locator('.zip-provenance > summary'), page.locator('.search-glass > details').last()]) {
+      const box = (await control.boundingBox())!
+      expect(box.y).toBeGreaterThanOrEqual(0)
+      expect(box.y + box.height).toBeLessThanOrEqual(viewport.height - (viewport.width < 761 ? 70 : 0))
+    }
+    const names = await page.locator('.place-row h2').evaluateAll(elements => elements.map(e => e.getAttribute('title')!))
+    expect(names).toEqual(zipSnapshot.zips['72712'].map(id => zipSnapshot.systems[id as keyof typeof zipSnapshot.systems].name).sort((a, b) => a.localeCompare(b, 'en')))
+    expect(await page.locator('.zip-results').evaluate(el => getComputedStyle(el).overflowY)).toBe('auto')
+    expect(await page.locator('.zip-results').evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true)
+    const selected = page.locator('.place-row button').last()
+    const label = (await selected.getAttribute('aria-label'))!
+    await selected.click()
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('water-alert:live:v1')!).watches)).toEqual([])
+    await page.getByRole('button', { name: language === 'en' ? 'Back' : 'Atrás', exact: true }).click()
+    await expect(page.getByRole('searchbox')).toHaveValue('72712')
+    await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible()
+    await page.locator('.zip-provenance > summary').click()
+    await expect(page.getByText(t.zipCaution, { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: t.zipFallback, exact: true }).click()
+    await expect(page.getByRole('searchbox')).toBeFocused()
+    await page.getByRole('searchbox').fill('99999')
+    await expect(page.getByText(t.zipNoMatch, { exact: true })).toBeVisible()
+    await page.locator('.zip-provenance > summary').click()
+    await page.getByRole('button', { name: t.zipFallback, exact: true }).click()
+    await page.getByRole('searchbox').fill('BELLA VISTA POA')
+    await expect(page.getByRole('heading', { name: 'Bella Vista POA', exact: true })).toBeVisible()
+    // Also cover the requested ZIP, including a narrow phone with longer Spanish labels.
+    if (viewport.width < 761) await page.setViewportSize({ width: 320, height: viewport.height })
+    await page.getByRole('searchbox').fill('72713')
+    await expect(page.locator('.place-row')).toHaveCount(zipSnapshot.zips['72713'].length)
+    for (const control of [page.locator('.search-field'), page.locator('.zip-results'), page.locator('.zip-provenance > summary'), page.locator('.search-glass > details').last()]) {
+      const box = (await control.boundingBox())!
+      expect(box.y).toBeGreaterThanOrEqual(0)
+      expect(box.y + box.height).toBeLessThanOrEqual(viewport.height - (viewport.width < 761 ? 70 : 0))
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true)
+    await page.screenshot({ path: test.info().outputPath(`zip-scroll-${language}.png`) })
+  })
+
+  test(`supplier directory labels and acronyms stay readable (${language})`, async ({ page }) => {
+    await page.goto('/#search')
+    await page.getByRole('button', { name: language.toUpperCase(), exact: true }).click()
+    await expect(page.getByRole('searchbox')).toHaveAttribute('placeholder', language === 'en' ? en.supplierZipSearch : es.supplierZipSearch)
+    await expect(page.locator('.place-row')).toHaveCount(3)
+    const viewport = page.viewportSize()!
+    for (const button of await page.locator('.place-row button').all()) {
+      const rect = (await button.boundingBox())!
+      expect(rect.y + rect.height).toBeLessThanOrEqual(viewport.height - (viewport.width < 761 ? 70 : 0))
+    }
+    await page.getByRole('searchbox').fill('BELLA VISTA POA')
+    await expect(page.getByRole('heading', { name: 'Bella Vista POA', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Bella Vista POA', exact: true })).toHaveAttribute('title', 'BELLA VISTA POA')
+  })
+}
+
+test('supplier preview keeps main controls in view and expands evidence separately', async ({ page }) => {
+  await page.goto('/#search')
+  await page.getByRole('searchbox').fill(place.name)
+  await page.getByRole('button', { name: `Select ${place.name}`, exact: true }).click()
+  const preview = page.locator('.result-glass')
+  await expect(preview.getByRole('article')).toBeVisible()
+  const details = preview.locator('.preview-details')
+  await expect(details).not.toHaveAttribute('open')
+  const viewport = page.viewportSize()!
+  for (const control of [preview.getByRole('button', { name: 'Back', exact: true }), preview.getByRole('button', { name: 'Next', exact: true }), details.locator('summary').first()]) {
+    const rect = await control.boundingBox()
+    expect(rect).not.toBeNull()
+    expect(rect!.y).toBeGreaterThanOrEqual(0)
+    expect(rect!.y + rect!.height).toBeLessThanOrEqual(viewport.height - (viewport.width < 761 ? 70 : 0))
+  }
+  await details.locator('summary').first().click()
+  await expect(details).toHaveAttribute('open', '')
+  await preview.getByRole('button', { name: 'Next', exact: true }).click()
+  await expect(page.getByRole('navigation').getByRole('button', { name: 'Places', exact: true })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('heading', { name: displayName, exact: true })).toBeVisible()
+  const help = page.getByRole('button', { name: 'Get help with a water issue', exact: true })
+  const add = page.getByRole('button', { name: '+ Add a place', exact: true })
+  const buttonStyle = (element: HTMLElement | SVGElement) => {
+    const style = getComputedStyle(element)
+    return { background: style.backgroundColor, color: style.color, radius: style.borderRadius }
+  }
+  await expect(help).toBeVisible()
+  expect(await help.evaluate(buttonStyle)).toEqual(await add.evaluate(buttonStyle))
+  const helpWidth = (await help.boundingBox())!.width
+  const cardWidth = (await page.getByRole('article').boundingBox())!.width
+  expect(helpWidth).toBeGreaterThan(cardWidth * .85)
+  const contact = page.locator('.supplier-contact-section').first()
+  await expect(contact).toHaveCSS('padding-top', '16px')
+  await expect(help).toHaveCSS('margin-top', '16px')
+  const contactBox = (await contact.boundingBox())!
+  const helpBox = (await help.boundingBox())!
+  expect(helpBox.y - contactBox.y - contactBox.height).toBeCloseTo(16, 0)
+  const sources = contact.locator('.contact-sources')
+  await expect(sources).toHaveCSS('margin-top', '0px')
+  const actions = contact.locator('.provider-contact-actions a')
+  await expect(actions.nth(0)).toHaveText('Call')
+  await expect(actions.nth(1)).toHaveText('Email')
+  expect((await actions.nth(0).boundingBox())!.width).toBeCloseTo((await actions.nth(1).boundingBox())!.width, 0)
+  await expect(sources.locator('.contact-email-source')).toHaveText('Email source: EPA')
+  await expect(sources).not.toContainText('Checked')
+})
 
 for (const [language, t] of [['en', en], ['es', es]] as const) {
   for (const entry of PLACE_CATALOG.filter(entry => entry.place.kind === 'system')) {
@@ -472,7 +586,7 @@ for (const state of ['active', 'none', 'failed', 'stale', 'unchecked'] as const)
   }
 })
 
-test('WAVE hierarchy uses navy headings, readable text and full contact values at phone and laptop widths', async ({ page }) => {
+test('WAVE hierarchy uses navy headings, readable text and accessible contact actions at phone and laptop widths', async ({ page }) => {
   await watchSupplier(page)
   await expect(page.locator('.supplier-contact-section .provider-contact')).toBeVisible()
   for (const width of [320, 390, 1366]) {
@@ -491,7 +605,7 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
         actionSize: parseFloat(getComputedStyle(element.querySelector('.official-list')!).fontSize),
         radius: getComputedStyle(element).borderRadius,
         callTop: call.top, emailTop: email.top, captionTop: caption.top, captionBottom: caption.bottom,
-        callHeight: call.height, emailHeight: email.height, cardWidth: element.getBoundingClientRect().width,
+        callHeight: call.height, emailHeight: email.height, callWidth: call.width, emailWidth: email.width, cardWidth: element.getBoundingClientRect().width,
       }
     })
     expect(geometry.title).toBe('rgb(16, 46, 67)')
@@ -501,11 +615,15 @@ test('WAVE hierarchy uses navy headings, readable text and full contact values a
     expect(geometry.actionSize).toBeGreaterThanOrEqual(16)
     expect(await page.locator('.home-sidebar h2').first().evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(20)
     expect(geometry.radius).toBe('16px')
-    if (width < 761) expect(geometry.emailTop).toBeGreaterThanOrEqual(geometry.callTop + geometry.callHeight)
-    if (width < 761) expect(geometry.callTop).toBeGreaterThanOrEqual(geometry.captionBottom)
-    else expect(Math.abs(geometry.callTop + geometry.callHeight / 2 - (geometry.captionTop + geometry.captionBottom) / 2)).toBeLessThan(1)
-    await expect(card.locator('a[href^="tel:"]')).toContainText('(479) 549-2158')
-    await expect(card.locator('a[href^="mailto:"]')).toContainText('LEISUREHILLSWATERCO@GMAIL.COM')
+    expect(Math.abs(geometry.emailTop - geometry.callTop)).toBeLessThan(1)
+    expect(Math.abs(geometry.emailWidth - geometry.callWidth)).toBeLessThan(1)
+    expect(geometry.callTop).toBeGreaterThanOrEqual(geometry.captionBottom)
+    await expect(card.locator('a[href^="tel:"]')).toHaveText('Call')
+    await expect(card.locator('a[href^="tel:"]')).toHaveAttribute('href', 'tel:+14795492158')
+    await expect(card.locator('a[href^="tel:"]')).toHaveAttribute('aria-label', /\(479\) 549-2158/)
+    await expect(card.locator('a[href^="mailto:"]')).toHaveText('Email')
+    await expect(card.locator('a[href^="mailto:"]')).toHaveAttribute('href', 'mailto:LEISUREHILLSWATERCO@GMAIL.COM')
+    await expect(card.locator('a[href^="mailto:"]')).toHaveAttribute('aria-label', /LEISUREHILLSWATERCO@GMAIL.COM/)
     expect(geometry.callHeight).toBeGreaterThanOrEqual(44)
     expect(geometry.emailHeight).toBeGreaterThanOrEqual(44)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -599,7 +717,9 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await expect(official.locator('svg.icon')).toHaveCSS('color', 'rgb(6, 109, 115)')
     expect(await help.evaluate(el => el.previousElementSibling?.classList.contains('supplier-contact-section'))).toBe(true)
     await expect(card.locator('.supplier-contact-section .provider-contact')).toBeVisible()
-    await expect(email).toHaveText('LEISUREHILLSWATERCO@GMAIL.COM')
+    await expect(email).toHaveText(language === 'en' ? 'Email' : 'Correo')
+    await expect(email).toHaveAttribute('href', 'mailto:LEISUREHILLSWATERCO@GMAIL.COM')
+    await expect(email).toHaveAttribute('aria-label', /LEISUREHILLSWATERCO@GMAIL.COM/)
     const emailBounds = await email.boundingBox()
     expect(emailBounds!.width).toBeLessThan(width)
     expect(await email.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)

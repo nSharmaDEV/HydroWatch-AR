@@ -12,7 +12,9 @@ published records, not testing water.
 
 - Shows ADH boil-water notices for public-water suppliers, with source
   links, retrieval times and explicit unavailable/stale states.
-- Lets residents confirm and watch specific suppliers, review
+- Offers ZIP-based supplier suggestions from dated EPA/Census geography; residents
+  still choose the supplier on their bill. Suggestions are not exhaustive coverage.
+- Previews a selected supplier's status card with expandable details and visible Back/Next controls; Next saves it and opens that supplier in Places, where residents can review
   observed advisory history, and see changes since a previous visit.
 - Provides dated supplier facts and annual-report findings where reviewed,
   separate from current advisory status.

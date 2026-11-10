@@ -8,7 +8,7 @@ import { ProviderContact } from './ProviderContact'
 import { RecoveryActions } from './RecoveryActions'
 import { SupplierProfile } from './SupplierProfile'
 import { BoilWaterGuidance } from './BoilWaterGuidance'
-import { supplierCounty } from './supplier-display'
+import { supplierCounty, supplierName } from './supplier-display'
 import { catalogEntry } from './place-catalog'
 import { helpGuideStrings } from './help-guide-strings'
 
@@ -20,7 +20,7 @@ export function NoticeDetail({ place, source, now, linkedNotice, t, language, sa
   const heading = linkedNotice ? linkedNotice.lifted ? t.explicitLift : t.unverified : status.state === 'active' ? place.kind === 'system' ? t.activeBoil : t.activeHab : unavailable ? t.unavailable : t.none
   return <>
     <button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{t.back}</button>
-    <div className="page-heading"><div><h1>{supplierCounty(place.name)}</h1><p>{supplierCounty(place.county)} · {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div></div>
+    <div className="page-heading"><div><h1>{place.kind === 'system' ? supplierName(place.name) : supplierCounty(place.name)}</h1><p>{supplierCounty(place.county)} · {place.kind === 'system' ? 'ADH' : 'ADEQ'}</p>{sample ? <span className="sample-tag">{t.sample} · {t.fictional}</span> : null}</div></div>
       <Panel className={`detail-status ${tone}`}><p className="status-label"><span className="status-symbol" aria-hidden="true">{linkedNotice ? linkedNotice.lifted ? '—' : '?' : status.state === 'active' ? '!' : unavailable ? '?' : '—'}</span>{heading}</p>
         {unavailable ? <p>{t.unavailableText}</p> : !linkedNotice && status.state === 'none' ? <p>{t.noneText}</p> : null}
         {records.some(n => n.liftStatus === 'unknown') ? <p className="info">{t.unknownLift}</p> : null}
