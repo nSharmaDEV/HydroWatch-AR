@@ -37,7 +37,7 @@ for (const language of ['en', 'es'] as const) test(`Noto Sans body trial preserv
     const fields = page.locator('.request-card input:not([type=checkbox]):not([type=file]), .request-card textarea')
     for (const el of await fields.all()) if (await el.isVisible()) expect(await el.evaluate(el => getComputedStyle(el).fontFamily)).toContain('Noto Sans')
     if (process.env.WAVE_FONT_CAPTURE_DIR) await page.screenshot({ path: `${process.env.WAVE_FONT_CAPTURE_DIR}/help-${step}-${language}-${test.info().project.name}.png`, fullPage: true })
-    if (step < 4) await page.getByRole('button', { name: step === 3 ? es ? 'Escribir mi correo' : 'Write my email' : es ? 'Continuar' : 'Continue', exact: true }).click()
+    if (step < 4) await page.getByRole('button', { name: step === 3 ? es ? 'Revisar mi mensaje' : 'Review my message' : es ? 'Continuar' : 'Continue', exact: true }).click()
   }
   expect(unexpected).toEqual([])
 })

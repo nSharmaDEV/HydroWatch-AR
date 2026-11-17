@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAVE Get Help reform — wireframes (proposal)</title>
+<style>
+  :root { --ink:#102e43; --line:#9fb1bc; --soft:#edf6f6; --teal:#087f83; --warn:#fff7e0; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; font:15px/1.45 system-ui, sans-serif; color:var(--ink); background:#e9eef2; }
+  h1 { margin:0 0 4px; } .note { max-width:70ch; color:#354f60; }
+  h2 { margin:40px 0 4px; } .why { margin:0 0 12px; color:#354f60; max-width:80ch; }
+  .frames { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
+  /* Desktop frame: 1280x720 viewport, nothing scrolls the page. */
+  .desktop { width:1280px; height:720px; background:#fff; border:2px solid var(--ink); border-radius:8px; display:grid; grid-template-rows:56px auto 1fr 64px; overflow:hidden; }
+  .mobile { width:360px; height:720px; background:#fff; border:2px solid var(--ink); border-radius:18px; display:grid; grid-template-rows:48px auto 1fr 64px; overflow:hidden; }
+  .nav { background:var(--ink); color:#fff; display:flex; align-items:center; gap:20px; padding:0 20px; font-weight:700; }
+  .nav span { font-weight:400; opacity:.8; }
+  .steps { display:flex; gap:8px; padding:10px 20px; border-bottom:1px solid #cbdce3; align-items:center; font-size:.9rem; }
+  .steps b { background:var(--teal); color:#fff; border-radius:99px; padding:2px 12px; }
+  .steps i { font-style:normal; border:1px solid var(--line); border-radius:99px; padding:2px 12px; }
+  .steps .saved { margin-left:auto; color:#354f60; }
+  .body { padding:16px 20px; display:grid; gap:16px; min-height:0; }
+  .cols2 { grid-template-columns:1fr 1fr; } .cols3 { grid-template-columns:1fr 1fr 1fr; } .cols73 { grid-template-columns:7fr 13fr; }
+  .box { border:1.5px dashed var(--line); border-radius:8px; padding:12px; min-height:0; display:flex; flex-direction:column; gap:8px; }
+  .box h3 { margin:0; font-size:1rem; }
+  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .tile { border:1.5px solid var(--line); border-radius:8px; padding:10px; text-align:center; }
+  .tile.on { border-color:var(--teal); background:var(--soft); font-weight:700; }
+  .chk::before { content:"☐ "; } .chk.on::before { content:"☑ "; }
+  .field { border:1.5px solid var(--line); border-radius:6px; padding:8px; color:#6a7f8d; }
+  .scroll { overflow:hidden; position:relative; flex:1; border:1.5px solid var(--line); border-radius:6px; padding:8px; }
+  .scroll::after { content:"↕ scrolls inside this box only"; position:absolute; right:8px; bottom:6px; font-size:.75rem; background:#fff; padding:0 4px; color:#354f60; }
+  .rec { border:2px solid var(--teal); background:var(--soft); border-radius:8px; padding:12px; }
+  .tag { display:inline-block; font-size:.75rem; background:#fff; border:1px solid var(--teal); border-radius:4px; padding:0 6px; }
+  .warn { background:var(--warn); border:1px solid #d9b44a; border-radius:6px; padding:8px; font-size:.9rem; }
+  .bar { border-top:1px solid #cbdce3; display:flex; align-items:center; gap:10px; padding:0 20px; background:#f8fafb; }
+  .bar .sp { margin-left:auto; }
+  .btn { border:1.5px solid var(--ink); border-radius:7px; padding:8px 16px; font-weight:700; background:#fff; }
+  .btn.p { background:var(--teal); border-color:var(--teal); color:#fff; }
+  .tracker { display:flex; gap:6px; align-items:center; font-size:.85rem; }
+  .tracker .d::before { content:"● "; color:var(--teal); } .tracker .o::before { content:"○ "; }
+  .callout { font-size:.85rem; color:#354f60; margin-top:6px; max-width:1280px; }
+  ul.tight { margin:0; padding-left:1.1rem; }
+</style>
+</head>
+<body>
+<h1>WAVE Get Help reform — wireframes</h1>
+<p class="note">Proposal only; nothing here is shipped UI or a present-day capability claim. Sample text is fictional. Desktop frames are 1280×720: the page itself does not scroll, and any long content scrolls inside its own labeled box. Mobile may scroll naturally with the primary action pinned.</p>
+
+<!-- ============ SCREEN 1 ============ -->
+<h2>Screen 1 of 3 · What happened</h2>
+<p class="why">Issue, what the resident saw, when and where, and their contact details on one screen. No supplier or contact text here; the contact decision comes next.</p>
+<div class="frames">
+  <div class="desktop">
+    <div class="nav">WellPower: WAVE <span>Home · Places · Help · History</span></div>
+    <div class="steps"><b>1 What happened</b><i>2 Who to contact</i><i>3 Review and contact your provider</i><span class="saved">Saved on this device</span></div>
+    <div class="body cols73">
+      <div class="box">
+        <h3>What’s wrong?</h3>
+        <div class="tiles">
+          <div class="tile">Advisory</div><div class="tile on">Service</div><div class="tile">Quality</div>
+          <div class="tile">Billing</div><div class="tile">Report</div><div class="tile">Other</div>
+        </div>
+        <div class="field">Place: Leisure Hills Mobile Home Park, AR</div>
+      </div>
+      <div class="cols2 body" style="padding:0">
+        <div class="box">
+          <h3>What did you notice?</h3>
+          <div class="chk on">Lower pressure than usual</div>
+          <div class="chk">No water at some taps</div>
+          <div class="chk">Comes and goes</div>
+          <div class="field">Anything else? (optional)</div>
+        </div>
+        <div class="box">
+          <h3>When and where</h3>
+          <div class="field">Started: Nov 9, 2026</div>
+          <div class="field">Ongoing: ☑ yes</div>
+          <div class="field">Which taps or rooms</div>
+          <h3>Your details (optional)</h3>
+          <div class="field">Name · Phone · Service address</div>
+        </div>
+      </div>
+    </div>
+    <div class="bar"><span class="btn">Back</span><span class="sp"></span><span class="btn p">Next: Who to contact</span></div>
+  </div>
+  <div class="mobile">
+    <div class="nav">WAVE</div>
+    <div class="steps"><b>1/3</b> What happened</div>
+    <div class="body" style="overflow:auto">
+      <div class="tiles"><div class="tile">Advisory</div><div class="tile on">Service</div><div class="tile">Quality</div></div>
+      <div class="box"><h3>What did you notice?</h3><div class="chk on">Lower pressure</div><div class="chk">No water</div></div>
+      <div class="box"><h3>When and where</h3><div class="field">Started</div></div>
+      <div class="callout">…continues; stacks and scrolls on phones</div>
+    </div>
+    <div class="bar"><span class="btn p sp" style="margin:0 auto">Next</span></div>
+  </div>
+</div>
+
+<!-- ============ SCREEN 2 ============ -->
+<h2>Screen 2 of 3 · Who to contact</h2>
+<p class="why">The recommended channel for this specific issue, shown with its source and check date. If WAVE has only a general number, it says “General utility contact.” Attachments and what to ask for live here.</p>
+<div class="frames">
+  <div class="desktop">
+    <div class="nav">WellPower: WAVE <span>Home · Places · Help · History</span></div>
+    <div class="steps"><i>1 What happened</i><b>2 Who to contact</b><i>3 Review and contact your provider</i><span class="saved">Saved on this device</span></div>
+    <div class="body cols73">
+      <div class="box">
+        <h3>Recommended for low pressure</h3>
+        <div class="rec">
+          <span class="tag">General utility contact</span>
+          <p><b>Leisure Hills Mobile Home Park</b><br>Phone (sample) · Email (sample)</p>
+          <p class="callout">Source: public water system record · checked 2026-11-10. WAVE has not verified a service-specific channel.</p>
+        </div>
+        <h3>Other options</h3>
+        <div class="chk">Arkansas Dept. of Health (ADH) — guidance on public water systems</div>
+      </div>
+      <div class="box">
+        <h3>What should they do?</h3>
+        <div class="chk on">“Could you check what’s causing the low pressure and let me know when I should expect an update?”</div>
+        <div class="field">Add a question (optional)</div>
+        <h3>Photos or documents (optional)</h3>
+        <div class="field">＋ Add up to 3 files, 1 MB total</div>
+        <div class="warn">Nothing is sent from this screen. Avoid sensitive account or medical details.</div>
+      </div>
+    </div>
+    <div class="bar"><span class="btn">Back</span><span class="sp"></span><span class="btn p">Next: Review</span></div>
+  </div>
+  <div class="mobile">
+    <div class="nav">WAVE</div>
+    <div class="steps"><b>2/3</b> Who to contact</div>
+    <div class="body" style="overflow:auto">
+      <div class="rec"><span class="tag">General utility contact</span><p><b>Leisure Hills</b><br>Call · Email</p></div>
+      <div class="box"><h3>What should they do?</h3><div class="chk on">Check the low pressure and update me</div></div>
+    </div>
+    <div class="bar"><span class="btn p sp" style="margin:0 auto">Next</span></div>
+  </div>
+</div>
+
+<!-- ============ SCREEN 3 ============ -->
+<h2>Screen 3 of 3 · Review and contact your provider</h2>
+<p class="why">Left: facts and sources (scrolls inside its box). Right: the editable message, with call and email actions always visible in the pinned bar.</p>
+<div class="frames">
+  <div class="desktop">
+    <div class="nav">WellPower: WAVE <span>Home · Places · Help · History</span></div>
+    <div class="steps"><i>1 What happened</i><i>2 Who to contact</i><b>3 Review and contact your provider</b><span class="saved">Saved on this device</span></div>
+    <div class="body cols73">
+      <div class="box">
+        <h3>What you told us</h3>
+        <div class="scroll">Issue: Service · Low pressure<br>Started Nov 9 · Ongoing<br>Sources and published records (if any), agency wording preserved…</div>
+        <div class="callout">A missing notice is not proof of safety.</div>
+      </div>
+      <div class="box">
+        <h3>Message to Leisure Hills <span class="tag">General utility contact</span></h3>
+        <div class="field">Subject: Low water pressure at my address</div>
+        <div class="scroll">Hello,<br><br>Since Nov 9 I’ve had lower pressure than usual at my tap.<br><br>Could you check what’s causing the low pressure and let me know when I should expect an update?<br><br>Thank you,<br>[name · phone]</div>
+        <div class="callout">Edits stay yours. “Reset to answers” regenerates the message.</div>
+      </div>
+    </div>
+    <div class="bar"><span class="btn">Back</span><span class="sp"></span><span class="btn">Download text</span><span class="btn">Log a contact attempt</span><span class="btn">Call</span><span class="btn p">Open in email app</span></div>
+  </div>
+  <div class="mobile">
+    <div class="nav">WAVE</div>
+    <div class="steps"><b>3/3</b> Review and contact</div>
+    <div class="body" style="overflow:auto">
+      <div class="box"><h3>Message</h3><div class="field">Could you check what’s causing the low pressure…</div></div>
+      <div class="box"><h3>What you told us</h3><div class="field">Low pressure · since Nov 9</div></div>
+    </div>
+    <div class="bar"><span class="btn">Call</span><span class="btn p">Email</span></div>
+  </div>
+</div>
+
+<!-- ============ PROMPT AFTER CONTACT ============ -->
+<h2>After tapping Call or Email · “Did you reach them?”</h2>
+<p class="why">WAVE can’t see your phone or email app, so it asks. Answering Yes records the attempt and moves the tracker; closing the prompt records nothing.</p>
+<div class="frames">
+  <div class="desktop" style="height:420px;grid-template-rows:56px 1fr 64px">
+    <div class="nav">WellPower: WAVE</div>
+    <div class="body" style="place-content:center">
+      <div class="box" style="width:640px">
+        <h3>Log a contact attempt</h3>
+        <div class="field">How: Phone call ▾ (email · phone · web form · couldn’t reach anyone)</div>
+        <div class="field">Ticket number (optional)</div>
+        <div class="field">What did they tell you? (optional)</div>
+        <div class="field">When should you follow up? Nov 17, 2026 &nbsp;<span class="callout">Suggested: 5 business days. A check-in date, not a deadline.</span></div>
+      </div>
+    </div>
+    <div class="bar"><span class="btn">Cancel</span><span class="sp"></span><span class="btn p">Save attempt</span></div>
+  </div>
+</div>
+
+<!-- ============ HISTORY ============ -->
+<h2>History · card and detail</h2>
+<p class="why">Cards show a short tracker built only from what the resident recorded. Detail shows the timeline, notes and next actions.</p>
+<div class="frames">
+  <div class="desktop" style="height:560px;grid-template-rows:56px 1fr">
+    <div class="nav">WellPower: WAVE <span>Home · Places · Help · History</span></div>
+    <div class="body cols2">
+      <div class="box">
+        <h3>Low pressure — Leisure Hills</h3>
+        <div class="tracker"><span class="d">Request saved</span>→<span class="d">Contact attempted</span>→<span class="o">Follow up · Nov 17</span>→<span class="o">Closed</span></div>
+        <div class="callout">Called Nov 10 · Follow-up suggested Nov 17</div>
+        <span class="btn" style="align-self:flex-start">View request &amp; progress</span>
+        <hr>
+        <h3>Billing — Sample Utility</h3>
+        <div class="tracker"><span class="d">Request saved</span>→<span class="o">Contact attempted</span>→<span class="o">Follow up</span>→<span class="o">Closed</span></div>
+        <div class="callout">Not contacted yet</div>
+      </div>
+      <div class="box">
+        <h3>Your progress</h3>
+        <div>✓ Request saved<br>✓ Contact attempted · called Nov 10<br>○ Follow up · suggested Nov 17<br>○ Closed</div>
+        <div class="field">Ticket: 12345</div>
+        <div class="field">What they told you: “A crew will investigate.”</div>
+        <div class="callout">WAVE can’t see replies or calls. This shows only what you recorded.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="btn">Update contact details</span><span class="btn">Record another attempt</span><span class="btn">Record a reply</span><span class="btn">Mark resolved</span><span class="btn">I’m no longer pursuing this</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Open questions</h2>
+<ul class="tight">
+  <li>Which fields are required on Screen 1? Proposal: an issue plus one observation or description.</li>
+  <li>Where does “Your details” belong if the resident prefers not to enter them until review? Proposal: optional on Screen 1, editable on Screen 3.</li>
+  <li>[NEEDS: verified service- and billing-specific contact channels per supplier; only “General utility contact” is available today.]</li>
+</ul>
+</body>
+</html>

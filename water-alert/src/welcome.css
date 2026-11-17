@@ -31,10 +31,9 @@ main:has(> .home-layout) > .welcome-strip,
 main:has(> .request-workspace) > .welcome-strip { left: calc(50% - 50vw); right: auto; width: 100vw; }
 main > .home-layout { position: relative; z-index: 1; }
 
-/* History: main goes full width so the still strip spans the viewport; the history content keeps
-   its previous 1280px main width (less main's 44px side padding) and sits above the strip. */
-main:has(> .history-stage .request-history) { width: 100%; max-width: none; margin: 0; }
-.history-stage > .request-history.narrow-page { position: relative; z-index: 1; max-width: 1192px; margin: 0 auto; }
+/* History carries no strip, so main keeps its shared width; the content only needs to sit above
+   the shared water background. */
+.history-stage > .request-history.narrow-page { position: relative; z-index: 1; margin: 0 auto; }
 
 .welcome-option {
   display: flex;

@@ -7,7 +7,7 @@ import { factPatch, helpPath, helpStep, initialFacts, savedFacts, relevantFacts 
 import { GuidedHelp } from './GuidedHelp'
 import { defaultRequests } from './ConfirmedWording'
 import { reportQuestion } from './report-findings'
-import { blankRequest, generateMessage, type HelpDraft, type HelpRequest, type HelpStep } from './help-requests'
+import { blankRequest, generateMessage, type AttachmentStep, type HelpDraft, type HelpRequest, type HelpStep } from './help-requests'
 import { downloadText, helpApi, listRequests, saveRequest } from './help-client'
 import './requests.css'
 import './help-four-screen.css'
@@ -16,6 +16,7 @@ import { localizeDraft, updateDraft } from './help-draft'
 import { exportedText } from './help-exports'
 import { useContentMotion } from './interface-motion'
 import { contacted } from './help-outcomes'
+import { attachmentSize, attachmentTag } from './attachment-display'
 interface Props { /** A hand-checked report finding key to ask about ("Ask about this"). */ ask?: string; place: Place; places?: Place[]; notice?: Notice; notices?: Notice[]; language: Language; sample: boolean; requestId?: string; currentAdvisory?: boolean; registerLeave?: (handler: (() => Promise<boolean>) | null) => void; onBack: () => void; onHistory: (id: string) => void }
 export function RequestWorkspace(props: Props) {
   return <div className="request-workspace">{props.sample ? <Workspace {...props} delivery={false} deviceOnly={false} /> : <HelpAccount language={props.language}>{s => <Workspace {...props} delivery={s.delivery} deviceOnly={!s.user} />}</HelpAccount>}</div>
@@ -83,7 +84,7 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
     let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' || value === 'send' ? 2 : 1 }
     if (value === 'review' || value === 'send') { const { sources, context, evidence } = factPatch(relevantFacts(draft)); patch = { ...patch, sources, context, evidence } }
     // The usual requests for this issue start ticked the first time; the resident can untick them.
-    if (value === 'details' && helpStep(draft) === 'choose' && !Object.keys(draft.wording?.response ?? {}).length) patch = { ...patch, wording: { report: draft.wording?.report ?? {}, response: { ...defaultRequests(draft.issue, language), details: '' } } }
+    if (value === 'request' && helpStep(draft) !== 'anything' && helpStep(draft) !== 'response' && !Object.keys(draft.wording?.response ?? {}).length) patch = { ...patch, wording: { report: draft.wording?.report ?? {}, response: { ...defaultRequests(draft.issue, language, Object.values(draft.wording?.report ?? {}).filter(t => t.trim())), details: '' } } }
     const path = helpPath(draft)
     changeStep(() => {
       // Moving between steps is not an edit: keep a confirmed send so Back and forward cannot send twice.
@@ -98,15 +99,16 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
     const sources = [...(value.sources ?? []).filter(s => !/^\d{4}:\d+$/.test(s.recordId)), ...historical.sources]
     return { ...generateMessage(value, language, historical.context), generatedFrom: answerFingerprint(value), ...(value.sources || historical.sources.length ? { sources } : {}) }
   }
-  async function files(input: HTMLInputElement) {
+  async function files(input: HTMLInputElement, step: AttachmentStep) {
     if (readingFiles) return
     setReadingFiles(true)
     try {
       const chosen = Array.from(input.files ?? [])
-      if (chosen.length + draft!.attachments.length > 3 || chosen.reduce((s, f) => s + f.size, draft!.attachments.reduce((s, a) => s + a.data.length * .75, 0)) > 1024 * 1024) throw new Error('limit')
-      const attachments = await Promise.all(chosen.map(async file => { if (!['text/plain', 'image/png', 'image/jpeg', 'application/pdf'].includes(file.type)) throw new Error('type'); const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ''; for (const b of bytes) binary += String.fromCharCode(b); return { id: crypto.randomUUID(), name: file.name, type: file.type, data: btoa(binary) } }))
+      const existing = current.current!.attachments.filter(a => (a.step ?? 'response') === step)
+      if (chosen.length + existing.length > 3 || chosen.reduce((s, f) => s + f.size, existing.reduce((s, a) => s + a.data.length / 4 * 3 - (a.data.endsWith('==') ? 2 : a.data.endsWith('=') ? 1 : 0), 0)) > 1024 * 1024) throw new Error('limit')
+      const attachments = await Promise.all(chosen.map(async file => { if (!['text/plain', 'image/png', 'image/jpeg', 'application/pdf', 'video/mp4', 'video/webm'].includes(file.type)) throw new Error('type'); const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ''; for (const b of bytes) binary += String.fromCharCode(b); return { id: crypto.randomUUID(), name: file.name, type: file.type, data: btoa(binary), step } }))
       edit({ attachments: [...current.current!.attachments, ...attachments] }); setError('')
-    } catch { setError(say('Use up to 3 PDF, PNG, JPG or text files, 1 MB total. Avoid sensitive account or medical details.', 'Usa hasta 3 archivos PDF, PNG, JPG o texto, 1 MB en total. Evita datos de cuenta o médicos.')) } finally { input.value = ''; setReadingFiles(false) }
+    } catch { setError(say('Use up to 3 PDF, PNG, JPG, MP4, WebM or text files, 1 MB total per step. Avoid sensitive account or medical details.', 'Usa hasta 3 archivos PDF, PNG, JPG, MP4, WebM o texto, 1 MB en total por paso. Evita datos de cuenta o médicos.')) } finally { input.value = ''; setReadingFiles(false) }
   }
   async function send() {
     if (sending || sent || sample || !delivery) return
@@ -116,19 +118,22 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
     finally { setSending(false) }
   }
   if (!draft) return <section className="request-workspace"><button className="back" onClick={onBack}><Icon name="chevron-left" size={18} />{say('Back', 'Atrás')}</button><p role="status">{saving === 'error' ? say('Could not load your draft. Nothing was overwritten.', 'No se pudo cargar el borrador. No se sobrescribió nada.') : say('Loading draft…', 'Cargando borrador…')}</p></section>
+  const step = helpStep(draft), path = helpPath(draft), index = path.indexOf(step)
+  const rows = (group: AttachmentStep) => draft.attachments.filter(a => (a.step ?? 'response') === group).map(a => { const [label, kind] = attachmentTag(a); return <div key={a.id} className="request-attachment-row"><span className={`request-attachment-tag ${kind}`}>{label}</span><span className="request-attachment-name" title={a.name}>{a.name}</span><span className="request-attachment-size">{attachmentSize(a)}</span><button type="button" className="request-attachment-remove" aria-label={`${say('Remove attachment', 'Eliminar archivo')}: ${a.name}`} title={`${say('Remove attachment', 'Eliminar archivo')}: ${a.name}`} onClick={() => edit({ attachments: current.current!.attachments.filter(f => f.id !== a.id) })}><Icon name="trash-2" size={18} /></button></div> })
   const extras = <section className="request-extras" aria-label={say('Add a photo or document', 'Añade una foto o documento')}>
       <button className="request-attachment-button secondary" disabled={readingFiles} onClick={() => fileInput.current?.click()}><span aria-hidden="true">＋</span>{say('Add a photo or document', 'Añade una foto o documento')}</button>
-      <label className="sr-only">{say('Attachments (optional)', 'Archivos adjuntos (opcional)')}<input ref={fileInput} type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" multiple disabled={readingFiles} onChange={e => void files(e.currentTarget)} /></label>
-       <p className="quiet-note">{say('Optional: up to 3 PDF, PNG, JPG or text files, 1 MB total. Avoid sensitive account or medical details. Attach files yourself when using your email app.', 'Opcional: hasta 3 archivos PDF, PNG, JPG o texto, 1 MB en total. Evita datos de cuenta o médicos. Adjunta los archivos tú al usar tu app de correo.')}</p>
+      <label className="sr-only">{say('Attachments (optional)', 'Archivos adjuntos (opcional)')}<input ref={fileInput} type="file" accept=".pdf,.png,.jpg,.jpeg,.txt,.mp4,.webm" multiple disabled={readingFiles} onChange={e => void files(e.currentTarget, 'response')} /></label>
+       <p className="quiet-note">{say('Files saved here are not attached automatically when you open your email app. Attach them yourself before sending. Optional: up to 3 PDF, PNG, JPG, MP4, WebM or text files, 1 MB total per step. Older files without a recorded step appear here. Avoid sensitive account or medical details.', 'Los archivos guardados aquí no se adjuntan automáticamente al abrir tu app de correo. Adjúntalos tú antes de enviar. Opcional: hasta 3 archivos PDF, PNG, JPG, MP4, WebM o texto, 1 MB en total por paso. Los archivos anteriores sin paso registrado aparecen aquí. Evita datos de cuenta o médicos.')}</p>
        {readingFiles ? <p role="status">{say('Reading files…', 'Leyendo archivos…')}</p> : null}
-      {draft.attachments.map(a => <p key={a.id} className="request-file-row"><span aria-hidden="true">▤</span> {a.name} ({a.type}) — {say('Ready', 'Listo')} <button className="text-button" aria-label={`${say('Remove attachment', 'Eliminar archivo')}: ${a.name}`} onClick={() => edit({ attachments: draft.attachments.filter(f => f.id !== a.id) })}>{say('Remove', 'Eliminar')}</button></p>)}
+       {rows('response')}
        </section>
-  const step = helpStep(draft), path = helpPath(draft), index = path.indexOf(step)
-   const topLine = <div className="request-topline"><button className="back" aria-label={say('Back', 'Atrás')} disabled={sending} onClick={() => index > 0 ? void stage(path[index - 1]) : void leave(onBack)}><Icon name="chevron-left" size={18} />{say(index ? 'Back to previous step' : 'Back', index ? 'Volver al paso anterior' : 'Atrás')}</button><div className="request-actions"><p role="status" className={saving === 'saved' ? 'sr-only' : undefined}>{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p><button className="text-button" onClick={() => void leave(() => onHistory(draft.id))}>{say('Open History', 'Abrir Historial')}</button></div></div>
+  const actionGroup: AttachmentStep = step === 'request' ? 'request' : 'noticed'
+  const actionExtras = <><button type="button" className="request-action-add" aria-label={say('Add a photo or video', 'Añadir una foto o video')} disabled={readingFiles} onClick={() => fileInput.current?.click()}>＋</button><input hidden ref={fileInput} type="file" accept=".png,.jpg,.jpeg,.mp4,.webm" multiple disabled={readingFiles} aria-label={say('Photos and videos', 'Fotos y videos')} onChange={e => void files(e.currentTarget, actionGroup)} />{readingFiles ? <p role="status">{say('Reading files…', 'Leyendo archivos…')}</p> : null}{rows(actionGroup)}</>
+  const status = <p role="status" className={`request-save-status${saving === 'saved' ? ' sr-only' : ''}`}>{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p>
   return <section ref={stepContent} className="request-workspace request-guided-workspace">
-      <GuidedHelp topLine={topLine} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} edit={edit} changeFacts={facts => edit(factPatch(facts))} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
+      <GuidedHelp status={status} onHistory={() => void leave(() => onHistory(draft.id))} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} actionExtras={actionExtras} edit={edit} changeFacts={facts => edit(factPatch(facts))} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
     {sent ? <p role="status">{say('Message accepted by the email processor, not confirmed delivered or resolved. Open History for updates.', 'Mensaje aceptado por el procesador, no confirma entrega ni solución. Abre Historial para ver actualizaciones.')}</p> : null}
     {error ? <p role="alert">{error}</p> : null}
-    {saving === 'error' ? <div className="request-actions"><button className="secondary" onClick={() => { queue.current = Promise.resolve(); void persist().catch(() => {}) }}>{say('Retry save', 'Reintentar guardar')}</button><button className="text-button" onClick={() => downloadText(`${sample ? 'sample-' : ''}unsaved-water-request.txt`, exportedText(`${draft.description}\n${draft.dates}\n\n${draft.subject}\n\n${draft.body}`, language, sample))}>{say('Download unsaved text', 'Descargar texto sin guardar')}</button></div> : null}
+    {saving === 'error' ? <div className="request-actions"><button className="secondary" onClick={() => { queue.current = Promise.resolve(); void persist().catch(() => {}) }}>{say('Retry save', 'Reintentar guardar')}</button><button className="action-chip" onClick={() => downloadText(`${sample ? 'sample-' : ''}unsaved-water-request.txt`, exportedText(`${draft.description}\n${draft.dates}\n\n${draft.subject}\n\n${draft.body}`, language, sample))}><Icon name="download" size={16} />{say('Download unsaved text', 'Descargar texto sin guardar')}</button></div> : null}
   </section>
 }

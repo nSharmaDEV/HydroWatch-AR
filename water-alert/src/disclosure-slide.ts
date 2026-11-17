@@ -55,7 +55,11 @@ export function disclosureSlide(el: HTMLElement, open: boolean, interrupted: Sli
     }
   }
   return {
-    finished: Promise.all(effects.map(effect => effect.animation.finished)),
+    // A re-render that swaps a child cancels that child's effect. Wait for every
+    // effect to settle instead of failing fast: a rejection here would skip the
+    // caller's restore step and strand the panel at the frame it started from,
+    // clipped to zero height with its contents still offset.
+    finished: Promise.allSettled(effects.map(effect => effect.animation.finished)),
     snapshot: () => new Map(effects.map(({ el: target, properties }) => {
       const style = getComputedStyle(target)
       return [target, Object.fromEntries(properties.map(property => [property, style.getPropertyValue(property.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`))])) as Keyframe]

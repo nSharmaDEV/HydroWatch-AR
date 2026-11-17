@@ -1,88 +1,77 @@
 /* Approved WAVE Help design. Scoped to the active flow; legacy/history styles
    and the shared application stylesheet remain unchanged. */
-.request-four-screen { --help-line: #dbe5e9; --help-muted: #506573; gap: 18px; }
-.request-four-screen .request-frame-topline, .request-four-screen .request-card { width: min(1144px, 100%); }
-.request-four-screen .request-frame-topline { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
-.request-four-screen .request-topline { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 12px; }
-.request-four-screen .request-topline > .request-actions { display: flex; width: auto; margin-left: auto; justify-content: end; align-items: center; flex-wrap: wrap; gap: 6px 16px; }
-.request-four-screen .request-frame-topline .request-topline > .request-actions { grid-column: auto; grid-row: auto; }
-.request-four-screen .request-frame-topline > .request-progress { grid-column: 1; grid-row: 1; }
+.request-four-screen { --help-line: #e2e8f0; --help-muted: #506077; --help-teal: #1f6f78; gap: 18px; color: #0f172a; }
+#root main:has(.request-four-screen):not(:has(.request-screen-send)) { display: flex; flex-direction: column; }
+main:has(.request-four-screen):not(:has(.request-screen-send)) > .request-workspace { margin-block: auto; }
+@media (min-width: 761px) { #root main:has(.request-four-screen):not(:has(.request-screen-send)) { padding-block: 12px; } }
+body .request-four-screen:not(:has(.request-screen-send)) { min-height: 0; }
+.request-four-screen .request-card .request-guided .request-issue-choice[aria-checked="false"] { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
 .request-four-screen .request-progress { display: block; margin: 0; width: 100%; }
-.request-four-screen .request-step-nav { position: static; inset: auto; z-index: auto; padding: 0; border: 0; background: transparent; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.request-four-screen .request-step-nav button { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 0 14px; border: 0; border-bottom: 2px solid var(--help-line); border-radius: 0; background: transparent; color: var(--help-muted); font: inherit; font-size: .9rem; font-weight: 600; text-align: left; }
-.request-four-screen .request-step-nav [aria-current="step"] { color: #06686e; border-bottom-color: #087f83; }
-.request-four-screen .request-step-number { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border: 1px solid #b6c7cf; border-radius: 50%; font-size: .85rem; }
-.request-four-screen .request-step-nav [aria-current] .request-step-number { background: #087f83; border-color: #087f83; color: #fff; }
-.request-four-screen .request-card { padding: 16px 32px 32px; gap: 16px; border-color: var(--help-line); box-shadow: none; }
-.request-four-screen .request-card > .request-topline { margin-bottom: -16px; }
-.request-four-screen .request-card > .request-frame-topline { width: 100%; margin: 0; }
-.request-four-screen .request-card-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 20px; }
-.request-four-screen .request-card-toolbar .request-topline { display: contents; }
-.request-four-screen .request-card-toolbar .request-topline > .back { grid-column: 1; grid-row: 1; white-space: nowrap; font-size: .8rem; }
-.request-four-screen .request-card-toolbar .request-topline > .request-actions { grid-column: 3; grid-row: 1; gap: 6px; font-size: .8rem; }
-.request-four-screen .request-card-toolbar .request-frame-topline { grid-column: 2; grid-row: 1; width: 100%; }
-.request-four-screen .request-card-toolbar .request-step-nav { gap: 10px; }
-.request-four-screen .request-card-toolbar .request-step-nav button { min-height: 44px; gap: 6px; padding: 6px 0; font-size: .72rem; line-height: 1.35; }
-.request-four-screen .request-card-toolbar .request-step-number { width: 22px; height: 22px; font-size: .72rem; }
-.request-four-screen .request-card-toolbar .request-actions > .text-button { font-size: .8rem; white-space: nowrap; }
-@media (max-width: 900px) {
-  .request-four-screen .request-card-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
-  .request-four-screen .request-card-toolbar .request-topline > .request-actions { grid-column: 2; }
-  .request-four-screen .request-card-toolbar .request-frame-topline { grid-column: 1 / -1; grid-row: 2; }
-}
+.request-four-screen .request-card { padding: 12px 32px 20px; gap: 12px; border-color: var(--help-line); box-shadow: none; }
 .request-four-screen .request-card > .request-title-row { display: block; }
-.request-four-screen .request-card .request-title-row h1 { font-size: 1.85rem; margin: 0; line-height: 1.25; }
+.request-four-screen .request-card .request-title-row h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.01em; margin: 0; line-height: 1.25; color: #0f172a; }
 .request-four-screen .request-card .request-title-row > .request-supplier-line { justify-content: start; text-align: left; }
 .request-four-screen .quiet-note { color: var(--help-muted); line-height: 1.6; }
-.request-four-screen .help-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: start; }
 .request-four-screen .help-column { display: grid; min-width: 0; gap: 18px; }
-.request-four-screen .help-column-right { border-left: 1px solid var(--help-line); padding-left: 36px; }
-.request-four-screen .help-column h2 { font-size: 1.15rem; line-height: 1.4; }
+.request-four-screen .help-column h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: normal; line-height: 1.4; }
 .request-four-screen .help-column h2 + .quiet-note { margin-top: -10px; }
 .request-four-screen .request-card .request-issue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.request-four-screen .request-card .request-issue-choice { flex-direction: column; align-items: start; justify-content: center; min-height: 122px; padding: 16px; font-size: 1rem; line-height: 1.45; border: 1px solid #b6c7cf; border-radius: 8px; background: #fff; box-shadow: none; }
-.request-four-screen .request-card .request-issue-choice[aria-pressed="true"] { border: 2px solid #087f83; padding: 15px; background: #edf7f6; }
-.request-four-screen .request-card .request-issue-choice[aria-pressed="false"] { background: #fff; border-color: #b6c7cf; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
-.request-four-screen .request-card .request-issue-choice:nth-child(n+5) { flex-direction: row; align-items: center; justify-content: start; grid-column: 1 / -1; min-height: 56px; }
-.request-four-screen .request-card .request-issue-choice svg { width: 24px; height: 24px; }
+.request-four-screen .request-card .request-issue-choice { position: relative; display: grid; grid-template-rows: 24px minmax(3em, auto); align-content: start; align-items: start; justify-content: stretch; gap: 10px; min-height: 122px; padding: 16px; font-size: 1rem; line-height: 1.45; border: 1px solid #7c8b9a; border-radius: 12px; background: #fff; box-shadow: none; color: #0f172a; }
+.request-four-screen .request-card .request-issue-choice[aria-pressed="true"] { border: 2px solid var(--help-teal); padding: 15px; background: #f4fbfa; }
+.request-four-screen .request-card .request-issue-choice[aria-pressed="false"] { background: #fff; border-color: #7c8b9a; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.request-four-screen .request-card .request-issue-choice:nth-child(n+5) { display: flex; flex-direction: row; align-items: center; justify-content: start; grid-column: 1 / -1; min-height: 56px; }
+.request-four-screen .request-issue-check { position: absolute; top: 12px; right: 12px; }
+.request-four-screen .request-card .request-issue-check svg { width: 16px; height: 16px; }
+.request-four-screen .request-card .request-issue-choice svg { width: 24px; height: 24px; color: var(--help-teal); }
 .request-four-screen .request-card .request-wording-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.request-four-screen .request-wording-choice { padding: 5px 12px; border: 1px solid var(--help-line); border-radius: 7px; }
-.request-four-screen .request-wording-choice.is-selected { background: #edf7f6; border-color: #b9d8d7; }
-.request-four-screen .request-wording-choice .checkbox-row { align-items: start; gap: 11px; line-height: 1.5; font-size: .95rem; font-weight: 400; }
-.request-four-screen input[type=checkbox] { accent-color: #087f83; margin-top: 2px; }
-.request-four-screen .request-fields label { line-height: 1.5; gap: 8px; }
+.request-four-screen .request-card .request-wording-choice { display: block; padding: 0; border: 1px solid #7c8b9a; border-radius: 12px; }
+.request-four-screen .request-wording-choice.is-selected { background: #eaf6f5; border-color: var(--help-teal); }
+.request-four-screen .request-card .request-wording-choice .checkbox-row { display: flex; align-items: flex-start; width: 100%; min-height: 44px; margin: 0; padding: 10px 12px; gap: 12px; line-height: 1.5; font-size: .95rem; font-weight: 400; cursor: pointer; box-sizing: border-box; }
+.request-four-screen input[type=checkbox] { accent-color: var(--help-teal); flex: 0 0 18px; width: 18px; height: 18px; margin: 2px 0 0; }
+.request-four-screen .request-wording-choice:focus-within { outline: 2px solid var(--help-teal); outline-offset: 3px; }
+.request-four-screen button:focus-visible, .request-four-screen summary:focus-visible, .request-four-screen input:focus-visible, .request-four-screen textarea:focus-visible, .request-four-screen select:focus-visible { outline: 2px solid var(--help-teal); outline-offset: 3px; }
+.request-four-screen .request-fields label { font-weight: 600; line-height: 1.5; gap: 8px; }
+.request-four-screen .request-field-group { display: grid; gap: 4px; min-width: 0; }
+.request-four-screen .request-field-hint { margin: 0; font-size: .85rem; font-weight: 400; }
+.request-four-screen .request-fields input, .request-four-screen .request-fields textarea, .request-four-screen .request-fields select { font-weight: 400; }
 .request-four-screen .request-fields input:not([type=checkbox]), .request-four-screen .request-fields select { min-height: 48px; }
+.request-four-screen .request-fields input:not([type=checkbox]), .request-four-screen .request-fields select, .request-four-screen .request-fields textarea { border-color: #7c8b9a; border-radius: 9px; background-color: #fff; color: #0f172a; }
 .request-four-screen .request-fields textarea { min-height: 154px; height: auto; font-size: 1rem; line-height: 1.65; padding: 12px 14px; }
 .request-four-screen .request-fields textarea::placeholder, .request-four-screen .request-fields input::placeholder { color: #586d79; opacity: 1; }
 /* First screen: remove repeated introduction space, not readable text size. */
-.request-four-screen .request-card:has(.request-screen-choose) { gap: 16px; padding-bottom: 20px; }
-.request-four-screen .request-card:has(.request-screen-choose) .request-title-row h1 { margin-bottom: 0; }
-.request-four-screen .request-screen-choose .help-column { gap: 12px; }
-.request-four-screen .request-screen-choose .help-column h2 + .quiet-note { margin-top: 0; margin-bottom: 0; }
-.request-four-screen .request-screen-choose .request-description textarea { min-height: 120px; height: 120px; }
-.request-four-screen .request-screen-choose .request-issue-choice { min-height: 106px; }
-.request-four-screen .request-card:has(.request-screen-choose) .request-card-action { padding-top: 12px; }
 .request-four-screen .request-card .request-details-row, .request-four-screen .request-card .request-questions-details { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-.request-four-screen .request-card-action { padding-top: 22px; border-top: 1px solid var(--help-line); }
-.request-four-screen .request-card-action .request-primary-action { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
-.request-four-screen .request-primary-action > .quiet-note { max-width: 50ch; font-size: .85rem; }
-.request-four-screen .request-card-action .request-primary-action > .primary { width: auto; min-width: 190px; min-height: 50px; display: inline-flex; justify-content: center; align-items: center; gap: 16px; white-space: nowrap; }
+.request-four-screen .request-card-action { padding-top: 22px; border-top: 0; }
 .request-four-screen .primary, .request-four-screen .secondary { box-shadow: none; border-radius: 7px; text-decoration: none; }
-.request-four-screen .primary { background: #087f83; color: #fff; }
+.request-four-screen .primary { background: var(--help-teal); color: #fff; }
+.request-four-screen .primary:hover:not(:disabled) { background: #18585f; }
 .request-four-screen .secondary { background: #fff; color: #102e43; border: 1px solid #b6c7cf; }
 .request-four-screen .request-extras { display: grid; gap: 12px; margin: 4px 0 0; }
-.request-four-screen .request-attachment-button { border-style: solid; min-height: 50px; justify-content: start; gap: 12px; }
+.request-four-screen .request-attachment-button { border: 2px dashed #7c8b9a; min-height: 64px; justify-content: center; gap: 12px; border-radius: 10px; }
 .request-four-screen .request-extras .quiet-note { font-size: .82rem; }
-/* Review: email and sidebar share row 1. Supporting disclosures span row 2. */
-.request-four-screen .request-send-layout { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: 28px; }
+.request-four-screen .request-attachment-row { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 44px; padding: 4px 4px 4px 10px; border-radius: 8px; background: #f7fcfc; box-shadow: 0 1px 2px rgba(15, 27, 45, .12); }
+.request-four-screen .request-attachment-tag { flex: none; padding: 3px 6px; border-radius: 6px; font-size: .66rem; font-weight: 700; letter-spacing: .03em; line-height: 1.2; }
+.request-four-screen .request-attachment-tag.is-image { background: #e3f4f3; color: #17656d; }
+.request-four-screen .request-attachment-tag.is-video { background: #efe9fb; color: #5b3fa6; }
+.request-four-screen .request-attachment-tag.is-pdf { background: #fde9e7; color: #b42318; }
+.request-four-screen .request-attachment-tag.is-text { background: #eef1f4; color: #475569; }
+.request-four-screen .request-attachment-name { min-width: 0; overflow: hidden; color: #0f172a; font-size: .86rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.request-four-screen .request-attachment-size { flex: none; margin-left: auto; color: #64748b; font-size: .76rem; white-space: nowrap; }
+.request-four-screen .request-attachment-remove { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 8px; background: #fff; color: #1e293b; box-shadow: 0 1px 2px rgba(15, 27, 45, .08); }
+.request-four-screen .request-attachment-remove:focus-visible { outline: 3px solid #185c70; outline-offset: 2px; }
+/* Review: editable email and contact sidebar share the desktop row. */
+.request-four-screen .request-send-layout { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; }
 .request-four-screen .request-review-card { display: contents; }
 .request-four-screen .request-review-card .request-review-email { grid-column: 1; grid-row: 1; padding: 0; border: 0; background: none; }
 .request-four-screen .help-email-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-right: 32px; }
 .request-four-screen .help-email-heading .text-button { font-size: .85rem; white-space: nowrap; }
 .request-four-screen .request-review-email > .quiet-note { margin: 6px 0 18px; }
-.request-four-screen .request-review-card .request-citation-control { top: 10px; right: 0; }
-.request-four-screen .request-review-email .request-output-email { border: 1px solid var(--help-line); border-radius: 8px; padding: 16px 20px; }
-.request-four-screen .request-review-card .request-review-email .request-subject { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--help-line); }
+.request-four-screen .request-review-card .request-citation-control { top: 10px; right: 10px; }
+.request-four-screen .request-review-email .request-output-email { border: 1px solid var(--help-line); border-radius: 12px; padding: 0 20px 16px; background: #fff; }
+.request-four-screen .request-email-header-label { display: inline-block; width: 4.5rem; color: var(--help-muted); font-size: .9rem; font-weight: 400; }
+.request-four-screen .request-recipient-dropdown > summary { font-weight: 400; padding-block: 12px; }
+.request-four-screen .request-output-email > .request-recipient-control { padding-right: 56px; }
+.request-four-screen .request-output-email > label:has(.request-message-editor) > .sr-only { position: static; width: auto; height: auto; clip-path: none; overflow: visible; white-space: normal; font-size: .85rem; color: var(--help-muted); }
+.request-four-screen .request-review-card .request-review-email .request-subject { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--help-line); }
 .request-four-screen .request-subject textarea { min-height: 58px; border: 0; padding: 0; resize: none; overflow: hidden; font-weight: 600; }
 body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 460px; max-height: none; padding: 20px 0 0; line-height: 1.85; resize: none; overflow: hidden; border: 0; border-radius: 0; }
 .request-four-screen .request-review-update { grid-column: 1 / -1; display: grid; gap: 0; padding-top: 12px; border-top: 1px solid var(--help-line); }
@@ -91,9 +80,9 @@ body .request-four-screen .request-card .request-screen-send .request-review-ema
 .request-four-screen .request-review-card .request-review-tools { margin-left: 0; display: flex; flex-wrap: wrap; gap: 12px; }
 .request-four-screen .help-account-send { grid-column: 1 / -1; }
 .request-four-screen .request-records-popup { position: fixed; inset: 12dvh max(20px, calc((100vw - 900px)/2)) auto; width: auto; max-height: 75dvh; overflow: auto; }
-.request-four-screen .send-options { grid-column: 2; grid-row: 1; border-left: 1px solid var(--help-line); padding: 0 0 0 28px; gap: 16px; }
+.request-four-screen .send-options { grid-column: 2; grid-row: 1; border-left: 0; padding: 0; gap: 16px; }
 .request-four-screen .request-card .send-options > h2 { position: static; width: auto; height: auto; clip-path: none; overflow: visible; white-space: normal; font-size: 1.15rem; }
-.request-four-screen .request-card .send-option { display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; gap: 12px; border: 0; background: none; border-radius: 0; }
+.request-four-screen .request-card .send-option { display: grid; grid-template-columns: minmax(0, 1fr); padding: 18px; gap: 12px; border: 1px solid var(--help-line); background: #f8fafc; border-radius: 12px; }
 .request-four-screen .request-card .send-option h3 { font-size: 1rem; line-height: 1.5; }
 .request-four-screen .request-card .send-option .quiet-note { font-size: .82rem; line-height: 1.6; }
 .request-four-screen .send-option-contact { overflow-wrap: anywhere; font-size: .9rem; line-height: 1.6; }
@@ -106,29 +95,599 @@ body .request-four-screen .request-card .request-screen-send .request-review-ema
 .request-four-screen .send-option-script { border-top: 1px solid var(--help-line); }
 .request-four-screen .request-card .send-option-script > summary { min-height: 44px; padding-top: 12px; }
 .request-four-screen .send-option-tools .text-button { font-size: .85rem; text-align: left; }
+.request-four-screen .send-after-contact { padding: 16px; background: #f0f8f7; border: 1px solid #c5e3df; border-radius: 12px; justify-items: stretch; }
+.request-four-screen .send-after-contact .send-record-other { min-height: 44px; width: 100%; }
+/* Keep desktop forms compact without shrinking text or hiding longer content. */
+@media (min-width: 768px) {
+  .request-four-screen .help-column { gap: 12px; }
+  .request-four-screen .request-fields label { gap: 4px; }
+  .request-four-screen .request-card .request-details-row, .request-four-screen .request-card .request-questions-details { gap: 12px; }
+  .request-four-screen .request-card-action { padding-top: 12px; }
+  .request-four-screen .request-card .request-questions-details.request-paired-timing { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; align-items: end; }
+  .request-four-screen .request-paired-timing > .request-followups, .request-four-screen .request-paired-timing .request-frequency-grid { display: contents; }
+  .request-four-screen .request-paired-timing .request-frequency-grid > label { grid-column: auto; }
+  .request-four-screen .request-paired-timing .request-date-hint { margin: 0; font-size: .8rem; }
+}
+@media (max-width: 899px) {
+  .request-four-screen .request-send-layout { grid-template-columns: minmax(0, 1fr); }
+  .request-four-screen .request-review-card .request-review-email, .request-four-screen .send-options { grid-column: 1; grid-row: auto; }
+  .request-four-screen .send-options { border-left: 0; border-top: 1px solid var(--help-line); padding: 20px 0 0; }
+}
 @media (max-width: 767px) {
-  .request-four-screen .request-frame-topline { gap: 0; }
-  .request-four-screen .request-step-nav { gap: 8px; }
-  .request-four-screen .request-step-nav button { flex-direction: column; align-items: start; font-size: .72rem; gap: 8px; padding-block: 8px 12px; }
-  .request-four-screen .request-step-number { width: 25px; height: 25px; }
   .request-four-screen .request-card { padding: 12px 18px 24px; gap: 24px; border-radius: 12px; }
-  .request-four-screen .request-card > .request-topline { margin-bottom: -12px; }
   .request-four-screen .request-card .request-title-row h1 { font-size: 1.5rem; }
   .request-four-screen .help-columns, .request-four-screen .request-send-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  .request-four-screen .help-column-right, .request-four-screen .send-options { border-left: 0; border-top: 1px solid var(--help-line); padding: 26px 0 0; }
   .request-four-screen .request-card .request-issue-choice { padding: 12px; min-height: 116px; font-size: .9rem; }
   .request-four-screen .request-card .request-issue-choice[aria-pressed="true"] { padding: 11px; }
-  .request-four-screen .request-card-action .request-primary-action { flex-direction: column-reverse; align-items: stretch; gap: 14px; }
-  .request-four-screen .request-card-action .request-primary-action > .primary { width: 100%; }
-  .request-four-screen .request-topline { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
-  .request-four-screen .request-topline .request-actions { width: auto; justify-content: end; gap: 2px 10px; text-align: right; }
-  .request-four-screen .request-topline .request-actions > p { font-size: .75rem; }
-  .request-four-screen .request-topline .back { text-align: left; }
-  .request-four-screen .request-topline .request-actions > button { flex: none; padding: 0; font-size: .8rem; }
-  .request-four-screen .request-topline .back { font-size: .8rem; }
   .request-four-screen .request-review-card .request-review-email, .request-four-screen .send-options { grid-column: 1; grid-row: auto; }
   .request-four-screen .request-review-email .request-output-email { padding: 12px; }
   .request-four-screen .request-review-update { order: 2; }
   .request-four-screen .help-account-send { order: 3; }
   .request-four-screen .request-records-popup { inset: 8dvh 12px auto; max-height: 80dvh; }
+}
+
+/* Six-screen flow: one 720px column per screen; the review screen keeps the wide two-column layout. */
+.request-four-screen { --teal: #1f6f78; --field-border: #8497A6; --field-selected: #E8F3F2; }
+.request-four-screen .request-card { width: min(720px, 100%); padding: 32px 40px; gap: 0; border-radius: 20px; font-size: 17px; font-weight: 400; }
+.request-four-screen.request-wide .request-card { width: min(1120px, 100%); }
+.request-four-screen .request-card-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--help-line); }
+.request-four-screen .request-progress { flex: 1 1 auto; display: grid; gap: 10px; }
+.request-four-screen .request-progress-label { margin: 0; font-size: 14px; font-weight: 600; color: var(--help-muted); }
+.request-four-screen .request-progress-bar { display: flex; gap: 6px; }
+.request-four-screen .request-progress-bar span { flex: 1; height: 6px; border-radius: 3px; background: #D5DEE5; }
+.request-four-screen .request-progress-bar span.is-done { background: var(--teal); }
+.request-four-screen .request-save-status { margin: 0; font-size: .8rem; color: var(--help-muted); white-space: nowrap; }
+.request-four-screen .request-card .request-title-row { padding: 32px 0 32px; }
+.request-four-screen .request-card .request-title-row h1 { font-size: 36px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+.request-four-screen .help-column h2 { font-size: 22px; font-weight: 600; }
+.request-four-screen .help-column { gap: 30px; }
+.request-four-screen .request-fields label, .request-four-screen .request-fields .request-field-group > label { font-size: 16px; font-weight: 600; gap: 8px; }
+.request-four-screen .request-field-group { gap: 8px; }
+.request-four-screen .quiet-note { font-size: .9rem; margin: 0; }
+.request-four-screen .help-column > .quiet-note:first-child { margin-top: -20px; }
+.request-four-screen .request-card .request-wording-grid { gap: 12px; }
+/* One border style for fields, cards and checkbox rows; selection changes colour only. */
+.request-four-screen .request-fields input:not([type=checkbox]), .request-four-screen .request-fields select, .request-four-screen .request-fields textarea, .request-four-screen .request-card .request-wording-choice, .request-four-screen .request-card .request-issue-choice, .request-four-screen .request-card .request-issue-choice[aria-checked], .request-four-screen .request-attachment-button { border: 2px solid var(--field-border); }
+.request-four-screen .request-fields input:not([type=checkbox]), .request-four-screen .request-fields select { min-height: 52px; border-radius: 12px; font-size: 16px; padding-inline: 14px; }
+.request-four-screen .request-fields textarea { min-height: 120px; height: auto; font-size: 16px; border-radius: 12px; line-height: 1.6; }
+.request-four-screen .request-fields.request-screen-request textarea, .request-four-screen .request-fields.request-screen-noticed textarea { min-height: 96px; }
+.request-four-screen .request-fields textarea::placeholder, .request-four-screen .request-fields input::placeholder { color: #586d79; opacity: 1; }
+.request-four-screen .request-card .request-wording-choice { border-radius: 12px; }
+.request-four-screen .request-card .request-wording-choice .checkbox-row { min-height: 58px; align-items: center; padding: 14px 16px; gap: 14px; font-size: 16px; font-weight: 400; }
+.request-four-screen .request-wording-choice.is-selected { background: var(--field-selected); border-color: var(--teal); }
+.request-four-screen .request-wording-choice.is-selected .checkbox-row { font-weight: 400; }
+.request-four-screen input[type=checkbox] { flex: 0 0 22px; width: 22px; height: 22px; margin: 0; accent-color: var(--teal); }
+.request-four-screen .request-card .request-issue-choice { border-radius: 12px; padding: 14px; }
+.request-four-screen .request-card .request-issue-choice[aria-checked="true"] { border-color: var(--teal); background: var(--field-selected); }
+.request-four-screen .request-attachment-button { border-style: dashed; border-radius: 12px; }
+/* One focus style for every control: teal border plus a soft ring, no offset outline. */
+.request-four-screen button:focus-visible, .request-four-screen summary:focus-visible, .request-four-screen input:focus-visible, .request-four-screen textarea:focus-visible, .request-four-screen select:focus-visible { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 25%, transparent); }
+.request-four-screen .request-wording-choice:focus-within { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 25%, transparent); }
+.request-four-screen .request-wording-choice input:focus-visible { box-shadow: none; }
+/* Paired fields: dates and ongoing/frequency sit side by side from 480px up. */
+.request-four-screen .request-contact-pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.request-four-screen .request-card .request-questions-details.request-paired-timing { grid-template-columns: minmax(0, 1fr); gap: 30px 16px; }
+@media (min-width: 480px) {
+  .request-four-screen .request-contact-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .request-four-screen .request-card .request-questions-details.request-paired-timing { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+  .request-four-screen .request-paired-timing > .request-date-hint, .request-four-screen .request-paired-timing > .request-date-error { grid-column: 1 / -1; }
+}
+.request-four-screen .request-paired-timing > .request-date-hint { margin: -22px 0 0; font-size: .9rem; }
+.request-four-screen .request-paired-timing > .request-followups, .request-four-screen .request-paired-timing .request-frequency-grid { display: contents; }
+/* Footer: history icon at the left corner, Back then the primary action at the right. */
+.request-four-screen .request-card-action { margin-top: 32px; padding: 24px 0 0; border-top: 1px solid var(--help-line); }
+.request-four-screen .request-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.request-four-screen .request-footer-nav { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.request-four-screen .request-history-button { display: grid; place-items: center; flex: 0 0 52px; width: 52px; height: 52px; padding: 0; border: 2px solid var(--field-border); border-radius: 12px; background: #fff; color: #334155; }
+.request-four-screen .request-footer .primary, .request-four-screen .request-back-button { min-height: 52px; padding: 0 24px; border-radius: 12px; font-size: 16px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap; }
+.request-four-screen .request-back-button { background: transparent; color: var(--teal); border: 2px solid var(--teal); }
+.request-four-screen .request-back-button:hover:not(:disabled) { background: var(--field-selected); }
+.request-four-screen a:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.request-four-screen .request-review-footer-target { display: contents; }
+@media (max-width: 479px) {
+  .request-four-screen .request-card { padding: 20px; }
+  .request-four-screen .request-card-action { position: sticky; bottom: 0; background: #fff; margin-top: 24px; padding-bottom: 12px; }
+  .request-four-screen .request-footer-nav { flex: 1; margin-left: 0; }
+  .request-four-screen .request-footer-nav > button { flex: 1 1 0; padding: 0 12px; }
+  .request-four-screen.request-wide .request-card-action { position: static; }
+  .request-four-screen.request-wide .request-footer { align-items: start; }
+  .request-four-screen.request-wide .request-footer-nav { flex-direction: column-reverse; align-items: stretch; }
+  .request-four-screen.request-wide .request-footer-nav > * { width: 100%; white-space: normal; text-align: center; }
+  .request-four-screen .request-card .request-title-row { padding-block: 24px; }
+  .request-four-screen .request-card .request-title-row h1 { font-size: 28px; }
+}
+/* The review email's Subject and Message stay borderless inside the email panel. */
+.request-four-screen .request-fields .request-output-email .request-subject textarea { min-height: 58px; height: auto; border: 0; border-radius: 0; padding: 0; font-size: 1rem; }
+.request-four-screen .request-fields .request-output-email .request-subject textarea:focus-visible { box-shadow: none; outline: 2px solid var(--teal); outline-offset: 2px; }
+/* Address autocomplete (combobox). */
+.request-four-screen .address-field { display: grid; gap: 8px; position: relative; }
+.request-four-screen .address-field > label { font-size: 16px; font-weight: 600; }
+.request-four-screen .address-input-wrap { position: relative; }
+.request-four-screen .address-input-wrap > input[aria-invalid="true"] { border-color: #b42318; }
+.request-four-screen .address-listbox { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: #fff; border: 2px solid var(--field-border); border-radius: 12px; box-shadow: 0 8px 24px rgb(15 23 42 / 12%); max-height: 320px; overflow: auto; }
+.request-four-screen .address-listbox [role="option"] { padding: 12px 14px; border-radius: 8px; cursor: pointer; line-height: 1.4; }
+.request-four-screen .address-listbox [role="option"]:hover, .request-four-screen .address-listbox [role="option"].is-active { background: var(--field-selected); box-shadow: inset 3px 0 0 var(--teal); }
+.request-four-screen .address-status { padding: 12px 14px; color: var(--help-muted); font-size: .95rem; }
+.request-four-screen .address-error { margin: 0; color: #b42318; font-size: .9rem; font-weight: 600; }
+.request-four-screen .address-actions .text-button { font-size: .95rem; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Address field: wireframe states (default, typing, selected, manual). */
+.request-four-screen .address-field { gap: 8px; }
+.request-four-screen .address-input-wrap { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 12px 0 14px; background: #fff; border: 2px solid var(--field-border); border-radius: 10px; position: relative; }
+.request-four-screen .address-input-wrap:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgb(31 111 120 / 25%); }
+.request-four-screen .address-input-wrap.is-typing { border: 3px solid #0f172a; padding: 0 11px 0 13px; }
+.request-four-screen .address-input-wrap.is-selected { background: #f6f6f6; border-color: #0f172a; }
+.request-four-screen .address-input-wrap:has([aria-invalid="true"]) { border-color: #b42318; }
+.request-four-screen .address-input-wrap > .address-pin { position: static; transform: none; display: grid; color: var(--help-muted); flex: none; }
+.request-four-screen .address-input-wrap.is-selected > .address-pin { color: var(--teal); }
+.request-four-screen .request-fields .address-input-wrap > input:not([type=checkbox]),
+.request-four-screen .address-input-wrap > input { flex: 1; min-width: 0; width: auto; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; outline: none; min-height: 48px; height: auto; }
+.request-four-screen .address-input-wrap > input:focus-visible { outline: none; box-shadow: none; }
+.request-four-screen .address-icon-button { flex: none; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #334155; cursor: pointer; }
+.request-four-screen .address-icon-button:hover:not(:disabled) { background: #eef2f6; }
+.request-four-screen .address-change { flex: none; }
+.request-four-screen .address-tag { flex: none; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; border: 1.5px solid #334155; border-radius: 6px; padding: 3px 8px; color: #334155; }
+.request-four-screen .address-listbox { left: -2px; right: -2px; top: calc(100% - 2px); border-radius: 0 0 10px 10px; border: 2px solid #0f172a; border-top-width: 1px; padding: 0; box-shadow: none; overflow: hidden; }
+.request-four-screen .address-listbox [role="option"] { display: block; border-radius: 0; padding: 14px 16px; }
+.request-four-screen .address-listbox [role="option"]:hover, .request-four-screen .address-listbox [role="option"].is-active { background: #f1f3f5; box-shadow: none; }
+.request-four-screen .address-listbox .address-keep { border-top: 2px solid #0f172a; background: #fafafa; font-weight: 600; }
+.request-four-screen .address-error { display: flex; align-items: center; gap: 6px; }
+.request-four-screen .address-note { font-size: 13px; color: var(--help-muted); margin: 0; }
+.request-four-screen .address-actions { display: block; }
+.request-four-screen .address-actions .text-button { padding: 4px 0; min-height: 32px; }
+.request-four-screen .address-listbox [role="option"] { display: flex; align-items: center; gap: 10px; } .request-four-screen .address-pin-row { display: grid; color: var(--help-muted); flex: none; }
+.request-four-screen .address-listbox .address-keep { display: block; }
+
+/* Compact desktop spacing so screen 3 fits a 13-inch window; groups keep 28px spacing. */
+@media (min-width: 768px) {
+  .request-four-screen .request-card { padding: 24px 40px 24px; }
+  .request-four-screen .request-card .request-title-row { padding: 20px 0 20px; }
+  .request-four-screen .request-card .request-title-row h1 { font-size: 32px; }
+  .request-four-screen .help-column { gap: 28px; }
+  .request-four-screen .request-card-action { margin-top: 24px; padding-top: 16px; }
+}
+@media (min-width: 768px) {
+  .request-four-screen .request-card .request-title-row { padding: 16px 0; }
+  .request-four-screen .request-card-toolbar { padding-bottom: 12px; }
+  .request-four-screen .request-card-action { margin-top: 16px; }
+}
+
+/* Short windows: reduce padding and gaps evenly on every box so the whole screen fits. */
+@media (min-width: 768px) and (max-height: 800px) {
+  .request-four-screen .request-card { padding: 16px 32px 16px; font-size: 16px; }
+  .request-four-screen .request-card-toolbar { gap: 8px; padding-bottom: 8px; }
+  .request-four-screen .request-progress { gap: 6px; }
+  .request-four-screen .request-card .request-title-row { padding: 8px 0; }
+  .request-four-screen .request-card .request-title-row h1 { font-size: 28px; }
+  .request-four-screen .help-column { gap: 14px; }
+  .request-four-screen .request-field-group, .request-four-screen .address-field, .request-four-screen .request-fields label { gap: 4px; }
+  .request-four-screen .request-fields input:not([type=checkbox]), .request-four-screen .request-fields select { min-height: 44px; }
+  .request-four-screen .address-input-wrap { min-height: 48px; }
+  .request-four-screen .address-input-wrap > input { min-height: 40px; }
+  .request-four-screen .address-icon-button { height: 36px; }
+  .request-four-screen .address-actions .text-button { padding: 0; min-height: 24px; }
+  .request-four-screen .request-card-action { margin-top: 12px; padding-top: 12px; }
+}
+
+/* Multi-select cards keep native checkboxes while arranging choices compactly. */
+.request-four-screen .request-screen-noticed .request-wording-grid,
+.request-four-screen .request-screen-request .request-wording-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.request-four-screen .request-wording-choice .checkbox-row > svg { flex: none; color: var(--teal); }
+.request-four-screen .request-wording-choice .checkbox-row > span { min-width: 0; overflow-wrap: anywhere; }
+.request-four-screen .request-card .request-wording-choice { position: relative; }
+.request-four-screen .request-card .request-wording-choice .checkbox-row {
+  display: grid;
+  grid-template-rows: 24px auto;
+  align-content: start;
+  align-items: start;
+  gap: 10px;
+  min-height: 122px;
+  padding: 14px;
+  font-weight: 600;
+}
+.request-four-screen .request-wording-choice .checkbox-row input[type=checkbox] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.request-four-screen .request-wording-choice .wording-selected-mark { position: absolute; top: 12px; right: 12px; color: var(--teal); }
+.request-four-screen .request-wording-choice.is-other { grid-column: 1 / -1; }
+.request-four-screen .request-action-media { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.request-four-screen .request-action-media > .request-field-group { grid-area: 1 / 1; }
+.request-four-screen .request-action-media > .request-field-group textarea { min-height: 96px; padding-right: 56px; }
+@media (max-width: 480px) { .request-four-screen .request-action-media > .request-field-group textarea { min-height: 180px; } }
+.request-four-screen .request-action-media > .request-action-add:focus-visible { outline: 2px solid #1f6f78; outline-offset: 2px; }
+.request-four-screen .request-action-media > .request-action-add { grid-area: 1 / 1; align-self: end; justify-self: end; z-index: 1; width: 44px; height: 44px; margin: 0 8px 8px 0; border: 0; border-radius: 8px; background: white; color: #1f6f78; font-size: 24px; cursor: pointer; }
+.request-four-screen .request-card .request-wording-choice.is-other .checkbox-row { display: flex; align-items: center; min-height: 56px; padding-right: 40px; }
+@media (min-width: 768px) and (max-height: 900px) {
+  .request-four-screen .request-card:has(.request-screen-request) { padding-block: 8px 12px; }
+  .request-four-screen .request-screen-request .request-wording-choice:not(.is-other) .checkbox-row { min-height: 88px; gap: 4px; padding: 10px 14px; }
+  .request-four-screen .request-screen-request .request-wording-choice.is-other .checkbox-row { min-height: 44px; padding-block: 8px; }
+}
+@media (max-width: 480px) {
+  .request-four-screen .request-screen-noticed .request-wording-grid,
+  .request-four-screen .request-screen-request .request-wording-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Review screen, matched to the approved wireframe (2026-11-10): plain letter card on the
+   left; Send it yourself column on the right with Copy/Call, contact card, call script
+   and After you contact them. Primary email action lives in the shared footer. */
+.request-four-screen .request-send-layout { align-items: start; }
+.request-four-screen .request-review-card { display: grid; gap: 12px; }
+
+/* Answers-changed banner: blue outline, shown only when answers no longer match the draft */
+.request-four-screen .request-review-email .request-stale { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; margin: 0 0 12px; padding: 12px 14px; border: 2px solid #3b82f6; border-radius: 8px; background: #eff6ff; color: #0f172a; font-size: .85rem; }
+.request-four-screen .request-stale > svg { margin-top: 1px; width: 16px; height: 16px; color: #475569; }
+.request-four-screen .request-stale p { margin: 0; }
+.request-four-screen .request-stale .request-stale-title { font-weight: 700; line-height: 1.4; }
+.request-four-screen .request-stale .quiet-note { margin-top: 2px; font-size: .78rem; line-height: 1.45; color: #475569; }
+.request-four-screen .request-stale .text-button { margin-top: 4px; min-height: 24px; padding: 0; font-size: .8rem; font-weight: 600; color: #1f6f78; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Letter card: To and Subject rows, then the message body as plain text */
+.request-four-screen .request-review-email .request-output-email { position: relative; padding: 0; border: 1px solid #94a3b8; border-radius: 8px; background: #fff; transition: border-color .15s, box-shadow .15s; }
+.request-four-screen .request-review-email .request-output-email > .request-recipient-control,
+.request-four-screen .request-review-card .request-review-email .request-subject { margin: 0; padding: 10px 44px 10px 16px; background: none; border-bottom: 1px solid #dfe6ec; }
+.request-four-screen .request-review-card .request-review-email .request-subject { padding-right: 16px; display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: start; gap: 0; }
+.request-four-screen .request-review-email .request-recipient-dropdown > summary { display: flex; justify-content: flex-start; align-items: baseline; gap: 0; padding: 0; min-height: 22px; font-weight: 500; font-size: .88rem; text-align: left; }
+.request-four-screen .request-review-email .request-email-header-label { display: inline-block; flex: none; min-width: 4.5rem; color: #64748b; font-size: .76rem; font-weight: 500; }
+.request-four-screen .request-review-card .request-review-email .request-subject textarea { min-height: 0; padding: 0; border: 0; background: transparent; font-weight: 500; font-size: .88rem; line-height: 1.5; }
+.request-four-screen .request-review-email .request-output-email > label:has(.request-message-editor) { display: block; padding: 14px 16px 16px; }
+body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 200px; padding: 0; border: 0; border-radius: 0; line-height: 1.6; font-size: .9rem; }
+/* The body reads as letter text, so focus moves to the card edge instead of an inner box. Keyboard focus stays visible. */
+body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor:focus-visible,
+.request-four-screen .request-review-card .request-review-email .request-subject textarea:focus-visible { outline: none; border: 0; box-shadow: none; }
+.request-four-screen .request-review-email .request-output-email:has(textarea:focus-visible) { border-color: var(--help-teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--help-teal) 22%, transparent); }
+.request-four-screen .request-review-card .request-citation-control { top: 8px; right: 10px; }
+.request-four-screen .request-review-card .request-citation-control .request-answer-info { width: 26px; height: 26px; min-height: 0; font-size: .95rem; color: #64748b; }
+
+/* Send it yourself column */
+.request-four-screen .request-card .send-options { position: sticky; top: 88px; display: grid; gap: 12px; padding: 0; background: none; border: 0; border-radius: 0; }
+.request-four-screen .send-options-head { display: grid; gap: 2px; }
+.request-four-screen .request-card .send-options-head h2 { margin: 0; font-size: 1rem; line-height: 1.3; }
+.request-four-screen .send-options-lead { margin: 0; color: #475569; font-size: .8rem; line-height: 1.5; }
+.request-four-screen .send-options-lead .send-how-toggle { display: inline; min-height: 0; padding: 0; font-size: inherit; font-weight: 500; color: #1f6f78; text-decoration: underline; text-underline-offset: 2px; }
+.request-four-screen .send-how-text { margin: 4px 0 0; font-size: .8rem; line-height: 1.5; }
+.request-four-screen .request-card .send-option-grid { display: grid; gap: 10px; }
+.request-four-screen .send-lead { display: grid; gap: 10px; }
+.request-four-screen .request-card .send-lead-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 0; }
+.request-four-screen .request-card .send-lead-actions > * { width: 100%; min-height: 44px; padding: 6px 12px; justify-content: center; border-radius: 8px; font-size: .9rem; }
+.request-four-screen .request-card .send-option:not(.send-option-next) { display: grid; gap: 2px; padding: 10px 12px; background: #fff; border: 1px solid #94a3b8; border-radius: 8px; box-shadow: none; }
+.request-four-screen .request-card .send-option:not(.send-option-next) h3 { margin: 0; font-size: .9rem; line-height: 1.4; }
+.request-four-screen .request-card .send-option-contact { display: grid; gap: 1px; margin: 0; color: #1e293b; font-size: .85rem; font-weight: 400; line-height: 1.5; }
+.request-four-screen .send-option-contact-item { display: block; max-width: 100%; overflow-wrap: anywhere; }
+.request-four-screen .request-card .send-channel-label { margin: 6px 0 0; padding: 8px 10px; font-size: .78rem; line-height: 1.45; background: #fff8e6; border-radius: 6px; color: #4a3b10; }
+.request-four-screen .request-card .send-contact-card .send-options-note { margin: 4px 0 0; font-size: .78rem; }
+.request-four-screen .request-card .send-contact-card .send-options-note .text-button { min-height: 24px; padding: 0; font-size: .78rem; font-weight: 500; color: #1f6f78; text-decoration: underline; text-underline-offset: 2px; }
+.request-four-screen .request-card .send-lead > .quiet-note { margin: 0; font-size: .8rem; }
+.request-four-screen .request-card .send-option-script { margin: 0; padding: 0; border: 1px solid #94a3b8; border-radius: 8px; background: #fff; }
+.request-four-screen .request-card .send-option-script > summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 12px; font-size: .85rem; font-weight: 600; cursor: pointer; list-style: none; }
+.request-four-screen .request-card .send-option-script > summary::-webkit-details-marker { display: none; }
+.request-four-screen .request-card .send-option-script > summary svg { color: #475569; transition: transform .15s; }
+.request-four-screen .request-card .send-option-script[open] > summary svg { transform: rotate(180deg); }
+.request-four-screen .request-card .send-option-script > p { margin: 0; padding: 0 14px 12px; font-size: .85rem; line-height: 1.55; }
+.request-four-screen .request-card .send-option-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 10px 12px; border: 1px dashed #b9c7d1; border-radius: 8px; background: transparent; }
+.request-four-screen .request-card .send-option-next p { margin: 0; flex: 1 1 12rem; font-size: .8rem; line-height: 1.5; color: #475569; }
+.request-four-screen .request-card .send-option-next .send-option-actions { display: flex; gap: 8px; margin: 0; }
+.request-four-screen .request-card .send-option-next .text-button { min-height: 36px; padding: 0 12px; border: 1px solid var(--help-teal); border-radius: 8px; color: var(--help-teal); font-size: .85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; }
+.request-four-screen .request-card .send-after-contact { display: grid; gap: 2px; margin: 4px 0 0; padding: 0; background: none; border: 0; }
+.request-four-screen .send-after-contact h3 { margin: 0; font-size: .95rem; line-height: 1.3; }
+.request-four-screen .send-after-contact .quiet-note { margin: 0 0 6px; font-size: .78rem; }
+.request-four-screen .request-card .send-after-contact .send-record-other { width: 100%; min-height: 40px; padding: 0 16px; font-size: .88rem; justify-content: center; border-radius: 8px; }
+.request-four-screen .send-fineprint { display: grid; gap: 4px; }
+.request-four-screen .send-fineprint > * { margin: 0; }
+.request-four-screen .send-fineprint .send-options-note .text-button { min-height: 28px; padding: 0; font-size: .78rem; }
+.request-four-screen .request-review-footer-target > .primary { gap: 8px; }
+
+@media (max-width: 899px) {
+  .request-four-screen .request-card .send-options { position: static; padding-top: 8px; }
+}
+@media (max-width: 479px) {
+  .request-four-screen .request-review-email .request-output-email > .request-recipient-control,
+  .request-four-screen .request-review-card .request-review-email .request-subject { padding: 10px 48px 10px 14px; }
+  .request-four-screen .request-review-card .request-review-email .request-subject { padding-right: 14px; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .request-four-screen .request-review-email .request-output-email > label:has(.request-message-editor) { padding: 14px; }
+  body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 240px; }
+}
+/* The wireframe shows no visible "Message" label; keep it for screen readers only. */
+.request-four-screen .request-review-email .request-output-email > label:has(.request-message-editor) > .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Email-only presentation (2026-11-11). Keep the six input screens unchanged. */
+/* Review now reuses the ordinary Help card and header, not the wide mockup shell. */
+.request-four-screen .request-card:has(.request-screen-send) .request-send-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 30px; }
+.request-four-screen .request-screen-send .request-review-card { display: block; min-width: 0; }
+.request-four-screen .request-screen-send .request-review-email { grid-column: auto; grid-row: auto; }
+.request-four-screen .request-screen-send .send-options { grid-column: auto; grid-row: auto; border: 0; padding: 0; }
+.request-four-screen .request-screen-send .send-options-head.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.request-four-screen .request-screen-send .request-output-email { overflow: hidden; padding: 0; border: 2px solid var(--field-border); border-radius: 12px; }
+.request-four-screen .request-screen-send .request-review-card .request-citation-control { top: 78px; right: 10px; }
+.request-four-screen .request-screen-send .request-email-toolbar { padding: 14px; border-radius: 0; background: var(--field-selected); }
+.request-four-screen .request-screen-send .request-output-email > .request-recipient-control,
+.request-four-screen .request-screen-send .request-review-email .request-subject { padding-inline: 14px; }
+.request-four-screen .request-screen-send .request-output-email > label:has(.request-message-editor) { padding: 14px; }
+body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 240px; max-height: none; overflow: hidden; font-size: 16px; line-height: 1.6; }
+.request-four-screen .request-screen-send .send-contact-heading { margin: -18px -18px 0; padding: 14px 18px; border-radius: 10px 10px 0 0; background: var(--field-selected); }
+.request-four-screen .request-card .request-screen-send .send-contact-card { padding: 18px; overflow: hidden; }
+.request-four-screen .request-screen-send .send-contact-row { gap: 8px; }
+.request-four-screen .request-screen-send .send-option-next { display: grid; grid-template-columns: minmax(0, 1fr); }
+.request-four-screen .request-screen-send .send-channel-label { padding: 12px; border-radius: 12px; background: #fff7df; }
+.request-four-screen .request-card .request-screen-send .send-after-contact { padding: 16px; background: var(--field-selected); }
+.request-four-screen .request-screen-send .send-after-contact .send-record-other { width: auto; justify-self: start; }
+@media (min-width: 1000px) {
+  .request-four-screen .request-card:has(.request-screen-send) { width: min(1120px, 100%); }
+  .request-four-screen .request-card:has(.request-screen-send) .request-send-layout { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .request-four-screen .request-screen-send .request-review-card { grid-column: 1; grid-row: 1; }
+  .request-four-screen .request-screen-send .send-options { grid-column: 2; grid-row: 1; min-width: 0; }
+}
+/* Laptop Review: retain the shared Help design without spending the viewport on gaps. */
+@media (min-width: 1000px) {
+  main:has(.request-screen-send) { padding-block: 6px; }
+  .request-four-screen .request-card:has(.request-screen-send) { padding: 8px 24px; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-card-toolbar { padding-bottom: 4px; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-progress { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-title-row { padding: 6px 0; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-title-row h1 { font-size: 30px; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-fields { gap: 10px; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-send-layout { gap: 20px; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-card-action { padding-top: 10px; }
+  .request-four-screen .request-screen-send .request-email-toolbar { padding: 10px 14px; }
+  .request-four-screen .request-screen-send .request-review-card .request-citation-control { top: 68px; }
+  .request-four-screen .request-screen-send .request-review-email .request-subject,
+  .request-four-screen .request-screen-send .request-output-email > .request-recipient-control { padding-block: 6px; }
+  .request-four-screen .request-screen-send .request-subject textarea { min-height: 24px; }
+  .request-four-screen .request-screen-send .request-output-email > label:has(.request-message-editor) { padding: 8px 14px; }
+  body .request-four-screen .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 200px; max-height: max(200px, calc(100dvh - 436px)); overflow-y: auto; line-height: 1.4; }
+  .request-four-screen .request-card .request-screen-send .send-options,
+  .request-four-screen .request-card .request-screen-send .send-option-grid { gap: 10px; }
+  .request-four-screen .request-card .request-screen-send .send-contact-card { padding: 10px 12px; gap: 2px; }
+  .request-four-screen .request-screen-send .send-contact-heading { margin: -10px -12px 0; padding: 6px 12px; }
+  .request-four-screen .request-screen-send .send-contact-row { padding-block: 4px; }
+  .request-four-screen .request-screen-send .send-channel-label { margin: 2px 0; padding: 8px; }
+  .request-four-screen .request-card .request-screen-send .send-channel-label { font-size: .8rem; line-height: 1.45; }
+  .request-four-screen .request-screen-send .send-channel-label .send-options-note { display: inline; font-size: inherit; }
+  .request-four-screen .request-screen-send .send-channel-label .text-button { display: inline; min-height: 0; padding: 0; margin-left: 4px; font-size: inherit; }
+  .request-four-screen .request-screen-send .send-lead { gap: 0; }
+  .request-four-screen .request-screen-send .send-option-script > summary { min-height: 36px; padding-block: 6px; }
+  .request-four-screen .request-card .request-screen-send .send-option-next { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 12px; gap: 4px 10px; }
+  .request-four-screen .request-card .request-screen-send .send-option-next p { line-height: 1.4; }
+  .request-four-screen .request-screen-send .send-option-next > p:first-child { grid-column: 1 / -1; }
+  .request-four-screen .request-screen-send .send-option-next > p:nth-child(2) { grid-column: 1; grid-row: 2; }
+  .request-four-screen .request-screen-send .send-option-next > .send-option-actions { grid-column: 2; grid-row: 2; align-self: center; }
+  .request-four-screen .request-card .request-screen-send .send-after-contact { padding: 8px 12px; gap: 4px; }
+  .request-four-screen .request-screen-send .send-after-contact > .quiet-note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .request-four-screen .request-card .request-screen-send .send-after-contact .send-record-other { min-height: 40px; margin: 0; padding-block: 8px; }
+}
+@media (max-width: 599px) {
+  .request-four-screen .request-card:has(.request-screen-send) .request-footer { flex-wrap: wrap; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-footer-nav { flex-wrap: wrap; min-width: 0; flex: 1 1 100%; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-review-footer-target { min-width: 0; max-width: 100%; }
+  .request-four-screen .request-card:has(.request-screen-send) .request-review-footer-target .primary { white-space: normal; }
+}
+@media (min-width: 900px) { main:has(.request-four-screen.request-wide) { padding-block: 12px; } }
+.request-four-screen.request-wide .request-card { position: relative; width: min(1180px, 100%); padding: 0; background: transparent; border: 0; box-shadow: none; }
+.request-four-screen.request-wide .request-card-toolbar { position: absolute; top: 0; right: 0; padding: 0; border: 0; min-height: 0; justify-content: end; }
+.request-four-screen.request-wide .request-progress { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.request-four-screen.request-wide .request-card .request-title-row { padding: 0 0 8px; }
+.request-four-screen.request-wide .request-card .request-title-row h1 { color: #13333e; font-family: var(--font-display, Georgia, serif); font-size: 36px; }
+.request-four-screen.request-wide .request-card-body > .request-fields { gap: 14px; }
+.request-four-screen.request-wide .request-send-layout { grid-template-columns: minmax(0, 1.85fr) minmax(300px, 1fr); gap: 20px; align-items: stretch; }
+.request-four-screen.request-wide .request-review-card { display: flex; min-width: 0; }
+.request-four-screen.request-wide .request-review-email { width: 100%; display: flex; flex-direction: column; }
+.request-four-screen.request-wide .request-review-email .request-output-email { flex: 1; border: 1px solid #dce5eb; border-radius: 16px; box-shadow: 0 2px 3px #16334708; }
+.request-email-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 20px; background: #f7f9fa; border-bottom: 1px solid #e2e8ef; border-radius: 16px 16px 0 0; }
+.request-email-toolbar > strong { font-size: .72rem; text-transform: uppercase; color: #526572; letter-spacing: .03em; }
+.request-email-toolbar > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.request-four-screen .request-email-toolbar button { min-height: 38px; padding: 6px 12px; font-size: .82rem; gap: 6px; }
+.request-four-screen.request-wide .request-review-card .request-citation-control { top: 78px; right: 12px; }
+.request-four-screen.request-wide .request-review-email .request-output-email > .request-recipient-control,
+.request-four-screen.request-wide .request-review-card .request-review-email .request-subject { padding-left: 22px; padding-block: 9px; }
+.request-four-screen.request-wide .request-review-email .request-output-email > label:has(.request-message-editor) { padding: 18px 22px; }
+body .request-four-screen.request-wide .request-card .request-screen-send .request-review-email textarea.request-message-editor { min-height: 260px; max-height: max(260px, calc(100dvh - 390px)); overflow-y: auto; font-size: .94rem; line-height: 1.5; }
+.request-four-screen.request-wide .request-card .send-options { position: static; gap: 14px; align-content: start; }
+.request-four-screen.request-wide .request-card .send-options-head.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); padding: 0; }
+.request-four-screen.request-wide .request-card .send-option-grid { gap: 14px; }
+.request-four-screen.request-wide .request-card .send-contact-card { padding: 0 20px 12px; border-color: #dce5eb; border-radius: 16px; gap: 5px; overflow: visible; }
+.send-contact-heading { margin: 0 -20px 2px; padding: 10px 20px; border-bottom: 1px solid #e2e8ef; background: #f7f9fa; border-radius: 16px 16px 0 0; }
+.send-contact-heading > span { display: block; color: #526572; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+.request-four-screen.request-wide .request-card .send-contact-heading h3 { font-size: 1.1rem; line-height: 1.3; }
+.send-contact-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 0; }
+.send-contact-row + .send-contact-row { border-top: 1px solid #e2e8ef; }
+.send-contact-row > div { min-width: 0; line-height: 1.25; }
+.send-contact-row span { display: block; font-size: .72rem; color: #526572; }
+.send-contact-row strong { display: block; overflow-wrap: anywhere; font-size: .85rem; }
+.request-four-screen .send-contact-row .secondary { min-height: 36px; padding: 6px 12px; font-size: .8rem; border-color: #185c70; }
+.request-four-screen.request-wide .request-card .send-channel-label { margin: 2px 0; padding: 10px; background: #fff7df; }
+.request-four-screen.request-wide .send-channel-label .send-options-note { display: inline; font-size: inherit; }
+.request-four-screen.request-wide .send-channel-label .send-options-note .text-button { display: inline; min-height: 0; margin-left: 4px; padding: 0; font-size: inherit; }
+.request-four-screen.request-wide .request-card .send-option-script { border-color: #dce5eb; border-radius: 10px; }
+.request-four-screen.request-wide .send-lead { gap: 0; }
+.request-four-screen.request-wide .request-card .send-lead:has(.send-option-script) .send-contact-card { border-radius: 16px 16px 0 0; border-bottom: 0; }
+.request-four-screen.request-wide .request-card .send-lead .send-option-script { border-radius: 0 0 16px 16px; }
+.request-four-screen.request-wide .request-card .send-option-next { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; border: 1px solid #dce5eb; border-radius: 16px; padding: 14px 20px; background: white; }
+.request-four-screen.request-wide .send-option-next > p:first-child { grid-column: 1 / -1; }
+.send-option-next > p:first-child > * { display: block; }
+.send-option-next > p:first-child > strong { color: #142f3c; }
+.send-option-badge-next { font-size: .72rem; font-weight: 700; text-transform: uppercase; margin-bottom: 3px; }
+.request-four-screen.request-wide .request-card .send-option-next p { font-size: .78rem; line-height: 1.4; }
+.request-four-screen.request-wide .request-send-layout .send-option-next > .send-option-actions { grid-column: 2; grid-row: 2; }
+.request-four-screen.request-wide .request-card .send-option-next > p:nth-child(2) { grid-column: 1; grid-row: 2; }
+.request-four-screen.request-wide .request-card .send-after-contact { margin: 0; padding: 10px 20px; gap: 6px; background: #e1eff2; border-radius: 16px; text-align: center; }
+.request-four-screen.request-wide .send-after-contact > .quiet-note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.request-four-screen.request-wide .request-card .send-after-contact .send-record-other { background: #185c70; border-color: #185c70; color: white; }
+.request-four-screen.request-wide .request-card-action { padding-top: 10px; }
+@media (min-width: 900px) and (max-height: 820px) {
+  .request-four-screen.request-wide .request-card .send-options,
+  .request-four-screen.request-wide .request-card .send-option-grid { gap: 10px; }
+  .request-four-screen.request-wide .send-contact-row { padding-block: 6px; }
+  .request-four-screen.request-wide .request-card .send-contact-card { gap: 2px; padding-bottom: 8px; }
+  .request-four-screen.request-wide .request-card .send-option-next { padding-block: 10px; }
+  .request-four-screen.request-wide .request-card .send-channel-label { padding: 8px; }
+  .request-four-screen.request-wide .request-card-body > .request-fields { gap: 10px; }
+}
+@media (max-width: 899px) {
+  .request-four-screen.request-wide .request-card-toolbar { position: static; margin-bottom: 8px; }
+  .request-four-screen.request-wide .request-send-layout { grid-template-columns: minmax(0, 1fr); }
+  .request-four-screen.request-wide .request-card .request-title-row h1 { font-size: 30px; }
+  body .request-four-screen.request-wide .request-card .request-screen-send .request-review-email textarea.request-message-editor { max-height: none; }
+  .request-email-toolbar { padding: 12px 14px; }
+}
+
+/* Review action disclosures share the existing Help palette and control shapes. */
+.review-icon-tooltip { position: relative; display: inline-flex; flex: 0 0 auto; }
+.review-icon-tooltip > [role="tooltip"] { position: absolute; z-index: 30; top: calc(100% + 6px); right: 0; width: max-content; max-width: 220px; padding: 6px 9px; border-radius: 6px; background: #152d38; color: white; font-size: .8rem; line-height: 1.4; font-weight: 400; pointer-events: none; visibility: hidden; opacity: 0; }
+.review-icon-tooltip:hover > [role="tooltip"], .review-icon-tooltip:focus-within > [role="tooltip"] { visibility: visible; opacity: 1; }
+.request-four-screen .request-screen-send .review-icon-action { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 8px; }
+.request-four-screen .request-screen-send .request-output-email,
+.request-four-screen .request-card .request-screen-send .send-contact-card { overflow: visible; }
+.request-four-screen .request-screen-send .request-email-toolbar { border-radius: 10px 10px 0 0; }
+.request-email-handoff { display: inline-flex; }
+.send-contact-heading { position: relative; padding-right: 46px !important; }
+.send-contact-heading > .review-info-button { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+.request-four-screen .review-info-button { display: inline-flex; justify-content: center; align-items: center; min-width: 36px; min-height: 36px; padding: 4px; background: transparent; color: #526572; border: 0; }
+.review-info-button:focus-visible, .review-icon-action:focus-visible { outline: 3px solid #185c70; outline-offset: 3px; }
+.review-info-popover { position: fixed; z-index: 200; width: min(360px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); overflow-y: auto; padding: 16px; border: 1px solid #93a4b5; border-radius: 12px; background: white; color: #263e4b; box-shadow: 0 8px 24px #16334726; font-size: .9rem; line-height: 1.5; }
+.review-info-popover h3 { font-size: 1rem; margin: 0 0 8px; }
+.review-info-popover p { margin: 8px 0; }
+.review-info-popover a { color: #185c70; overflow-wrap: anywhere; }
+.review-info-popover > a { display: block; margin-block: 8px; }
+.review-info-popover .text-button { color: #185c70; text-decoration: underline; }
+.request-four-screen .request-card .request-screen-send .send-other-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; grid-column: 1 / -1; }
+.send-other-heading > p { min-width: 0; margin: 0; }
+.send-other-heading > p > * { display: block; }
+.send-other-heading .review-info-button { flex: 0 0 auto; }
+.send-other-phone { grid-column: 1; grid-row: 2; align-self: center; }
+.request-four-screen .request-card .request-screen-send .send-option-next > .send-option-actions { grid-column: 2; grid-row: 2; }
+.request-four-screen .request-card:has(.request-screen-send) .request-card-action { position: static; }
+.request-four-screen .request-screen-send .request-output-email > .request-recipient-control { position: relative; padding-right: 48px; }
+.request-four-screen .request-screen-send .request-review-card .request-recipient-control .request-citation-control { top: 50%; right: 8px; transform: translateY(-50%); }
+.request-four-screen .request-card .request-screen-send .send-option-next { grid-template-columns: minmax(0, 1fr) auto; }
+.request-four-screen .request-screen-send .send-contact-row .review-icon-tooltip { display: inline-flex; }
+.request-four-screen .request-screen-send .send-contact-row .review-icon-tooltip > [role="tooltip"] { color: white; font-size: .8rem; }
+
+/* Review final layout (2026-11-12): the step card shell at up to 1120px, then a
+   65/35 grid — Draft email left; Send it yourself, Your files and What happens next right.
+   Filled cards, no borders; tinted header strips and thin inner dividers. */
+#root main:has(.request-screen-send) { display: flex; flex-direction: column; }
+main:has(.request-screen-send) > .request-workspace { margin-block: auto; }
+@media (min-width: 761px) { #root main:has(.request-four-screen .request-screen-send) { padding-block: 12px; } }
+body .request-four-screen .request-card:has(.request-screen-send) { width: min(1120px, 100%); padding: 32px 40px; gap: 0; border-radius: 20px; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-card-toolbar { padding-bottom: 16px; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-progress { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-title-row { padding: 0 0 16px; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-title-row h1 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-fields { gap: 12px; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-card-action { margin-top: 12px; padding-top: 12px; }
+body .request-four-screen .request-card:has(.request-screen-send) .request-send-layout { display: grid; grid-template-columns: minmax(0, 65fr) minmax(0, 35fr); gap: 16px; align-items: start; }
+body .request-four-screen .request-screen-send .request-review-card { grid-column: 1; grid-row: 1; min-width: 0; }
+body .request-four-screen .request-screen-send .review-side { grid-column: 2; grid-row: 1; display: grid; gap: 12px; min-width: 0; align-content: start; }
+body .request-four-screen .request-screen-send .help-account-send { grid-column: 1 / -1; }
+body .request-four-screen .request-card .request-screen-send .review-side > .send-options { position: static; grid-column: auto; grid-row: auto; gap: 10px; }
+body .request-four-screen .request-card .request-screen-send .review-side .send-option-grid { gap: 10px; }
+
+/* Draft email card */
+body .request-four-screen .request-screen-send .request-review-email .request-output-email { border: 0; border-radius: 12px; background: #eaf0f5; box-shadow: none; }
+body .request-four-screen .request-screen-send .request-review-email .request-output-email:has(textarea:focus-visible) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--help-teal) 35%, transparent); }
+body .request-four-screen .request-screen-send .request-email-toolbar { padding: 8px 8px 8px 14px; background: #dce7ee; border: 0; border-radius: 12px 12px 0 0; }
+body .request-four-screen .request-screen-send .request-email-toolbar > strong { color: #3d5160; letter-spacing: .05em; }
+body .request-four-screen .request-screen-send .request-output-email > .request-recipient-control,
+body .request-four-screen .request-screen-send .request-review-card .request-review-email .request-subject { padding-block: 8px; background: none; border-bottom: 1px solid #d3dde6; }
+body .request-four-screen .request-screen-send .request-email-toolbar + * { border-top: 0; }
+body .request-four-screen .request-card .request-screen-send .request-review-email textarea { background: transparent; }
+body .request-four-screen .request-screen-send .request-output-email > label:has(.request-message-editor) { padding: 12px 14px 14px; }
+body .request-four-screen .request-screen-send .review-icon-action { width: 36px; min-width: 36px; height: 36px; min-height: 36px; padding: 6px; border: 0; border-radius: 8px; box-shadow: 0 1px 2px rgba(15, 27, 45, .08); }
+body .request-four-screen .request-screen-send .review-icon-action.secondary { background: #fff; color: #1e293b; }
+body .request-four-screen .request-screen-send .review-icon-action svg { width: 18px; height: 18px; }
+
+/* Right column cards */
+body .request-four-screen .request-card .request-screen-send .send-contact-card,
+body .request-four-screen .request-screen-send .review-files,
+body .request-four-screen .request-screen-send .review-next { display: grid; gap: 0; margin: 0; padding: 0; border: 0; border-radius: 12px; background: #f7fcfc; box-shadow: none; overflow: visible; }
+body .request-four-screen .request-card .request-screen-send .send-contact-heading { margin: 0; padding: 10px 14px; background: #eaf6f7; border: 0; border-radius: 12px 12px 0 0; }
+body .request-four-screen .request-card .request-screen-send .send-contact-heading h3 { margin: 0; font-size: 1rem; line-height: 1.3; }
+.request-four-screen .request-screen-send .review-card-title,
+body .request-four-screen .request-screen-send .send-contact-heading > span { margin: 0; color: #3d5160; font-size: .72rem; font-weight: 700; letter-spacing: .05em; line-height: 1.4; text-transform: uppercase; }
+body .request-four-screen .request-screen-send .send-contact-channels { display: grid; padding: 0 14px; }
+body .request-four-screen .request-screen-send .send-contact-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 8px 0; }
+body .request-four-screen .request-screen-send .send-contact-row > .icon:first-child { display: none; }
+body .request-four-screen .request-screen-send .send-contact-row + .send-contact-row { border-top: 1px solid #e0eef0; }
+body .request-four-screen .request-card .request-screen-send .send-contact-card > p { margin: 0; padding: 8px 14px; border-top: 1px solid #e0eef0; }
+
+/* Your files */
+.request-four-screen .request-screen-send .review-files-toggle { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; margin: 0; padding: 8px 10px 8px 14px; border: 0; border-radius: 12px; background: #eaf6f7; color: inherit; font: inherit; text-align: left; cursor: pointer; box-shadow: none; }
+.request-four-screen .request-screen-send .review-files.is-open .review-files-toggle { border-radius: 12px 12px 0 0; }
+.request-four-screen .request-screen-send .review-files-toggle:focus-visible { outline: 3px solid #185c70; outline-offset: 2px; }
+.request-four-screen .request-screen-send .review-files-toggle .review-card-title { margin-right: auto; }
+.request-four-screen .request-screen-send .review-files-hint { color: #526572; font-size: .8rem; font-weight: 400; }
+.request-four-screen .request-screen-send .review-files-indicator { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; border-radius: 6px; background: #fff; color: #1e293b; box-shadow: 0 1px 2px rgba(15, 27, 45, .08); }
+.request-four-screen .request-screen-send .review-files-list { display: grid; gap: 6px; margin: 0; padding: 8px 10px 10px; list-style: none; }
+.request-four-screen .request-screen-send .review-file { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 40px; margin: 0; padding: 4px 4px 4px 6px; border: 0; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(15, 27, 45, .08); cursor: grab; transition: box-shadow .12s; }
+.request-four-screen .request-screen-send .review-file.is-dragging { box-shadow: 0 0 0 2px var(--help-teal), 0 8px 18px rgba(15, 27, 45, .18); }
+.request-four-screen .request-screen-send .review-file-grip { flex: none; color: #94a3b8; }
+.request-four-screen .request-screen-send .review-file-tag { flex: none; padding: 3px 6px; border-radius: 6px; font-size: .66rem; font-weight: 700; letter-spacing: .03em; line-height: 1.2; }
+.request-four-screen .review-file-tag.is-image { background: #e3f4f3; color: #17656d; }
+.request-four-screen .review-file-tag.is-video { background: #efe9fb; color: #5b3fa6; }
+.request-four-screen .review-file-tag.is-pdf { background: #fde9e7; color: #b42318; }
+.request-four-screen .review-file-tag.is-text { background: #eef1f4; color: #475569; }
+.request-four-screen .request-screen-send .review-file-name { min-width: 0; overflow: hidden; color: #0f172a; font-size: .86rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.request-four-screen .request-screen-send .review-file-size { flex: none; margin-right: auto; color: #64748b; font-size: .76rem; white-space: nowrap; }
+.request-four-screen .request-screen-send .review-file-download { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 0; border-radius: 8px; background: #fff; color: #1e293b; box-shadow: 0 1px 2px rgba(15, 27, 45, .08); }
+.request-four-screen .request-screen-send .review-file-download:focus-visible { outline: 3px solid #185c70; outline-offset: 2px; }
+
+/* What happens next */
+.request-four-screen .request-screen-send .review-next > h2 { padding: 10px 14px; background: #eaf6f7; border-radius: 12px 12px 0 0; }
+.request-four-screen .request-screen-send .review-next ol { margin: 0; padding: 2px 14px 6px; list-style: none; }
+.request-four-screen .request-screen-send .review-next li { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 8px 0; line-height: 1.35; }
+.request-four-screen .request-screen-send .review-next li + li { border-top: 1px solid #e0eef0; }
+.request-four-screen .request-screen-send .review-next-number { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; border-radius: 50%; background: #e3f1f2; color: #17656d; font-size: .74rem; font-weight: 700; }
+.request-four-screen .request-screen-send .review-next li strong { display: block; font-size: .88rem; }
+.request-four-screen .request-screen-send .review-next li strong + span { display: block; color: #526572; font-size: .8rem; }
+
+@media (max-width: 760px) {
+  body .request-four-screen .request-card:has(.request-screen-send) .request-send-layout { grid-template-columns: minmax(0, 1fr); }
+  body .request-four-screen .request-screen-send .request-review-card,
+  body .request-four-screen .request-screen-send .review-side { grid-column: 1; grid-row: auto; }
+}
+@media (max-width: 479px) {
+  body .request-four-screen .request-card:has(.request-screen-send) { padding: 20px; }
+}
+
+/* Log a contact attempt: native modal over Review (top layer). Base rules work anywhere; the
+   scoped block below outranks the Help field styles when the dialog sits inside Review. */
+dialog.contact-log-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; margin: auto; padding: 24px; border: 0; border-radius: 16px; background: #fff; color: #0f172a; box-shadow: 0 24px 60px rgba(15, 23, 42, .28); }
+dialog.contact-log-dialog::backdrop { background: rgba(15, 23, 42, .55); }
+.contact-log-dialog .contact-log-form { display: grid; gap: 14px; margin: 0; }
+.contact-log-dialog .contact-log-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.contact-log-dialog .contact-log-head h2 { margin: 0; font-size: 1.3rem; line-height: 1.25; }
+.contact-log-dialog .contact-log-supplier { margin: 2px 0 0; color: #506077; font-weight: 600; }
+.contact-log-dialog .contact-log-close { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; margin: -6px -6px 0 0; padding: 0; border: 0; border-radius: 10px; background: transparent; color: #334155; cursor: pointer; }
+.contact-log-dialog .contact-log-close:hover { background: #eef4f5; }
+.contact-log-dialog .contact-log-note { margin: 0; padding: 10px 12px; border-radius: 10px; background: #eaf6f7; color: #24404a; font-size: .9rem; line-height: 1.45; }
+.contact-log-dialog .contact-log-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.contact-log-dialog .contact-log-field { display: grid; gap: 6px; min-width: 0; }
+.contact-log-dialog .contact-log-field label { margin: 0; font-size: .9rem; font-weight: 600; }
+.contact-log-dialog .contact-log-wide { grid-column: 1 / -1; }
+.contact-log-dialog .contact-log-grid :is(input, select, textarea) { width: 100%; max-width: none; box-sizing: border-box; font: inherit; font-size: 16px; font-weight: 400; color: #0f172a; background-color: #fff; border: 2px solid #8497a6; border-radius: 10px; }
+.contact-log-dialog .contact-log-grid :is(input, select) { min-height: 46px; padding: 0 12px; }
+.contact-log-dialog .contact-log-grid textarea { min-height: 72px; height: auto; padding: 10px 12px; line-height: 1.45; resize: vertical; }
+.contact-log-dialog .contact-log-grid :is(input, textarea)::placeholder { color: #586d79; opacity: 1; }
+.contact-log-dialog :is(button, input, select, textarea):focus-visible { outline: none; border-color: #1f6f78; box-shadow: 0 0 0 3px rgb(31 111 120 / 25%); }
+.contact-log-dialog .contact-log-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.contact-log-dialog .contact-log-actions > button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 18px; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; box-shadow: none; cursor: pointer; }
+.contact-log-dialog .contact-log-actions > .primary { border: 1px solid #1f6f78; background: #1f6f78; color: #fff; }
+.contact-log-dialog .contact-log-actions > .primary:hover:not(:disabled) { background: #18585f; }
+.contact-log-dialog .contact-log-actions > .secondary { border: 1px solid #b6c7cf; background: #fff; color: #102e43; }
+.contact-log-dialog .contact-log-actions > .contact-log-unreachable { margin-right: auto; }
+.contact-log-dialog .contact-log-actions > button:disabled { opacity: .55; cursor: not-allowed; }
+.request-four-screen .request-fields .contact-log-dialog .contact-log-grid :is(input, select, textarea) { min-height: 46px; border: 2px solid #8497a6; border-radius: 10px; font-size: 16px; }
+.request-four-screen .request-fields .contact-log-dialog .contact-log-grid textarea { min-height: 72px; font-size: 16px; line-height: 1.45; }
+@media (max-width: 560px) {
+  dialog.contact-log-dialog { padding: 18px; }
+  .contact-log-dialog .contact-log-grid { grid-template-columns: minmax(0, 1fr); }
+  .contact-log-dialog .contact-log-actions { flex-direction: column-reverse; align-items: stretch; }
+  .contact-log-dialog .contact-log-actions > .contact-log-unreachable { margin-right: 0; }
+  .contact-log-dialog .contact-log-actions > button { white-space: normal; }
 }

@@ -9,6 +9,19 @@ const dirs: string[] = []
 async function store() { const dir = await mkdtemp(join(tmpdir(), 'wave-help-')); dirs.push(dir); return new HelpStore(dir) }
 afterEach(async () => { await Promise.all(dirs.splice(0).map(dir => rm(dir, { recursive: true, force: true }))) })
 const place = { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'Leisure Hills', county: 'Benton', kind: 'system' as const }
+test('attachment allowances are independent per step and legacy files count on response', async () => {
+  const s = await store()
+  const file = (step?: 'noticed' | 'request' | 'response', size = 1) => ({ id: crypto.randomUUID(), name: 'file.txt', type: 'text/plain', data: Buffer.alloc(size, 65).toString('base64'), ...(step ? { step } : {}) })
+  const attachments = [file('noticed', 1024 * 1024), file('request', 1024 * 1024), file('response', 1024 * 1024)]
+  const d = { ...blankRequest(place), attachments }
+  const saved = await s.save('alice', d, 0)
+  expect(saved.draft.attachments).toEqual(attachments)
+  await expect(s.save('alice', { ...d, attachments: [...attachments, file('noticed')] }, saved.revision)).rejects.toThrow()
+  await expect(s.save('bob', { ...blankRequest(place), attachments: [file(), file('response'), file('response'), file('response')] }, 0)).rejects.toThrow()
+  await expect(s.save('bob', { ...blankRequest(place), attachments: [file('noticed'), file('noticed'), file('noticed'), file('noticed')] }, 0)).rejects.toThrow()
+  await expect(s.save('bob', { ...blankRequest(place), attachments: [{ ...file(), step: 'invalid' as 'noticed' }] }, 0)).rejects.toThrow()
+  expect((await s.save('bob', { ...blankRequest(place), attachments: [file()] }, 0)).draft.attachments[0].step).toBeUndefined()
+})
 test('official record metadata round trips without losing source status or verification limits', async () => {
   const s = await store(), record = { agency: 'ADH', date: '2026-10-14', problem: 'power outage', area: 'entire system', status: 'Notice listed; no lift date recorded', verified: false }
   const d = { ...blankRequest(place), facts: [{ id: 'notice', text: 'Saved notice.', kind: 'saved' as const, included: true, sources: [], record }] }
@@ -119,6 +132,13 @@ test('unverified destinations, samples and foreign attachment ids cannot enter l
   d.route = 'adh'; d.description = 'Issue'; d.subject = 'Help'; d.body = 'Help'
   const r = await s.save('alice', d, 0)
   await expect(s.prepare('alice', d.id, r.revision)).rejects.toThrow('destination')
+})
+test('draft storage accepts small MP4 and WebM videos but rejects mismatched content', async () => {
+  const s = await store(), d = blankRequest(place)
+  const video = (type: string, bytes: number[]) => ({ id: crypto.randomUUID(), name: 'clip', type, data: Buffer.from(bytes).toString('base64') })
+  d.attachments = [video('video/mp4', [0, 0, 0, 16, 102, 116, 121, 112, 105, 115, 111, 109]), video('video/webm', [0x1a, 0x45, 0xdf, 0xa3, 0x80])]
+  expect((await s.save('alice', d, 0)).draft.attachments).toEqual(d.attachments)
+  await expect(s.save('bob', { ...blankRequest(place), attachments: [video('video/mp4', [1, 2, 3])] }, 0)).rejects.toThrow()
 })
 test('delivery before acceptance asks the webhook provider to retry rather than losing the event', async () => {
   const s = await store()

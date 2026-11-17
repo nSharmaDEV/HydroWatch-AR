@@ -236,84 +236,149 @@ not verify production feeds or device delivery. Nothing deployed or sent.
 
 ## Advisory help
 
-Help uses four screens with clickable step navigation (since November 9, 2026).
-The first three use equal desktop columns, stacked left then right on mobile.
-Back and save/history controls sit inside the card's top left and top right,
-respectively. Compact step navigation sits between Back and Open History on
-desktop and wraps below on narrower screens. The saved confirmation is available
-to assistive technology without occupying visible space; saving/error feedback
-remains visible.
+Help uses six input screens followed by Review (since November 10, 2026;
+the four-screen flow of November 9 is replaced). The form card is 720px wide,
+centered, and its height follows its content. Earlier screens show "Step N of 6 · name"
+above a segmented progress bar; Review is labeled as the final step. There is no top Back or Open History link: the
+footer holds an icon-only Open History button at the left and Back (hidden on the
+first screen) then the primary action at the right; below 480px the earlier-screen footer sticks
+to the viewport bottom, while Review scrolls naturally. Saving feedback is shown beside the step label.
+Controls share one border style (2px, ≥3:1 contrast on white), one teal selected
+state and one focus ring (teal border plus soft ring). Helper copy for the
+"Anything else?", action-details and both last-screen text areas is placeholder
+text (≥4.5:1 contrast), not persistent helper text. Review uses the step card shell up to 1120px
+wide, with a 65/35 two-column grid above 760px and one stacked column at 760px and below. Its footer opens the selected
+email app when a checked email is available; opening it does not send the message.
+Address and location lookup disclosures appear before lookup and again on Review.
 Every answer either enters the email or decides where it goes.
-1. **What's wrong?** Issue tiles, 2–4 observation checkboxes and "Anything else?"
-   (for Other: "What happened?"). An observation or a description is required.
-    The first screen omits repeated supplier/contact and issue-introduction text;
-    checked contact options remain available on Review and send.
+1. **What's wrong?** Issue cards (a radio group with arrow keys). "Ask about a water
+   report" appears only for suppliers whose newest report is hand-checked and lists findings.
+2. **What have you noticed?** 2–4 observation checkboxes and "Anything else?"
+   (for Other: "What happened?"). An observation or a description is required. The plus button adds photos or videos to this step's attachments.
    Advisory asks "My water service is also affected" as one more checkbox.
-   "Ask about a water report" appears only for suppliers whose newest report is
-   hand-checked and lists findings.
-2. **When, Where, + Action.** Address where it happened (the first saved location),
-   optional account number, then dates (an invalid range disables Continue) or,
-    for bills, which bill and amount. Service and quality add how often. Actions
-    and optional action details sit on the right. The usual requests start ticked
-    on first entry; deliberately unticked choices stay unticked on revisits.
-3. **Your details.** Optional name, reply contact and attachments on the left;
-    prior attempts and additional questions on the right, with contextual prompts.
-4. **Review and send.** A card up to 1144px wide: the full editable subject and
-    message beside **How to send it**. Open in email app is the primary handoff;
-    copy and call are secondary. Opening an app is not sending or delivery proof.
-    Included records and Downloads and tools are supporting disclosures. Required
-    evidence stays locked, exact citations remain available, and manual edits are
-    preserved. Configured account sending remains a separate optional disclosure.
+3. **Where and when.** The address is a combobox with Photon suggestions (see
+   Address lookup below), then the optional account number, paired start/end dates
+   with one shared hint and paired ongoing/frequency controls (an invalid range
+   disables Continue) or, for bills, which bill and amount. "Not sure" is the
+   unanswered option of the ongoing/frequency selects (earlier saved "Not sure" answers show as "Not sure").
+4. **What would you like them to do?** Action checkboxes and optional action details.
+   The usual requests start ticked on first entry; deliberately unticked choices stay unticked on revisits. The plus button adds photos or MP4/WebM videos to this step's attachments. Steps 2, 4 and 5 each allow up to three files totaling 1 MB per step, so most videos will need to be very short or compressed. Browser storage limits can also prevent saving large drafts.
+5. **Your details.** Optional name, email, US phone number and attachments. Complete
+   US phone numbers are formatted as entered; email whitespace is trimmed on blur.
+   Previously saved contact details remain editable. Attachment rows on each step show their type and size, with a labeled trash button to remove them. Older attachments without a recorded step appear on Step 5 and count toward its limit. Attachments must be added
+   separately when using an email app.
+6. **Anything they should know?** Prior attempts and additional questions. The
+   primary button reads "Review my message".
+Review. **Review and contact your provider.** The step card shell up to 1120px wide: the editable
+     Draft email (65%) on the left; Send it yourself, Your files (attachments from all steps,
+     collapsible, remembered for the browser session) and What happens next (35%) on the
+     right. Below about 760px these stack in that order. Files offer a download link; in
+     Chromium a row can also be dragged out (`DownloadURL`). The call script and the
+     next-office ("Another option") card are no longer shown on Review (2026-11-12). The draft header contains icon-only
+     Copy message, Edit message and Open in my email app controls, with translated
+     hover/focus tooltips and accessible labels. Email-copy and phone actions also
+     use icons. Opening an app is not sending or delivery proof.
+    Included records and Downloads and tools have been removed entirely, including
+    their dividers and record-inclusion controls. Saved source evidence and required
+    historical context remain in the draft; exact citations remain available and manual edits are
+      preserved. **Log a contact attempt** is the primary footer button. It
+      opens a centered modal popup over Review, and the right column does not change.
+      The popup has Contact date, How did you try?, Reference or ticket number, When
+      should you follow up? and optional notes, with Couldn’t reach them, Cancel and
+      Save. Cancel, ✕ or Escape records nothing. Save or Couldn’t reach them records the
+      resident's answer and opens History. The call
+      script starts collapsed. Configured account sending remains a separate optional disclosure.
+      Supplier contact limitations and Contact sources, the other office’s scope,
+      and the To-row citations use reusable info popovers. They open on click/tap
+      or keyboard activation, close on Escape/outside click/another info popover,
+      and keep their existing English/Spanish wording and source links.
 
-The email follows public complaint-letter guidance (FTC sample letter, CCW
-complaint-letter tool, Arkansas AG and PSC complaint pages): who and where (with
-account number), **What happened**, **What I’ve already tried**, **What I’m
-requesting** (a numbered **Could you please:** list), and **Related records**.
-Empty sections are omitted. Optional reply contact, sign-off and exact source links
+**Address lookup.** The address field sends typed text (four or more characters,
+after a 250ms pause, at most five suggestions, Arkansas-biased and filtered) and,
+for "Use my location", coordinates to the Photon public demo server
+(`https://photon.komoot.io`). It is rate-limited and not for production use
+`[NEEDS: production geocoding provider and terms review]`. Because OpenStreetMap
+lacks most US house numbers, text that starts with a house number is also sent
+through the API server's `/api/geocode-address` to the US Census geocoder, and those
+house-number matches are listed first (the API server must be running; without it
+only Photon results appear). All lookups live in
+`src/addressSearch.ts`; `VITE_ADDRESS_API_URL`/`VITE_ADDRESS_API_KEY` are read there
+for a provider swap (a browser-visible key must be domain-restricted). A picked
+suggestion is stored as `addressSelection` `{ id, label, lat, lng, components }`
+with `locations[0]` equal to its label; editing the text clears it. Manual entry
+sets `addressManual`, so rural addresses are never blocked. Coordinates are not
+used to infer a supplier or boundary and are not placed in the email.
+On the screen the field has default, typing, selected and manual states; "Use my location" is an icon button inside the field, the privacy sentence is not shown on that screen, and the same disclosure appears on Review next to the draft note. Selected addresses show "Change"; manual ones show an "Entered manually" tag and "Not verified" note.
+
+The email reads as a first-person message rather than a complaint report:
+who and where (with an optional account number), observations and dates,
+earlier contact or actions, and selected requests. A single low-pressure request
+is a plain question; other requests use a numbered **Could you please:** list.
+Dated records remain separately attributed paragraphs without a section heading.
+Empty paragraphs are omitted. Optional reply contact, sign-off and exact source links
 follow. Subjects name the concern, one brief selected observation where applicable,
 and the supplied bill period/address/account rather than only the supplier.
 Only selected stock requests are expanded: service investigation/restoration or
 known causes, billing explanation/correction if incorrect, and report notices with
 available supporting documentation. Resident-written comments, action details and
 questions remain distinct and are preserved. No unselected deadline or demand is
-added. The call script ("What to say when you call") shares the selected requests
-as numbered items without lowercasing resident wording. English and Spanish follow
+added. The call script ("What to say when you call"; not shown on Review since
+2026-11-12) shares the selected requests as numbered items without lowercasing resident wording. English and Spanish follow
 the same structure. Historical evidence remains dated, saved records remain
 unverified as current, and AI-only report summaries are not verified evidence.
 Nothing threatens action or claims a violation or safety status. Manual subject
 and message edits (including blank fields) remain protected; updating from answers
 requires confirmation before replacing them. Feedback stays separate from emails.
 
-Older drafts open on the screen that now holds their answers: `experience` →
-What's wrong; `billing`/`timing`/`where` → When, Where, + Action;
-`review`/`confirm`/`records` → Review and send. During Help the nav highlights the
-tab it was opened from. Desktop checks cover 1280×800 and 1440×780 in English and
+Review reuses the earlier Help screens’ card styling, progress header,
+typography and footer navigation. The Review heading is visually hidden but remains available to assistive technology. The card is up to 1120px wide with the
+editable letter on the left (65%) and contact, files and next-step cards on the right
+(35%). Screens at 760px and below stack them. Review may scroll at laptop heights. Long emails scroll inside the desktop editor; expanded
+details, zoomed content and mobile can scroll naturally. No text is clipped.
+
+Older drafts open on the nearest screen: `experience` → What's wrong;
+`billing`/`timing`/`where` → Where and when; `details` → Where and when; `response`
+→ Your details; `review`/`confirm`/`records` → Review and contact your provider.
+Drafts saved before the address lookup have a free-text address that is not a
+picked or manually entered one, so Continue asks the resident to choose or confirm it. During Help the nav highlights the
+tab it was opened from. Desktop checks include 1280×720, 1280×800, 1440×780 and 1440×820 in English and
 Spanish, with responsive checks down to 320px and enlarged text. All screens
-scroll naturally; long email content is not clipped into a nested editor scroller.
+scroll naturally, including the full Review message. No message text is removed.
 
 ### Did you send it? and follow-up
 
 After a resident opens their email app, starts a call or opens a form, the panel
 asks **Did you send it?** (or "Did you reach them?"). It offers Yes, Not yet and
-I couldn't reach them, plus an optional reference number. "Sent it another way?
-Record it" covers messages sent outside WAVE. Only the resident's answer is saved
+I couldn't reach them, plus an optional reference number, **What did they tell
+you?**, the actual **Contact date**, and an editable **When should you follow up?** date. **Log a contact
+attempt** covers any method (email, call, form) or an attempt that failed. Only the resident's answer is saved
 (`draft.outcomes`), in the same device or account storage as the draft, and it is
 deleted with the request. WAVE never observes delivery, calls, replies or
-resolution. A contact answer starts an in-app **follow-up reminder** five business
-days later (weekends skipped; holidays not modelled). It appears in History and,
+resolution. A contact answer suggests an in-app **follow-up reminder** five weekdays
+after the recorded contact (weekends skipped; holidays not modelled). Residents can
+change or clear it; it is not a utility-response deadline. It appears in History and,
 if the resident downloads it, as a calendar event; no notification, email or push
 is sent for it. History shows **What you recorded** as a
-timeline and offers Record a reply, Mark resolved and Not resolved. It also
+timeline with a **progress tracker** (request saved → contact attempted → follow
+up → closed) built only from the resident's own records. It offers Update contact
+details, Record another attempt, Record a reply, Mark resolved, **I'm no longer
+pursuing this** and Reopen. It also
 offers **Write a follow-up** to the same office or **Contact** the next office
-(service/quality/advisory/other → ADH; billing → Arkansas Attorney General). A
-follow-up is a new draft whose message cites the earlier contact ("I contacted X
-about this on DATE (reference …), and it has not been resolved.").
+(service/quality/advisory/other → ADH; billing → Arkansas Attorney General).
+ADH guidance is distinguished from billing assistance; consumer assistance does
+not guarantee a refund. PSC guidance links explain its limited water-utility
+jurisdiction and exclusions for municipal utilities, improvement districts and
+property owners associations; WAVE does not determine coverage. A follow-up is
+a new draft citing the earlier contact date and reference, without assuming the
+problem remains unresolved. History allows editing the record date and notes.
 
 ### History statuses and drafts
 
-History never says "Open". Each request reads **Not sent yet**, **Sent – waiting
-for reply** (the resident recorded a contact or a hosted send was accepted),
-**Resolved** (the resident's note) or **Closed by you**. An unsent draft opens as
+History never says "Open". It distinguishes **Not sent yet**, **Contact recorded —
+no reply recorded**, **Reply recorded**, **Couldn’t reach them — recorded by you**,
+resident-recorded resolution/closure, and hosted-message delivery states.
+A phone call or failed contact is not labeled "Sent". Attempts remain visible even
+when no successful contact was recorded. An untouched unsent draft opens as
 one summary card (problem, what you noticed, where, the step you stopped at, last
 save) with **Continue draft**, which resumes on that step, and a quieter **Delete
 draft**. Empty "Original issue" sections are hidden.
@@ -439,38 +504,31 @@ reading/ready status, filenames and removal within the existing upload limits.
 Exact-supplier agency facts stay separate from residents' experience, with source
 links beside each record. Multiple published problems remain distinct.
 Dated historical report findings with no action listed are required in the email
-across issue categories; other historical findings are opt-in. Neither is a current
+across issue categories; other historical findings are not included by default. Neither is a current
 safety or compensation finding. Required findings stay historical, including on
 resume; saved advisory facts are labeled as not currently verified.
 Bounded previews are not exhaustive; check the linked original source.
 
-Review uses a 35% information / 65% email layout inside the Map-aligned container.
-The left column’s “What you provided” table has two columns for supplied answers; a
-small ⓘ beside each answer opens its existing editor (with an accessible name). The official
-records remain in a separate compact table. Missing useful answers show “Not provided”
-with Add. Optional records have “Include in email” checkboxes; required historical
-findings cannot be unchecked. The “Cited sources” popup shows full source wording
-and links. Per-record wording editors and delete buttons are no longer offered.
-Inclusion changes do not overwrite manually edited email text. Attachments show
-a count and filenames; file limits are available when adding files. Name/reply contact
-remains optional and collapsed. The right column contains the recipient dropdown,
-subject, complete editable message, citations and update/download actions. At desktop
-sizes the panels align and the composer uses the available viewport height without
-page scrolling at 1280×800; the information column scrolls internally when needed.
-On mobile the information stacks above email and the page scrolls naturally without
-shrinking text.
+Review places the editable email on the left and contact panels on the right above
+760px; smaller layouts stack email above contacts. To, Subject and Message
+are distinct rows. The recipient selector, native text editors and Cited sources
+popup remain available. There is no answers table, Included records section or
+Downloads and tools section. Source evidence is retained rather than deleted when
+these controls are absent. Optional name/reply contact and attachment filenames
+remain on Your details. File limits and the manual-attachment requirement are
+explained beside the uploader. All layouts use natural page scrolling for longer
+content, including English/Spanish guidance, errors, enlarged text and long emails.
 Recommendation stars and contact explanations stay inside the recipient selector.
 The citation popup retains full attribution alongside record details.
 Only directory contacts are offered; an
 external-only selection blocks WAVE email sending rather than being silently omitted.
 Email uses readable, conditional sections and natural paragraphs, with source-attributed
 agency information. Inline numbered citations correspond to clickable source links
-beside each record and in the composer. Numbered citations share each source URL once. Attachment
-names stay in the information column; source links appear there and beneath the message. Official
-records show agency, readable date, listed problem, published area and verification
-limits; full source wording is available in the citation popup. Historical years stay explicit.
+in the composer and citation popup. Numbered citations share each source URL once.
+Published dates, affected areas, verification limits and historical years remain
+in source-attributed prose; full source wording is available in the citation popup.
 Agency quotations retain their original wording; the email remains editable. Long messages
-scroll inside the desktop editor; mobile uses natural page scrolling. Review has
+use natural page scrolling rather than a nested editor scroller. Review has
 the shared Back control and reports the send outcome there. Sending requires configured
 delivery; sample sending stays disabled. Untouched subject/message fields update
 from changed answers, recipients and facts, including saved-record status on resume.
@@ -518,16 +576,15 @@ answers or attachments. Manual/legacy subject or message text, confirmed residen
 wording and original source evidence stay unchanged; this is not automatic
 translation of resident or agency text.
 
-Sample email copies and email/report downloads include an English/Spanish
-fictional-sample label outside the editable draft, even after manual edits or
-resume. Sample download filenames start with `sample-`; the unsaved-text fallback
-is labeled too. Live exports are not relabeled, and no export sends a request.
+Sample email copies include an English/Spanish fictional-sample label outside the
+editable draft, even after manual edits or resume. The unsaved-text download fallback
+is labeled too and its filename starts with `sample-`. Review no longer offers
+email/report downloads. Live exports are not relabeled; no export sends a request.
 
-There is no Report tab. **Download report** derives a current resident issue report
-from the same confirmed answers, not an inspection or agency determination. Changing
+There is no Report tab or Review download toolbar. Changing
 category clears incompatible answers and wording but retains locations. Optional name/reply
-contact is explicitly supplied. Download email preserves manual edits; Download
-report uses current answers. Text downloads do not bundle attachments.
+contact is explicitly supplied. Copy email preserves manual edits. The unsaved-text
+download fallback does not bundle attachments.
 Language changes preserve edits. Citation metadata is saved with drafts and
 immutable outgoing copies.
 
@@ -536,7 +593,7 @@ advisory map. When accounts are not configured, live mode opens device-only draf
 and History directly, with sending disabled. Otherwise, choose device-only drafts without an account or sign in
 for private account History; the two stores stay separate. Sample drafts also stay
 on the device and cannot send. Device-only live drafts are not submitted by WAVE;
-copy/download or use an official provider channel instead. Wait for **Saved on this
+copy the email or use an official provider channel instead. Wait for **Saved on this
 device** before refreshing. Unsaved
 changes trigger a browser-leave warning where supported; failed saves retain text
 in the open editor with retry/download and same-account sign-in recovery. Do not
@@ -612,3 +669,16 @@ save supplier-only alert choices or disable the subscription in Settings.
 
 Keep `water-alert/` as the hosting project root. Repository cleanup has not changed
 runtime paths, migrated data, deployed code or submitted a competition entry.
+
+### Contact channel and low-pressure request
+
+WAVE has not verified a published service-issue or billing channel for any
+supplier, so the supplier's directory contact is labelled **General utility
+contact** on service and billing requests. A low-pressure-only report defaults to
+one plain request ("Could you check what's causing the low pressure and let me
+know when I should expect an update?") instead of restore service, update and
+time estimate; residents can tick other requests. With other service observations,
+the plain low-pressure request starts ticked alongside the usual service requests.
+Deliberate deselections remain deselected on revisits. The third-screen action is
+**Review my message** / **Revisar mi mensaje**; the second-screen action remains
+**Continue** / **Continuar**.

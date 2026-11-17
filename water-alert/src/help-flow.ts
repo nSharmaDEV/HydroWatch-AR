@@ -3,10 +3,12 @@ import type { HelpDraft, HelpFact, HelpStep } from './help-requests'
 import { advisoryFacts, advisorySources } from './help-facts'
 import { reportEvidence, reportMessage, requiredReportEvidence } from './recovery-evidence'
 
-/** Four calm screens: what's wrong → when and where → what they should do → send it. */
+/** Six one-column screens, then review: wrong → noticed → where/when → request → your details → anything else → send it. */
 export function helpPath(_d: HelpDraft): HelpStep[] {
-  return ['choose', 'details', 'response', 'send']
+  return ['choose', 'noticed', 'details', 'request', 'response', 'anything', 'send']
 }
+/** Number of numbered form screens; the review screen follows them. */
+export const HELP_FORM_STEPS = 6
 /** Billing/other reports have no inferred link to water-quality or service notices. */
 export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
   const required = new Set(requiredReportEvidence(d.place, sample).map(row => row.key))
@@ -20,14 +22,25 @@ export function relevantFacts(d: HelpDraft, sample = false): HelpFact[] {
 /** Screen titles, shared by Help and History. */
 export const HELP_STEP_TITLES: Partial<Record<HelpStep, [string, string]>> = {
   choose: ['What’s wrong?', '¿Qué pasa?'],
-  details: ['When, Where, + Action', 'Cuándo, dónde y acción'],
+  noticed: ['What you noticed', 'Lo que notaste'],
+  details: ['Where and when', 'Dónde y cuándo'],
+  request: ['Your request', 'Tu solicitud'],
   response: ['Your details', 'Tus datos'],
-  send: ['Review and send', 'Revisar y enviar'],
+  anything: ['Anything else', 'Algo más'],
+  send: ['Review and contact your provider', 'Revisar y contactar a tu proveedor'],
 }
-/** "Step 2 of 4 · When and where" for a draft's current screen. */
+/** Large heading for each screen (the short names above label the progress header). */
+export const HELP_STEP_HEADINGS: Partial<Record<HelpStep, [string, string]>> = {
+  ...HELP_STEP_TITLES,
+  noticed: ['What have you noticed?', '¿Qué has notado?'],
+  request: ['What would you like them to do?', '¿Qué te gustaría que hicieran?'],
+  anything: ['Anything they should know?', '¿Algo que deban saber?'],
+}
+/** "Step 3 of 6 · Where and when" for a draft's current screen; the review screen has no number. */
 export function stepLabel(d: HelpDraft, language: 'en' | 'es') {
   const path = helpPath(d), step = helpStep(d), n = path.indexOf(step) + 1, title = HELP_STEP_TITLES[step]![language === 'es' ? 1 : 0]
-  return language === 'es' ? `Paso ${n} de ${path.length} · ${title}` : `Step ${n} of ${path.length} · ${title}`
+  if (step === 'send') return title
+  return language === 'es' ? `Paso ${n} de ${HELP_FORM_STEPS} · ${title}` : `Step ${n} of ${HELP_FORM_STEPS} · ${title}`
 }
 export function helpStep(d: HelpDraft): HelpStep {
   // Earlier drafts resume on the screen that now holds the same answers.

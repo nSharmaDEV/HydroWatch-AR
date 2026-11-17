@@ -6,12 +6,25 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createHmac } from 'node:crypto'
-import { helpRouter, helpWebhook } from '../server/help-api'
+import { helpJson, helpRouter, helpWebhook } from '../server/help-api'
 import { HelpStore } from '../server/help-store'
 import { HelpAuth } from '../server/help-auth'
 import { blankRequest } from '../src/help-requests'
 const servers: Server[] = [], dirs: string[] = []
 afterEach(async () => { await Promise.all(servers.splice(0).map(s => new Promise<void>(r => s.close(() => r())))); await Promise.all(dirs.splice(0).map(d => rm(d, { recursive: true, force: true }))) })
+test('help JSON accepts three full per-step attachment budgets', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'wave-help-api')); dirs.push(dir)
+  const store = new HelpStore(dir), app = express()
+  const auth = new HelpAuth({ url: 'https://fake.supabase.co', key: 'public' }, async () => Response.json({ id: 'alice', email: 'resident@example.test', email_confirmed_at: '2026-01-01' }))
+  app.use(helpJson, helpRouter({ store, auth, config: { auth: { url: 'https://fake.supabase.co', key: 'public' }, delivery: null, accountUrl: null }, secure: false }))
+  const server = app.listen(0, '127.0.0.1'); servers.push(server); await new Promise<void>(r => server.once('listening', r))
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  const draft = blankRequest({ id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'Leisure Hills', county: 'Benton', kind: 'system' })
+  draft.attachments = (['noticed', 'request', 'response'] as const).map(step => ({ id: crypto.randomUUID(), name: `${step}.txt`, type: 'text/plain', data: Buffer.alloc(1024 * 1024, 65).toString('base64'), step }))
+  const response = await fetch(base + '/requests', { method: 'POST', headers: { Cookie: 'wave_help=token', 'Content-Type': 'application/json' }, body: JSON.stringify({ draft, revision: 0 }) })
+  expect(response.status).toBe(200)
+  expect((await store.list('alice'))[0].draft.attachments).toEqual(draft.attachments)
+})
 test('private API ignores caller owner, rejects unauthenticated access and returns unavailable without delivery', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'wave-help-api')); dirs.push(dir)
   const store = new HelpStore(dir), app = express()

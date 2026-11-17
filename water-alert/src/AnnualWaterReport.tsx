@@ -5,6 +5,9 @@ import { isSummarized, type AnnualReport, type AnnualReportIssue, type Summarize
 import { SourceLink } from './components'
 import { Icon } from './icons'
 import { RECOVERY_RESOURCES } from './recovery-resources'
+import { InfoButton } from './InfoButton'
+import { AnnualReportAiDisclaimer, AnnualReportAutoReadDisclaimer } from './annual-report-disclaimer'
+import type { ReportCheckState } from './report-check'
 
 // A quiet reference card: heading and source, secondary review metadata,
 // then balanced finding sections. Report findings are dated document evidence.
@@ -25,7 +28,7 @@ export function AnnualWaterReport({ reports, language }: { reports: readonly Ann
   </section>
 }
 
-export function AnnualReportCard({ reports, report, onYear, language, onAsk, openSignal = 0 }: { reports: readonly AnnualReport[]; report?: AnnualReport; onYear: (year: number) => void; language: Language; onAsk?: (key: string) => void; openSignal?: number }) {
+export function AnnualReportCard({ reports, report, onYear, language, onAsk, openSignal = 0, check }: { reports: readonly AnnualReport[]; report?: AnnualReport; onYear: (year: number) => void; language: Language; onAsk?: (key: string) => void; openSignal?: number; check?: ReportCheckState }) {
   const [open, setOpen] = useState(false)
   useEffect(() => { if (openSignal) setOpen(true) }, [openSignal])
   const motion = useMotionPresence(open, 'slide')
@@ -34,16 +37,17 @@ export function AnnualReportCard({ reports, report, onYear, language, onAsk, ope
   const status = reportStatus(report, language)
   const summary = isSummarized(report) ? summarizeFindings(report.issues, es) : undefined
   const ai = report?.state === 'aiSummarized'
+  const auto = report?.state === 'autoRead'
   const count = summary?.count ?? 0
   // Findings the document printed as "Current". Historical: not present-day status.
   const ongoing = summary?.findings.filter(({ issue }) => issue.currentAsPrinted) ?? []
   // A missing report names its year only inside the pill, so the heading never implies a document exists.
   const found = report && report.state !== 'unavailable' ? report : undefined
-  const reviewedOn = report?.state === 'reviewed' ? formatIsoDate(report.reviewedOn, language) : report?.state === 'aiSummarized' ? formatIsoDate(report.summarizedOn, language) : undefined
+  const reviewedOn = report?.state === 'reviewed' ? formatIsoDate(report.reviewedOn, language) : report?.state === 'aiSummarized' ? formatIsoDate(report.summarizedOn, language) : report?.state === 'autoRead' ? formatIsoDate(report.readOn, language) : undefined
   // A clean reviewed report is heading-only; its review date moves into the PDF link's accessible name.
   const pdfLabel = es
-    ? `Ver informe original (PDF)${reviewedOn && !count ? ai ? `, resumido por IA el ${reviewedOn}` : `, revisado el ${reviewedOn}` : ''}`
-    : `View original report (PDF)${reviewedOn && !count ? ai ? `, AI summary ${reviewedOn}` : `, reviewed ${reviewedOn}` : ''}`
+    ? `Ver informe original (PDF)${reviewedOn && !count ? ai ? `, resumido por IA el ${reviewedOn}` : auto ? `, leído de las tablas del PDF el ${reviewedOn}` : `, revisado el ${reviewedOn}` : ''}`
+    : `View original report (PDF)${reviewedOn && !count ? ai ? `, AI summary ${reviewedOn}` : auto ? `, read from the PDF tables ${reviewedOn}` : `, reviewed ${reviewedOn}` : ''}`
   const headerOnly = !count && !report?.note && !(report?.state === 'unavailable' && report.sourceUrl)
   return <article className={`provider-card annual-report${count ? ' report-summary-issues' : ''}${headerOnly ? ' annual-report-header-only' : ''}`}>
     <div className="provider-card-heading">
@@ -58,10 +62,15 @@ export function AnnualReportCard({ reports, report, onYear, language, onAsk, ope
       {count ? null : <span className={`status-pill status-pill-${status.tone}${isSummarized(report) ? ' report-finding' : ''}`}>{status.label}{found ? <span className="sr-only">{es
         ? ` en el informe de ${found.year}; no es una evaluación actual de la seguridad del agua.`
         : ` in the ${found.year} report; not a current water-safety assessment.`}</span> : null}</span>}
-      {/* Automated summaries are always labelled; the supplier info dialog explains the limits. */}
-      {ai ? <span className="report-ai-tag">{es ? 'Resumen por IA' : 'AI summary'}</span> : null}
-      {count && isSummarized(report) ? <p className="report-reviewed">{calendarIcon}<span>{ai ? es ? 'Resumido por IA' : 'AI summary' : es ? 'Revisado' : 'Reviewed'} <time dateTime={report.state === 'reviewed' ? report.reviewedOn : report.summarizedOn}>{reviewedOn}</time></span></p> : null}
+      {/* Automated summaries are always labelled; this button repeats the same
+          disclaimer already shown in the supplier info dialog, right on the card. */}
+      {ai ? <span className="report-ai-tag">{es ? 'Resumen por IA' : 'AI summary'}<InfoButton label={es ? 'Sobre los resúmenes por IA' : 'About AI summaries'}><AnnualReportAiDisclaimer language={language} /></InfoButton></span> : null}
+      {auto ? <span className="report-ai-tag">{es ? 'Leído del PDF' : 'Read from PDF'}<InfoButton label={es ? 'Sobre las lecturas automáticas' : 'About automatic reads'}><AnnualReportAutoReadDisclaimer language={language} /></InfoButton></span> : null}
+      {count && isSummarized(report) ? <p className="report-reviewed">{calendarIcon}<span>{ai ? es ? 'Resumido por IA' : 'AI summary' : auto ? es ? 'Leído del PDF' : 'Read from PDF' : es ? 'Revisado' : 'Reviewed'} <time dateTime={report.state === 'reviewed' ? report.reviewedOn : report.state === 'aiSummarized' ? report.summarizedOn : report.readOn}>{reviewedOn}</time></span></p> : null}
       <span className="provider-card-source">
+        {check ? <CheckIconButton onCheck={check.check} checking={check.status === 'checking'} label={report
+          ? es ? 'Volver a buscar el informe anual' : 'Check again for the annual report'
+          : es ? 'Buscar el informe anual' : 'Check for the annual report'} /> : null}
         {found
           ? <span className="report-pdf"><SourceLink url={found.url}><span aria-hidden="true">PDF</span><span className="sr-only">{pdfLabel}</span></SourceLink></span>
           : <SourceLink url={RECOVERY_RESOURCES.annualReports}>{es ? 'Informes de ADH' : 'ADH reports'}</SourceLink>}
@@ -80,7 +89,23 @@ export function AnnualReportCard({ reports, report, onYear, language, onAsk, ope
     {isSummarized(report) && report.note ? <p className="report-review-note">{report.note[language]}</p> : null}
     {report && !isSummarized(report) && report.note ? <p className="provider-card-note report-check-note">{report.note[language]}</p> : null}
     {report?.state === 'unavailable' && report.sourceUrl ? <p className="provider-card-links"><SourceLink url={report.sourceUrl}>{es ? 'Directorio de ADH' : 'ADH directory'}</SourceLink></p> : null}
+    {check ? <p className="report-check-status" role="status" aria-live="polite">{check.status === 'ambiguous'
+      ? es ? 'Más de un sistema de ADH coincidió con este nombre, así que no se enlazó nada.' : 'More than one ADH system matched this name, so nothing was linked.'
+      : check.status === 'incomplete'
+      ? es ? 'No se pudo completar la verificación ahora. No cambió nada.' : 'The check couldn’t be completed just now. Nothing changed.'
+      : check.status === 'checked'
+      ? es ? 'Verificación del informe completada.' : 'Annual report check complete.'
+      : ''}</p> : null}
   </article>
+}
+
+/**
+ * Asks a source for fresh facts on demand, from the card's top corner.
+ */
+export function CheckIconButton({ onCheck, checking, label }: { onCheck: () => void; checking: boolean; label: string }) {
+  return <button className="card-check-icon" onClick={onCheck} disabled={checking} aria-busy={checking || undefined} aria-label={label} title={label}>
+    <Icon name="refresh-cw" size={17} />
+  </button>
 }
 
 /** True when a reviewed report lists at least one finding. */
@@ -88,17 +113,17 @@ export const reportHasFindings = (report?: AnnualReport) => isSummarized(report)
 
 /**
  * Short dated chip for the collapsed Provider information header. Only shown
- * when the selected report lists findings; the year keeps it historical.
+ * for a summarized report; the year keeps its result historical.
  */
 export function reportHeaderChip(report: AnnualReport | undefined, language: Language) {
   if (!isSummarized(report)) return null
   const es = language === 'es'
   const { count, mixedFindings, hasConflict } = summarizeFindings(report.issues, es)
-  if (!count) return null
-  const chip = hasConflict ? es ? `${report.year}: requiere aclaración` : `${report.year}: clarification needed`
+  const chip = !count ? es ? `${report.year}: no se reportaron infracciones` : `${report.year}: No violations reported`
+    : hasConflict ? es ? `${report.year}: requiere aclaración` : `${report.year}: clarification needed`
     : mixedFindings ? es ? `${report.year}: ${count} ${count === 1 ? 'hallazgo' : 'hallazgos'}` : `${report.year}: ${count} ${count === 1 ? 'finding' : 'findings'}`
     : es ? `${report.year}: ${count} ${count === 1 ? 'problema' : 'problemas'} de cumplimiento` : `${report.year}: ${count} compliance ${count === 1 ? 'issue' : 'issues'}`
-  return report.state === 'aiSummarized' ? `${chip} · ${es ? 'resumen por IA' : 'AI summary'}` : chip
+  return report.state === 'aiSummarized' ? `${chip} · ${es ? 'resumen por IA' : 'AI summary'}` : report.state === 'autoRead' ? `${chip} · ${es ? 'leído del PDF' : 'read from PDF'}` : chip
 }
 
 // One short status per report state, shown as the row's pill. Reviewed

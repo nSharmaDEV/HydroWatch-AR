@@ -14,8 +14,8 @@ function Locations() {
 }
 /** Screen 2 ("When and where") holds a plain manual address field; nothing is preselected or looked up. */
 function expectWhere() {
-  expect(screen.getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
-  expect(screen.getByRole('heading', { level: 1, name: 'When, Where, + Action' })).toBeVisible()
+  expect(screen.getByText('Step 2 of 4 · Details and request')).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'Details and request' })).toBeVisible()
   expect(document.querySelector('details.request-optional')).toBeNull()
 }
 /** From screen 1, give a minimal report so Continue is enabled, then advance to screen 2. */
@@ -46,16 +46,16 @@ test('shared composition is one bounded card per step, no legacy area field, and
   expect(screen.queryByLabelText('Affected area you know about (optional)')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('checkbox', { name: 'My usual water use is affected' }))
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expectOneCard('When, Where, + Action')
+  expectOneCard('Details and request')
   expect(screen.queryByLabelText('Affected area you know about (optional)')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expectOneCard('Your details')
   const attachmentButton = screen.getByRole('button', { name: 'Add a photo or document' })
   expect(document.querySelector('.request-card-body')?.contains(attachmentButton)).toBe(true)
   expect(screen.queryByText('File types and limits')).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Review my message' }))
   // Sample send screen: the bottom action is a secondary "Copy email", never a primary send.
-  expectOneCard('Review and send', false)
+  expectOneCard('Review and contact your provider', false)
   expect(document.querySelector('.request-card-action button.primary')).toBeNull()
   expect(screen.getByRole('button', { name: 'Copy email' }).closest('.send-options')).not.toBeNull()
   const composer = document.querySelector('.request-composer')!
@@ -68,7 +68,7 @@ test('shared composition is one bounded card per step, no legacy area field, and
 })
 const renderStep = (draft: Parameters<typeof GuidedHelp>[0]['draft']) => render(<GuidedHelp
   draft={draft} place={draft.place} language="en" sample={false} deviceOnly delivery={false} sending={false} saveFailed={false}
-  heading={createRef<HTMLHeadingElement>()}
+  heading={createRef<HTMLHeadingElement>()} onHistory={() => {}}
   extras={<section className="request-extras"><button>Add a photo or document</button></section>}
   edit={() => {}} changeFacts={() => {}} go={() => {}} send={() => {}} regenerate={() => {}}
 />)
@@ -83,7 +83,7 @@ test('observation step holds issue choices and description; details step holds a
   expect(choose.contains(screen.getByLabelText('Anything else? (optional)'))).toBe(true)
   // Attachments are offered on "What should they do?", not here.
   expect(choose.querySelector('.request-extras')).toBeNull()
-  expect(screen.queryByLabelText('How often does it happen? (optional)')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('How often? (optional)')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
   expect(choose.querySelector('.request-safety, .request-experience-provider')).toBeNull()
   view.unmount()
@@ -94,7 +94,7 @@ test('observation step holds issue choices and description; details step holds a
   expect(screen.getByText('Also saved: Pine Street')).toBeVisible()
   expect(screen.getByLabelText('Account number (optional)')).toHaveValue('')
   expect(screen.getByLabelText('When did it begin? (optional)')).toHaveAttribute('type', 'date')
-  const frequency = screen.getByLabelText('How often does it happen? (optional)')
+  const frequency = screen.getByLabelText('How often? (optional)')
   expect(screenDetails.contains(frequency)).toBe(true)
   expect(frequency).toHaveValue('Occasional')
   expect(frequency.closest('.request-question-grid')).toHaveClass('request-frequency-grid')
@@ -109,7 +109,7 @@ test('observation step holds issue choices and description; details step holds a
   const response = document.querySelector('.request-screen-response')!
   for (const label of ['Anything else to ask? (optional)', 'What have you already tried? (optional)', 'Your name (optional)', 'How can they reach you? (optional)']) expect(response.contains(screen.getByLabelText(label))).toBe(true)
   expect(response.querySelector('.request-extras')).toBeTruthy()
-  expect(screen.getByRole('button', { name: 'Write my email' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Review my message' })).toBeEnabled()
 })
 test('billing details remain available without prior-provider questions on the details step', () => {
   const place = samplePlaces[0]
@@ -118,7 +118,7 @@ test('billing details remain available without prior-provider questions on the d
   expect(screen.getByLabelText('Amount, if known (optional)')).toBeVisible()
   expect(screen.getByLabelText('Account number (optional)')).toBeVisible()
   expect(screen.queryByLabelText('When did it begin? (optional)')).not.toBeInTheDocument()
-  expect(screen.queryByLabelText('How often does it happen? (optional)')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('How often? (optional)')).not.toBeInTheDocument()
   expect(screen.queryByText('Prior provider contact (optional)')).not.toBeInTheDocument()
   expect(screen.queryByLabelText('What have you already tried? (optional)')).not.toBeInTheDocument()
 })
@@ -171,7 +171,7 @@ test('a saved address survives back and reload, and a removed address stays remo
   await waitFor(() => expect(screen.getByText('Saved on this device')).toBeVisible())
   view.unmount()
   render(<RequestWorkspace {...props} />)
-  expect(await screen.findByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
+  expect(await screen.findByText('Step 2 of 4 · Details and request')).toBeVisible()
   expectWhere()
   expect(address()).toHaveValue('Community centre')
   expect(screen.queryByText(/Oak Street/)).not.toBeInTheDocument()
@@ -185,7 +185,7 @@ test('details, timing and where offer manual answers without preselection and ke
   fireEvent.click(screen.getByRole('checkbox', { name: 'An unusual color' }))
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expectWhere()
-  expect(screen.getByLabelText('How often does it happen? (optional)')).toHaveValue('')
+  expect(screen.getByLabelText('How often? (optional)')).toHaveValue('')
   expect(screen.getByLabelText('Address where this happened')).toHaveValue('')
   expect(screen.getByLabelText('Account number (optional)')).toHaveValue('')
   expect(screen.getByLabelText('When did it end? (optional)')).toHaveAttribute('type', 'date')
@@ -200,7 +200,7 @@ test('details, timing and where offer manual answers without preselection and ke
   expect(screen.getByRole('checkbox', { name: 'Clarify applicable water-use instructions' })).not.toBeChecked()
   expect(screen.getByRole('checkbox', { name: 'Share an update' })).not.toBeChecked()
   fireEvent.click(primary)
-  expect(screen.getByRole('button', { name: 'Write my email' }).closest('.request-card-action')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'Review my message' }).closest('.request-card-action')).not.toBeNull()
 })
 test('the flow address field never contacts Census; the location picker searches only on request', async () => {
   const previousFetch = globalThis.fetch

@@ -184,7 +184,7 @@ it.each(['en', 'es'] as const)('shows a dated violations chip in the collapsed %
   // A clean report has no chip and a heading-only Annual report card.
   const clean = Object.keys(ANNUAL_REPORTS).find(id => ANNUAL_REPORTS[id][0]?.state === 'reviewed' && ANNUAL_REPORTS[id].every(r => r.state !== 'reviewed' || r.issues.length === 0))!
   view.rerender(<SupplierInformation place={{ ...place, id: clean }} language={language} sample={false} onView={() => {}} />)
-  expect(document.querySelector('.provider-info-chip')).toBeNull()
+  expect(document.querySelector('.provider-info-chip')).toHaveTextContent(language === 'es' ? '2025: no se reportaron infracciones' : '2025: No violations reported')
   const card = document.querySelector('.provider-card.annual-report') as HTMLElement
   expect(card).toHaveClass('annual-report-header-only')
   expect(card.querySelector('.provider-card-heading .status-pill')).toHaveTextContent(es ? 'No se reportaron infracciones' : 'No violations reported')

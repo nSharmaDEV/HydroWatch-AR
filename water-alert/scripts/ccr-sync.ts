@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url'
 import { HUMAN_ANNUAL_REPORTS, mergeAnnualReports, type AnnualReport } from '../src/annual-reports'
 import { AI_ANNUAL_REPORTS } from '../src/ai-annual-reports'
 import { PLACE_CATALOG } from '../src/place-catalog'
+import { DIRECTORY } from '../src/water-system-directory'
 import { claudeSummarizer, findTargets, popplerTools, pwsFromUrl, renderGeneratedModule, syncOne, type SyncLog, type SystemPlace } from './ccr-sync-lib'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -30,9 +31,17 @@ const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicag
 const livePath = path.join(root, 'data/live/observations.json')
 const live: SystemPlace[] = existsSync(livePath) ? (JSON.parse(readFileSync(livePath, 'utf8')).places ?? []) : []
 const catalog = PLACE_CATALOG.map(e => e.place as SystemPlace)
+// EPA's directory snapshot (src/directory/epa-water-systems.json, refreshed by
+// `npm run directory:epa`) covers every active Arkansas community system, not
+// just the catalog/previously-observed ones, so a freshly added or searched
+// supplier is still a sync target. Its pwsid is EPA's AR######## form, never
+// ADH's internal CCR-search PWS number, so it is never used as a known-PWS
+// hint — only exact catalog URLs give that. Name+county matching (already the
+// fallback for every unknown system) finds the ADH PWS instead.
+const directorySystems: SystemPlace[] = DIRECTORY.systems.map(s => ({ id: s.placeId, name: s.name, county: s.county, kind: 'system' }))
 const knownPws = Object.fromEntries(PLACE_CATALOG.flatMap(e => { const pws = e.place.kind === 'system' ? pwsFromUrl(e.url) : undefined; return pws ? [[e.place.id, pws]] : [] }))
 const current = mergeAnnualReports(HUMAN_ANNUAL_REPORTS, AI_ANNUAL_REPORTS)
-const targets = findTargets([...catalog, ...live], current, knownPws).filter(t => !only || t.id === only)
+const targets = findTargets([...catalog, ...directorySystems, ...live], current, knownPws).filter(t => !only || t.id === only)
 console.log(`${targets.length} supplier(s) to check${dryRun ? ' (dry run: no AI, nothing written)' : ''}.`)
 
 const summarize = dryRun ? undefined : claudeSummarizer({ apiKey: apiKey!, model })

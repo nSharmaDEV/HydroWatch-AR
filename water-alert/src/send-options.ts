@@ -4,7 +4,7 @@ import { ADH_ENGINEERING_SOURCE, RECOVERY_RESOURCES } from './recovery-resources
 import { confirmedSections, letterOpening } from './help-outputs.js'
 import { recipientRoutes, routeFor, type HelpDraft, type HelpRoute, type IssueType } from './help-requests.js'
 
-/** Resident-initiated handoff channels. WAVE never sends, calls or files anything itself. */
+/** Resident-initiated handoff channels; separate configured account sending may also be available. */
 export interface SendOption {
   route: HelpRoute; name: string; recommended: boolean
   email?: string; emailKind?: 'general' | 'staff'; emailSource?: EmailListing; otherListings?: EmailListing[]
@@ -33,8 +33,8 @@ export function sendOption(draft: HelpDraft, route: HelpRoute, recommended: bool
     return { route, name: draft.place.name, recommended, email: c?.email, emailKind: c?.emailKind, emailSource: c?.emailSource, otherListings: c?.otherListings, phone: c?.phone || undefined, dial: c?.dial || undefined, sourceUrl: c?.sourceUrl, checkedOn: c?.verifiedOn, phoneSource: c ? c.phoneSource ?? 'ADH' : undefined, confirmedOn: c?.confirmedOn }
   }
   if (route === 'adh') return { route, name: base.name, recommended, phone: ADH_PHONE, dial: ADH_DIAL, sourceUrl: ADH_ENGINEERING_SOURCE, checkedOn: '2026-10-14' }
-  if (route === 'ag') return { route, name: base.name, recommended, formUrl: RECOVERY_RESOURCES.complaint, checkedOn: '2026-10-14' }
-  return { route, name: base.name, recommended, formUrl: RECOVERY_RESOURCES.intake, checkedOn: '2026-10-14' }
+  if (route === 'ag') return { route, name: base.name, recommended, formUrl: RECOVERY_RESOURCES.complaint, sourceUrl: RECOVERY_RESOURCES.complaint, checkedOn: '2026-10-14' }
+  return { route, name: base.name, recommended, formUrl: RECOVERY_RESOURCES.intake, sourceUrl: RECOVERY_RESOURCES.intake, checkedOn: '2026-10-14' }
 }
 
 /** Rows follow the message's selected recipients so the greeting always matches. */
@@ -63,8 +63,8 @@ export function callScript(draft: HelpDraft, language: Language): string[] {
   return [
     es ? `Hola, ${lower(who)}` : `Hi, ${who}`,
     calling,
-    [s.observations, s.description, s.timing].filter(Boolean).join(' '),
-    s.requests ? `${es ? 'Les pido, por favor:' : 'Could you please:'}\n${s.requests}` : '',
+    [s.observations, s.description, s.timing, s.billing].filter(Boolean).join(' '),
+    s.plainRequest ?? (s.requests ? `${es ? 'Les pido, por favor:' : 'Could you please:'}\n${s.requests}` : ''),
     es ? '¿Me pueden dar un número de referencia para esta llamada?' : 'Could you give me a reference number for this call?',
   ].filter(Boolean)
 }

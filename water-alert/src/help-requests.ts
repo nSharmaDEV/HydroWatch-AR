@@ -3,17 +3,21 @@ import { providerContact } from './provider-contacts.js'
 import { ADH_ENGINEERING_SOURCE, RECOVERY_RESOURCES } from './recovery-resources.js'
 import type { AnswerKey } from './help-questions.js'
 import { emailOutput } from './help-outputs.js'
+import type { AddressResult } from './addressSearch.js'
 export type HelpRoute = 'provider' | 'adh' | 'ag' | 'legal'
 export type IssueType = 'service' | 'quality' | 'billing' | 'legal' | 'advisory' | 'other' | 'report'
-export interface HelpAttachment { id: string; name: string; type: string; data: string }
+export type AttachmentStep = 'noticed' | 'request' | 'response'
+export interface HelpAttachment { id: string; name: string; type: string; data: string; step?: AttachmentStep }
 export interface HelpSource { recordId: string; url: string; label: string }
-export type HelpStep = 'choose' | 'billing' | 'timing' | 'experience' | 'details' | 'where' | 'response' | 'records' | 'review' | 'send' | 'confirm'
+export type HelpStep = 'choose' | 'noticed' | 'request' | 'anything' | 'billing' | 'timing' | 'experience' | 'details' | 'where' | 'response' | 'records' | 'review' | 'send' | 'confirm'
 export interface HelpFactRecord { agency: string; date: string; problem: string; area: string; status: string; verified: boolean; year?: string }
 export interface HelpFact { id: string; text: string; kind: 'active' | 'saved' | 'historical'; included: boolean; sources: HelpSource[]; record?: HelpFactRecord }
 export interface HelpDraft {
   subjectEdited?: boolean; bodyEdited?: boolean;
-  residentName?: string; replyContact?: string; generatedFrom?: string;
+  residentName?: string; replyContact?: string; replyEmail?: string; replyPhone?: string; generatedFrom?: string;
   locations?: string[];
+  /** Address picked from lookup suggestions (stored with its coordinates), or typed by hand when `addressManual`. */
+  addressSelection?: AddressResult; addressManual?: boolean;
   id: string; place: Place; issue: IssueType; description: string; dates: string; route: HelpRoute;
   subject: string; body: string; stage: number; attachments: HelpAttachment[]; evidence: string[]; context: string; answers?: Partial<Record<AnswerKey, string>>; sources?: HelpSource[]; flowStep?: HelpStep; facts?: HelpFact[];
   recipientRoutes?: HelpRoute[]; wording?: { report: Record<string, string>; response: Record<string, string> }
@@ -22,7 +26,7 @@ export interface HelpDraft {
   /** A follow-up to another office after an earlier resident-reported contact. */
   priorContact?: { name: string; on: string; reference?: string }
 }
-export type HelpOutcomeKind = 'emailed' | 'called' | 'form' | 'unreachable' | 'reply' | 'resolved' | 'unresolved'
+export type HelpOutcomeKind = 'emailed' | 'called' | 'form' | 'unreachable' | 'reply' | 'resolved' | 'unresolved' | 'closed' | 'reopened'
 export interface HelpOutcome { id: string; kind: HelpOutcomeKind; route: HelpRoute; name: string; on: string; reference?: string; note?: string }
 export type Delivery = 'sending' | 'sent' | 'delivered' | 'failed' | 'unknown'
 export interface HelpMessage { id: string; subject: string; body: string; attachments: HelpAttachment[]; destination: string; destinations?: string[]; at: number; delivery: Delivery; providerId?: string; direction: 'outgoing' | 'incoming'; unsupportedAttachments?: number; draftRevision: number; sources?: HelpSource[] }
@@ -44,6 +48,11 @@ export function selectedRecipients(d: HelpDraft) { return recipientRoutes(d).map
 export function sendDestinations(d: HelpDraft): string[] {
   const rows = selectedRecipients(d)
   return rows.length && rows.every(r => r.email) ? [...new Set(rows.map(r => r.email!))] : []
+}
+/** A usable address is a picked suggestion or an explicit manual entry; free text alone is not enough. */
+export function hasAddress(d: HelpDraft) {
+  const label = d.locations?.[0]?.trim()
+  return !!label && (d.addressManual === true || d.addressSelection?.label === label)
 }
 export function hasReport(d: HelpDraft) { return !!(d.description.trim() || Object.values(d.wording?.report ?? {}).some(v => v.trim())) }
 export function generateMessage(d: HelpDraft, language: 'en' | 'es', appendix = '') {

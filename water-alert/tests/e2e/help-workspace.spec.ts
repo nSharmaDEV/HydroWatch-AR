@@ -29,10 +29,19 @@ async function expectFits(page: import('@playwright/test').Page) {
     expect(Math.abs(steps.y - back.y)).toBeLessThan(16)
   }
   const send = await page.locator('.request-screen-send').count()
+  for (const row of await page.locator('.request-wording-choice > .checkbox-row').all()) {
+    const metrics = await row.evaluate(el => { const style = getComputedStyle(el), checkbox = el.querySelector('input')!.getBoundingClientRect(), label = el.getBoundingClientRect(); return { gap: parseFloat(style.gap), padding: parseFloat(style.paddingTop), top: checkbox.top - label.top, left: checkbox.left - label.left } })
+    expect(metrics.gap).toBe(12)
+    expect(metrics.padding).toBe(10)
+    expect(metrics.left).toBe(12)
+    expect(metrics.top).toBeGreaterThanOrEqual(12)
+    expect(metrics.top).toBeLessThanOrEqual(15)
+  }
   expect(box.width).toBeLessThanOrEqual(1144.5)
   if (width > 800) expect(Math.abs(box.x + box.width / 2 - width / 2)).toBeLessThanOrEqual(1)
   expect(await card.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('1px')
   if (!send) {
+    expect(await card.locator('.request-card-action').evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('0px')
     const action = (await card.locator('.request-card-action .primary').boundingBox())!
     expect(action.y).toBeGreaterThan(box.y + box.height / 2)
     expect(action.width).toBeGreaterThanOrEqual(190)
@@ -43,6 +52,9 @@ async function expectFits(page: import('@playwright/test').Page) {
   }
   const composer = page.locator('.request-composer')
   if (await composer.count()) {
+    const recipients = (await composer.locator('.request-recipient-dropdown > summary').boundingBox())!
+    const citation = (await composer.locator('.request-answer-info').boundingBox())!
+    expect(recipients.x + recipients.width).toBeLessThanOrEqual(citation.x - 4)
     await expect(composer.locator('.request-subject textarea')).toBeVisible()
     expect((await composer.locator('.request-message-editor').boundingBox())!.height).toBeGreaterThanOrEqual(180)
     await expect(page.locator('.request-review-table')).toHaveCount(0)
@@ -67,15 +79,14 @@ async function expectNarrow(page: import('@playwright/test').Page) {
     if (await page.locator('.request-review-email').count()) {
       const subject = (await page.locator('.request-review-email .request-subject').boundingBox())!
       const editor = (await page.locator('.request-message-editor').boundingBox())!
-      const tools = (await page.locator('.request-review-update').boundingBox())!
       expect(editor.height).toBeGreaterThanOrEqual(240)
       expect(editor.y).toBeGreaterThanOrEqual(subject.y + subject.height)
-      expect(tools.y).toBeGreaterThanOrEqual(editor.y + editor.height)
+      await expect(page.locator('.request-review-update')).toHaveCount(0)
     }
   }
 }
 
-for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780 }]) for (const language of ['en', 'es'] as const) for (const active of [true, false]) for (const issue of ['advisory', 'service', 'quality', 'billing', 'other'] as const) {
+for (const viewport of [{ width: 1280, height: 720 }, { width: 1280, height: 800 }, { width: 1440, height: 780 }, { width: 1440, height: 820 }]) for (const language of ['en', 'es'] as const) for (const active of [true, false]) for (const issue of ['advisory', 'service', 'quality', 'billing', 'other'] as const) {
   test(`compact help workspace (${language}, active=${active}, ${issue}, ${viewport.width}×${viewport.height})`, async ({ page, context, baseURL }) => {
     const h = helpGuideStrings[language], es = language === 'es'
     let records: HelpRequest[] = []
@@ -118,7 +129,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     const tiles = page.locator('.request-issue-choice')
     const first = await tiles.nth(0).boundingBox(), second = await tiles.nth(1).boundingBox()
     expect(Number.parseFloat(await tiles.first().evaluate(el => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16)
-    expect(Number.parseFloat(await tiles.first().locator('svg').evaluate(el => getComputedStyle(el).width))).toBeGreaterThanOrEqual(24)
+    expect(Number.parseFloat(await tiles.first().locator(':scope > svg').evaluate(el => getComputedStyle(el).width))).toBeGreaterThanOrEqual(24)
     expect(await tiles.first().evaluate(el => getComputedStyle(el).boxShadow)).toBe('none')
     expect(await tiles.first().evaluate(el => getComputedStyle(el).backgroundImage)).toBe('none')
     expect(second!.y).toBeCloseTo(first!.y, 0)
@@ -128,11 +139,13 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await page.keyboard.press('Tab')
     await tiles.first().focus()
     expect(await tiles.first().evaluate(el => getComputedStyle(el).outlineStyle)).not.toBe('none')
-    const capture = process.env.WAVE_HELP_CAPTURE_DIR && viewport.width === 1280 && language === 'en' && active && test.info().project.name === 'desktop'
+    const capture = process.env.WAVE_HELP_CAPTURE_DIR && viewport.width === 1280 && active && test.info().project.name === 'desktop'
     const captureScreen = async (step: number) => {
       if (!capture) return
       await page.evaluate(() => window.scrollTo(0, 0))
-      await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-${step}.png`, fullPage: true })
+      const action = page.locator('.request-card-action .primary')
+      console.log(JSON.stringify({ language, issue, step, viewport, card: await page.locator('.request-card').boundingBox(), action: await action.count() ? await action.boundingBox() : null, documentHeight: await page.evaluate(() => document.documentElement.scrollHeight) }))
+      await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${language}-${issue}-${step}.png`, fullPage: true })
       if (issue === 'billing') {
         await page.setViewportSize({ width: 390, height: 844 })
         await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-${issue}-${step}-mobile.png`, fullPage: true })
@@ -146,9 +159,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     if (issue !== 'other') await page.locator('.request-wording input[type=checkbox]').first().check()
     await page.getByRole('textbox', { name: issue === 'other' ? es ? '¿Qué pasó?' : 'What happened?' : es ? '¿Algo más? (opcional)' : 'Anything else? (optional)', exact: true }).fill('Synthetic resident issue, no actual submission')
     await expectFits(page)
+    // Persistent guidance and comfortable checkbox targets may extend below the fold.
     if (issue === 'billing') {
-      const continueBox = (await page.locator('.request-card-action .primary').boundingBox())!
-      expect(continueBox.y + continueBox.height).toBeLessThanOrEqual(viewport.height)
       await expect(page.locator('.request-provider, .request-call-line')).toHaveCount(0)
     }
     await captureScreen(1)
@@ -169,6 +181,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       await page.getByRole('combobox', { name: es ? '¿Continúa? (opcional)' : 'Is it ongoing? (optional)', exact: true }).selectOption('No')
       await expect(page.locator('input[type=date]').last()).toBeEnabled()
       expect(await page.locator('input[type=date]').first().evaluate(el => getComputedStyle(el, '::-webkit-calendar-picker-indicator').opacity)).toBe('1')
+      const dates = page.locator('input[type=date]')
+      const start = (await dates.first().boundingBox())!, end = (await dates.last().boundingBox())!
+      expect(end.y).toBeCloseTo(start.y, 0)
+      expect(end.x).toBeGreaterThan(start.x + start.width)
+      const ongoing = (await page.getByRole('combobox', { name: es ? '¿Continúa? (opcional)' : 'Is it ongoing? (optional)', exact: true }).boundingBox())!
+      const frequency = (await page.getByRole('combobox', { name: es ? '¿Con qué frecuencia? (opcional)' : 'How often? (optional)', exact: true }).boundingBox())!
+      expect(frequency.y).toBeCloseTo(ongoing.y, 0)
+      expect(frequency.x).toBeGreaterThan(ongoing.x + ongoing.width)
     }
     await expectFits(page)
     await captureScreen(2)
@@ -185,16 +205,15 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await captureScreen(3)
     await expectNarrow(page)
     await page.setViewportSize(viewport)
-    await page.getByRole('button', { name: es ? 'Escribir mi correo' : 'Write my email', exact: true }).click()
+    await page.getByRole('button', { name: es ? 'Revisar mi mensaje' : 'Review my message', exact: true }).click()
     // Screen 4: the email beside the ways to send it.
     await step(4)
     const activeRecords = active && !['billing', 'other'].includes(issue)
     if (activeRecords) {
-      await page.locator('.help-records-disclosure > summary').click()
-      await page.locator('.request-records-button').click()
-      await expect(page.locator('.request-review-record').first()).toContainText('Synthetic test incident')
-      await expect(page.locator('.request-review-record a').first()).toHaveAttribute('href', SOURCES.ADH)
-      await expect(page.locator('.request-review-record').first()).toContainText('Synthetic test area')
+      await page.getByRole('button', { name: es ? 'Fuentes citadas' : 'Cited sources', exact: true }).click()
+      await expect(page.getByRole('dialog')).toContainText('Synthetic test incident')
+      await expect(page.getByRole('dialog').getByRole('link').first()).toHaveAttribute('href', SOURCES.ADH)
+      await expect(page.getByRole('dialog')).toContainText('Synthetic test area')
       await page.keyboard.press('Escape')
     }
     const editor = page.getByRole('textbox', { name: es ? 'Mensaje' : 'Message', exact: true })
@@ -203,8 +222,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await expect(editor).toHaveValue(/SYN-0001/)
     await expect(editor).toHaveValue(/Synthetic Resident/)
     await expect(page.getByRole('tab')).toHaveCount(0)
-    await page.locator('.help-downloads-disclosure > summary').click()
-    await expect(page.getByRole('button', { name: es ? 'Descargar reporte' : 'Download report', exact: true })).toBeVisible()
+    await expect(page.locator('.help-records-disclosure, .help-downloads-disclosure, .request-review-update')).toHaveCount(0)
     expect((await editor.boundingBox())!.width).toBeGreaterThan(450)
     await expect(page.getByLabel(es ? 'Asunto' : 'Subject', { exact: true })).toBeVisible()
     if (activeRecords) { await expect(editor).toHaveValue(/Synthetic test incident/); await expect(editor).toHaveValue(/Synthetic equipment repair/) }
@@ -214,6 +232,15 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     await expect(page.getByRole('region', { name: es ? 'Cómo enviarlo' : 'How to send it', exact: true })).toBeVisible()
     await expectFits(page)
     await captureScreen(4)
+    if (viewport.height === 720) {
+      for (const width of [1099, 1100, 1280]) {
+        await page.setViewportSize({ width, height: 720 })
+        const email = (await page.locator('.request-review-email').boundingBox())!
+        const contacts = (await page.locator('.send-options').boundingBox())!
+        if (width < 1100) expect(contacts.y).toBeGreaterThanOrEqual(email.y + email.height)
+        else expect(contacts.x).toBeGreaterThan(email.x + email.width)
+      }
+    }
     await expectNarrow(page)
     if (capture && issue === 'billing') { await page.setViewportSize({ width: 390, height: 844 }); await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: `${process.env.WAVE_HELP_CAPTURE_DIR}/help-send-mobile.png`, fullPage: true }) }
     await page.setViewportSize(viewport)
@@ -239,13 +266,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
       await page.getByRole('button', { name: es ? 'Abrir Historial' : 'Open History', exact: true }).click()
       await page.getByRole('button', { name: es ? 'Continuar borrador' : 'Continue draft', exact: true }).click()
       await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
-      await page.locator('.help-records-disclosure > summary').click()
-      await page.locator('.request-records-button').click()
-      const include = page.getByRole('checkbox', { name: es ? 'Incluir en el correo' : 'Include in email', exact: true }).filter({ visible: true })
-      for (const checkbox of await include.all()) if (await checkbox.isEnabled()) await checkbox.uncheck()
-      await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
-      await expect(page.getByRole('checkbox', { name: es ? 'Incluir en el correo' : 'Include in email', exact: true }).first()).not.toBeChecked()
-      await page.getByRole('button', { name: es ? 'Cerrar registros' : 'Close records', exact: true }).click()
+      await expect(page.locator('.request-records-button')).toHaveCount(0)
     }
     await expect(page.getByRole('button', { name: es ? 'Enviar mensaje' : 'Send message', exact: true })).toHaveCount(0)
     await page.getByRole('button', { name: es ? 'Fuentes de contacto' : 'Contact sources', exact: true }).click()
@@ -263,10 +284,11 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 1440, height: 780
     const back = page.getByRole('button', { name: es ? 'Atrás' : 'Back', exact: true })
     await back.click()
     await step(3)
-    await page.getByRole('button', { name: es ? 'Escribir mi correo' : 'Write my email', exact: true }).click()
+    await page.getByRole('button', { name: es ? 'Revisar mi mensaje' : 'Review my message', exact: true }).click()
     await expect(editor).toHaveValue('SYNTHETIC EDIT RETAINED')
-    await page.locator('.help-downloads-disclosure > summary').click()
+    await back.click()
     await expect(page.getByText(/synthetic.txt/, { exact: false }).first()).toBeVisible()
+    await page.getByRole('button', { name: es ? 'Revisar mi mensaje' : 'Review my message', exact: true }).click()
     // Narrow screens and enlarged text may naturally scroll, never horizontally.
     for (const width of [640, 390, 320]) {
       await page.setViewportSize({ width, height: 700 })

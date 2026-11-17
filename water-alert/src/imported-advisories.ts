@@ -1,4 +1,5 @@
 import type { Language, Notice } from './domain'
+import { ARCHIVED_ADVISORIES } from './imported-advisories-archive.js'
 
 // Deliberately NOT a Notice: historical documents cannot enter live source,
 // status, polling or notification flows. Used only by SupplierAlertHistory.
@@ -15,11 +16,16 @@ export interface ImportedAdvisory {
   reviewedOn: string;
   identityUrl: string;
   discrepancy?: Record<Language, string>;
+  /**
+   * Set when `noticeUrl` is a dated archived copy of the agency's whole notice
+   * list rather than one notice document, so the link can say what it opens.
+   */
+  capturedOn?: string;
   // Only add IDs after reviewing evidence that the feed row is the same event.
   observedNoticeIds: readonly string[];
 }
 
-export const IMPORTED_ADVISORIES: readonly ImportedAdvisory[] = [{
+const HAND_REVIEWED: readonly ImportedAdvisory[] = [{
   id: 'historical:rogers:2018-09-07:prairie-creek',
   placeId: 'ADH:ee7fdb65f65842e938d8b03b2ad2316ae23a827ee37db5e36728540a52bf09b7',
   publisher: 'ROGERS WATER UTILITIES',
@@ -38,6 +44,21 @@ export const IMPORTED_ADVISORIES: readonly ImportedAdvisory[] = [{
   observedNoticeIds: [],
 }]
 
+const issuedDay = (value: string) => {
+  // ADH prints month/day/year.
+  const slash = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(value.trim())
+  if (slash) return `${slash[3]}-${slash[1].padStart(2, '0')}-${slash[2].padStart(2, '0')}`
+  const parsed = Date.parse(value)
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : value.trim()
+}
+
+/** A hand-reviewed record always wins over the same event recovered from an archive. */
+export const IMPORTED_ADVISORIES: readonly ImportedAdvisory[] = [
+  ...HAND_REVIEWED,
+  ...ARCHIVED_ADVISORIES.filter(archived => !HAND_REVIEWED.some(hand =>
+    hand.placeId === archived.placeId && issuedDay(hand.issued) === issuedDay(archived.issued))),
+]
+
 export interface SupplierHistoryEntry {
   record: Pick<Notice, 'id' | 'issued' | 'lifted' | 'area' | 'reason'>;
   observed?: Notice;
@@ -45,7 +66,12 @@ export interface SupplierHistoryEntry {
 }
 
 export function supplierHistory(placeId: string, observed: readonly Notice[], catalog: readonly ImportedAdvisory[] = IMPORTED_ADVISORIES): SupplierHistoryEntry[] {
-  const imported = catalog.filter(n => n.placeId === placeId)
+  // An archived capture can hold an event WAVE later observed itself. Drop the
+  // archived copy only on an exact issue-time and area match, never a fuzzy one,
+  // so the live record is shown once rather than twice.
+  const sameEvent = new Set(observed.map(n => `${n.issued}\u0000${n.area}`))
+  // Hand-reviewed records reconcile only through reviewed `observedNoticeIds`.
+  const imported = catalog.filter(n => n.placeId === placeId && !(n.capturedOn && sameEvent.has(`${n.issued}\u0000${n.area}`)))
   const linkedIds = new Set(imported.flatMap(n => [...n.observedNoticeIds]))
   return [
     ...observed.filter(n => !linkedIds.has(n.id)).map(n => ({ record: n, observed: n })),

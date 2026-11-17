@@ -24,6 +24,7 @@ main{max-width:1160px;padding:40px 30px 30px;margin:auto;min-height:calc(100vh -
 .supplier-alert-history[hidden]{display:none}
 .supplier-alert-history{font-size:.9375rem;line-height:1.5;min-width:0}
 .supplier-alert-history>p{margin:0 0 10px}
+.alert-history-more{margin-bottom:16px}
 .supplier-alert-notice{border-top:1px solid var(--line);padding:18px 0;overflow-wrap:anywhere}
 .supplier-alert-notice h3{font-size:1rem;margin:0 0 8px}
 .supplier-alert-notice .alert-state{font-weight:600;margin:0 0 14px;color:var(--muted)}
@@ -363,6 +364,8 @@ details[open]>summary>.disclosure-icon::before,[aria-expanded=true]>.disclosure-
 .status-card .supplier-contact-section{border-top:1px solid var(--line);padding-top:16px}
 .supplier-contact-section .provider-contact .quiet-note{margin:8px 0 0}
 .supplier-card .active-notice-link{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.action-chip{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:100%;padding:8px 12px;border:1px solid #a8c4c7;border-radius:8px;background:#f4fafa;color:#176770;font:inherit;font-size:.9rem;font-weight:600;line-height:1.3;text-align:left;text-decoration:none;cursor:pointer}
+.action-chip svg{flex:none}.action-chip:hover:not(:disabled){background:#e5f2f2;border-color:#43868b}.action-chip:focus-visible{outline:3px solid #176770;outline-offset:2px}.action-chip:disabled{opacity:.55;cursor:not-allowed}.sample-banner button.action-chip{text-decoration:none;background:#fff9e8;color:#674b08;border-color:#b99128}
 .supplier-card .status-label .warning-icon{display:inline-block;width:24px;height:24px;vertical-align:-4px;margin-right:8px}
 .supplier-notice-context>span{display:inline;max-width:100%;overflow-wrap:anywhere}
 
@@ -383,10 +386,17 @@ details[open]>summary>.disclosure-icon::before,[aria-expanded=true]>.disclosure-
 .provider-card-facts>div{min-width:0}
 .provider-card-facts dt{display:flex;align-items:center;gap:6px;margin:0 0 2px;font-size:.875rem;font-weight:700;color:var(--navy)}
 .annual-report .report-year{font-size:1rem;font-weight:600;color:var(--navy)}
-.annual-report .report-ai-tag{flex:none;font-size:.8125rem;font-weight:600;color:var(--navy);border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.annual-report .report-ai-tag{flex:none;display:inline-flex;align-items:center;gap:2px;font-size:.8125rem;font-weight:600;color:var(--navy);border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 8px;white-space:nowrap}
+.annual-report .report-ai-tag .review-info-button{width:22px;height:22px;min-width:22px;min-height:22px;padding:0}
+.card-check-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;min-height:36px;padding:0;border-radius:50%;background:transparent;color:#066d73}
+.card-check-icon:hover:not(:disabled){background:#e9f4f3}
+.card-check-icon[aria-busy=true]{color:var(--muted)}
+.report-check-status:empty{display:none}
+.report-check-status{margin:10px 0 0;font-size:.8125rem;line-height:1.5;color:var(--muted)}
 .provider-info-toggle .provider-info-label{flex:none}
 /* The dated chip sits at the right, just left of the −/+ icon (and wraps to the right on phones). */
 .provider-info-toggle .provider-info-chip{margin-left:auto;min-width:0;max-width:100%;font-size:.8125rem;line-height:1.5;background:#fff8df;border-color:#d9ad42;color:#795400}
+.provider-info-toggle .provider-info-chip.status-pill-clear{background:#f4f7f8;border-color:#c8d4dc;color:#334b5e}
 .provider-info-chip svg{flex:none}
 .provider-card-facts dt svg{flex:none}
 .provider-card-facts dd{margin:0;font-size:1rem;font-weight:500;text-align:left;overflow-wrap:anywhere}

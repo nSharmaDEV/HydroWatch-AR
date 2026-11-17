@@ -133,7 +133,14 @@ for (const language of ['en', 'es'] as const) {
 }
 
 test('supplier preview keeps main controls in view and expands evidence separately', async ({ page }) => {
+  await page.goto('/')
+  const buttonStyle = (element: HTMLElement | SVGElement) => {
+    const style = getComputedStyle(element)
+    return { color: style.color, radius: style.borderRadius, border: style.borderColor }
+  }
+  const browseStyle = await page.getByRole('button', { name: 'Browse all places' }).evaluate(buttonStyle)
   await page.goto('/#search')
+  await page.reload()
   await page.getByRole('searchbox').fill(place.name)
   await page.getByRole('button', { name: `Select ${place.name}`, exact: true }).click()
   const preview = page.locator('.result-glass')
@@ -154,12 +161,12 @@ test('supplier preview keeps main controls in view and expands evidence separate
   await expect(page.getByRole('heading', { name: displayName, exact: true })).toBeVisible()
   const help = page.getByRole('button', { name: 'Get help with a water issue', exact: true })
   const add = page.getByRole('button', { name: '+ Add a place', exact: true })
-  const buttonStyle = (element: HTMLElement | SVGElement) => {
-    const style = getComputedStyle(element)
-    return { background: style.backgroundColor, color: style.color, radius: style.borderRadius }
-  }
   await expect(help).toBeVisible()
-  expect(await help.evaluate(buttonStyle)).toEqual(await add.evaluate(buttonStyle))
+  expect(await add.evaluate(buttonStyle)).toEqual(browseStyle)
+  await expect(add).toHaveCSS('backdrop-filter', /blur\(/)
+  await expect(add).toHaveCSS('background-image', /linear-gradient/)
+  const sidebar = page.locator('.home-layout')
+  expect((await add.boundingBox())!.width).toBeGreaterThan((await sidebar.boundingBox())!.width * (page.viewportSize()!.width > 760 ? .25 : .9))
   const helpWidth = (await help.boundingBox())!.width
   const cardWidth = (await page.getByRole('article').boundingBox())!.width
   expect(helpWidth).toBeGreaterThan(cardWidth * .85)
@@ -457,8 +464,9 @@ for (const [language, t] of [['en', en], ['es', es]] as const) {
     await expect(results.getByText(t.resultsSummary)).toBeVisible()
     const nav = page.getByRole('navigation')
     await nav.getByRole('button', { name: t.history, exact: true }).click()
-    await expect(page.locator('.request-history-intro')).toContainText(language === 'en' ? 'Live drafts saved on this device only' : 'Borradores reales guardados solo en este dispositivo')
-    await expect(page.locator('.request-history-intro')).toContainText(language === 'en' ? 'not sample data, sent messages' : 'No son datos de ejemplo, mensajes enviados')
+    // History says once, at the bottom, that it holds only what the resident logs on this device.
+    await expect(page.locator('.history-footnote')).toContainText(language === 'en' ? 'only what you log here' : 'solo muestra lo que registras aquí')
+    await expect(page.locator('.history-footnote')).toContainText(language === 'en' ? 'it stays on this device' : 'se queda en este dispositivo')
     await nav.getByRole('button', { name: t.browse, exact: true }).click()
     await expect(page.getByText(t.placesIntro)).toHaveCount(0)
     await nav.getByRole('button', { name: t.settings, exact: true }).click()
@@ -741,14 +749,13 @@ for (const language of ['en', 'es'] as const) for (const width of [320, 390, 136
     await page.getByRole('button', { name: next, exact: true }).click()
     await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 2 of 4' : 'Paso 2 de 4')
     await page.getByRole('button', { name: next, exact: true }).click()
-    await page.getByRole('button', { name: language === 'en' ? 'Write my email' : 'Escribir mi correo', exact: true }).click()
+    await page.getByRole('button', { name: language === 'en' ? 'Review my message' : 'Revisar mi mensaje', exact: true }).click()
     const body = page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })
     await body.fill('SYNTHETIC GUIDE REVIEW ONLY')
     await expect(body).toHaveValue('SYNTHETIC GUIDE REVIEW ONLY')
     await expect(page.getByRole('button', { name: language === 'en' ? 'Send message' : 'Enviar mensaje', exact: true })).toHaveCount(0)
-    const pending = page.waitForEvent('download')
-    await page.getByRole('button', { name: language === 'en' ? 'Download report' : 'Descargar reporte', exact: true }).click()
-    expect(await readFile((await (await pending).path())!, 'utf8')).toContain('SYNTHETIC GUIDE REVIEW ONLY')
+    await expect(page.locator('.request-review-update')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: language === 'en' ? 'Download report' : 'Descargar reporte', exact: true })).toHaveCount(0)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     if (width < 761) {
       const previous = page.getByRole('button', { name: language === 'en' ? 'Back' : 'Atrás', exact: true })
@@ -782,15 +789,15 @@ test('sample scenarios stay fictional across detail, help choices, history and e
   await expect(page.locator('.request-progress')).toContainText('Step 2 of 4')
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await expect(page.locator('.request-progress')).toContainText('Step 3 of 4')
-  await page.getByRole('button', { name: 'Write my email', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Review and send', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Review my message', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Review and contact your provider', exact: true })).toBeVisible()
   await expect(page.getByRole('textbox', { name: 'Message', exact: true })).not.toHaveValue('')
   await expect(page.getByText('Sample — fictional. Sending disabled.', { exact: true })).toBeVisible()
   const sendIt = page.getByRole('region', { name: 'How to send it', exact: true })
   await expect(sendIt).toBeVisible()
   await expect(sendIt.getByText('Sample — sending disabled.', { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('button', { name: 'Send message', exact: true })).toHaveCount(0)
-  await expect(sendIt.getByRole('button', { name: /Copy message & open form|Sent it another way/ })).toHaveCount(0)
+  await expect(sendIt.getByRole('button', { name: /Copy message & open form|Log a contact attempt/ })).toHaveCount(0)
   await expect(page.locator('a[href^="mailto:"],a[href^="tel:"]')).toHaveCount(0)
   await page.getByRole('button', { name: 'History', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Sample mode', exact: true })).toBeVisible()

@@ -28,7 +28,7 @@ describe.each(['en', 'es'] as const)('structured email (%s)', language => {
     const { subject, body } = generateMessage(d, language)
     expect(subject).toContain('123 Fictional Lane')
     expect(subject).toContain(es ? 'Presión' : 'pressure')
-    for (const heading of headings.slice(0, 3)) expect(body).toContain(`${heading}\n`)
+    for (const heading of headings.slice(0, 3)) expect(body).not.toContain(`${heading}\n`)
     expect(body).not.toContain(headings[3])
     expect(body).toContain(`\n\n${comment}\n\n`)
     expect(body).toContain(`2. ${details}\n3. ${question}`)
@@ -48,11 +48,11 @@ describe.each(['en', 'es'] as const)('structured email (%s)', language => {
     expect(message.subject).toContain('2026-10')
     expect(message.subject).toContain(es ? 'Un cargo aparece más de una vez' : 'A charge appears more than once')
     expect(message.body).toContain('$24')
-    expect(message.body).toContain(`${headings[1]}\nSynthetic prior billing enquiry.`)
+    expect(message.body).toContain('\n\nSynthetic prior billing enquiry.\n\n')
     expect(message.body).toContain(es ? 'corregirlo si es incorrecto' : 'correct it if it is incorrect')
     expect(message.body).not.toContain(es ? 'Explicar los próximos pasos disponibles' : 'Explain available next steps')
     // Required historical evidence remains included even for billing, without implying causation.
-    expect(message.body).toContain(headings[3])
+    expect(message.body).not.toContain(headings[3])
     expect(message.body).toContain('2025')
     expect(message.body).not.toMatch(/caused this charge|causó este cargo/)
   })
@@ -79,7 +79,8 @@ describe.each(['en', 'es'] as const)('structured email (%s)', language => {
     expect(body).toContain(es ? 'no es el estado actual' : 'not current status')
     expect(body).toContain('“Current”')
     expect(body).not.toContain(headings[0])
-    expect(body.indexOf(headings[2])).toBeLessThan(body.indexOf(headings[3]))
+    expect(body.indexOf(es ? 'Les pido, por favor:' : 'Could you please:')).toBeLessThan(body.indexOf(es ? '2025 (página 2)' : '2025 report (page 2)'))
+    expect(body).not.toContain(headings[3])
   })
 
   test.each(['synthetic:ai', 'synthetic:unavailable', 'synthetic:wrong-system'])('does not invent evidence or requests for %s', id => {

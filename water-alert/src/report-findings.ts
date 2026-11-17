@@ -13,11 +13,11 @@ export function latestReport(place: Place, sample: boolean, reports: Readonly<Re
   if (sample || place.kind !== 'system' || !Object.hasOwn(reports, place.id)) return undefined
   const report = [...reports[place.id]].sort((a, b) => b.year - a.year)[0]
   if (!report) return undefined
-  if (report.state !== 'reviewed' && report.state !== 'aiSummarized') return { year: report.year, state: report.state, url: report.state === 'unreviewed' ? report.url : report.sourceUrl, findings: [] }
+  if (report.state !== 'reviewed' && report.state !== 'aiSummarized' && report.state !== 'autoRead') return { year: report.year, state: report.state, url: report.state === 'unreviewed' ? report.url : report.sourceUrl, findings: [] }
   return {
     year: report.year, state: report.state, url: report.url,
-    checkedOn: report.state === 'reviewed' ? report.reviewedOn : report.summarizedOn,
-    // Only hand-checked findings can start a message; AI summaries are listed, labelled, never quoted.
+    checkedOn: report.state === 'reviewed' ? report.reviewedOn : report.state === 'aiSummarized' ? report.summarizedOn : report.readOn,
+    // Only hand-checked findings can start a message; AI summaries and automatic reads are listed, labelled, never quoted.
     findings: report.issues.map((issue, index) => ({ key: `${report.year}:${index}`, issue, askable: report.state === 'reviewed' })),
   }
 }

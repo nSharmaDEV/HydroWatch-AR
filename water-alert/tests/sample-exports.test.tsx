@@ -29,7 +29,7 @@ test.each(['en', 'es'] as const)('unsaved sample fallback also exports a durable
   expect(download.mock.calls[0][1]).toContain('My unsaved text')
 })
 
-test.each(['en', 'es'] as const)('sample copy and both downloads stay labeled after manual edits and resume (%s)', async language => {
+test.each(['en', 'es'] as const)('sample copy stays labeled after manual edits and resume without removed download tools (%s)', async language => {
   const draft = { ...blankRequest(samplePlaces[0]), stage: 2 as const, flowStep: 'review' as const, description: 'Synthetic observation', subject: 'My subject', body: 'My manual text', subjectEdited: true, bodyEdited: true }
   await client.saveRequest(true, draft, 0)
   const copied: string[] = []
@@ -39,13 +39,9 @@ test.each(['en', 'es'] as const)('sample copy and both downloads stay labeled af
   expect(await screen.findByLabelText(language === 'en' ? 'Message' : 'Mensaje')).toHaveValue('My manual text')
   const label = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
   // A legacy "review" draft resumes on Send it, which holds the email tools and the send options together.
-  expect(screen.getByText(language === 'en' ? 'Step 4 of 4 · Review and send' : 'Paso 4 de 4 · Revisar y enviar')).toBeVisible()
-  fireEvent.click(screen.getByText(language === 'en' ? 'Downloads and tools' : 'Descargas y herramientas'))
-  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Download email' : 'Descargar correo' }))
-  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Download report' : 'Descargar reporte' }))
-  expect(download.mock.calls.map(([name]) => name)).toEqual(['sample-water-email.txt', 'sample-water-report.txt'])
-  for (const [, text] of download.mock.calls) expect(text).toContain(label)
-  expect(download.mock.calls[0][1]).toContain('My manual text')
+  expect(screen.getByText(language === 'en' ? 'Step 4 of 4 · Review and contact your provider' : 'Paso 4 de 4 · Revisar y contactar a tu proveedor')).toBeVisible()
+  expect(screen.queryByText(language === 'en' ? 'Downloads and tools' : 'Descargas y herramientas')).not.toBeInTheDocument()
+  expect(download).not.toHaveBeenCalled()
   expect(screen.queryByRole('button', { name: /Send message|Enviar mensaje/ })).not.toBeInTheDocument()
   // Copy is the sample bottom action on "Send it", styled secondary because nothing is sent.
   const copy = screen.getByRole('button', { name: language === 'en' ? 'Copy email' : 'Copiar correo' })
@@ -58,6 +54,6 @@ test.each(['en', 'es'] as const)('sample copy and both downloads stay labeled af
   expect(screen.queryByRole('button', { name: /Send message|Enviar mensaje/ })).not.toBeInTheDocument()
   expect(document.querySelector('a[href^="tel:"], a[href^="mailto:"]')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Back' : 'Atrás' }))
-  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Write my email' : 'Escribir mi correo' }))
+  fireEvent.click(screen.getByRole('button', { name: language === 'en' ? 'Review my message' : 'Revisar mi mensaje' }))
   expect(screen.getByLabelText(language === 'en' ? 'Message' : 'Mensaje')).toHaveValue('My manual text')
 })

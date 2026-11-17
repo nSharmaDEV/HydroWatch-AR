@@ -7,13 +7,14 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "concurrently -k \"tsx server/index.ts\" \"vite --host 127.0.0.1\"",
+    "dev": "concurrently -k \"tsx --env-file-if-exists=.env server/index.ts\" \"vite --host 127.0.0.1\"",
     "dev:ui": "vite --host 127.0.0.1",
     "start": "tsx --env-file-if-exists=.env server/index.ts",
     "icons": "node scripts/icons.mjs",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
     "verify:hosting": "tsx scripts/verify-hosting.ts",
     "ccr:sync": "tsx --env-file-if-exists=.env scripts/ccr-sync.ts",
+    "advisory:archive": "tsx scripts/advisory-archive.ts",
     "directory:epa": "tsx scripts/epa-directory.ts",
     "directory:zip": "tsx scripts/zip-index.ts",
     "test": "vitest run",

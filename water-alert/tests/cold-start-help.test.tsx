@@ -20,7 +20,7 @@ it('takes a visitor with no followed supplier from Get help to a copyable messag
   expect(screen.queryByRole('heading', { name: 'Confirm your public water supplier' })).not.toBeInTheDocument()
   await user.type(await screen.findByLabelText('Anything else? (optional)'), 'Low pressure since Monday')
   for (let i = 0; i < 2; i++) await user.click(screen.getByRole('button', { name: 'Continue' }))
-  await user.click(screen.getByRole('button', { name: 'Write my email' }))
+  await user.click(screen.getByRole('button', { name: 'Review my message' }))
   expect((await screen.findByLabelText<HTMLTextAreaElement>('Message')).value).toContain('Low pressure since Monday')
   expect(screen.getByRole('region', { name: 'How to send it' })).toBeVisible()
   expect(screen.getByRole('button', { name: 'Copy email' })).toBeEnabled()

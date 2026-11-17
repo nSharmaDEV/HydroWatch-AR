@@ -2,6 +2,7 @@ import type { Place } from './domain'
 import type { Strings } from './strings'
 import type { ZipLookup } from './zip-suppliers'
 import { supplierName } from './supplier-display'
+import { Icon } from './icons'
 
 export function ZipSupplierResults({ result, places, onSelect, onNameSearch, t, checkedOn }: {
   result: ZipLookup; places: Place[]
@@ -18,7 +19,7 @@ export function ZipSupplierResults({ result, places, onSelect, onNameSearch, t, 
       </> : <p>{unavailable ? t.zipUnavailable : result.state === 'incomplete' || result.state === 'invalid' ? t.zipInputHint : t.zipNoMatch}</p>}
     </div>
     <details className="zip-provenance"><summary>{t.zipSources}<span className="disclosure-icon" aria-hidden="true" /></summary>
-      <button className="text-button zip-fallback" onClick={onNameSearch}>{t.zipFallback}</button>
+      <button className="action-chip zip-fallback" onClick={onNameSearch}><Icon name="search" size={16} />{t.zipFallback}</button>
       <p>{t.zipCaution}</p>
       <p>{t.zipSourceExplanation}</p>
       {checkedOn ? <p>{t.zipSnapshotDate}: <time dateTime={checkedOn}>{checkedOn}</time></p> : null}

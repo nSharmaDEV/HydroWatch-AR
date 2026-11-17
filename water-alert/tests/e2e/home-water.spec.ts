@@ -18,6 +18,21 @@ const settled = (page: Page) => page.evaluate(() => Promise.all(document.getAnim
   .filter(animation => ['fallIn', 'waveRise'].includes((animation as CSSAnimation).animationName))
   .map(animation => animation.finished)).then(() => undefined))
 
+test('home has no footer text and retains the water canvas', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.locator('.wave-home-footer')).toHaveCount(0)
+  await expect(page.locator('.home-water canvas')).toBeVisible()
+})
+
+test('desktop home wave retains the space previously occupied by the footer', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/')
+  await settled(page)
+  const hero = (await page.locator('.wave-hero').boundingBox())!
+  expect(800 - (hero.y + hero.height)).toBeGreaterThanOrEqual(80)
+  await expect(page.locator('.wave-home-footer')).toHaveCount(0)
+})
+
 test('water stays below the header, reacts without moving content, and persists on navigation', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))

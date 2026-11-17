@@ -7,7 +7,7 @@ test('Map and private History are separate navigation destinations', async () =>
   localStorage.setItem('water-alert:mode', 'sample'); savePreferences('sample', { ...defaults(), watches: ['ADH:sample-creek'] })
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'History' }))
-  expect(await screen.findByText(/Sample drafts/)).toBeVisible()
+  expect((await screen.findAllByText(/Sample requests/))[0]).toBeVisible()
   expect(screen.queryByRole('heading', { name: /Observed/ })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Map' }))
   await waitFor(() => expect(document.querySelector('.advisory-map-page')).not.toHaveAttribute('hidden'))

@@ -4,24 +4,26 @@ import { randomUUID, randomBytes } from 'node:crypto'
 import type { StateCell } from './postgres.js'
 import { sendDestinations, hasReport, type HelpDraft, type HelpRequest, type HelpMessage, type Delivery, type HelpSource } from '../src/help-requests.js'
 import { QUESTIONS, type AnswerKey } from '../src/help-questions.js'
+import { isAddressResult } from '../src/addressSearch.js'
 export interface HelpState { requests: HelpRequest[] }
 export const emptyHelp = (): HelpState => ({ requests: [] })
 const uuid = /^[a-f0-9-]{36}$/i
 function validate(d: HelpDraft) {
   if (!d || !uuid.test(d.id) || !d.place || !/^ADH:[a-f0-9]{64}$/.test(d.place.id) || d.place.kind !== 'system' || typeof d.place.name !== 'string' || d.place.name.length > 200 || !['service', 'quality', 'billing', 'legal', 'advisory', 'other', 'report'].includes(d.issue) || !['provider', 'adh', 'ag', 'legal'].includes(d.route)) throw new Error('Invalid request')
   for (const [key, max] of [['description', 6000], ['dates', 1000], ['subject', 200], ['body', 24000], ['context', 16000]] as const) if (typeof d[key] !== 'string' || d[key].length > max || (key === 'subject' && /[\r\n]/.test(d[key]))) throw new Error('Invalid text')
-  if (![1, 2, 3].includes(d.stage) || !Array.isArray(d.evidence) || d.evidence.length > 30 || d.evidence.some(k => typeof k !== 'string' || k.length > 100) || !Array.isArray(d.attachments) || d.attachments.length > 3) throw new Error('Invalid draft')
-  let size = 0
+  if (![1, 2, 3].includes(d.stage) || !Array.isArray(d.evidence) || d.evidence.length > 30 || d.evidence.some(k => typeof k !== 'string' || k.length > 100) || !Array.isArray(d.attachments) || d.attachments.length > 9) throw new Error('Invalid draft')
+  const totals = { noticed: { count: 0, size: 0 }, request: { count: 0, size: 0 }, response: { count: 0, size: 0 } }
   for (const a of d.attachments) {
-    if (!uuid.test(a.id) || typeof a.name !== 'string' || !a.name || a.name.length > 120 || /[\x00-\x1f/\\]/.test(a.name) || !['text/plain', 'image/png', 'image/jpeg', 'application/pdf'].includes(a.type) || typeof a.data !== 'string' || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(a.data)) throw new Error('Invalid attachment')
-    const b = Buffer.from(a.data, 'base64'); size += b.length
-    if (!b.length || (a.type === 'application/pdf' && b.subarray(0, 5).toString() !== '%PDF-') || (a.type === 'image/png' && b.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') || (a.type === 'image/jpeg' && b.subarray(0, 3).toString('hex') !== 'ffd8ff') || (a.type === 'text/plain' && b.includes(0))) throw new Error('Invalid attachment content')
+    if (a.step !== undefined && !['noticed', 'request', 'response'].includes(a.step)) throw new Error('Invalid attachment step')
+    if (!uuid.test(a.id) || typeof a.name !== 'string' || !a.name || a.name.length > 120 || /[\x00-\x1f/\\]/.test(a.name) || !['text/plain', 'image/png', 'image/jpeg', 'application/pdf', 'video/mp4', 'video/webm'].includes(a.type) || typeof a.data !== 'string' || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(a.data)) throw new Error('Invalid attachment')
+    const b = Buffer.from(a.data, 'base64'); const total = totals[a.step ?? 'response']; total.size += b.length; total.count++
+    if (total.count > 3 || total.size > 1024 * 1024) throw new Error('Attachments exceed step limit')
+    if (!b.length || (a.type === 'application/pdf' && b.subarray(0, 5).toString() !== '%PDF-') || (a.type === 'image/png' && b.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') || (a.type === 'image/jpeg' && b.subarray(0, 3).toString('hex') !== 'ffd8ff') || (a.type === 'video/mp4' && b.subarray(4, 8).toString() !== 'ftyp') || (a.type === 'video/webm' && b.subarray(0, 4).toString('hex') !== '1a45dfa3') || (a.type === 'text/plain' && b.includes(0))) throw new Error('Invalid attachment content')
   }
-  if (size > 1024 * 1024) throw new Error('Attachments exceed 1 MB')
   if (typeof d.place.county !== 'string' || d.place.county.length > 200) throw new Error('Invalid county')
   const { id, issue, description, dates, route, subject, body, stage, evidence, context } = d
   for (const key of ['subjectEdited', 'bodyEdited'] as const) if (d[key] !== undefined && typeof d[key] !== 'boolean') throw new Error('Invalid email edit metadata')
-  for (const [key, max] of [['residentName', 120], ['replyContact', 200], ['generatedFrom', 128]] as const) if (d[key] !== undefined && (typeof d[key] !== 'string' || d[key]!.length > max || /[\r\n\x00-\x1f]/.test(d[key]!))) throw new Error('Invalid resident metadata')
+  for (const [key, max] of [['residentName', 120], ['replyContact', 200], ['replyEmail', 200], ['replyPhone', 200], ['generatedFrom', 128]] as const) if (d[key] !== undefined && (typeof d[key] !== 'string' || d[key]!.length > max || /[\r\n\x00-\x1f]/.test(d[key]!))) throw new Error('Invalid resident metadata')
   if (d.answers !== undefined && (!d.answers || typeof d.answers !== 'object' || Array.isArray(d.answers) || Object.keys(d.answers).length > Object.keys(QUESTIONS).length)) throw new Error('Invalid answers')
   const answers: Partial<Record<AnswerKey, string>> = {}
   for (const key of Object.keys(QUESTIONS) as AnswerKey[]) {
@@ -37,7 +39,9 @@ function validate(d: HelpDraft) {
   }
   const sources = d.sources?.map(sourceValue)
   if (d.locations !== undefined && (!Array.isArray(d.locations) || d.locations.length > 10 || d.locations.some(s => typeof s !== 'string' || !s.trim() || s.length > 200 || /[\r\n\x00-\x1f]/.test(s)) || new Set(d.locations).size !== d.locations.length)) throw new Error('Invalid locations')
-  if (d.flowStep !== undefined && !['choose', 'billing', 'timing', 'experience', 'details', 'where', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
+  if (d.addressSelection !== undefined && !isAddressResult(d.addressSelection)) throw new Error('Invalid address selection')
+  if (d.addressManual !== undefined && typeof d.addressManual !== 'boolean') throw new Error('Invalid address flag')
+  if (d.flowStep !== undefined && !['choose', 'noticed', 'request', 'anything', 'billing', 'timing', 'experience', 'details', 'where', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
   if (d.recipientRoutes !== undefined && (!Array.isArray(d.recipientRoutes) || d.recipientRoutes.length > 4 || new Set(d.recipientRoutes).size !== d.recipientRoutes.length || d.recipientRoutes.some(r => !['provider', 'adh', 'ag', 'legal'].includes(r)))) throw new Error('Invalid recipients')
   let wording: HelpDraft['wording']
   if (d.wording !== undefined) {
@@ -55,7 +59,7 @@ function validate(d: HelpDraft) {
   const line = (v: unknown, max: number) => typeof v === 'string' && v.length <= max && !/[\x00-\x1f]/.test(v)
   if (d.outcomes !== undefined && (!Array.isArray(d.outcomes) || d.outcomes.length > 30)) throw new Error('Invalid outcomes')
   const outcomes = d.outcomes?.map(o => {
-    if (!o || typeof o.id !== 'string' || o.id.length > 64 || !['emailed', 'called', 'form', 'unreachable', 'reply', 'resolved', 'unresolved'].includes(o.kind) || !['provider', 'adh', 'ag', 'legal'].includes(o.route) || !line(o.name, 200) || !day(o.on) || (o.reference !== undefined && !line(o.reference, 100)) || (o.note !== undefined && (typeof o.note !== 'string' || o.note.length > 500))) throw new Error('Invalid outcome')
+    if (!o || typeof o.id !== 'string' || o.id.length > 64 || !['emailed', 'called', 'form', 'unreachable', 'reply', 'resolved', 'unresolved', 'closed', 'reopened'].includes(o.kind) || !['provider', 'adh', 'ag', 'legal'].includes(o.route) || !line(o.name, 200) || !day(o.on) || (o.reference !== undefined && !line(o.reference, 100)) || (o.note !== undefined && (typeof o.note !== 'string' || o.note.length > 500))) throw new Error('Invalid outcome')
     return { id: o.id, kind: o.kind, route: o.route, name: o.name, on: o.on, ...(o.reference !== undefined ? { reference: o.reference } : {}), ...(o.note !== undefined ? { note: o.note } : {}) }
   })
   if (d.followUpOn !== undefined && !day(d.followUpOn)) throw new Error('Invalid follow-up date')
@@ -80,7 +84,7 @@ function validate(d: HelpDraft) {
     }
     return { id: f.id, text: f.text, kind: f.kind, included: f.included, sources: f.sources.map(sourceValue), ...(record ? { record } : {}) }
   })
-  return { id, ...(d.subjectEdited !== undefined ? { subjectEdited: d.subjectEdited } : {}), ...(d.bodyEdited !== undefined ? { bodyEdited: d.bodyEdited } : {}), place: { id: d.place.id, name: d.place.name, kind: d.place.kind, county: d.place.county }, issue, description, dates, route, subject, body, stage, evidence: [...evidence], context, answers, ...(d.residentName !== undefined ? { residentName: d.residentName } : {}), ...(d.replyContact !== undefined ? { replyContact: d.replyContact } : {}), ...(d.generatedFrom ? { generatedFrom: d.generatedFrom } : {}), ...(d.locations ? { locations: [...d.locations] } : {}), ...(wording ? { wording } : {}), ...(d.recipientRoutes ? { recipientRoutes: [...d.recipientRoutes] } : {}), ...(sources ? { sources } : {}), ...(facts ? { facts } : {}), ...(d.flowStep ? { flowStep: d.flowStep } : {}), ...(outcomes ? { outcomes } : {}), ...(d.followUpOn ? { followUpOn: d.followUpOn } : {}), ...(priorContact ? { priorContact } : {}), attachments: d.attachments.map(({ id, name, type, data }) => ({ id, name, type, data })) } satisfies HelpDraft
+  return { id, ...(d.replyEmail !== undefined ? { replyEmail: d.replyEmail } : {}), ...(d.replyPhone !== undefined ? { replyPhone: d.replyPhone } : {}), ...(d.subjectEdited !== undefined ? { subjectEdited: d.subjectEdited } : {}), ...(d.bodyEdited !== undefined ? { bodyEdited: d.bodyEdited } : {}), place: { id: d.place.id, name: d.place.name, kind: d.place.kind, county: d.place.county }, issue, description, dates, route, subject, body, stage, evidence: [...evidence], context, answers, ...(d.residentName !== undefined ? { residentName: d.residentName } : {}), ...(d.replyContact !== undefined ? { replyContact: d.replyContact } : {}), ...(d.generatedFrom ? { generatedFrom: d.generatedFrom } : {}), ...(d.locations ? { locations: [...d.locations] } : {}), ...(d.addressSelection ? { addressSelection: { id: d.addressSelection.id, label: d.addressSelection.label, lat: d.addressSelection.lat, lng: d.addressSelection.lng, components: { ...d.addressSelection.components } } } : {}), ...(d.addressManual !== undefined ? { addressManual: d.addressManual } : {}), ...(wording ? { wording } : {}), ...(d.recipientRoutes ? { recipientRoutes: [...d.recipientRoutes] } : {}), ...(sources ? { sources } : {}), ...(facts ? { facts } : {}), ...(d.flowStep ? { flowStep: d.flowStep } : {}), ...(outcomes ? { outcomes } : {}), ...(d.followUpOn ? { followUpOn: d.followUpOn } : {}), ...(priorContact ? { priorContact } : {}), attachments: d.attachments.map(({ id, name, type, data, step }) => ({ id, name, type, data, ...(step ? { step } : {}) })) } satisfies HelpDraft
 }
 /** Private bounded aggregate, atomic locally and row-locked in PostgreSQL. Never part of public observations. */
 export class HelpStore {

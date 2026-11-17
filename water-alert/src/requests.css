@@ -57,14 +57,10 @@ main:has(.request-workspace) { max-width: 1440px; padding: 18px 32px 20px; }
 .request-fields > .primary { justify-self: start; }
 .request-history-link { margin-top: 1.5rem; }
 .request-text { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.6; max-width: 100%; }
-.request-list { list-style: none; padding: 0; }
-.request-list li { padding: 1rem 0; border-bottom: 1px solid #dce3e9; }
-.request-list li > button:first-child { display: grid; gap: .4rem; text-align: left; border: 0; background: transparent; color: inherit; width: 100%; }
-.request-list time, .request-timeline time { font-size: .85rem; color: #354f60; }
+.request-timeline time { font-size: .85rem; color: #354f60; }
 .request-timeline { list-style: none; padding-left: 1rem; border-left: 2px solid #b5d6d7; margin: 1.5rem 0; }
 .request-timeline li { padding: 0 0 1.5rem .5rem; overflow-wrap: anywhere; }
 .request-timeline h3 { margin: .4rem 0; }
-.request-conversation > button { margin: .4rem .5rem .4rem 0; }
 .request-account-tools { margin-bottom: 1.5rem; }
 .request-account-tools button { margin-right: .5rem; }
 @media (max-width: 500px) { .request-stages { gap: .5rem; } .request-stages li { font-size: .8rem; gap: .3rem; } .request-actions > button { flex: 1 1 auto; } }
@@ -346,44 +342,11 @@ body:has(.sample-banner) .request-composer .request-attachment-strip { padding-b
 .request-source-detail-row details[open] summary::before { content: '▾'; }
 .request-source-detail-row summary { list-style: none; }
 .request-source-detail-row summary::-webkit-details-marker { display: none; }
+/* History keeps main's shared width and padding, like every other tab; only the bottom padding
+   grows on phones so the fixed bottom navigation never covers the last row. */
 .request-history.narrow-page { width: 100%; max-width: none; }
-main:has(.request-history) { max-width: 1280px; padding: 40px 44px 30px; }
-.request-history-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .25rem; }
-.request-history-header h1 { margin: 0; font-size: clamp(2.3rem, 4.5vw, 3.25rem); line-height: 1.12; }
-.request-history-header .text-button { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem 0; font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
-.request-history-header .text-button span { font-size: 1.25rem; }
-.request-history-intro { max-width: none; margin: 0 0 2.75rem; color: #456477; font-size: 1.15rem; line-height: 1.5; }
-.request-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0; border-bottom: 1px solid #dce3e9; }
-.request-list-heading h2 { margin: 0; padding: 0 0 .55rem; color: #456477; font-size: .9rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-.request-list-heading h2 span { color: #102e43; }
-.request-list-heading .text-button { min-height: 40px; padding: .35rem 0; }
-.request-list { margin: 0; }
-.request-list > .request-list-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(13rem, 18rem); align-items: center; gap: 1.5rem; margin: 0 0 .85rem; padding: 1.1rem 1.25rem; border: 1px solid #dce3e9; border-radius: 16px; background: #fff; box-shadow: 0 2px 8px #102e4306; }
-.request-list-details, .request-list-actions { display: grid; min-width: 0; }
-.request-list-details { gap: .3rem; }
-.request-list-title { justify-self: start; max-width: 100%; padding: 0; border: 0; background: transparent; color: #102e43; font: inherit; font-size: 1.15rem; font-weight: 700; line-height: 1.35; text-align: left; overflow-wrap: anywhere; cursor: pointer; }
-.request-list-title:hover { color: #06686e; text-decoration: underline; }
-.request-list-title:focus-visible, .request-resume:focus-visible { outline: 3px solid #087f83; outline-offset: 3px; }
-.request-list-place { color: #354f60; overflow-wrap: anywhere; }
-.request-list-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .65rem; margin-top: .2rem; color: #456477; font-size: .9rem; }
-.request-list-meta > span + span::before { content: '•'; margin-right: .65rem; color: #91aab4; }
-.request-list-meta .request-draft-label, .request-list-meta .request-state-label { padding: .2rem .55rem; border-radius: 999px; background: #e8f4f2; color: #06686e; font-size: .8rem; font-weight: 700; }
-.request-list-meta .request-state-label { background: #f1f5f7; color: #354f60; }
-.request-list-meta > span + span.request-draft-label::before, .request-list-meta > span + span.request-state-label::before { content: none; }
-.request-list-actions { justify-items: end; gap: .55rem; }
-.request-list-actions time { color: #456477; font-size: .9rem; text-align: right; }
-.request-resume { min-height: 44px; padding: .55rem .9rem; }
 @media (max-width: 640px) {
-  main:has(.request-history) { padding: 26px 18px 100px; }
-  .request-history-header { gap: .5rem; }
-  .request-history-header h1 { font-size: 2.15rem; }
-  .request-history-header .text-button { font-size: .92rem; }
-  .request-history-intro { margin-bottom: 1.75rem; font-size: 1rem; }
-  .request-list > .request-list-row { grid-template-columns: minmax(0, 1fr); gap: .55rem; margin-bottom: .75rem; padding: 1rem; }
-  .request-list-actions { justify-items: stretch; gap: .5rem; }
-  .request-list-actions time { text-align: left; }
-  .request-resume { width: 100%; }
-  .request-list-heading { margin-top: 1rem; }
+  main:has(.request-history) { padding-bottom: 100px; }
 }
 .request-date-hint, .request-date-error { grid-column: 1 / -1; }
 .request-date-error { border-left: 3px solid #ac341c; padding-left: .75rem; }
@@ -487,9 +450,6 @@ body:has(.sample-banner) .request-screen-review .request-review-email .request-m
 .send-confirm input { font: inherit; min-height: 44px; padding: 8px 10px; border: 1px solid #8191a0; border-radius: 6px; max-width: 320px; }
 .send-record-other { justify-self: start; }
 .send-last { margin: 0; }
-.request-outcomes { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
-.request-outcome-tools { display: grid; gap: 12px; margin: 12px 0; }
-.request-follow-due { color: #853c10; font-weight: 600; }
 /* Three-step Help: optional folding sections on "Tell us what happened" (2026-11-08) */
 /* Step 3: dates, places and the response sit side by side so the screen fits without scrolling. */
 .request-screen-timing .request-split.request-timing-response { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) minmax(0, 1.2fr); align-items: stretch; }
@@ -676,17 +636,6 @@ body .request-card .request-screen-send .request-review-email textarea.request-m
 .request-review-card .request-review-tools { flex-wrap: wrap; }
 @media (max-width: 760px) { .request-review-card .request-review-tools { margin-left: 0; } }
 .request-frame-topline .request-progress > span { white-space: nowrap; }
-/* History: an unsent draft is one summary card. */
-.request-draft-summary { margin-top: 12px; }
-.request-draft-summary > .back { align-self: start; }
-.request-draft-summary .request-title-row h2 { margin: 0; font-size: 1.4rem; }
-.request-draft-facts { display: grid; gap: 10px; margin: 0; }
-.request-draft-facts > div { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #e3e9ee; }
-.request-draft-facts dt { color: #465769; }
-.request-draft-facts dd { margin: 0; overflow-wrap: anywhere; }
-.request-draft-summary .request-card-action .primary { width: 100%; min-height: 52px; }
-.request-delete-draft { align-self: center; color: #9b2c2c; }
-@media (max-width: 600px) { .request-draft-facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 /* Home: the report findings line on a supplier card. */
 .report-home-note { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 4px 10px; margin: 8px 0; padding: 10px 12px; border: 1px solid #e3c98a; border-radius: 10px; background: #fffaf0; }
 .report-home-note > svg { margin-top: 2px; color: #8a5a00; }
@@ -700,3 +649,11 @@ body .request-card .request-screen-send .request-review-email textarea.request-m
 .send-options-note .text-button { min-height: 0; padding: 0; font-size: inherit; }
 .send-contact-sources { top: 2.5rem; bottom: auto; max-height: min(520px, 60dvh); overflow: auto; }
 .send-option-tools:empty { display: none; }
+.send-channel-label { margin: 0; font-size: .9rem; }
+.send-confirm textarea, .send-confirm select { font: inherit; padding: 8px 10px; border: 1px solid #8191a0; border-radius: 6px; max-width: 480px; }
+
+/* After-contact section: Log a contact attempt is a full button, separate from the Call/Email actions. */
+.send-after-contact { display: grid; gap: 6px; justify-items: start; margin-top: 12px; padding-top: 12px; border-top: 1px solid #d7e3ef; }
+.send-after-contact h3 { margin: 0; font-size: 1rem; }
+.send-after-contact .send-record-other { margin-top: 2px; }
+.send-option-script { margin-top: 6px; }

@@ -25,10 +25,10 @@ test('selected observations become sentences, not pasted checkbox labels', () =>
   expect(body).toContain('The total is different from what I expected.')
 })
 
-test('requests are a numbered list and come before contact and sign-off', () => {
+test('combined billing request comes before contact and sign-off', () => {
   const body = generateMessage(billing(), 'en').body
-  expect(body).toContain('Could you please:\n1. Review the charge, explain whether it is correct and correct it if it is incorrect\n2. Explain the bill, including how the questioned amount was calculated')
-   const order = ['What I’ve already tried', 'Could you please:', 'You can reach me at ana@example.test', 'Thank you,\nAna Resident']
+  expect(body).toContain('Could you review the charge, explain how the questioned amount was calculated and whether it is correct, and correct it if it is incorrect?')
+   const order = ['I called the office once.', 'Could you review the charge', 'You can reach me at ana@example.test', 'Thank you,\nAna Resident']
   const at = order.map(text => body.indexOf(text))
   expect(at.every(i => i >= 0)).toBe(true)
   expect(at.slice(1).every((value, i) => value > at[i])).toBe(true)
@@ -40,9 +40,10 @@ test('the generator does not add an unselected reply deadline or threat', () => 
   expect(body).not.toMatch(/legal action|lawsuit|violation|demand/i)
 })
 
-test('the subject says what the email is about and carries the account number when given', () => {
+test('the subject describes the issue without exposing the account number', () => {
   const subject = generateMessage(billing(), 'en').subject
-  for (const text of ['Question about my water bill', 'A charge appears more than once', 'October 2026', '1908 SW Huntwick Ave', 'account 4421-07']) expect(subject).toContain(text)
+  for (const text of ['Question about my water bill', 'A charge appears more than once', 'October 2026', '1908 SW Huntwick Ave']) expect(subject).toContain(text)
+  expect(subject).not.toContain('4421-07')
   const noAccount = { ...billing(), answers: { billingPeriod: 'October 2026' } }
   expect(generateMessage(noAccount, 'en').subject).toMatch(/^Question about my water bill/)
   expect(generateMessage(noAccount, 'en').subject).not.toContain('account')
@@ -53,7 +54,7 @@ test('Spanish follows the same order with infinitive requests', () => {
   const body = generateMessage(d, 'es').body
   expect(body).toContain('número de cuenta 4421-07')
   expect(body).toContain('Un cargo aparece más de una vez en mi factura.')
-  expect(body).toContain('Les pido, por favor:\n1. Revisar el cargo, explicar si es correcto y corregirlo si es incorrecto\n2. Explicar la factura, incluido cómo se calculó el importe cuestionado')
+  expect(body).toContain('¿Podrían revisar el cargo, explicar cómo se calculó el importe cuestionado y si es correcto, y corregirlo si es incorrecto?')
   expect(body).not.toContain('5 días hábiles')
   expect(body).toContain('Pueden comunicarse conmigo en ana@example.test')
   expect(body).toMatch(/Gracias,\nAna Resident/)
@@ -69,11 +70,11 @@ test('without requests, contact or name the letter still reads cleanly', () => {
   expect(body.trim().endsWith('Thank you.')).toBe(true)
 })
 
-test('agency records sit under Related records after the requests', () => {
+test('agency records remain after the requests without a subheading', () => {
   const d: HelpDraft = { ...billing(), issue: 'service', wording: { report: { first: 'No water' }, response: { first: 'Restore service' } }, facts: [{ id: 'n1', text: 'The notice lists Oak Street.', kind: 'saved', included: true, sources: [{ recordId: 'n1', label: 'ADH notice', url: 'https://example.test/n1' }] }] }
   const body = generateMessage(d, 'en').body
-  expect(body.indexOf('Related records')).toBeGreaterThan(body.indexOf('Could you please:'))
-  expect(body.indexOf('notice lists Oak Street.')).toBeGreaterThan(body.indexOf('Related records'))
+  expect(body).not.toContain('Related records')
+  expect(body.indexOf('notice lists Oak Street.')).toBeGreaterThan(body.indexOf('Could you please:'))
   expect(body).toContain('https://example.test/n1')
 })
 

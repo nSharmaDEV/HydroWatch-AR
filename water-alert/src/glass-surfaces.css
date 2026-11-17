@@ -23,7 +23,6 @@
 
 :is(.panel.search-glass, .panel.settings-glass,
     .request-guided .request-issue-choice:not([aria-pressed="true"]),
-    .request-list > .request-list-row,
     .request-guided .request-split > .request-panel,
     .request-review-information) {
   background: var(--wave-glass-fill);

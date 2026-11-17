@@ -22,6 +22,22 @@ test.beforeEach(async ({ page, context, baseURL }) => {
   await expect(page.locator('.logo-intro')).not.toBeVisible()
 })
 
+test('saved-place actions have icons and undo restores the place', async ({ page }) => {
+  await page.evaluate(id => localStorage.setItem('water-alert:live:v1', JSON.stringify({ watches: [id], liftWatches: [], language: 'en', checkOnOpen: false })), place.id)
+  await page.reload()
+  await expect(page.locator('.logo-intro')).not.toBeVisible()
+  await page.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true }).click()
+  await page.getByRole('button', { name: /Your Places/ }).click()
+  const remove = page.getByRole('button', { name: /Remove BULL SHOALS/ })
+  await expect(remove.locator('svg')).toBeVisible()
+  await remove.click()
+  const undo = page.getByRole('button', { name: 'Undo', exact: true })
+  await expect(undo.locator('svg')).toBeVisible()
+  await expect(undo).toHaveCSS('text-decoration-line', 'none')
+  await undo.click()
+  await expect(remove).toBeVisible()
+})
+
 test('map details preserve zoom and modal focus through exit', async ({ page }, info) => {
   await page.getByRole('navigation').getByRole('button', { name: 'Map', exact: true }).click()
   const map = page.getByRole('group', { name: 'Arkansas supplier map' })
@@ -234,7 +250,7 @@ test('navigation uses bounded snapshots and preserves stationary chrome', async 
   expect(errors).toEqual([])
 })
 
-test('Home supplier search grows the hero wave into the search wave; tab changes do not', async ({ page }) => {
+test('Home supplier search grows the hero wave into the search wave in both directions', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
   const stripGroups = () => page.evaluate(() => document.getAnimations().filter(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === '::view-transition-group(wave-strip)').map(a => (a.effect as KeyframeEffect).getKeyframes().map(k => parseFloat(String(k.height)))))
@@ -248,7 +264,7 @@ test('Home supplier search grows the hero wave into the search wave; tab changes
     }) as typeof document.startViewTransition
   })
   const hero = await page.locator('.wave-hero-water .welcome-strip svg').boundingBox()
-  await page.getByRole('searchbox', { name: 'Supplier name, county, or ZIP code' }).fill('Bull')
+  await page.getByRole('combobox', { name: 'Supplier name, county, or ZIP code' }).fill('Bull')
   await page.getByRole('button', { name: 'Search', exact: true }).click()
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBe('')
   await expect.poll(async () => (await stripGroups()).length).toBe(1)
@@ -259,14 +275,53 @@ test('Home supplier search grows the hero wave into the search wave; tab changes
   expect(heights[0]).toBeCloseTo(hero!.height, 0)
   expect(heights.at(-1)).toBeCloseTo(search!.height, 0)
   expect(search!.height).toBeGreaterThan(hero!.height)
-  // Leaving search (and ordinary tab changes) keeps the wave inside the page snapshot.
+  // Returning to Home shares the wave too.
   await page.getByRole('navigation').getByRole('button', { name: 'Home', exact: true }).click()
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBe('back')
-  expect(await page.evaluate(() => document.documentElement.dataset.waveStrip)).toBeUndefined()
-  expect(await stripGroups()).toEqual([])
+  expect(await page.evaluate(() => document.documentElement.dataset.waveStrip)).toBe('shared')
+  await expect.poll(async () => (await stripGroups()).length).toBe(1)
   await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
   await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
   expect(errors).toEqual([])
+})
+
+test('wave-bearing tabs share a wave in both directions, but History does not', async ({ page }) => {
+  await page.evaluate(() => {
+    const start = document.startViewTransition.bind(document)
+    document.startViewTransition = ((update: () => void) => {
+      const transition = start(() => {
+        document.documentElement.dataset.testOldShape = document.querySelector('.welcome-strip svg .welcome-band--aqua')?.getAttribute('d') ?? ''
+        update()
+      })
+      void transition.ready.then(() => { for (const animation of document.getAnimations()) if (animation.effect instanceof KeyframeEffect && animation.effect.pseudoElement) animation.pause() })
+      return transition
+    }) as typeof document.startViewTransition
+  })
+  const nav = page.getByRole('navigation')
+  for (const destination of ['Places', 'Settings', 'Home']) {
+    await nav.getByRole('button', { name: destination, exact: true }).click()
+    await expect.poll(() => page.evaluate(() => document.getAnimations().filter(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === '::view-transition-group(wave-strip)').length)).toBe(1)
+    await expect.poll(async () => (await page.locator('.welcome-strip svg:visible .welcome-band--aqua').getAttribute('d')) === await page.evaluate(() => document.documentElement.dataset.testOldShape)).toBe(true)
+    await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
+    await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
+  }
+  await nav.getByRole('button', { name: 'History', exact: true }).click()
+  expect(await page.evaluate(() => document.documentElement.dataset.waveStrip)).toBeUndefined()
+  await page.evaluate(() => { for (const animation of document.getAnimations()) animation.play() })
+})
+
+test('returning from Places and Settings does not replay the Home entrance over the wave transition', async ({ page }) => {
+  const nav = page.getByRole('navigation')
+  for (const source of ['Places', 'Settings']) {
+    await nav.getByRole('button', { name: source, exact: true }).click()
+    await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
+    await nav.getByRole('button', { name: 'Home', exact: true }).click()
+    await expect(page.locator('.wave-home')).toBeAttached()
+    const entranceAnimations = () => page.locator('.wave-home').evaluate(el => el.getAnimations({ subtree: true }).flatMap(a => a instanceof CSSAnimation && ['fallIn', 'waveRise'].includes(a.animationName) ? [a.animationName] : []))
+    expect(await entranceAnimations()).toEqual([])
+    await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveMotion)).toBeUndefined()
+    expect(await entranceAnimations()).toEqual([])
+  }
 })
 
 test('confirming a supplier settles its wave and moves its card into Places', async ({ page }) => {
@@ -276,6 +331,8 @@ test('confirming a supplier settles its wave and moves its card into Places', as
   const images = (name: string) => page.evaluate(name => document.getAnimations().filter(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === name).length, name)
   const stillShape = () => page.locator('main > .welcome-strip--still .welcome-band--aqua').getAttribute('d')
   await page.getByRole('navigation').getByRole('button', { name: 'Places', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.waveStrip)).toBeUndefined()
+  await expect.poll(() => page.locator('main > .welcome-strip--still svg').evaluate(el => (el as SVGElement).style.opacity)).toBe('')
   const fixedShape = await stillShape()
   await page.getByRole('button', { name: /Add a place/ }).click()
   await page.getByRole('searchbox').fill(place.name)

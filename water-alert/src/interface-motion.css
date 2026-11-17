@@ -22,10 +22,12 @@ html[data-wave-motion]::view-transition-new(wave-water){animation:none}
    lock) because the strip itself is drawn with preserveAspectRatio="none". */
 html[data-wave-strip] .wave-hero-water .welcome-strip svg,
 html[data-wave-strip] .search-stage>.welcome-strip:not(.welcome-strip--still) svg{view-transition-name:wave-strip}
+html[data-wave-strip=shared] .welcome-strip svg{view-transition-name:wave-strip}
 html[data-wave-motion]::view-transition-group(wave-strip){z-index:1;animation-duration:640ms;animation-timing-function:cubic-bezier(.31,.24,.14,1)}
 html[data-wave-motion]::view-transition-new(wave-strip){height:100%;object-fit:fill;animation:none;mix-blend-mode:normal}
 /* Same shape on both sides, so only the live new strip is shown (no doubled, darker overlap). */
 html[data-wave-motion]::view-transition-old(wave-strip){animation:none;opacity:0}
+/* The live strip reshapes during the move, avoiding a doubled crossfade. */
 /* Supplier confirm -> Places ("settle"): the confirm page's tall flowing strip shrinks and moves to
    the still Places strip. The Places strip starts as the confirm strip's shape and brightness and
    reshapes/dims into its own fixed shape during the move (see settleStrip in Journey.tsx), so as

@@ -32,13 +32,16 @@ it('returns only Arkansas address matches from the Census geocoder', async () =>
   const base = await setup(false, { geocodeFetch: async input => {
     called = String(input)
     return Response.json({ result: { addressMatches: [
-      { matchedAddress: '123 MAIN ST, LITTLE ROCK, AR, 72201', addressComponents: { state: 'AR' } },
+      { matchedAddress: '123 MAIN ST, LITTLE ROCK, AR, 72201', addressComponents: { state: 'AR', city: 'LITTLE ROCK', zip: '72201' }, coordinates: { x: -92.27, y: 34.74 } },
       { matchedAddress: '123 MAIN ST, MEMPHIS, TN, 38103', addressComponents: { state: 'TN' } },
     ] } })
   } })
   const response = await fetch(`${base}/api/geocode-address`, { method: 'POST', headers: { Origin: 'http://localhost:5178', 'Content-Type': 'application/json' }, body: JSON.stringify({ address: '123 Main St, Little Rock' }) })
   expect(response.status).toBe(200)
-  expect(await response.json()).toEqual({ addresses: ['123 MAIN ST, LITTLE ROCK, AR, 72201'] })
+  expect(await response.json()).toEqual({
+    addresses: ['123 MAIN ST, LITTLE ROCK, AR, 72201'],
+    matches: [{ label: '123 MAIN ST, LITTLE ROCK, AR, 72201', lat: 34.74, lng: -92.27, city: 'LITTLE ROCK', zip: '72201' }],
+  })
   const upstream = new URL(called)
   expect(upstream.hostname).toBe('geocoding.geo.census.gov')
   expect(upstream.searchParams.get('address')).toBe('123 Main St, Little Rock, Arkansas')

@@ -20,15 +20,14 @@ export const STILL_STRIP_SEED = 0x5a7e
 // confirm) continues the same shape and position, so the page-change morph between them is one
 // continuous wave rather than two unrelated ones.
 const STRIP_HANDOFF_MS = 1000
-let stripHandoff: { seed: number; offset: number; at: number } | undefined
+let stripHandoff: { seed: number; offset: number; opacity: number; at: number } | undefined
 // Supplier confirm -> Places "settle" morph (html[data-wave-strip=settle], interface-motion.css):
 // the still Places strip starts as the confirm strip's shape and brightness and, in step with the
 // page-change move (the new side of a view transition is live), reshapes into its fixed shape and
 // dims, so one wave travels into place and ends clear of the Places sidebar text. Progress follows
 // the move's own animation (so pausing or skipping it is respected), with the move's curve.
-const SETTLE_FROM_OPACITY = '.64'
 const settleEase = cubicBezier(.31, .24, .14, 1)
-function settleStrip(svg: SVGSVGElement, aqua: SVGPathElement | null, teal: SVGPathElement | null, from: { seed: number; offset: number }, to: { seed: number; offset: number }) {
+function settleStrip(svg: SVGSVGElement, aqua: SVGPathElement | null, teal: SVGPathElement | null, from: { seed: number; offset: number; opacity: number }, to: { seed: number; offset: number }, complete: () => void) {
   const root = document.documentElement
   const finalOpacity = Number(getComputedStyle(svg).opacity)
   let frame = 0, seen = false
@@ -38,7 +37,7 @@ function settleStrip(svg: SVGSVGElement, aqua: SVGPathElement | null, teal: SVGP
     const paths = blendedStripPaths(from, to, eased)
     aqua?.setAttribute('d', paths.aqua)
     teal?.setAttribute('d', paths.teal)
-    svg.style.opacity = t >= 1 ? '' : String(Number(SETTLE_FROM_OPACITY) + (finalOpacity - Number(SETTLE_FROM_OPACITY)) * eased)
+    svg.style.opacity = t >= 1 ? '' : String(from.opacity + (finalOpacity - from.opacity) * eased)
   }
   const move = () => document.getAnimations().find(a => a.effect instanceof KeyframeEffect && a.effect.pseudoElement === '::view-transition-group(wave-strip)')
   const step = () => {
@@ -46,9 +45,10 @@ function settleStrip(svg: SVGSVGElement, aqua: SVGPathElement | null, teal: SVGP
     if (animation) seen = true
     const progress = animation?.effect?.getComputedTiming().progress
     // Done once the move has ended or been skipped, or if it never started.
-    const done = root.dataset.waveStrip !== 'settle' || (seen && !animation) || (!seen && performance.now() - begun > STRIP_HANDOFF_MS)
+    const done = !['settle', 'shared'].includes(root.dataset.waveStrip ?? '') || (seen && !animation) || (!seen && performance.now() - begun > STRIP_HANDOFF_MS)
     draw(done ? 1 : animation && typeof progress === 'number' ? progress : 0)
     if (!done) frame = requestAnimationFrame(step)
+    else complete()
   }
   draw(0)
   frame = requestAnimationFrame(step)
@@ -63,7 +63,7 @@ export function WelcomeStrip({ still = false }: { still?: boolean } = {}) {
   useLayoutEffect(() => {
     const recent = stripHandoff && performance.now() - stripHandoff.at < STRIP_HANDOFF_MS ? stripHandoff : undefined
     const handoff = still ? undefined : recent
-    const settleFrom = still && document.documentElement.dataset.waveStrip === 'settle' ? recent : undefined
+    const settleFrom = ['settle', 'shared'].includes(document.documentElement.dataset.waveStrip ?? '') ? recent : undefined
     const seed = still ? STILL_STRIP_SEED : handoff?.seed ?? Math.floor(Math.random() * 0x100000000)
     let offset = handoff?.offset ?? 0, previous: number | undefined, frame = 0
     const draw = () => {
@@ -84,13 +84,21 @@ export function WelcomeStrip({ still = false }: { still?: boolean } = {}) {
       // Unknown motion preference or reduced motion: a still strip.
       if (motion && !motion.matches && !document.hidden) frame = requestAnimationFrame(animate)
     }
-    if (settleFrom && svg.current) return settleStrip(svg.current, aqua.current, teal.current, settleFrom, { offset, seed })
-    draw()
-    if (still) return
-    sync()
-    motion?.addEventListener('change', sync)
-    document.addEventListener('visibilitychange', sync)
-    return () => { cancelAnimationFrame(frame); motion?.removeEventListener('change', sync); document.removeEventListener('visibilitychange', sync); stripHandoff = { seed, offset, at: performance.now() } }
+    const startFlow = () => {
+      if (still) return
+      sync()
+      motion?.addEventListener('change', sync)
+      document.addEventListener('visibilitychange', sync)
+    }
+    const stopSettle = settleFrom && svg.current ? settleStrip(svg.current, aqua.current, teal.current, settleFrom, { offset, seed }, startFlow) : undefined
+    if (!stopSettle) { draw(); startFlow() }
+    return () => {
+      stopSettle?.()
+      cancelAnimationFrame(frame)
+      motion?.removeEventListener('change', sync)
+      document.removeEventListener('visibilitychange', sync)
+      stripHandoff = { seed, offset, opacity: svg.current ? Number(getComputedStyle(svg.current).opacity) : still ? .32 : .64, at: performance.now() }
+    }
   }, [still])
   return <div className={still ? 'welcome-strip welcome-strip--still' : 'welcome-strip'} aria-hidden="true">
     <svg ref={svg} viewBox={`0 0 ${STRIP_WIDTH} ${STRIP_HEIGHT}`} preserveAspectRatio="none" focusable="false">
@@ -154,5 +162,5 @@ export function ConfirmPlace({ place, t, onConfirm, onBack }: { place: Place; t:
 }
 
 export function SampleIntro({ t, onStart, onList }: { t: Strings; onStart: () => void; onList: () => void }) {
-  return <Panel className="journey-panel"><h1>{t.sampleJourney}</h1><p>{t.sampleText}</p><button className="primary full" onClick={onStart}>{t.startSample}</button><button className="text-button full" onClick={onList}>{t.sampleList}</button></Panel>
+  return <Panel className="journey-panel"><h1>{t.sampleJourney}</h1><p>{t.sampleText}</p><button className="primary full" onClick={onStart}>{t.startSample}</button><button className="action-chip full" onClick={onList}><Icon name="list" size={16} />{t.sampleList}</button></Panel>
 }

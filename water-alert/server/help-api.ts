@@ -65,4 +65,4 @@ export function helpWebhook({ store, config, fetcher = fetch }: HelpServices): R
     res.sendStatus(204)
   }
 }
-export const helpJson = express.json({ limit: '1500kb' })
+export const helpJson = express.json({ limit: '4400kb' })

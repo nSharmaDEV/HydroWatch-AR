@@ -42,3 +42,59 @@ const fallback = {
 export function helpPrompt(issue: IssueType, field: keyof typeof fallback, es: boolean): string {
   return (prompts[issue] ?? fallback)[field][es ? 1 : 0]
 }
+
+const examples: Record<IssueType, { description: [string, string]; action: [string, string] }> = {
+  service: { description: ['For example: Which taps are affected? Does the water stop and start?', 'Por ejemplo: ¿Qué grifos están afectados? ¿El agua va y viene?'], action: ['For example: Ask for an update or an estimated restoration time.', 'Por ejemplo: Pide una actualización o una hora estimada de restablecimiento.'] },
+  quality: { description: ['For example: Which taps are affected? When did the color or smell change?', 'Por ejemplo: ¿Qué grifos están afectados? ¿Cuándo cambió el color o el olor?'], action: ['For example: Ask the provider to investigate or share relevant instructions.', 'Por ejemplo: Pide al proveedor que investigue o comparta instrucciones aplicables.'] },
+  billing: { description: ['For example: Which charge looks different from your usual bill?', 'Por ejemplo: ¿Qué cargo es diferente al de tu factura habitual?'], action: ['For example: Ask for an itemized explanation or a review of the charge.', 'Por ejemplo: Pide un desglose o una revisión del cargo.'] },
+  advisory: { description: ['For example: Which part of the advisory is unclear?', 'Por ejemplo: ¿Qué parte del aviso no está clara?'], action: ['For example: Ask whether the advisory applies to your address.', 'Por ejemplo: Pregunta si el aviso aplica a tu dirección.'] },
+  report: { description: ['For example: Which report year or finding do you have a question about?', 'Por ejemplo: ¿Sobre qué año o hallazgo del informe tienes una pregunta?'], action: ['For example: Ask for an explanation or a related follow-up document.', 'Por ejemplo: Pide una explicación o un documento de seguimiento relacionado.'] },
+  other: { description: ['For example: What happened, and where did you notice it?', 'Por ejemplo: ¿Qué pasó y dónde lo notaste?'], action: ['For example: Ask for an explanation or information about next steps.', 'Por ejemplo: Pide una explicación o información sobre los próximos pasos.'] },
+  legal: { description: ['For example: What happened, and where did you notice it?', 'Por ejemplo: ¿Qué pasó y dónde lo notaste?'], action: ['For example: Ask for an explanation or information about next steps.', 'Por ejemplo: Pide una explicación o información sobre los próximos pasos.'] },
+}
+
+export function helpExample(issue: IssueType, field: 'description' | 'action', es: boolean): string {
+  return examples[issue][field][es ? 1 : 0]
+}
+
+const observationExamples: Partial<Record<IssueType, Record<string, [string, string]>>> = {
+  service: {
+    first: ['Which taps have no water? Tap + to add a video showing the flow.', '¿Qué grifos no tienen agua? Usa + para añadir un video del flujo.'],
+    second: ['Which taps have low pressure? Tap + to add a video showing the flow.', '¿Qué grifos tienen poca presión? Usa + para añadir un video del flujo.'],
+    third: ['When does service stop and return? Tap + to add a video of the flow.', '¿Cuándo se interrumpe y regresa el servicio? Usa + para añadir un video del flujo.'],
+  },
+  quality: {
+    first: ['What color did you notice? Tap + to add a photo or video showing it.', '¿Qué color notaste? Usa + para añadir una foto o video que lo muestre.'],
+    second: ['What does the smell resemble, and which taps are affected?', '¿A qué se parece el olor y qué grifos están afectados?'],
+    third: ['What do the particles look like? Tap + to add a photo or video.', '¿Cómo son las partículas? Usa + para añadir una foto o video.'],
+  },
+  billing: {
+    first: ['Which charge is unfamiliar? Tap + to add a photo with private details covered.', '¿Qué cargo no reconoces? Usa + para añadir una foto sin datos privados.'],
+    second: ['Which charge appears more than once? Tap + to add a photo with private details covered.', '¿Qué cargo aparece más de una vez? Usa + para añadir una foto sin datos privados.'],
+    third: ['How does this amount differ from your usual bill?', '¿En qué se diferencia este importe de tu factura habitual?'],
+  },
+  advisory: {
+    first: ['How does the advisory affect your usual water use?', '¿Cómo afecta el aviso a tu uso habitual del agua?'],
+    second: ['Which part of the published area is unclear?', '¿Qué parte de la zona publicada no está clara?'],
+  },
+}
+const actionExamples: Partial<Record<IssueType, Record<string, [string, string]>>> = {
+  service: { first: ['Which service issue would you like restored?', '¿Qué problema de servicio quieres que resuelvan?'], second: ['When and how would you like an update?', '¿Cuándo y cómo quieres recibir una actualización?'], third: ['What part of the interruption would you like explained?', '¿Qué parte de la interrupción quieres que expliquen?'], fourth: ['What would you like them to check about the low pressure?', '¿Qué quieres que revisen sobre la baja presión?'] },
+  quality: { first: ['What would you like investigated or followed up?', '¿Qué quieres que investiguen o revisen?'], second: ['Which water-use instructions do you need clarified?', '¿Qué instrucciones de uso del agua necesitas aclarar?'], third: ['When and how would you like an update?', '¿Cuándo y cómo quieres recibir una actualización?'] },
+  billing: { first: ['Which charge should the provider review?', '¿Qué cargo debe revisar el proveedor?'], second: ['Which part of the bill needs an explanation?', '¿Qué parte de la factura necesita explicación?'], third: ['Which next steps would you like explained?', '¿Qué próximos pasos quieres que expliquen?'] },
+  advisory: { first: ['Which instructions would you like clarified?', '¿Qué instrucciones quieres que aclaren?'], second: ['When and how would you like an update?', '¿Cuándo y cómo quieres recibir una actualización?'], third: ['What would you like to know about the published area?', '¿Qué quieres saber sobre la zona publicada?'] },
+  report: { first: ['Which dated finding would you like them to follow up on?', '¿Sobre qué hallazgo fechado quieres seguimiento?'], second: ['Which notice would you like a copy of?', '¿De qué aviso quieres una copia?'] },
+  other: { first: ['Which next step would you like explained?', '¿Qué próximo paso quieres que expliquen?'] },
+  legal: { first: ['Which help options would you like explained?', '¿Qué opciones de ayuda quieres que expliquen?'] },
+}
+
+export function selectedHelpExample(issue: IssueType, field: 'description' | 'action', es: boolean, observations: Record<string, string>, actions: Record<string, string>): string {
+  const selected = Object.keys(field === 'description' ? observations : actions).filter(key => key !== 'details')
+  if (selected.length !== 1) return helpExample(issue, field, es)
+  const key = selected[0]
+  if (field === 'action' && issue === 'quality' && key === 'first' && Object.keys(observations).some(k => k === 'first' || k === 'third')) {
+    return es ? '¿Qué quieres que investiguen? Usa + para añadir una foto o video de lo observado.' : 'What would you like investigated? Tap + to add a photo or video of what you noticed.'
+  }
+  const entry = (field === 'description' ? observationExamples : actionExamples)[issue]?.[key]
+  return entry ? entry[es ? 1 : 0] : helpExample(issue, field, es)
+}

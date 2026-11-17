@@ -16,7 +16,7 @@ export function ReportHomeNote({ place, language, sample, onOpen }: { place: Pla
   const key = report ? `${place.id}:${report.year}` : ''
   const [seen, setSeen] = useState(() => seenKeys().includes(key))
   if (!report || !report.findings.length) return null
-  const es = language === 'es', n = report.findings.length, name = supplierDisplayName(place.name), ai = report.state === 'aiSummarized'
+  const es = language === 'es', n = report.findings.length, name = supplierDisplayName(place.name), ai = report.state === 'aiSummarized', auto = report.state === 'autoRead'
   function open() {
     if (!seen) { try { localStorage.setItem(SEEN, JSON.stringify([...seenKeys(), key].slice(-200))) } catch { /* storage full or blocked: still open the list */ } setSeen(true) }
     onOpen()
@@ -26,7 +26,7 @@ export function ReportHomeNote({ place, language, sample, onOpen }: { place: Pla
     <p>
       {!seen ? <span className="report-home-new">{es ? 'Nuevo' : 'New'}</span> : null}
       <b>{es ? `El informe del agua de ${report.year} de ${name} indica ${n} ${n === 1 ? 'problema' : 'problemas'}.` : `${name}’s ${report.year} water report lists ${n} ${n === 1 ? 'issue' : 'issues'}.`}</b>{' '}
-      {ai ? <span className="report-ai-tag">{es ? 'Resumen por IA' : 'AI summary'}</span> : null}{' '}
+      {ai ? <span className="report-ai-tag">{es ? 'Resumen por IA' : 'AI summary'}</span> : auto ? <span className="report-ai-tag">{es ? 'Leído del PDF' : 'Read from PDF'}</span> : null}{' '}
       <span className="quiet-note">{es ? 'Hallazgos fechados del informe, no el estado actual de seguridad.' : 'Dated report findings, not current safety status.'}</span>
     </p>
     <button className="text-button" onClick={open}>{es ? 'Ver los problemas' : 'See the issues'}</button>

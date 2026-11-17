@@ -49,7 +49,7 @@ test('language switching preserves manual subject/message and unsaved experience
   view.rerender(<RequestWorkspace {...props} language="es" />)
   expect(screen.getByLabelText('Mensaje')).toHaveValue('My manual message')
   expect(screen.getByLabelText('Asunto')).toHaveValue('My manual subject')
-  expect(screen.getByText('Paso 4 de 4 · Revisar y enviar')).toBeVisible()
+  expect(screen.getByText('Paso 4 de 4 · Revisar y contactar a tu proveedor')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Atrás' }))
   expect(screen.getByText('Paso 3 de 4 · Tus datos')).toBeVisible()
   expect(screen.getByRole('heading', { level: 1, name: 'Tus datos' })).toBeVisible()

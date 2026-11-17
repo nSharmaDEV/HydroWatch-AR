@@ -72,13 +72,15 @@ describe('checked-in directory', () => {
     expect(c.sourceUrl).toBe(`https://data.epa.gov/efservice/WATER_SYSTEM/PWSID/${epa.pwsid}/JSON`)
   })
 
-  it.each([['en', en], ['es', es]] as const)('keeps the directory matching warning inside expandable advisory history (%s)', async (language, t) => {
+  it.each([['en', en], ['es', es]] as const)('does not repeat advisory-history matching details on the card (%s)', async (language, t) => {
     const at = '2026-11-08T12:00:00.000Z'
     const s = DIRECTORY.systems.find(x => !PLACE_CATALOG.some(e => e.place.id === x.placeId))!
     render(<StatusCard place={{ id: s.placeId, name: s.name, county: s.county, kind: 'system' }} source={{ agency: 'ADH', records: [], retrievedAt: at, lastSuccessAt: at, error: null }} now={Date.parse(at)} t={t} language={language} onView={() => {}} />)
-    const warning = language === 'en' ? /Matched by exact name only/ : /Coincidencia solo por nombre exacto/
+    const warning = language === 'en' ? /For directory-listed systems/ : /Para los sistemas del directorio/
     expect(screen.queryByText(warning)).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: t.supplierAlertHistory }))
-    expect(await within(screen.getByRole('region', { name: t.supplierAlertHistory })).findByText(warning)).toBeVisible()
+    expect(screen.getByRole('region', { name: t.supplierAlertHistory })).toBeVisible()
+    expect(screen.queryByText(warning)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: language === 'en' ? 'About advisory history' : 'Acerca del historial de avisos' })).not.toBeInTheDocument()
   })
 })

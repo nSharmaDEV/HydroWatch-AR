@@ -20,11 +20,15 @@ export type AnnualReport = { year: number } & (
   // passed the script's identity, year, page and quote checks. Never a human
   // review; the UI labels it and the info dialog carries the AI disclaimer.
   | { state: 'aiSummarized'; url: string; summarizedOn: string; model: string; issues: readonly AnnualReportIssue[]; note?: Text }
+  // Written by the on-demand reader's rules: ADH's own violation and deficiency
+  // tables read from the PDF text with no AI and no person. Labelled as such in
+  // the app, never a hand review, and never quoted in a message.
+  | { state: 'autoRead'; url: string; readOn: string; issues: readonly AnnualReportIssue[]; note?: Text }
   | { state: 'unreviewed'; url: string; note?: Text }
   | { state: 'unavailable'; note?: Text; sourceUrl?: string }
 )
-export type SummarizedReport = Extract<AnnualReport, { state: 'reviewed' | 'aiSummarized' }>
-export const isSummarized = (report?: AnnualReport): report is SummarizedReport => report?.state === 'reviewed' || report?.state === 'aiSummarized'
+export type SummarizedReport = Extract<AnnualReport, { state: 'reviewed' | 'aiSummarized' | 'autoRead' }>
+export const isSummarized = (report?: AnnualReport): report is SummarizedReport => report?.state === 'reviewed' || report?.state === 'aiSummarized' || report?.state === 'autoRead'
 
 /**
  * Human-reviewed records always win. Otherwise a newer automated result (AI

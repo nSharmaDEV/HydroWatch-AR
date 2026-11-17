@@ -10,7 +10,7 @@ export const ISSUE_LABELS: Record<IssueType, [string, string]> = {
 }
 export const QUESTIONS = {
   approximate: ['Are these dates approximate? (optional)', '¿Son fechas aproximadas? (opcional)'],
-  frequency: ['How often does it happen? (optional)', '¿Con qué frecuencia ocurre? (opcional)'],
+  frequency: ['How often? (optional)', '¿Con qué frecuencia? (opcional)'],
   observationLocation: ['Which locations, if different from those selected? (optional)', '¿Qué lugares, si difieren de los seleccionados? (opcional)'],
   advisoryService: ['Does your concern include a service problem?', '¿Tu inquietud incluye un problema de servicio?'],
   contacted: ['Have you already contacted the provider about this?', '¿Ya contactaste al proveedor sobre esto?'],

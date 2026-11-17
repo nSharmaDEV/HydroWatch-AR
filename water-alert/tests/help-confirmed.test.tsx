@@ -17,7 +17,7 @@ test('icon issue buttons, date controls and only explicitly confirmed editable w
   expect(screen.queryByRole('button', { name: 'Edit wording: No water' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expect(screen.getByRole('heading', { level: 1, name: 'When, Where, + Action' })).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'Details and request' })).toBeVisible()
   // Dates are always visible; no collapsed disclosure.
   expect(document.querySelector('details.request-optional')).toBeNull()
   expect(screen.getByLabelText('When did it begin? (optional)')).toHaveAttribute('type', 'date')
@@ -36,7 +36,7 @@ test('icon issue buttons, date controls and only explicitly confirmed editable w
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(screen.getByRole('heading', { level: 1, name: 'Your details' })).toBeVisible()
   expect(screen.getByRole('button', { name: /Add a photo or document/ })).toBeVisible()
-  fireEvent.click(screen.getByRole('button', { name: 'Write my email' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Review my message' }))
   const message = (await screen.findByLabelText<HTMLTextAreaElement>('Message')).value
    expect(message).not.toContain('Your report:')
   expect(message).toContain('I have no water')

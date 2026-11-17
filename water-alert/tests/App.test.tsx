@@ -30,14 +30,17 @@ it('separates curated preparation references from live advisory feeds', async ()
   const user = userEvent.setup()
   await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: /Settings/ }))
   await user.click(screen.getByRole('button', { name: /Sources and coverage limits/ }))
+  expect(screen.getByRole('heading', { name: 'Advisory history' })).toBeVisible()
+  expect(screen.getByText(/Before Nov 5, 2026.*archived copies/)).toBeVisible()
+  expect(screen.getByText(/another name may not appear/)).toBeVisible()
   expect(screen.getByRole('heading', { name: 'Curated references — not live advisory feeds' })).toBeVisible()
   expect(screen.getByRole('link', { name: 'Arkansas Attorney General' })).toHaveAttribute('href', 'https://arkansasag.gov/file-a-complaint/')
 })
-it('shows the still, quieter wave strip behind History', async () => {
+it('keeps the decorative wave off History, where the cards carry dense text', async () => {
   const { container } = render(<App />)
   await userEvent.setup().click(within(screen.getByRole('navigation')).getByRole('button', { name: /History/ }))
   const stage = container.querySelector('.history-stage')!
-  expect(stage.querySelector(':scope > .welcome-strip')).toHaveClass('welcome-strip--still')
+  expect(stage.querySelector('.welcome-strip')).toBeNull()
   expect(stage.querySelector(':scope > .request-history')).not.toBeNull()
 })
 it.each([['en', 'Settings', /^Try sample mode/, /^Exit sample/, /Fictional records/], ['es', 'Ajustes', /^Probar modo de muestra/, /^Salir de muestra/, /Registros ficticios/]] as const)('Settings is six link rows with sample mode as the last, and no extra controls (%s)', async (language, settings, trySample, exitSample, disclosure) => {

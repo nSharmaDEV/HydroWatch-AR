@@ -19,7 +19,7 @@ function Locations() {
 }
 function Guide({ initial = base(), sample = true }: { initial?: HelpDraft; sample?: boolean }) {
   const [draft, setDraft] = useState(initial)
-  return <GuidedHelp draft={draft} place={draft.place} places={catalog} language="en" sample={sample} deviceOnly delivery={false} sending={false} saveFailed={false} heading={createRef()} extras={null} edit={patch => setDraft(d => ({ ...d, ...patch }))} changeFacts={facts => setDraft(d => ({ ...d, facts }))} go={flowStep => setDraft(d => ({ ...d, flowStep }))} send={() => { throw new Error('Must not send') }} regenerate={() => {}} />
+  return <GuidedHelp draft={draft} place={draft.place} places={catalog} language="en" sample={sample} deviceOnly delivery={false} sending={false} saveFailed={false} heading={createRef()} onHistory={() => {}} extras={null} edit={patch => setDraft(d => ({ ...d, ...patch }))} changeFacts={facts => setDraft(d => ({ ...d, facts }))} go={flowStep => setDraft(d => ({ ...d, flowStep }))} send={() => { throw new Error('Must not send') }} regenerate={() => {}} />
 }
 
 test('catalog matches appear while typing and arrows/Enter select without entering raw query', () => {
@@ -46,10 +46,10 @@ test('catalog matches appear while typing and arrows/Enter select without enteri
 test('invalid date ranges show guidance and prevent advancing; ongoing clears the end date without disabling its picker', () => {
   render(<Guide initial={{ ...base(), flowStep: 'timing', answers: { began: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
   // A legacy "timing" draft resumes on "When and where".
-  expect(screen.getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
+  expect(screen.getByText('Step 2 of 4 · Details and request')).toBeVisible()
   // Inline field error on the always-visible "When and where" card.
   expect(screen.getAllByRole('alert').map(a => a.textContent)).toEqual(['The end date must be on or after the start date.'])
-  expect(screen.getByRole('heading', { level: 1, name: 'When, Where, + Action' })).toBeVisible()
+  expect(screen.getByRole('heading', { level: 1, name: 'Details and request' })).toBeVisible()
   expect(document.querySelector('details.request-optional')).toBeNull()
   expect(screen.getByLabelText('When did it end? (optional)')).toBeVisible()
   expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
@@ -63,7 +63,7 @@ test('invalid date ranges show guidance and prevent advancing; ongoing clears th
 
 test.each(['quality', 'advisory'] as const)('%s dates validate the first-noticed date against the end on the timing screen', issue => {
   render(<Guide initial={{ ...base(), issue, flowStep: 'timing', answers: { noticed: '2026-10-14', ongoing: 'No', ended: '2026-10-09' } }} />)
-  expect(screen.getByText('Step 2 of 4 · When, Where, + Action')).toBeVisible()
+  expect(screen.getByText('Step 2 of 4 · Details and request')).toBeVisible()
   expect(screen.getAllByRole('alert')).toHaveLength(1)
   for (const alert of screen.getAllByRole('alert')) expect(alert).toHaveTextContent(/end date.*start date/i)
   expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
@@ -88,16 +88,16 @@ test('observation step omits provider contact cards, call line and repeated supp
   expect(screen.queryByText(/Emergency\? Call 911/)).not.toBeInTheDocument()
 })
 
-test('Review keeps records in a popup without an answers table, source detail or deletion rows', () => {
+test('Review keeps source provenance in citations without records or deletion controls', () => {
   const facts = initialFacts(place, [{ id: 'notice', placeId: place.id, name: place.name, county: place.county, agency: 'ADH', kind: 'boil', issued: '2026-10-14', lifted: null, reason: 'Published problem', area: 'Published area', url: 'https://example.test/notice' }], true, false, 'en')
   const changeFacts = vi.fn()
   render(<ReviewEmail draft={{ ...base(), facts }} language="en" extras={null} edit={() => {}} changeFacts={changeFacts} go={() => {}} regenerate={() => {}} />)
   expect(screen.queryByRole('table', { name: 'What you provided' })).not.toBeInTheDocument()
   expect(screen.queryByRole('row', { name: /First noticed/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Add reported start date' })).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: /^Records \(\d+ of \d+ included\)$/ }))
-  const records = screen.getByRole('dialog', { name: 'Records' })
-  expect(within(records).getByText('Published problem')).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Cited sources' }))
+  const records = screen.getByRole('dialog', { name: 'Cited sources' })
+  expect(within(records).getByText(/Published problem/)).toBeVisible()
   expect(screen.queryByText('View source details')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Remove source record' })).not.toBeInTheDocument()
 })

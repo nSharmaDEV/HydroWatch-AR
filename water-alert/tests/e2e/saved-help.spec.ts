@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { readFile } from 'node:fs/promises'
 test.use({ reducedMotion: 'reduce' })
 for (const language of ['en', 'es'] as const) for (const outputs of [false, true]) test(`${outputs ? 'sample outputs and language' : 'saved guided help, Map and History'} (${language})`, async ({ page, context, baseURL }, testInfo) => {
   const unexpected: string[] = [], errors: string[] = []
@@ -48,7 +47,7 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
     await expect(page.locator('.request-progress')).toContainText(language === 'en' ? `Step ${n} of 4` : `Paso ${n} de 4`)
     await fits()
   }
-  await page.getByRole('button', { name: language === 'en' ? 'Write my email' : 'Escribir mi correo', exact: true }).click()
+  await page.getByRole('button', { name: language === 'en' ? 'Review my message' : 'Revisar mi mensaje', exact: true }).click()
   await expect(page.locator('.request-progress')).toContainText(language === 'en' ? 'Step 4 of 4' : 'Paso 4 de 4')
   await fits()
   const message = page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })
@@ -78,7 +77,9 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await expect(page.getByRole('textbox', { name: language === 'en' ? 'Message' : 'Mensaje', exact: true })).toHaveValue('SYNTHETIC EDIT RETAINED')
   const subject = page.getByRole('textbox', { name: language === 'en' ? 'Subject' : 'Asunto', exact: true })
   await subject.fill('SYNTHETIC MANUAL SUBJECT')
-  await page.locator('.help-downloads-disclosure > summary').click()
+  await page.getByRole('navigation', { name: language === 'en' ? 'Request progress' : 'Progreso de la solicitud' }).getByRole('button', { name: language === 'en' ? /Your details/ : /Tus datos/ }).click()
+  await page.getByLabel(language === 'en' ? 'Your name (optional)' : 'Tu nombre (opcional)', { exact: true }).fill('Synthetic resident')
+  await page.getByRole('button', { name: language === 'en' ? 'Review my message' : 'Revisar mi mensaje', exact: true }).click()
   const regenerate = page.getByRole('button', { name: language === 'en' ? 'Update draft from answers' : 'Actualizar borrador desde las respuestas', exact: true })
   page.once('dialog', async dialog => {
     expect(dialog.type()).toBe('confirm')
@@ -94,16 +95,8 @@ for (const language of ['en', 'es'] as const) for (const outputs of [false, true
   await expect(message).toHaveValue(/Synthetic resident issue — no service on Monday/)
   await expect(message).toHaveValue(new RegExp(language === 'en' ? 'What happened\n' : 'Qué pasó\n'))
   await message.fill('SYNTHETIC EDIT RETAINED')
-  if (outputs) {
-    const marker = language === 'en' ? 'SAMPLE — FICTIONAL' : 'EJEMPLO — FICTICIO'
-    for (const [label, filename] of [[language === 'en' ? 'Download email' : 'Descargar correo', 'sample-water-email.txt'], [language === 'en' ? 'Download report' : 'Descargar reporte', 'sample-water-report.txt']]) {
-      const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: label, exact: true }).click()])
-      expect(download.suggestedFilename()).toBe(filename)
-      const content = await readFile((await download.path())!, 'utf8')
-      expect(content).toContain(marker)
-      if (filename.includes('email')) expect(content).toContain('SYNTHETIC EDIT RETAINED')
-    }
-  }
+  await expect(page.locator('.request-review-update')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: language === 'en' ? /^Download (email|report)$/ : /^Descargar (correo|reporte)$/ })).toHaveCount(0)
   // Sample mode: the ways to send it are shown but disabled.
   await expect(page.locator('.send-options')).toContainText(language === 'en' ? 'Sample — sending disabled.' : 'Ejemplo — envío desactivado.')
   await expect(page.locator('a[href^="mailto:"], a[href^="tel:"]')).toHaveCount(0)

@@ -8,6 +8,328 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-16 — Clearer secondary actions
+
+- Locally replace link-like action controls with labeled Lucide icons and compact buttons across places, settings, search, help, and history, while keeping official source links distinct. Not deployed.
+
+### 2026-11-16 — Shared wave navigation
+
+- Locally extend wave transitions between wave-bearing pages, including Home and Places, while retaining reduced-motion behavior.
+- Refine these handoffs to reshape one continuous wave instead of crossfading two different wave shapes.
+- Prevent Home's initial stagger and wave rise from competing with navigation back from Places and Settings. Local change; not deployed.
+
+### 2026-11-16 — Refine Home search suggestions
+
+- Limit Home suggestions to three, prevent the dropdown being cut off at the hero edge, and animate its opening and closing using the provider disclosure timing with reduced-motion support. Local change; not deployed.
+
+### 2026-11-16 — Match add-place button styling
+
+- Styled Add a place as a full-width outlined pill matching Browse all places, with the app's frosted-glass treatment. Local change; not deployed.
+
+### 2026-11-16 — Home supplier search suggestions
+
+- Added local, keyboard-accessible supplier suggestions as residents type on Home; choosing one opens the existing confirmation preview. ZIP searches remain separate. Local change; not deployed.
+
+### 2026-11-16 — Advisory history button spacing
+
+- Added space below the show-more advisories button before the next section. Local change; not deployed.
+
+### 2026-11-16 — Show annual-report results in the provider bar
+
+- Show a dated, neutral provider-information chip when a read or reviewed annual report lists no violations, including the reading method where applicable. This describes the historical report, not current water safety. Local change; not deployed.
+
+### 2026-11-16 — Move advisory history information to Settings
+
+- Removed the advisory-history heading info button and moved its coverage and matching limitations to Settings → Sources and coverage limits. Individual historical-record provenance remains available. Local change; not deployed.
+
+### 2026-11-16 — Consolidate advisory history explanations
+
+- Moved history coverage, archived-list limitations and applicable supplier-name matching details into one bilingual advisory-history info button; retained individual record provenance and removed repeated inline explanations. Local change; not deployed.
+
+### 2026-11-16 — Recheck control is visible on hand-reviewed annual reports
+
+- The Annual report card now keeps its check/retry button available for directory-listed systems even when WAVE already has a hand-reviewed report. A completed check is saved on this device, but the hand-reviewed report remains the one shown. Local UI coverage verifies the button can be used without replacing the reviewed result. Not deployed.
+
+### 2026-11-16 — The reload button reads the report with the rules first, AI only as a fallback
+
+- Pressing the reload icon on the Annual report card now runs `readAnnualReport` (`server/annual-report-check.ts`): exact identity, the printed 2025 title and page count (as in `ccr:sync`), then the rule-based reader (`readByRules`). If the rules read it, the issues appear with **no AI call and no key**. Only when the rules decline **and** an `ANTHROPIC_API_KEY` is set is the PDF sent to the AI, and that summary is kept only if every cited page, date and quote is found in the PDF text. Otherwise the card shows the PDF link as "Not yet reviewed" with a note that WAVE could not read it automatically. An AI failure, an unreachable ADH or an ambiguous match stores nothing.
+- New `autoRead` report state, deliberately separate from `reviewed` and `aiSummarized`: it shows a **"Read from PDF"** tag with a circle-i explaining it (new bilingual `AnnualReportAutoReadDisclaimer`), counts as findings in the card, header chip and Home note, and is **never** offered as a quotable hand-checked finding (no "Ask about this", excluded from report alerts). Issue text is English as ADH printed it; recognised headings carry a Spanish form. Results stay on the pressing device.
+- Verified live against ADH for Cave Springs (PWS 043), Highfill (885) and Mountain View (542): each read as 0 issues, and each PDF was checked directly for a violations table, a deficiencies section and Y-marked result rows, with none found. The route and reader are covered by 13 server tests and a new UI test that an automatic read shows its issues labelled "Read from PDF", never as reviewed or AI, and offers no "Ask about this". `tsc` clean.
+- Limits, unchanged from the measurement below: the rules decline reports with a Y-marked result row, a "Current" end date, or an unfamiliar layout, so those still need the AI key or a person. Needs `pdftotext`/`pdfinfo`, so it runs on the local server and would need a JS PDF extractor before it could run hosted. The dev server must be restarted to pick this up. Two `ask-about-report` tests fail as before this change. Not deployed.
+
+### 2026-11-16 — Rule-based annual-report reader (built and measured; not connected to the app)
+
+- New `scripts/ccr-rules-lib.ts`: reads the VIOLATIONS and SIGNIFICANT DEFICIENCIES sections of an ADH annual report from `pdftotext -layout` text with plain rules, with no AI call and no key. It is deliberately conservative: it returns issues only when every line and date in those sections is accounted for, and otherwise declines with a reason. It declines on a result row marked Y (contaminant or upstream-supplier rows), a date row without exactly a from and to date, an unrecognised violation type, a printed year other than 2025, a column boundary that would cut through a word, or any output word that is not on its page. Wording and dates are ADH's, as printed; issue text is English as published, and only the recognised section headings carry a Spanish form.
+- `scripts/ccr-rules-measure.ts` scores it against the hand-reviewed result for each saved report. On the 40 hand-reviewed reports it was built from: **34 correct, 0 wrong, 6 declined** (500, 735, 747, 772, 845 and Bull Shoals 352), plus Springdale 575 correctly declined for its 2024 title. That score flatters it because the rules were tuned on those reports.
+- A held-out check on **26 reports it had never seen** (downloaded from ADH; about 40 were sampled and the run was stopped early) found a fault the measurement above missed: in Forrest City (004) the table's right column starts left of its header, so the split cut words ("…Clearwells. de" / "significant ficiency"). Dates and counts were right, so the scoring passed it, but the card text would have been corrupted. Fixed by locating the column edge from right-only lines and adding the two safeguards above; the cost is that Bull Shoals, which read correctly before, is now declined. After the fix: 23 read (8 with issues) and 3 declined (a differently laid-out violations section, a row with an odd date count, and an unrecognised "DBPR Monitoring/Reporting" type). The 15 reads with no issues were checked against the raw text for any violations table, deficiencies section or Y-marked row and had none; the 8 with issues were compared with the printed page.
+- Sample size is small (26), so the true decline rate and error rate on all 618 are not known; the honest claim is that every output checked matched its page, not that the reader is proven. It has **not** been wired into the reload button or any route. 13 new tests cover exact reads, repeated periods, the survey date, the held-out column fault, declines, a synthetic word-cut, and a sweep proving no saved report is read contradicting its hand review; held-out text is stored in `tests/fixtures/ccr-text-{004,195,296}.txt`. `tsc` clean. Not deployed.
+
+### 2026-11-16 — The reload button on the Annual report card now reads the PDF
+
+- Pressing the reload icon used to find and link the 2025 PDF but never read it, so no issues appeared. When the API has an `ANTHROPIC_API_KEY`, `POST /api/annual-report/check` now runs the same pipeline as `npm run ccr:sync` (`readAnnualReport` in `server/annual-report-check.ts`, reusing `syncOne`): exact identity, a printed 2025 title, an AI summary of every page, and the summary kept only if every cited page, date and short quote is found in the PDF's own extracted text. The issues are stored on the pressing device and rendered through the existing AI-summary card, labelled "AI summary" with the circle-i disclaimer and never presented as a hand review.
+- Without a key the button behaves as before (links the PDF). A summary that fails the checks is not shown; the PDF link is, as "Not yet reviewed" with the reason. An AI failure, an unreachable ADH or an ambiguous match stores nothing. AI results are memoized for an hour per system so repeat presses do not repeat the cost; the 10-per-minute per-IP cap still applies.
+- Needs `pdftotext`/`pdfinfo` (poppler), which exists on this Mac but not in a Vercel serverless runtime, so the reading works on the local server and would need a JS PDF text extractor before it can work hosted. `npm run dev` now loads `water-alert/.env` so the key can live there. Not run against the live AI: no key is set here. 4 new tests cover a supported summary, a withheld one, AI failure, ambiguity and the key/no-key route behaviour against saved ADH PDFs with a mocked summarizer; `tsc` clean. Not deployed.
+
+### 2026-11-16 — Imported advisories use the live card layout; provenance moves behind an info button
+
+- Imported and archived advisories in Advisory history now render exactly like live ones: the same **Agency issued** / **Agency lifted** labels, the same **Status: Agency explicitly lifted** wording, and a circle-i in the heading. Previously they used a separate layout ("Issued" / "Explicitly lifted", an extra "Historical record imported" line, a "Published by… Reviewed…" line and a stacked source link), which was only noticeable once the archive import put hundreds of them on screen.
+- All provenance now sits behind that circle-i, which opens a popover on imported records (live records keep their link to the general ADH list): the "Historical record imported" marker, publisher and reviewed date, any source discrepancy, the archived-list or original-notice link, and the note that historical records may predate collection, are incomplete, and do not change current status or trigger notifications.
+- The footer no longer claims "History begins Nov 5, 2026 and may not include earlier advisories" under cards dated years earlier. When a supplier shows archived advisories it now says advisories before collection began come from archived copies of the ADH list and are incomplete, and it drops the "info icon opens the general ADH list" sentence unless a live record is also shown.
+- Same-event de-duplication against live records now applies only to archived records; hand-reviewed records still reconcile solely through reviewed `observedNoticeIds`. `report-check.ts` formats the Spanish checked-date in long form to match the existing report notes.
+- Local only. `npx tsc --noEmit` passes; 37 tests pass across imported advisories, archive parsing, alert history, annual report, and the on-demand check UI — the jsdom UI tests that could not start earlier ran this time. `tests/imported-advisories.test.tsx` now isolates the hand-reviewed record from the generated archive, and the matching Playwright spec was updated but not run. Verified in a real browser on Mountain View Waterworks. Nothing was deployed, committed or sent.
+
+### 2026-11-16 — Advisory history recovered from archived copies of the ADH notice page
+
+- Advisory history previously began the day WAVE started collecting (Nov 5, 2026), because ADH publishes no archive: its boil-water page offers no date or history controls and lists only active and recently lifted notices. New `npm run advisory:archive` (`scripts/advisory-archive.ts`, `scripts/advisory-archive-lib.ts`) recovers earlier advisories from dated Internet Archive captures of **ADH's own page**, so the wording, dates, area, reason and county are the agency's, read from a copy rather than retyped.
+- First run: **75 captures read, none failed; 829 advisories across 307 suppliers**, issued 25 Mar 2020 – 22 Apr 2026, 649 with a recorded lift date. A further 78 were dropped because their system is not in the EPA community-water directory (RV parks, ranches, private associations), since linking them would need a name guess. Output is the generated `src/imported-advisories-archive.ts` plus a per-capture log in `docs/research/adh-advisory-archive/log.json`.
+- **This is a sample, not a record.** An advisory issued and lifted between two captures was never on a captured page and cannot be recovered, and capture density is very uneven (3 captures in all of 2023 against 40 in 2025). It recovers far more than that implies only because ADH leaves long-running notices listed for months. 351 systems have at least one recoverable advisory; the rest have none here, and that absence is an artifact of capture timing, never evidence a system was never under a notice. Captures also stop 22 Apr 2026, leaving a gap until collection began on 5 Nov 2026.
+- Records enter through the existing `ImportedAdvisory` path, which is deliberately **not** a `Notice`: they cannot reach the source snapshot, status, polling or notification flows, and they render only in Advisory history with its existing "Historical record imported" marker and provenance line. Identity uses the live parser's exact published-name hash, never a fuzzy or county match. One advisory listed under several counties is merged as one event, and an archived copy of an event WAVE later observed itself is dropped on an exact issue-time and area match so it is shown once, from the live record.
+- A new optional `capturedOn` field marks entries whose source is a dated copy of the agency's whole list rather than one notice document, so the link reads **"Archived ADH list, Dec 1, 2024"** instead of the existing "Original notice", which would have overstated what it opens. Hand-reviewed records still win over an archived copy of the same event.
+- Local only. `npx tsc --noEmit` passes; 7 new tests cover table parsing, blank lift cells, multi-county merging, lift dates first seen in a later capture, stable ids, and both deduplication paths. A month/day transposition in the id date was caught by spot-checking generated output and fixed before the final run. Verified in a real browser: Mountain View Waterworks shows its recovered advisories newest-first with correct dated capture links. Nothing was deployed, committed or sent.
+
+### 2026-11-16 — Expanding a disclosure no longer strands it clipped at zero height
+
+- `disclosureSlide` in `src/disclosure-slide.ts` reported completion with `Promise.all` across the panel's own effect **and one effect per child**. `useMotionPresence` consumes that as `animation.finished.then(finish, () => {})`, where the rejection handler does nothing, and `finish` is what calls `cancel()` to remove the inline `overflow: clip`, `height`, `min-height`, `box-sizing` and `flex-shrink` the slide applies. So if any child effect was cancelled — which happens whenever a re-render swaps a child mid-animation, and supplier cards re-render as their status and relative times update — the promise rejected, the restore never ran, and the panel stayed frozen at the frame it started from: clipped to zero height with its contents still offset 24px upward. That matches the reported symptom, an expanded **Advisory history** whose first paragraph is cut off behind the section header.
+- The slide now reports completion with `Promise.allSettled`, so a cancelled child effect can no longer skip the restore. Panels with static content were affected less often because nothing re-rendered to cancel an effect, which is why the Annual report disclosure usually behaved while Advisory history did not.
+- **Not verified in a browser.** The fix follows from the code path above, but the in-app browser panel available here does not run Web Animations at all — every slide disclosure sits at its start frame there, including ones known to work normally — so it could neither reproduce the fault nor confirm the fix. jsdom has no `element.animate`, and its test workers do not start on this machine, so there is no automated coverage either. `npx tsc --noEmit` passes. This needs a check in a real browser: expand Advisory history on a supplier card and confirm it settles to full height with nothing clipped.
+
+### 2026-11-16 — On-demand annual-report and water-system checks
+
+- Suppliers with no reviewed record now carry a small circular reload icon in the top corner of the Annual report and Water system cards, immediately left of that card's existing source link (PDF / ADH reports / ADH profile), rather than a full-width button in the card body. Nothing is fetched until someone presses one, so a resident can fill in their own supplier without a statewide batch run. The icon is labelled for screen readers ("Check for the annual report", "Check the system details", and their "again" forms once a result exists); outcomes still appear as a text line below the card. Both buttons are hidden where a shipped record already exists (so a device check can never replace a hand-reviewed or AI-checked one), hidden on fictional sample records, and hidden for systems absent from the EPA directory snapshot.
+- New `POST /api/annual-report/check` and `POST /api/water-system/check` in `server/app.ts`, backed by `server/annual-report-check.ts` and `server/water-system-check.ts`. The ADH search needs a session cookie and hidden ASP.NET fields, so this cannot run in the browser. Each route has a 10-per-minute per-IP cap on top of the existing API limiter, and a five-minute per-place memo so repeated presses do not re-hit a state government site; failures are never memoized, so a retry is immediate.
+- **The report check links a document; it never reads one.** It reuses `pickCandidate` from `scripts/ccr-sync-lib.ts` unchanged — exact PWS, or county plus an identical set of non-generic name words — and confirms the response really begins with `%PDF-`. Findings, issue counts and categories remain exclusively with `npm run ccr:sync`, whose output is reviewed in a diff before it ships. Because `pdftotext` does not exist in a Vercel serverless runtime, the check never asserts the year printed inside the document; the stored note claims only that ADH's 2025 search returned it.
+- **The water-system check never trusts a derived identifier.** EPA's `AR#######` is not ADH's internal ID, so the derived candidate is only used to request the page, and the result is kept solely when the system name ADH publishes on that page matches the directory name exactly. A page listing a different system returns `mismatch` and stores nothing. Source names are separated from upstream pointers, so "HWY 102 MM - See ROGERS WATER UTILITIES for Source Water Assessment" records the source as `HWY 102 MM` and never adopts the upstream system as this system's own. ADH wording that is not a recognised phrase is shown exactly as printed rather than translated by guess.
+- **A failed check stores nothing and changes nothing.** Unreachable, non-PDF, ambiguous and mismatched outcomes all leave the card as it was, with a transient message saying so. "We could not check" must never render as "no report found" and never as an all-clear. Results that are stored land in the `unreviewed` and `unavailable` states the card already drew, so no new result formatting was introduced.
+- Results stay on the device (`wave:report-check:v1`, `wave:water-system-check:v1`) rather than the hosted store, and both keys were added to the existing Settings delete-my-data path. EN/ES strings throughout; outcomes are announced through an `aria-live` region; the checked date is worded as when WAVE looked, never when ADH inspected or published.
+- Local only, and **not verified end to end in the browser**. `npx tsc --noEmit` passes, and 17 server-side tests pass covering identity, ambiguity, mismatch, every failure path, the routes and the memo. The parser is checked against dated public ADH page snapshots saved to `tests/fixtures/adh-ws-041.html`, `adh-ws-043.html` and `adh-ws-747.html`, including a test that it reproduces the existing hand-verified Bentonville profile. Both checks were also exercised against the live ADH site, returning a verified Cave Springs profile (PWS 043) and its 2025 report link. The flow was then driven end to end in a real browser against the running dev server: pressing each icon on Cave Springs filled in the PDF link and the full water-system facts, and flipped both icons to their "again" labels. The UI test file `tests/report-check-ui.test.tsx` was written but **could not be executed**: jsdom test workers fail to start on this machine, which also affects existing untouched test files, so those assertions remain unrun and the browser pass is what stands in for them. Nothing was deployed, committed or sent.
+
+### 2026-11-16 — Annual-report sync widened to the full supplier directory; AI-summary disclosure moved onto the card
+
+- `scripts/ccr-sync.ts` (`npm run ccr:sync`) now feeds `findTargets` the full EPA/ADH directory snapshot (`src/directory/epa-water-systems.json` via `src/water-system-directory.ts`, 658 Arkansas community systems) in addition to `PLACE_CATALOG` and previously observed places, not just the subset already recorded in `data/live/observations.json`. A freshly searched or added supplier (for example Cave Springs Waterworks, which previously showed "Not yet reviewed"/"Not yet verified" with no catalog or observation entry) is now a sync target. Directory PWSIDs are EPA's `AR########` form, never ADH's internal CCR-search PWS number, so they are intentionally **not** passed as a known-PWS hint — exact-ID matching stays limited to hand-verified catalog URLs, and every directory-only system is identified by the existing county + exact-name matching, the same fallback already used for unknown systems. Verified locally: `findTargets` now returns 618 targets (up from the previous catalog/observed-only count), including Cave Springs Waterworks with `reason: 'missing'`. The sync itself has not been run against the live ADH site in this batch — `ANTHROPIC_API_KEY` is not set in this environment, and `health.arkansas.gov` is currently unreachable (timed out) from every network path available here (webfetch, the in-app browser and a direct `fetch`), so `src/ai-annual-reports.ts` is unchanged pending a real run elsewhere.
+- Annual-report cards (`AnnualReportCard` in `src/AnnualWaterReport.tsx`) now carry a small circular info button (the existing `InfoButton` component, same pattern already used in the supplier info dialog, `SendOptions.tsx` and `ReviewEmail.tsx`) next to the "AI summary" tag on `aiSummarized` reports. It opens the existing `AnnualReportAiDisclaimer` content inline on the card, so the AI-summary disclaimer is visible without navigating to the separate supplier info popup. No new disclaimer text; `.report-ai-tag` styling adjusted in `src/styles.css` to fit the button.
+- A new automated sync for `provider-profiles.ts` ("Water system" card: source, system ID, type, population, inspection date) against ADH's water-system directory pages was planned but **not built**: building it safely requires inspecting the real `WS.aspx?ID=` / `WSlist.aspx` markup first, and `health.arkansas.gov` could not be reached from this environment to do that. `PROVIDER_PROFILES` remains 5 hand-transcribed entries.
+- Local only: `npx tsc --noEmit` passes; `tests/ccr-sync.test.ts`, `tests/ai-annual-report.test.tsx`, `tests/annual-report.test.tsx`, `tests/report-home-note.test.tsx` and `tests/supplier-parity.test.tsx` pass. A full `npx vitest run` shows 68 pre-existing failures across Help/Request-flow test files unrelated to this change (already present in the working tree before this batch). Nothing was deployed, committed, or run against the live ADH site.
+
+### 2026-11-12 — History list rows carry no per-row CTA
+
+- Removed the per-row primary action (**Log an update**, **Log a follow-up**, **Continue draft**, **Check the send**, **View request**) and the per-row secondary **View draft** from History list rows. The whole row is already clickable and opens the detail view, where the status strip holds the one primary action for that request; the row-level button duplicated that path and crowded the list. The chip, subject, provider · category, compact stepper, and latest-activity note remain. Dead `.history-row-actions` CSS (including the phone-width stack) was removed, and the list-row test now checks that no `.primary` sits inside a row and that the row-click still opens the detail view where **Continue draft** then resumes the wizard. Local unit tests only; not deployed.
+
+### 2026-11-12 — History detail composed as three cards
+
+- The History detail page is now three white, borderless cards (radius 14px, soft shadow) on a tinted page background: **Status** (the state row and the four-stage stepper, divided by a hairline, since they describe the same thing), **Your message**, and **Details** (Reach them again and What happened as two columns split by a vertical hairline, stacking on phones). Section labels sit on the background above each card. The content column is 800px.
+- Logging moved out of the page and into a modal `<dialog>`: **Log a follow-up**, **Log an update**, **Update contact details**, **Mark as resolved**, **Stop pursuing this** and **Reopen** all open the same shell with the same fields. Focus starts on the first field, stays inside while open, and returns to the button that opened it; Escape, ✕ and Cancel close it and record nothing.
+- The five repeated notices were replaced by one muted line below a hairline at the very bottom. Its wording follows where the record is kept: sample, device-only, or account-backed (account wording also covers messages WAVE sent and replies it received). The follow-up explanation is now helper text under the follow-up date inside the dialog, and says the date is a reminder for the resident, not a provider deadline or a notification.
+- **Full record and more options** was removed. Its actions (write a follow-up, contact the next office, update contact details, calendar reminder, stop pursuing, close/reopen, delete) are a labelled row of quiet buttons at the foot of the Details card; the bulkier record (what you noticed, where, where you stopped, original issue, sent messages with attachments, sources, retry and escalation guidance) opens from **Full record** in the same dialog shell. Nothing was dropped.
+- Type scale: subject 27px/800, status headline 17px/700, body and contact rows 13.5px, meta, timeline, stepper dates and the bottom note 12.5px muted, section labels 11px uppercase.
+- The decorative wave strip was removed from History (`App.tsx`), as it crossed the content column. A completed **Prepared** stage says “Date not recorded” rather than showing an em dash or borrowing the last-saved time, because requests do not store when they were prepared; the stage labels are unchanged.
+- EN/ES strings included. Local unit tests and a local Playwright check (three cards, one privacy line at two widths, the type scale, dialog focus/Escape/return, the full-record dialog, Spanish detail and dialog strings) only; not deployed.
+
+### 2026-11-12 — History background and header match the other tabs
+
+- History no longer paints its own page tint. The fixed, full-viewport tinted layer added with the three-card layout covered the app header (logo, navigation and language switch) because `main` is a stacking context painted after the header, so History appeared to have no header at all. The page now shows the same shared background as every other tab (`HomeWater`'s gradient inside `main`), and the header is visible again.
+- History also stopped overriding `main`'s width and padding. It uses the shared 1160px column and 40px/30px padding like the other tabs instead of a full-width 1280px/44px one, which was only there so the removed wave strip could span the viewport. Phones keep the larger bottom padding so the fixed bottom navigation never covers the last row.
+- No content, wording or behaviour changed. Checked locally in the running app at 1280px and 390px against Places and Settings; the three-card layout, dialog and Spanish checks still pass. Not deployed.
+
+### 2026-11-12 — History opens on the request
+
+- History now renders by count. With no requests it shows one line about where requests are saved and a **Get help with a water issue** button. With one request it opens the request itself: a **Your request** eyebrow, the subject as the page heading, then provider · category · saved time. With two or more it shows a list grouped into **Needs you**, **In progress** and **Closed**, newest first. When there are more than three closed requests, that group collapses behind a disclosure. Each row opens the same detail view; buttons inside a row do not.
+- The detail view leads with a tinted next-action strip with exactly one primary action. The amber “Follow-up suggested today / N days ago” and “Couldn’t reach them” states use **Log a follow-up**. The teal “Finish your message” and “Ready to send” states use **Continue draft**. The teal “Waiting for a reply” and “Reply recorded” states use **Log an update**. “Resolved” (green) and “Closed” (slate) have no primary action. A WAVE send that was not confirmed shows **Check the send**. Follow-up wording calls the date a suggestion, not a deadline.
+- One four-stage stepper is used everywhere: Prepared → Contacted → Follow up → Closed. Dates appear only where one was recorded (“Nov 12 · email”), with an em dash otherwise. The follow-up date now appears once, in the stepper. The duplicate meta chip and its stray leading “·” were removed, and provider names are always title case.
+- **Your message** shows To/Subject and the draft or sent message inline. The body is clipped with a fade and has a keyboard-operable **Show full message** toggle. There are icon buttons to edit, open in an email app, and copy. **Reach them again** lists the directory email and phone with copy/call buttons; opening them records nothing. **What happened** is a newest-first timeline of resident-recorded outcomes and WAVE sends, with only stored times shown. **Full record and more options** keeps original issue, sent messages, sources, attachments, retry, escalation, calendar reminder, close/reopen and delete.
+- Outcome logging is inline under the strip (no new storage fields). The old `trackerSteps` helper and list/tracker/draft-summary CSS were replaced by `src/history-view.ts`, `ProgressTracker` and `src/history.css`. EN/ES strings and locale-formatted dates and relative days are included. Local unit tests and a local Playwright check of each strip state, the 0/1/2+ count switch, keyboard toggle, ES strings and 390px fit only; not deployed.
+
+### 2026-11-12 — Contact attempt popup
+
+- **Log a contact attempt** on Review now opens a centered modal (native `<dialog>`, dimmed backdrop) instead of expanding the right column. It has paired desktop fields (Contact date / How did you try?, Reference or ticket number / When should you follow up?), an optional notes field with example placeholders, and icon-and-text buttons: Couldn’t reach them, Cancel and Save. The fields stack on phone widths, and the dialog scrolls only when the viewport is too small. The contact date still defaults to today and cannot be in the future, and the suggested follow-up date stays editable and clearable. The suggested-follow-up helper text was removed from the popup.
+- Escape, ✕ and Cancel record nothing and return focus to the button. Save and Couldn’t reach them record the same resident-reported outcome through `recordOutcome` and then open History for the request. WAVE still sends nothing and verifies nothing. Samples cannot log attempts. The inline “Did you send it?” prompt after opening an app or call is unchanged.
+- EN/ES strings are included. Local unit and Playwright checks (1280×800 fit, phone stacking) only; not deployed.
+
+### 2026-11-12 — Separate step attachments
+
+- Steps 2, 4 and 5 now have separate limits of three files and 1 MB per step, with matching accessible attachment rows; Review includes all files. Older attachments without a step remain on Step 5. Server validation and the local API request limit were updated. Local checks only; not deployed or verified in hosted delivery.
+
+### 2026-11-12 — Step 5 attachment rows
+
+- Styled Step 5 attachments as compact file rows matching Review, with type badges, sizes and an accessible, translated trash-icon removal button. File limits and attachment handling are unchanged. Local change only; not deployed.
+
+### 2026-11-12 — Compact Review header
+
+- Visually hid the Review heading while retaining it for assistive technology, and reduced the space above the footer. A local 1280×800 browser check fits the footer with one expanded file; longer content and smaller viewports may still scroll. Not deployed.
+
+### 2026-11-12 — Widen Review card
+
+- Widened the centered Review card to up to 1120px, retaining the 65/35 desktop grid and stacked mobile layout. Longer content may still scroll. Local change only; not deployed.
+
+### 2026-11-12 — Review page rebuild: Your files and What happens next
+
+- Review now uses the step card shell at up to 960px with the shared progress header ("Review · last step", six filled segments) and a 65/35 grid: Draft email left; Send it yourself, Your files and What happens next right. It stacks to one column at 760px and below.
+- Added Your files, which reads Step 5 `HelpDraft.attachments` directly (no copy). It is hidden when there are no files. A single header button with `aria-expanded`/`aria-controls` toggles it; it is expanded by default and the choice is kept in `sessionStorage`. Compact rows show a type tag, name, size and a download link (object URLs, revoked on unmount). Rows are draggable with a Chromium `DownloadURL` payload. Drag-out to Finder or desktop mail apps has not been verified.
+- Added What happens next (Send or call, Log it here, Follow up), worded without promising delivery or a reply. EN/ES strings are included for all new text and labels.
+- Removed the call script and the next-office ("Another option") card from Review. Contact sources still list every recipient. Cards are now filled and borderless with tinted header strips; footer buttons are unchanged.
+- Local checks only (unit and Playwright on a UI-only server); not deployed.
+
+### 2026-11-12 — Center Help forms
+
+- Centered the guided Help forms when space permits and restored white backgrounds for unselected issue choices.
+
+### 2026-11-12 — Compact observation details
+
+- Reduced the initial height of the observation details box to match the action details box. Local change only.
+- Corrected a more specific style that prevented the action details box from actually shrinking in the browser.
+- Compacted the request choices on shorter desktop screens so the standard form and navigation fit more comfortably.
+
+### 2026-11-12 — Compact action details
+
+- Reduced the initial height of the additional action details box to leave more room for the navigation buttons. Local change only.
+
+### 2026-11-12 — Align reply fields
+
+- Paired the email and phone fields on wider screens and format partial US phone numbers as they are entered. Local change only.
+
+### 2026-11-12 — Separate reply details
+
+- Added optional email and US phone fields to Help, while retaining editable previously saved contact details. Complete recognizable US numbers are formatted; email whitespace is trimmed on leaving the field. Local change only.
+
+### 2026-11-12 — Consistent Review buttons
+
+- Restored the standard Help form button sizing and typography to the Review footer; actions are unchanged. Local change only.
+
+### 2026-11-12 — Compact Review heading
+
+- Removed the Review introduction and its expandable explanation so the email and contact options move up. This is a local change, not a deployment.
+
+### 2026-11-12 — Clearer request emails
+
+- Made prior-contact paragraphs more natural in English and Spanish, adjusted ADH-only service and report requests to seek guidance, and suggested (without selecting) an advisory coverage question when the resident is unsure. Saved notices no longer add an unsolicited applicability question. Local checks only; no deployment or delivery verification.
+- Locally improved selected stock service and billing requests, single-request wording, agency-only billing guidance, and account-number privacy in generated subjects; warn when restoration is selected for an ended issue. No deployment or delivery verification.
+
+### 2026-11-12 — Restore home wave position
+
+- Kept the former footer's spacing below the Home wave without restoring the footer. This is a local change, not a deployment.
+
+### 2026-11-11 — Remove home footer text
+
+- Removed the minimal home footer and its text; the existing water background is unchanged. This is a local change, not a deployment.
+
+### 2026-11-11 — Review icon controls and information popovers
+
+- Moved email-app handoff into the draft toolbar beside icon-only Copy and Edit actions; email-copy and phone controls now have translated accessible labels and hover/focus tooltips. Existing handoff, clipboard and manual-confirmation safeguards are retained.
+- Moved contact logging to the primary footer action and removed the separate after-contact panel. Supplier limitations/source access, other-office guidance and To-row citations use shared keyboard/touch info popovers with Escape, outside-click and mutual-exclusion behavior. The six input screens are unchanged.
+- Local verification: typecheck/build, 69 focused tests and eight synthetic English/Spanish desktop/mobile checks pass, including 320px layout and keyboard popovers. The full suite reports 852 passing and the same 64 failing test names as the earlier run; no lint script is configured. Updated README. No deployment or real delivery verification is implied.
+
+### 2026-11-11 — Compact laptop Review
+
+- Tightened only desktop Review spacing, progress/header layout, contact panels and footer while keeping the shared Help styling, two columns and readable 16px email text. Typical collapsed synthetic messages fit at 1280×800 and 1440×900; long letters retain an independently scrollable editor. Mobile and expanded content remain scrollable.
+- Subject rows start at one line and still grow for longer subjects. Contact warnings, citations and all existing contact actions remain available. Updated responsive browser coverage and README; no deployment or real delivery verification is implied.
+
+### 2026-11-11 — Two-column Review within the shared Help design
+
+- Kept the approved shared card, progress header, typography and footer, while placing the email and contact options side by side at desktop widths of 1000px and above. Smaller screens remain stacked. No logic, routing or translation changes.
+- Updated responsive English/Spanish browser checks and README layout guidance. No deployment or real contact is implied.
+
+### 2026-11-11 — Review consistent with preceding Help screens
+
+- Replaced the separate wide Review shell with the same centered 720px card, visible progress header, typography and footer as the earlier Help screens. The email and existing contact options now follow in a single column, with natural page scrolling rather than a height-limited editor.
+- Preserved email editing, source disclosures, contact logging, navigation and English/Spanish behavior. The six input screens are unchanged; this supersedes the earlier mockup-specific no-scroll layout.
+- Local verification: 57 focused tests and eight synthetic desktop/mobile English/Spanish checks pass. No real contact or deployment is implied.
+
+### 2026-11-11 — MacBook-sized email Review layout
+
+- Matched the supplied email-screen reference with a large message heading, Copy/Edit toolbar, letter card, separate email/phone contact rows, contact-source caution, secondary office and contact-logging panel. The six input screens are unchanged.
+- Standard synthetic messages and a populated contact sidebar fit without page or editor scrolling at 1280×800 and 1440×900 in English and Spanish. Longer letters retain a scrollable desktop editor; mobile stacks naturally, and expanded disclosures remain accessible rather than being clipped.
+- Local build and 57 focused unit tests pass. Synthetic desktop/mobile browser checks cover layout, editing, draft persistence and opening the contact log; they do not verify real sending or delivery. Nothing deployed or sent.
+
+### 2026-11-11 — Email-only cleanup and restored form presentation
+
+- Removed the added explanatory paragraphs beneath the issue, location and contact-details screen headings and removed request-card “Edit wording” controls. Existing saved wording, field labels, form layout and address-lookup privacy disclosure remain unchanged.
+- Removed the remaining English/Spanish email records subheading while retaining the evidence text and citations. No sending or deployment is implied.
+
+### 2026-11-10 — Real-world utility contact journey
+
+- Help explains prepare → contact → record, restores optional prior-provider-contact questions, allows editing selected requests, and clarifies address/account privacy and manual attachments without changing saved-draft storage.
+- Generated English/Spanish emails use first-person paragraphs rather than complaint-report headings, retaining dated evidence and exact citations. Follow-ups cite recorded contact without assuming non-resolution; call scripts include billing details. Manual and blank email edits remain protected.
+- Contact logging accepts the actual contact date and optional/cleared follow-up date. History exposes unsuccessful attempts and distinguishes resident-recorded contact/reply from sent messages; contact dates can be corrected. General utility listings and official form sources are labeled, with jurisdiction-limited ADH/consumer-assistance/PSC guidance.
+- Local build passes; the five focused journey/email/outcome test files pass 68 tests, and four synthetic English/Spanish desktop/mobile browser checks pass. These are not real delivery or agency-response verification. Nothing deployed, sent or submitted. The full local suite remains failing (848 passed, 64 failed), including older four-screen expectations; this is not a clean release gate.
+
+### 2026-11-10 — Compact Review step matched to mockup
+
+- Tightened the final Review screen to the approved mockup: the letter card shows "To" and "Subject" rows with lighter labels and the message body as plain letter text (the editor's focus ring moved to the card edge, so keyboard focus stays visible without an inner box), with a shorter minimum height so the card ends near the sign-off. The answers-changed banner now uses a blue outline. The "Send it yourself" column uses smaller headings, 44px Copy/Call buttons, a compact recipient card and call script, and ends at "Log a contact attempt".
+- Moved the "Contact sources" link into the recipient card and removed the fine-print footer from Review; the address-lookup privacy note remains on the Where step and the column lead still states that WAVE sends, calls and files nothing. Cited sources, outcome logging, the secondary contact row and the general-contact caution are unchanged.
+- Local unit tests updated (`tests/review-final-design.test.tsx`); checked in a local browser only. Not deployed and no real contact is implied.
+
+### 2026-11-10 — Review and handoff layout
+
+- Updated the final Review screen with a wider responsive email and contact layout, a shared footer email-app action, and English/Spanish lookup privacy disclosures before address entry and on Review. Existing resident-initiated contact options, sources, outcome logging, and separately configured sending remain available. Opening an email app does not send a message.
+- Visual pass: the message now reads as an email (tinted To/Subject header, padded letter body), and the right column is a sticky tinted "Send it yourself" panel. That panel shows the recipient card first, then a compact secondary-contact row and the contact-logging action. "How this works", contact sources, and the draft and privacy notes sit in a fine-print footer and stay visible. The phone number no longer wraps mid-number.
+- Local checks use synthetic data only; no deployment or real contact is implied.
+
+### 2026-11-10 — Consistent Something else cards
+
+- On the observation and request screens, selecting “Something else” now behaves like the other cards instead of opening an inline editor. Existing saved custom wording remains in the draft; the separate details fields remain available.
+
+### 2026-11-10 — Choice-aware Help examples
+
+- Tailored observation and action placeholders to the selected choice in English and Spanish, including relevant photo or video suggestions where appropriate. Multiple or unselected choices retain a neutral issue-specific example. Draft text, field dimensions, attachment limits and email handoff guidance are unchanged.
+
+### 2026-11-10 — More useful Help examples
+
+- Replaced the generic step 2 and step 4 placeholders with short issue-specific examples in English and Spanish. Text-box dimensions and shared photo/video attachment behavior are unchanged; attachment limits and manual email handoff remain in the details-screen guidance and accessible descriptions.
+
+### 2026-11-10 — Shorter Help text prompts
+
+- Shortened the step 2 and step 4 placeholders to distinguish observations from requested actions, retaining a compact photo/video and email-attachment reminder. Reduced their text-area height while retaining normal scrolling when content or screen size requires it; fuller file guidance remains on the details screen and available to assistive technology.
+- Local synthetic checks: 10 desktop browser scenarios passed; the English service scenario placed both Continue buttons within a 1280×800 viewport. Other content, translations and smaller screens may still need scrolling.
+
+### 2026-11-10 — Help media guidance on both steps
+
+- Added the photo/video plus button to the observation text field on step 2 and removed its visible border on both steps, retaining keyboard focus styling. Combined the attachment guidance with each field's placeholder; the same guidance remains available to assistive technology and the later attachment screen.
+- Local synthetic browser checks cover both upload entry points; no real files were sent.
+
+### 2026-11-10 — Help choice grids and action media
+
+- Fit “Something else” into the two-column grid when there are four total choices; retain the full-width treatment for other counts and the single-column mobile layout.
+- Add a photo/video button to additional action details, reusing draft attachments and their removal controls. MP4 and WebM are accepted alongside existing file types under the existing three-file, 1 MB total limit; email-app handoffs still require manually attaching files. No delivery is implied.
+- Local checks: 15 Help storage tests and 10 synthetic desktop browser scenarios passed, including a 390px layout check. `npm run build` remains blocked by missing `onHistory` props in the older `help-refresh` and `help-wireframes` test fixtures. These checks do not verify real delivery.
+
+### 2026-11-10 — Compact Help choice cards
+
+- Matched the observation and request cards to the original issue cards: icon above the label, a top-right checkmark for selected cards, and a full-width “Something else” row. Native checkboxes remain available to keyboard and screen-reader users; multiple cards can be selected. The focused synthetic browser test passed locally; no deployment or messages.
+- Replaced the observation and request rows with two-column icon cards on wider screens, retaining native multi-select checkboxes, existing choices, defaults, and editable wording. Cards stack on narrow screens. Removed the overlapping instructional subtitles on both steps; headings remain visible.
+- Local checks: 9 synthetic desktop browser scenarios and 25 focused unit tests passed. `npm run build` remains blocked by missing `onHistory` props in the older `help-refresh` and `help-wireframes` test fixtures; no deployment or real messages were sent.
+
+### 2026-11-10 — Six-screen Help flow and address lookup
+
+- Replaced the four Help screens with six single-column screens (What's wrong?, What have you noticed?, Where and when, What would you like them to do?, Your details, Anything they should know?) before the unchanged-in-purpose Review. New 720px card, "Step N of 6" header with segmented progress bar, icon-only Open History plus Back/primary footer, shared 2px control borders, teal selected state, one focus ring, category cards as an arrow-key radio group, and placeholder helper text on the optional text areas. Field names, answers and generated email logic are unchanged; the default requests are now set when entering the request screen; "Not specified" is labelled "Not sure" on the ongoing/frequency selects. The "Nothing is sent by continuing" note moved to Review. Server draft validation accepts the new step names. Old drafts resume on the nearest screen (they were not deleted); local History records are untouched.
+- 2026-11-10: Reworked the address field on Where and when to the wireframe states. Default: one 56px field with pin, placeholder "Start typing an address", a "Use my location" crosshair icon button inside the field (aria-label and tooltip), and a single "Can’t find it? Enter it manually" link; the old outlined button row and the privacy paragraph are gone from this screen. Typing: dark 3px border, clear (x) button, listbox attached under the field with bold matched text, pin rows, hover/active gray, and a last "Can’t find it? Enter it manually" row (replacing the "Use as typed" row; it keeps the typed text as a manual entry). Selected: check icon, #F6F6F6 field, "Change" button (clears, returns to default and focuses the input), "Confirmed from a map result." Manual: "ENTERED MANUALLY" tag, "Not verified. The provider may ask you to confirm the location." and "← Search for an address instead". Location failures show "We couldn’t get your location. You can type your address instead."; leaving the field unpicked shows "Choose an address from the list, or enter it manually." with an icon. aria-live announces "Address selected"/"Manual entry". The privacy sentence moved to Review beside the draft note; the number hint example is now "100 NE A St"; the dates hint is shorter. Compact desktop spacing lets Where and when end (Continue) at y≈811 at 1440x820; at 1280x720 it is measured at the same height, so it still scrolls ~90px there. State shape and `src/addressSearch.ts` are unchanged. Checks: `tests/e2e/address-field.spec.ts` (8 scenarios incl. state transitions, desktop) and `tests/address-search.test.ts` pass; tsc for non-test sources clean. Not run: 390px/ES visual review, the full unit suite, live Census/Photon, real geolocation. Not deployed.
+- 2026-11-10: Where and when now fits short desktop windows: at heights of 800px or less every box's padding and gaps shrink evenly (card, toolbar, heading, group gaps 28→14px, field heights 52→44px, address field 56→48px) without shrinking body text. Measured Continue bottom: 811px at 1440×820 and 707px at 1280×720 (both visible without scrolling). A very short window such as 1000×560 still scrolls (Continue bottom ≈711px). Browser spec passes; local only.
+- 2026-11-10: A bare house number (digits only) no longer queries the map service, which returned unrelated places; the address field shows a hint to add the street name instead (EN/ES).
+- 2026-11-10: Address suggestions now include house-number matches. When the typed text starts with a house number, `searchAddresses` also asks the existing `/api/geocode-address` endpoint (US Census geocoder, via the API server) and lists those matches first, with coordinates and the typed number kept; Photon street suggestions follow and the "Use as typed" row remains. The endpoint keeps its `addresses` field and adds `matches` with coordinates. If the API server is unavailable (for example the UI-only dev server) only Photon results appear. The privacy note now names the Census geocoder. Local unit checks only (`tests/address-search.test.ts`, `tests/api.test.ts`); not checked in a browser against the live Census service, not deployed `[NEEDS: Census geocoder terms/privacy review]`.
+- Added an Arkansas-biased address combobox on Where and when backed by the Photon public demo server through `src/addressSearch.ts` (provider swap seam, normalizer, reverse geocoding for "Use my location"). Picked suggestions are stored with coordinates; typing clears them; manual entry is always available; Continue requires a picked or manual address; the field discloses that typed text is sent to a lookup service. Typed addresses and coordinates leave the device for a third party, which is a change from earlier behavior `[NEEDS: privacy page wording, production provider]`.
+- Verification (local, synthetic, not deployed): `tests/address-search.test.ts` (5) and `tests/e2e/address-field.spec.ts` (5 desktop scenarios with mocked lookups: keyboard, pick, edit-after-select, blur error, Escape/Tab, manual entry, network error, geolocation denied/allowed, 390px) pass; source type-check is clean. Existing unit and browser tests that assume four steps, the old stepper or button names were NOT updated in this batch and are expected to fail until rewritten; see the full-suite result noted below.
+
+### 2026-11-10 — Refine Help spacing and simplify Review
+
+- Removed Review's Included records and Downloads and tools sections entirely, including their dividers, record-inclusion controls and download buttons. Retained saved evidence, dated source prose and the Cited sources popup; saved notice wording is explicitly marked as unverified for current status there. When protected email becomes stale, its warning offers explicit regeneration with a replacement warning and the existing confirmation safeguard.
+- Standardized checkbox rows with full-label click targets, 12px gaps, first-line alignment and identical selected/unselected padding and weight. Softened heading weight/tracking, strengthened control borders/focus rings, aligned category icons/labels and added a non-color selected icon. Review keeps distinct To/Subject/Message rows, native editable text and the copy/manual-copy fallback.
+- Renamed step 2 to Details and request / Detalles y solicitud and shortened the frequency label. Moved contextual textarea guidance out of placeholders into persistent, accessible descriptions; clarified that files are not attached automatically by email links. Natural page scrolling is intentional rather than squeezing this guidance into the initial viewport. No deployment or real contact actions.
+- Local checks: `npm run build` passed with Vite's large-chunk warning, and 60 focused Help/source/draft regression tests passed. All 40 English/Spanish Help browser scenarios at 1280×720/800 passed, including checkbox geometry, recipient/citation separation, narrow layouts, enlarged text and protected edits. Ten additional saved-draft, sample-language and History/browser regressions passed at desktop and narrow widths. Full Vitest: 874 passed, with the same two English/Spanish Gurdon report-disclaimer assertion failures observed before this polish; an unmodified baseline has not been checked. These are synthetic checks, not delivery verification.
+
+### 2026-11-10 — Apply the Help screenshot visual treatment
+
+- Refreshed the existing four-screen flow with muted teal selected tiles, rounded controls, a compact underlined step toolbar, borderless action footer, dashed attachment area and soft contact panels beside the editable email. All existing fields, source disclosures and handoff safeguards remain; there is no duplicate email-app action in the footer.
+- Paired start/end dates above their shared hint, followed by ongoing/frequency controls on desktop. DOM and keyboard order follow that layout; mobile stacks the fields. Kept "Review my message", the full After-you-contact-them logging button and natural page scrolling for longer content, rather than clipping content to a fixed viewport height.
+- Local checks only, not deployed: `npm run build` passed with Vite's large-chunk warning; 30 focused Help tests passed. All 40 English/Spanish browser scenarios at 1280×720/800 passed, plus two service scenarios at 1440×820, including narrow layouts and enlarged text. The full Vitest run passed 872 tests and failed the same two English/Spanish Gurdon report-disclaimer assertions observed before this visual refresh; an unmodified baseline has not been checked. No real messages, calls or notifications were sent.
+
+### 2026-11-10 — Get Help handoff, low-pressure request and History progress
+
+- Follow-up polish (local only): the third-screen Help button is "Review my message" / "Revisar mi mensaje"; the second-screen button remains Continue. "Log a contact attempt" is a full secondary button in its own "After you contact them" section, and its form replaces the handoff actions while open. Mixed low-pressure reports default to the plain pressure request alongside the usual service requests; deliberate deselections and manual message edits remain protected on revisits.
+- Reduced desktop form spacing without shrinking text or removing fields. Review keeps the editable message left and contacts right at 1100px and above, stacking below. At this checkpoint, measured English/Spanish service screens at 1280×720 had first-screen Continue ending at about 700px and third-screen Review at 654px (before the subsequent screenshot visual treatment above). Longer timing forms and evidence-rich messages retain normal page scrolling; no all-screens-fit claim.
+- Renamed "Review and send" to "Review and contact your provider" (and Spanish) and "Sent it another way? Record it" to "Log a contact attempt", which now asks how the resident tried (email, call, form) or lets them log that they couldn't reach anyone.
+- Service and billing requests label the supplier's directory contact "General utility contact"; WAVE has no verified service-issue or billing-specific channel, so none is claimed `[NEEDS: verified per-supplier service/billing channels]`.
+- A low-pressure-only report defaults to one plain request ("Could you check what's causing the low pressure and let me know when I should expect an update?") in the email and call script; other issues keep their existing defaults.
+- Contact logging and History add "What did they tell you?" and an editable "When should you follow up?" date (default five business days, can be cleared; check-in date only, no notification). History adds a resident-recorded progress tracker, Update contact details, Record another attempt, "I'm no longer pursuing this" and Reopen; outcome kinds `closed` and `reopened` are accepted by the server validator. Existing drafts and outcomes are unchanged. English and Spanish.
+- Local checks only, not deployed: `npm run build` passed (with Vite's large-chunk warning); focused Help tests passed (21 tests). The full Vitest run passed 872 tests and failed two English/Spanish Gurdon report-disclaimer assertions in `all-supplier-reports`; the unmodified baseline was not checked. Earlier load-related `active-help` and `help-redesign` timeouts did not recur in this run. All 20 English/Spanish browser scenarios at 1280×720 passed across five issue types with/without an active advisory, including the 1099/1100px breakpoint, 320px layout and enlarged text. These are synthetic local checks, not delivery verification.
+
 ### 2026-11-09 — Remove large-supplier heading from supplier search
 
 - Removed the "Large Arkansas suppliers" heading and its hint ("By directory population served—not your location. Match your water bill.") and the Spanish equivalents above the default supplier list on an empty search. The list itself, its population ordering and the "Directory matches" heading for typed searches are unchanged. Local checks only, not deployed: TypeScript, `tests/ux-refresh.test.tsx` and the Playwright "supplier directory labels and acronyms stay readable" test (desktop and phone, EN/ES) passed.

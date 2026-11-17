@@ -44,7 +44,7 @@ it.each([false, true])('never infers a lift from disappearance or failed retriev
   expect(panel.getByText('Status: Unconfirmed')).toBeVisible()
   expect(panel.queryByText('Agency explicitly lifted')).not.toBeInTheDocument()
   expect(panel.queryByText('Active advisory')).not.toBeInTheDocument()
-  expect(panel.getByText(/Missing notices do not establish a lift or water safety/)).toBeVisible()
+  expect(panel.queryByText(/Missing notices do not establish a lift or water safety/)).not.toBeInTheDocument()
   if (failure) expect(screen.getByText('Current advisory status unavailable.')).toBeVisible()
 })
 
@@ -55,14 +55,14 @@ it('does not create history or a start date from complete check logs or legacy r
   expect(panel.queryByText(/History begins/)).not.toBeInTheDocument()
 })
 
-it('shows a saved source-specific history date even when no notices were retained', async () => {
+it('does not show an inline history date when no notices were retained', async () => {
   const panel = await history([], { ...source, records: [], historyStartedAt: at })
-  expect(panel.getByText(/History begins Oct 14, 2026 and may not include earlier advisories\./)).toBeVisible()
+  expect(panel.queryByText(/History begins Oct 14, 2026/)).not.toBeInTheDocument()
 })
 
 it('offers Spanish alert history while keeping official text verbatim', async () => {
   const panel = await history([notice], source, 'es')
   expect(panel.getByText(notice.reason)).toBeVisible()
   expect(panel.getByText('No proporcionado por ADH')).toBeVisible()
-  expect(panel.getByText(/La ausencia de un aviso no demuestra su levantamiento/)).toBeVisible()
+  expect(panel.queryByText(/La ausencia de un aviso no demuestra su levantamiento/)).not.toBeInTheDocument()
 })
