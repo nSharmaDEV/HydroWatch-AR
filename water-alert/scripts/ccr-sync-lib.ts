@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import * as cheerio from 'cheerio'
 import type { AnnualReport, AnnualReportIssue } from '../src/annual-reports'
-import { readByRules } from './ccr-rules-lib'
+import { readByRules } from './ccr-rules-lib.js'
 
 export const REPORT_YEAR = 2025
 export const ADH_SEARCH_URL = 'https://health.arkansas.gov/eng/CCRSearch.aspx'

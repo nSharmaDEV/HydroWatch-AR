@@ -1,4 +1,4 @@
-import { isReportFactId, type HelpDraft } from './help-requests'
+import { isReportFactId, type HelpDraft } from './help-requests.js'
 
 export function hasPersonalConcern(draft: HelpDraft) {
   return Object.values(draft.wording?.report ?? {}).some(value => value.trim()) || draft.issue !== 'report' && !!draft.description.trim()

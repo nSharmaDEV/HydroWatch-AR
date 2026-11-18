@@ -9,7 +9,7 @@
 //
 // Wording and dates are ADH's, as printed. Issue text is English as published;
 // only the section headings it recognises carry a Spanish form.
-import { REPORT_YEAR, splitPages, titleYear } from './ccr-sync-lib'
+import { REPORT_YEAR, splitPages, titleYear } from './ccr-sync-lib.js'
 import type { AnnualReportIssue } from '../src/annual-reports'
 
 export type RulesResult = { ok: true; issues: AnnualReportIssue[]; sections: string[] } | { ok: false; reason: string }

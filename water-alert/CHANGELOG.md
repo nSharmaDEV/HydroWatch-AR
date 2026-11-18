@@ -8,6 +8,11 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-18 — Fix hosted API crash after production deploy
+
+- Production deploy `dba0cfb` returned `FUNCTION_INVOCATION_FAILED` for every `/api` route: Vercel runs the API as native ES modules, and `scripts/ccr-sync-lib.ts` imported `./ccr-rules-lib` without the `.js` extension (`ERR_MODULE_NOT_FOUND` in runtime logs). Add `.js` to that import and to the two other extensionless runtime imports reachable from `api/index.ts` (`scripts/ccr-rules-lib.ts` → `./ccr-sync-lib.js`, `src/report-questions.ts` → `./help-requests.js`).
+- Local checks: a scan of the import graph from `api/index.ts` finds no remaining extensionless relative runtime imports; the API compiled to plain ESM loads under Node; CCR/annual-report/guided-question tests (5 files) and `npm run build` pass. Hosted recovery must be confirmed after redeploy.
+
 ### 2026-11-18 — Problem notes kept internal for emails
 
 - Remove **Notes about individual problems** (and **Notes about these records** for providers with no recorded problem) from the provider card, along with its record-specific “What these records do not show” list. Source quotes, conflict text and record limits remain in the evidence data that Help emails already use; general coverage limits stay in **Settings → Sources and coverage limits**. The inline conflict note now reads “The report and resolution record differ.” (ES: “El informe y el registro de resolución no coinciden.”) without pointing to the removed section. Unused notes styles removed.
