@@ -128,6 +128,8 @@ it('labels retained failed-source notices as previous observations, with unavail
   expect(card).toHaveClass('unavailable')
   expect(within(card).queryByText('No active boil-water notice found')).not.toBeInTheDocument()
   expect(within(card).getByText('Current advisory status unavailable.')).toBeVisible()
+  expect(within(card).queryByText('Previously observed notice · current status unverified')).not.toBeInTheDocument()
+  expect(card.querySelector('.card-check-actions')?.nextElementSibling).toHaveClass('supplier-card-sections')
   expect(within(card).queryByText('No successful check recorded yet for this supplier.')).not.toBeInTheDocument()
   expect(within(card).queryByText('Boil-water notice')).not.toBeInTheDocument()
   view.unmount()

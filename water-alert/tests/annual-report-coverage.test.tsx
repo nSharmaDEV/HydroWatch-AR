@@ -86,7 +86,10 @@ it('wires observed suppliers through Provider information without leaking report
   const place = { id: source.id, name: source.name, kind: 'system' as const, county: source.county ?? '' }
   const view = render(<SupplierInformation place={place} sample={false} language="en" onView={() => {}} />)
   await userEvent.setup().click(screen.getByRole('button', { name: /^Provider information/ }))
-  expect(screen.getByRole('heading', { name: /^Annual report 2025: 1 finding reported;/ })).toBeVisible()
+  expect(screen.getByRole('button', { name: /^Provider information 1 historical finding/ })).toBeVisible()
+  await userEvent.setup().click(screen.getByRole('button', { name: /All recorded problems/ }))
+  expect(document.querySelectorAll('.evidence-inline-issue')).toHaveLength(1)
   view.rerender(<SupplierInformation place={place} sample language="en" onView={() => {}} />)
-  expect(screen.queryByText(/1 finding reported/)).toBeNull()
+  expect(document.querySelector('.provider-info-chip')).toBeNull()
+  expect(document.querySelectorAll('.evidence-inline-issue')).toHaveLength(0)
 })

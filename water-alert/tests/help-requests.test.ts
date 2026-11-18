@@ -9,6 +9,31 @@ const dirs: string[] = []
 async function store() { const dir = await mkdtemp(join(tmpdir(), 'wave-help-')); dirs.push(dir); return new HelpStore(dir) }
 afterEach(async () => { await Promise.all(dirs.splice(0).map(dir => rm(dir, { recursive: true, force: true }))) })
 const place = { id: 'ADH:896ab9a415f10bb945ec2570f39dccaf46828714edb1d1e7dc7408f0bba94dcf', name: 'Leisure Hills', county: 'Benton', kind: 'system' as const }
+test('grouped document snapshots round trip with bounded server validation', async () => {
+  const s = await store()
+  const evidence = { period: 'October 2025', action: 'Monitoring resumed', resolution: '', conflicts: 'Different printed dates', federal: true }
+  const record = { agency: 'Official records', date: '', problem: 'Monitoring', area: '', status: 'Archived', verified: false, sourceMethod: 'structuredRecord' as const, evidence }
+  const d = { ...blankRequest(place), facts: [{ id: 'echo:AR0000747:1', text: 'Historical evidence', kind: 'historical' as const, included: true, sources: [], record }] }
+  const saved = await s.save('alice', d, 0)
+  expect(saved.draft.facts![0].record).toEqual(record)
+  expect((await new HelpStore(dirs[0]).list('alice'))[0].draft.facts![0].record).toEqual(record)
+  for (const invalid of [null, [], { ...evidence, federal: 'true' }, { ...evidence, resolution: 12 }, { ...evidence, conflicts: 'x'.repeat(2001) }]) {
+    await expect(s.save('alice', { ...d, facts: [{ ...d.facts[0], record: { ...record, evidence: invalid as unknown as typeof evidence } }] }, saved.revision)).rejects.toThrow('evidence')
+  }
+})
+test('the separate report-question screen survives server save and resume', async () => {
+  const s = await store(), d = { ...blankRequest(place), flowStep: 'reportQuestions' as const }
+  await s.save('alice', d, 0)
+  expect((await new HelpStore(dirs[0]).list('alice'))[0].draft.flowStep).toBe('reportQuestions')
+})
+test('report interpretation provenance survives storage and rejects unsupported methods', async () => {
+  const s = await store(), record = { agency: 'Annual water-quality report', date: '', year: '2025', problem: 'Synthetic finding', area: '', status: '', verified: false, sourceMethod: 'aiSummarized' as const }
+  const d = { ...blankRequest(place), facts: [{ id: '2025:0', text: 'Historical interpretation', kind: 'historical' as const, included: true, sources: [], record }] }
+  const saved = await s.save('alice', d, 0)
+  expect(saved.draft.facts![0].record).toEqual(record)
+  expect((await new HelpStore(dirs[0]).list('alice'))[0].draft.facts![0].record).toEqual(record)
+  await expect(s.save('alice', { ...d, facts: [{ ...d.facts[0], record: { ...record, sourceMethod: 'invented' as 'aiSummarized' } }] }, saved.revision)).rejects.toThrow()
+})
 test('attachment allowances are independent per step and legacy files count on response', async () => {
   const s = await store()
   const file = (step?: 'noticed' | 'request' | 'response', size = 1) => ({ id: crypto.randomUUID(), name: 'file.txt', type: 'text/plain', data: Buffer.alloc(size, 65).toString('base64'), ...(step ? { step } : {}) })

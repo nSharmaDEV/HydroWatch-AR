@@ -7,8 +7,10 @@ import { withPlaceCatalog } from '../src/place-catalog.js'
 import { directorySystem } from '../src/water-system-directory.js'
 import { readAnnualReport, todayInArkansas, type ReadDeps, type ReportCheck } from './annual-report-check.js'
 import { checkWaterSystem } from './water-system-check.js'
+import { checkEchoRecords } from './echo-records.js'
+import type { EchoCheck } from '../src/echo-records.js'
 import { helpJson, helpRouter, helpWebhook, type HelpServices } from './help-api.js'
-export function createApp({ store, runner, pushes, origin, publicKey, drain, cron, limiter, help, geocodeFetch = fetch, adhFetch = fetch, reportReader }: { store: ObservationStore; runner: Pick<SourceRunner, 'check'>; pushes: PushStore; origin: string; publicKey: string | null; drain: () => Promise<void>; cron?: { secret: string; run: () => Promise<void> }; limiter?: (req: Request) => Promise<boolean>; help?: HelpServices; geocodeFetch?: typeof fetch; adhFetch?: typeof fetch; reportReader?: ReadDeps }) {
+export function createApp({ store, runner, pushes, origin, publicKey, drain, cron, limiter, help, geocodeFetch = fetch, adhFetch = fetch, echoFetch = fetch, reportReader }: { store: ObservationStore; runner: Pick<SourceRunner, 'check'>; pushes: PushStore; origin: string; publicKey: string | null; drain: () => Promise<void>; cron?: { secret: string; run: () => Promise<void> }; limiter?: (req: Request) => Promise<boolean>; help?: HelpServices; geocodeFetch?: typeof fetch; adhFetch?: typeof fetch; echoFetch?: typeof fetch; reportReader?: ReadDeps }) {
   const app = express()
   app.disable('x-powered-by')
   if (help) app.post('/api/help/webhook', express.raw({ type: 'application/json', limit: '64kb' }), helpWebhook(help))
@@ -97,6 +99,28 @@ export function createApp({ store, runner, pushes, origin, publicKey, drain, cro
     if (++limit.count > 10 || reportLimits.size > 10000) { res.setHeader('Retry-After', '60'); res.status(429).json({ error: 'Report check limit reached. Try again in a minute.' }); return }
     const result = await readAnnualReport(system, reportReader ?? {}, adhFetch)
     if (result.state === 'aiSummarized' || result.state === 'autoRead' || result.state === 'unreviewed' || result.state === 'unavailable') reportMemo.set(placeId, { at: now, result })
+    res.json(result)
+  })
+  // On-demand EPA ECHO record lookup for one exact system. The federal PWS ID
+  // comes from WAVE's reviewed directory snapshot, never from the request, so a
+  // caller cannot aim this at an arbitrary system or host. Results are kept on
+  // the requesting device; this short memo only stops repeated taps re-hitting
+  // a federal service. Failures are never memoized.
+  const echoMemo = new Map<string, { at: number; result: EchoCheck }>()
+  app.post('/api/echo-records', async (req, res) => {
+    const placeId = typeof req.body?.placeId === 'string' ? req.body.placeId : ''
+    const system = placeId ? directorySystem(placeId) : undefined
+    if (!system) { res.status(400).json({ error: 'Unknown water system' }); return }
+    const now = Date.now()
+    for (const [key, value] of reportLimits) if (now - value.at > 60_000) reportLimits.delete(key)
+    for (const [key, value] of echoMemo) if (now - value.at > 900_000) echoMemo.delete(key)
+    const memo = echoMemo.get(placeId)
+    if (memo) { res.json(memo.result); return }
+    const key = req.socket.remoteAddress ?? 'unknown'
+    const limit = reportLimits.get(key) ?? { at: now, count: 0 }; reportLimits.set(key, limit)
+    if (++limit.count > 10 || reportLimits.size > 10000) { res.setHeader('Retry-After', '60'); res.status(429).json({ error: 'Record check limit reached. Try again in a minute.' }); return }
+    const result = await checkEchoRecords(system.pwsid, echoFetch)
+    if (result.state === 'retrieved' || result.state === 'none') echoMemo.set(placeId, { at: now, result })
     res.json(result)
   })
   const systemMemo = new Map<string, { at: number; result: Awaited<ReturnType<typeof checkWaterSystem>> }>()

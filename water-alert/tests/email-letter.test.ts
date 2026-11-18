@@ -28,7 +28,7 @@ test('selected observations become sentences, not pasted checkbox labels', () =>
 test('combined billing request comes before contact and sign-off', () => {
   const body = generateMessage(billing(), 'en').body
   expect(body).toContain('Could you review the charge, explain how the questioned amount was calculated and whether it is correct, and correct it if it is incorrect?')
-   const order = ['I called the office once.', 'Could you review the charge', 'You can reach me at ana@example.test', 'Thank you,\nAna Resident']
+   const order = ['Could you review the charge', 'I called the office once.', 'You can reach me at ana@example.test', 'Thank you,\nAna Resident']
   const at = order.map(text => body.indexOf(text))
   expect(at.every(i => i >= 0)).toBe(true)
   expect(at.slice(1).every((value, i) => value > at[i])).toBe(true)

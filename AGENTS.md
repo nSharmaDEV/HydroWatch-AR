@@ -40,6 +40,9 @@ repository at the user's request. Do not restore or extend them here.
 
 ## Documentation and change history
 
+- Before designing or changing any WAVE interface, read and follow
+  `docs/wireframes/wave-design-guide.md`; inspect the surrounding UI and verify
+  the rendered result against it.
 - Start with root `README.md` and `water-alert/README.md`. Detailed dated evidence
   is in `water-alert/IMPLEMENTATION-NOTES.md`; operational instructions and open
   push gates remain in the app's deployment/push docs.

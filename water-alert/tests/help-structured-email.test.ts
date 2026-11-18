@@ -11,7 +11,7 @@ vi.mock('../src/annual-reports.js', () => {
   const issue = { category: 'monitoring', title: { en: 'Synthetic monitoring finding', es: 'Hallazgo de monitoreo ficticio' }, page: 2, currentAsPrinted: true, action: { en: 'None listed', es: 'Ninguna indicada' } }
   return { ANNUAL_REPORTS: {
     'synthetic:reviewed': [{ state: 'reviewed', year: 2025, reviewedOn: '2026-11-01', url: 'https://example.test/report', issues: [issue] }],
-    'synthetic:ai': [{ state: 'aiSummarized', year: 2025, url: 'https://example.test/ai', issues: [issue] }],
+    'synthetic:ai': [{ state: 'aiSummarized', year: 2025, summarizedOn: '2026-11-01', model: 'synthetic', url: 'https://example.test/ai', issues: [issue] }],
     'synthetic:unavailable': [{ state: 'unavailable', year: 2025 }],
   } }
 })
@@ -73,13 +73,13 @@ describe.each(['en', 'es'] as const)('structured email (%s)', language => {
   test('report asks retain historical provenance, printed status and supporting documentation', () => {
     const d = { ...blankRequest(place), issue: 'report' as const, facts: initialFacts(place, [], false, false, language), wording: { report: {}, response: { first: es ? 'Decirme si esto ya se resolvió' : 'Tell me whether this has been resolved', second: es ? 'Enviarme una copia de cualquier aviso al respecto' : 'Send me a copy of any notice about it' } } }
     const body = generateMessage(d, language).body
-    expect(body).toContain(es ? 'documentación de respaldo' : 'supporting documentation')
-    expect(body).toContain(es ? '2025 (página 2)' : '2025 report (page 2)')
+    expect(body).toContain(es ? 'documentos de respaldo' : 'supporting records')
+    expect(body).toContain(es ? '2025 · página 2' : '2025 · page 2')
     expect(body).toContain('https://example.test/report#page=2')
     expect(body).toContain(es ? 'no es el estado actual' : 'not current status')
     expect(body).toContain('“Current”')
     expect(body).not.toContain(headings[0])
-    expect(body.indexOf(es ? 'Les pido, por favor:' : 'Could you please:')).toBeLessThan(body.indexOf(es ? '2025 (página 2)' : '2025 report (page 2)'))
+    expect(body.indexOf(es ? '- Hallazgo de monitoreo' : '- Synthetic monitoring')).toBeLessThan(body.indexOf(es ? 'Son hallazgos históricos' : 'These are historical findings'))
     expect(body).not.toContain(headings[3])
   })
 
@@ -87,11 +87,19 @@ describe.each(['en', 'es'] as const)('structured email (%s)', language => {
     const p = { ...place, id }
     const d = { ...blankRequest(p), issue: 'report' as const, evidence: ['2025:0'], facts: initialFacts(p, [], false, false, language), wording: { report: {}, response: { details: '' } } }
     const body = generateMessage(d, language).body
+    if (id === 'synthetic:ai') {
+      expect(body).toContain(es ? 'Hallazgo de monitoreo ficticio' : 'Synthetic monitoring finding')
+      expect(body).toContain(es ? 'Interpretación asistida por IA' : 'AI-assisted interpretation')
+      expect(savedFacts({ ...d, facts: undefined }, false, language)).toEqual([expect.objectContaining({ included: true, record: expect.objectContaining({ sourceMethod: 'aiSummarized', verified: false }) })])
+      return
+    }
     expect(body).not.toContain('Synthetic monitoring finding')
     expect(body).not.toContain('Hallazgo de monitoreo ficticio')
     expect(body).not.toContain('https://example.test/')
     for (const heading of headings) expect(body).not.toContain(heading)
-    expect(savedFacts({ ...d, facts: undefined }, false, language)).toEqual([])
+    const resumed = savedFacts({ ...d, facts: undefined }, false, language)
+    if (id === 'synthetic:ai') expect(resumed).toEqual([expect.objectContaining({ included: false, record: expect.objectContaining({ sourceMethod: 'aiSummarized', verified: false }) })])
+    else expect(resumed).toEqual([])
   })
 
   test('manual and intentionally blank fields survive edits and localization; unchecked requests stay absent', () => {

@@ -6,6 +6,11 @@ they use synthetic scenarios, not live data. For the actual app, start with the
 [project README](../../README.md). Proposed features and older labels below do
 not establish current capabilities.
 
+For future design work, start with the [WAVE design guide](wave-design-guide.md),
+then use the [interface reference](wave-interface-reference.md) for the current
+page inventory and known inconsistencies. These are working references, not a
+replacement for the historical previews below.
+
 Open it:
 
 ```sh

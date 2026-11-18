@@ -1,6 +1,11 @@
 // @vitest-environment node
 import { expect, it } from 'vitest'
 import { runtimeConfig } from '../server/config'
+it('can explicitly disable background polling and queue maintenance for local inspection', () => {
+  expect(runtimeConfig({}).backgroundEnabled).toBe(true)
+  expect(runtimeConfig({ WATER_ALERT_BACKGROUND_ENABLED: 'false' }).backgroundEnabled).toBe(false)
+  expect(() => runtimeConfig({ WATER_ALERT_BACKGROUND_ENABLED: 'no' })).toThrow()
+})
 it('keeps external push sending off by default and requires explicit complete configuration', () => {
   expect(runtimeConfig({}).push).toBeNull()
   expect(runtimeConfig({ VAPID_PUBLIC_KEY: 'public', VAPID_PRIVATE_KEY: 'private' }).push).toBeNull()

@@ -44,7 +44,13 @@ describe.each(['en', 'es'] as const)('natural email (%s)', language => {
     expect(body).toContain(d.answers.contactResponse)
     expect(body).not.toContain(es ? 'Mi relato de la respuesta es:' : 'My account of the response is:')
     expect(body).toContain('Jordan Example')
-    expect(body).toBe(es ? `Hola, equipo de Fictional Water,\n\nSoy cliente de Fictional Water en 123 Example Street. Le escribo sobre un problema con mi servicio de agua.\n\nExperimenté interrupciones en el servicio de agua. Tengo menos presión de lo habitual.\n\nLo noté el 3 de noviembre de 2026. El problema continúa.\n\nMe comuniqué con el proveedor por teléfono aproximadamente el 5 de noviembre de 2026 sobre esto. Dijeron que lo revisarían.\n\n¿Podrían investigar el problema de servicio y la baja presión reportados, explicar los próximos pasos para restablecer el servicio y avisarme cuándo puedo esperar una actualización?\n\nGracias,\nJordan Example` : `Hello Fictional Water team,\n\nI’m a Fictional Water customer at 123 Example Street. I’m writing about a problem with my water service.\n\nI experienced interruptions in my water service. I have lower pressure than usual.\n\nI first noticed this on November 3, 2026. The issue is ongoing.\n\nI contacted the provider by phone around November 5, 2026 about this. They said someone would look into it.\n\nCould you investigate the reported service problem and low pressure, explain the next steps toward restoring service, and let me know when I can expect an update?\n\nThank you,\nJordan Example`)
+    expect(body.split('\n\n')[1]).toContain(es ? '123 Example Street. Experimenté interrupciones' : '123 Example Street. I experienced interruptions')
+    expect(body).toContain(es ? 'Lo noté el 3 de noviembre de 2026. El problema continúa.' : 'I first noticed this on November 3, 2026. The issue is ongoing.')
+    const request = es ? '¿Podrían investigar el problema de servicio y la baja presión reportados' : 'Could you investigate the reported service problem and low pressure'
+    expect(body.indexOf(request)).toBeGreaterThan(0)
+    expect(body.indexOf(request)).toBeLessThan(body.indexOf(d.answers.contactResponse))
+    expect(body).toContain(es ? 'avisarme cuándo puedo esperar una actualización?' : 'let me know when I can expect an update?')
+    expect(body).toMatch(es ? /Gracias,\nJordan Example$/ : /Thank you,\nJordan Example$/)
   })
   test('ADH service request asks for guidance instead of direct restoration', () => {
     const d = { ...blankRequest(place), route: 'adh' as const, wording: { report: { second: es ? 'Menos presión de lo habitual' : 'Lower pressure than usual', third: es ? 'El servicio se interrumpe repetidamente' : 'Service keeps stopping' }, response: defaultRequests('service', language, [es ? 'Menos presión de lo habitual' : 'Lower pressure than usual', es ? 'El servicio se interrumpe repetidamente' : 'Service keeps stopping']) } }

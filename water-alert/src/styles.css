@@ -358,7 +358,7 @@ details[open]>summary>.disclosure-icon::before,[aria-expanded=true]>.disclosure-
 .provider-information .provider-info-toggle{position:relative;width:100%;padding-right:28px;gap:6px 12px;flex-wrap:wrap}
 .provider-information .provider-info-content>.profile-links{margin:0 0 16px;justify-content:flex-start;flex-wrap:wrap}
 /* Shared card footer rhythm, with content-specific disclosures. */
-.status-card>.provider-information,.status-card>.supplier-section{border-top:0;margin:0;padding:0}
+.status-card .provider-information,.status-card>.supplier-section{border-top:0;margin:0;padding:0}
 .status-card .provider-info-toggle,.status-card .supplier-actions>.alert-toggle,.status-card>.supplier-section>summary{border-top:1px solid var(--line);margin:0;padding:12px 28px 12px 0;min-height:50px;line-height:24px;font-size:1rem;font-weight:600}
 .status-card .provider-info-toggle{border-top:0}
 .status-card .supplier-contact-section{border-top:1px solid var(--line);padding-top:16px}
@@ -412,6 +412,33 @@ details[open]>summary>.disclosure-icon::before,[aria-expanded=true]>.disclosure-
 .report-toggle:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
 .annual-report{padding:16px}
 .annual-report .provider-card-heading{gap:8px 12px}
+.evidence-source-headers{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.evidence-source-row .evidence-source-state{font-size:.8125rem;color:var(--muted);flex:1 1 120px;min-width:0}
+.evidence-source-row .evidence-source-heading{width:100%;margin-bottom:0}
+.evidence-source-heading .evidence-source-state{flex:0 1 auto}
+/* Long status text wraps inside its slot so the source link stays on the heading line. */
+@media(min-width:761px){.evidence-source-heading{flex-wrap:nowrap}.evidence-source-heading>h4,.evidence-source-heading>.report-year,.evidence-source-heading>.provider-card-source{flex:none}.evidence-source-heading .profile-leader{min-width:24px}}
+.evidence-source-heading .profile-leader{border-bottom:2px dotted #aebec8;align-self:center}
+.evidence-type-group{border-bottom:1px solid var(--line)}
+.evidence-type-group>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;color:var(--navy);font-weight:700;list-style:none}
+.evidence-type-group>summary::-webkit-details-marker{display:none}
+/* The filter buttons must not sit on a divider from the first problem group. */
+.evidence-type-groups>.evidence-type-group:first-child>summary{border-top:0}
+.evidence-group-icon::before{content:'+';font-size:1.4rem;color:var(--teal)}
+.evidence-type-group[open]>summary .evidence-group-icon::before{content:'−'}
+.evidence-type-group>summary:focus-visible{outline:3px solid #145fc0;outline-offset:2px}
+.evidence-type-group .report-issue-header{margin-bottom:4px}
+.evidence-type-group .evidence-inline-sources{margin:0 0 12px;font-size:.875rem}
+.evidence-type-group .report-issues{margin-top:0;border-top:0}
+.evidence-type-group .evidence-inline-issue{border-bottom:0;border-top:1px solid var(--line);padding:12px 0}
+.evidence-type-group .report-issues>.evidence-inline-issue:first-child{border-top:0;padding-top:4px}
+.evidence-type-inline>h4{margin:12px 0 4px;font-size:1rem}
+.evidence-chevron{flex-shrink:0;transition:transform .38s ease}
+.report-toggle>.evidence-chevron{position:absolute;right:14px;top:50%;translate:0 -50%}
+[aria-expanded=true]>.evidence-chevron,.evidence-type-group[open]>summary:not([aria-expanded=false])>.evidence-chevron{transform:rotate(180deg)}
+.annual-report .evidence-type-group .report-issue-header{align-items:center;gap:10px}
+.annual-report .report-issue-header .report-ask{margin:0;flex:0 0 auto;min-width:0;max-width:45%;white-space:normal}
+@media(prefers-reduced-motion:reduce){.evidence-chevron{transition:none}}
 .report-reviewed{display:flex;align-items:center;gap:6px;margin:0;color:var(--muted);font-size:.8125rem;line-height:1.5}
 .report-reviewed svg{width:14px;height:14px}
 .annual-report .report-facts{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);max-width:540px;gap:12px 20px;margin:8px 0 10px}
@@ -434,6 +461,19 @@ details[open]>summary>.disclosure-icon::before,[aria-expanded=true]>.disclosure-
 .report-issue-header{display:flex;align-items:center;gap:16px;margin-bottom:12px;min-width:0}
 .report-issues h5{font-size:1.0625rem;line-height:1.5;margin:0;font-weight:700;color:var(--navy)}
 .report-issue-leader{flex:1;min-width:24px;border-top:3px dotted #aec1ca}
+.evidence-filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.evidence-filters>button{flex:1 1 200px;min-height:44px}
+.evidence-filters .report-toggle{width:auto}
+.evidence-filters>button[aria-pressed=false]{background:transparent;color:#066d73;border:1px solid var(--line)}
+.evidence-filters>button[aria-pressed=true]{background:var(--teal);color:white}
+.evidence-action{display:block}
+.evidence-source-summary p,.evidence-source-list p{margin:4px 0}
+.evidence-source-list .evidence-source-foot{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline}
+/* Show more / Show less: its own row at the end of the group, filled so it stands apart from Ask. */
+.evidence-more-row{display:flex;justify-content:flex-end;padding:12px 0 4px}
+.evidence-more-row>.evidence-more{min-height:44px;white-space:normal}
+/* The unverified note under the card actions carries no rule of its own. */
+.status-card>.historical-note{border-top:0;padding-top:0}
 .report-issue-header .source-link{flex-shrink:0}
 .report-issues dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 32px;margin:0}
 .report-issues dl>div{display:block;border:0;padding:0}
@@ -445,6 +485,7 @@ details[open]>summary>.disclosure-icon::before,[aria-expanded=true]>.disclosure-
 .report-periods ul{margin:0;padding-left:20px;list-style:disc}
 .report-periods li{padding:2px 0;border:0}
 @media(max-width:640px){.annual-report .report-facts{grid-template-columns:minmax(0,1fr)}.report-issues dl{grid-template-columns:minmax(0,1fr);gap:20px}.report-issue-header{flex-wrap:wrap;gap:4px 12px;margin-bottom:16px}.report-issues h5{flex-basis:100%}.report-issue-leader{display:none}}
+@media(max-width:640px){.annual-report .evidence-type-group .report-issue-header{flex-wrap:nowrap;gap:6px}.annual-report .report-issue-header h5{flex:0 1 auto;min-width:0;font-size:1rem}.annual-report .report-issue-leader{display:block;min-width:10px;border-top-width:2px}.annual-report .report-issue-header .report-ask{max-width:44%;padding:8px;font-size:.875rem}}
 @media(max-width:480px){
   .provider-card{padding:12px}
   .provider-card-facts{grid-template-columns:minmax(0,1fr)}
@@ -639,4 +680,82 @@ main:has(.help-guide){padding-top:8px;padding-bottom:8px;min-height:0}
   .help-guide .help-task-nav small{display:block;margin:2px 0 0}
   .help-guide .guide-choices{grid-template-columns:minmax(0,1fr)}
   .help-guide .help-work dl{grid-template-columns:minmax(0,1fr)}
+}
+
+/* ---- Provider information: official-document evidence review ----
+   Reuses the existing provider-card surface, navy/teal palette, dotted
+   leaders, status pills and 8/12/16px rhythm. Compact rows keep the normal
+   desktop and mobile views short; long evidence stays reachable by scrolling,
+   never clipped. */
+.evidence-card{padding:16px}
+.evidence-inline-issue{padding:20px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.evidence-inline-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.evidence-inline-heading h5{font-size:1.0625rem;line-height:1.5;margin:0}
+.evidence-inline-sources{display:flex;gap:12px;flex-wrap:wrap}
+.evidence-inline-dates{margin:0 0 16px}
+.evidence-inline-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 32px}
+.evidence-inline-columns h6{font-size:.875rem;margin:0 0 4px}
+.evidence-inline-columns p{margin:0 0 8px;line-height:1.55}
+.evidence-inline-resolution{font-size:.875rem;margin:12px 0}
+.evidence-inline-conflicts{color:var(--muted);font-size:.875rem}
+.evidence-inline-conflicts p{margin:8px 0}
+.evidence-extra-issues{margin:0;border:0}
+.evidence-source-details{margin:12px 0}
+.evidence-source-details>summary{cursor:pointer;min-height:44px;align-content:center;color:var(--teal);font-weight:600}
+.evidence-source-details>summary:focus-visible{outline:3px solid #145fc0;outline-offset:2px}
+@media(max-width:760px){.evidence-inline-columns{grid-template-columns:minmax(0,1fr)}.evidence-card-count{white-space:normal}.evidence-inline-heading{align-items:flex-start}}
+.evidence-card-count{font-size:.8125rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.evidence-note{margin:8px 0 12px;font-size:.875rem;line-height:1.55;color:var(--muted)}
+.evidence-finding-list,.evidence-record-list,.evidence-source-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.evidence-finding-list>li{min-width:0}
+.evidence-finding-row{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;color:var(--navy);font:inherit;text-align:left;cursor:pointer}
+.evidence-finding-row:hover{border-color:#b9c7d1}
+.evidence-finding-row:focus-visible{outline:3px solid #145fc0;outline-offset:2px}
+.evidence-finding-row>svg{flex:none;color:var(--teal)}
+.evidence-finding-main{display:grid;gap:4px;min-width:0;flex:1}
+.evidence-finding-title{font-size:.9375rem;font-weight:650;line-height:1.45;overflow-wrap:anywhere}
+.evidence-finding-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;font-size:.8125rem;line-height:1.5;color:var(--muted)}
+.evidence-finding-meta>span{min-width:0;overflow-wrap:anywhere}
+.evidence-meta-sep{color:#9fb0bc}
+.evidence-finding-category{font-weight:650;color:var(--navy)}
+.evidence-finding-status{font-size:.8125rem;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
+.evidence-flag{display:inline-flex;align-items:center;padding:0 8px;border:1px solid #c3ced8;border-radius:999px;font-size:.75rem;font-weight:600;color:var(--navy)}
+.evidence-finding-meta .evidence-flag::before{content:none}
+.evidence-more{display:inline-flex;align-items:center;gap:6px;margin-top:10px;min-height:44px}
+.evidence-focus{display:grid;gap:12px}
+.evidence-focus-head{display:grid;gap:8px}
+.evidence-back{display:inline-flex;align-items:center;gap:4px;justify-self:start;min-height:44px}
+.evidence-focus-title{outline:none}
+.evidence-focus-title h4{margin:0;font-size:1.0625rem;line-height:1.4;font-weight:750;color:var(--navy);overflow-wrap:anywhere}
+.evidence-detail-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;margin:0 0 4px}
+.evidence-action-date{font-weight:650;font-variant-numeric:tabular-nums}
+.evidence-resolution{display:flex;align-items:flex-start;gap:8px;margin:0;font-size:.875rem;line-height:1.55;color:var(--navy)}
+.evidence-resolution svg{flex:none;margin-top:3px;color:var(--muted)}
+.evidence-unresolved{color:var(--muted)}
+.evidence-citation-list>li{display:grid;gap:2px;padding:8px 0;border-bottom:1px solid var(--line)}
+.evidence-citation-list>li:last-child{border-bottom:0}
+.evidence-citation-title{font-weight:650;font-size:.9375rem}
+.evidence-citation-meta,.evidence-record-meta,.evidence-source-foot{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:.8125rem;line-height:1.5;color:var(--muted)}
+.evidence-citation-meta>span:not(:last-child)::after,.evidence-record-meta>span:not(:last-child)::after,.evidence-source-foot>span:not(:last-child)::after{content:" ·";color:#9fb0bc}
+.evidence-record-meta .evidence-flag::after{content:none}
+.evidence-method-note{margin:8px 0 0}
+.evidence-ask-row{margin:12px 0 0}
+.evidence-ask{min-height:44px}
+.evidence-record-list>li{display:grid;gap:2px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;min-width:0}
+.evidence-record-head{display:flex;align-items:center;gap:12px;min-width:0}
+.evidence-record-title{flex:1;min-width:0;font-size:.9375rem;font-weight:650;color:var(--navy);overflow-wrap:anywhere}
+.evidence-record-note{font-size:.8125rem;line-height:1.5;color:var(--muted);margin-top:4px}
+.evidence-record-conflict{color:var(--navy);font-weight:600}
+.evidence-record-unavailable{background:#f4f7f8}
+.evidence-source-list>li{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--line)}
+.evidence-source-list>li:last-child{border-bottom:0}
+.evidence-source-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;min-width:0}
+.evidence-source-label{font-size:.9375rem;font-weight:650;color:var(--navy);min-width:0;overflow-wrap:anywhere}
+.evidence-source-state{flex:none}
+.evidence-source-detail{font-size:.8125rem;line-height:1.55;color:var(--muted)}
+.evidence-records .evidence-record-list{margin-top:12px}
+@media(max-width:760px){
+  .evidence-detail-facts{grid-template-columns:minmax(0,1fr)}
+  .evidence-finding-row{align-items:flex-start}
+  .evidence-finding-row>svg{margin-top:4px}
 }

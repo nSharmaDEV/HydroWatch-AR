@@ -35,11 +35,13 @@ export function reviewedReportAlerts(reports: Readonly<Record<string, readonly A
 }
 
 /** The resident's opening sentence for "Ask about this": quotes the hand-checked finding with its page and dates. */
-export function reportQuestion(place: Place, key: string, language: 'en' | 'es'): string | undefined {
-  const report = latestReport(place, false)
-  const finding = report?.findings.find(f => f.key === key && f.askable)
-  if (!report || !finding) return undefined
-  const { issue } = finding, es = language === 'es'
+export function reportQuestion(place: Place, key: string, language: 'en' | 'es', reports: Readonly<Record<string, readonly AnnualReport[]>> = ANNUAL_REPORTS): string | undefined {
+  const match = /^(\d{4}):(\d+)$/.exec(key)
+  if (!match || place.kind !== 'system' || !Object.hasOwn(reports, place.id)) return undefined
+  const report = reports[place.id].find(r => r.year === Number(match[1]) && r.state === 'reviewed')
+  if (!report || report.state !== 'reviewed') return undefined
+  const issue = report.issues[Number(match[2])], es = language === 'es'
+  if (!issue) return undefined
   const dates = issue.reportedFrom
     ? issue.currentAsPrinted
       ? es ? ` (desde el ${issue.reportedFrom}, indicado como vigente cuando se imprimió el informe)` : ` (starting ${issue.reportedFrom}, listed as current when the report was printed)`

@@ -16,10 +16,13 @@ published records, not testing water.
   still choose the supplier on their bill. Suggestions are not exhaustive coverage.
 - Previews a selected supplier's status card with expandable details and visible Back/Next controls; Next saves it and opens that supplier in Places, where residents can review
   observed advisory history, and see changes since a previous visit.
-- Provides dated supplier facts and annual-report findings where reviewed,
-  separate from current advisory status.
-- Offers four short Help screens (what's wrong, when and where, what they should
-  do, send it) that write a letter-style email, with relevant source records,
+- Provides dated supplier facts and historical findings across annual reports
+  and exact-system EPA ECHO records, separate from advisory status. Opening
+  **Provider information** refreshes supported sources and directory facts;
+  issues expand inline, with saved information retained if updates fail.
+  Saved Help drafts retain their evidence until an explicit update.
+- Offers six short Help input screens followed by an editable email review,
+  with specific report questions, end citations, relevant source records,
   downloads, a calendar reminder, saved drafts
   and private request History. The observed advisory map has its own **Map** tab.
   Account storage and email delivery require explicit operator configuration;

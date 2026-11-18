@@ -34,6 +34,13 @@ it('separates curated preparation references from live advisory feeds', async ()
   expect(screen.getByText(/Before Nov 5, 2026.*archived copies/)).toBeVisible()
   expect(screen.getByText(/another name may not appear/)).toBeVisible()
   expect(screen.getByRole('heading', { name: 'Curated references — not live advisory feeds' })).toBeVisible()
+  // Method and coverage notes moved here from the provider card's former Source details.
+  const records = screen.getByRole('heading', { name: 'Official records on provider pages' }).closest('section, .panel, div') as HTMLElement
+  expect(within(records).getByText(/structured entries, not full inspection reports, orders or notices/)).toBeVisible()
+  expect(within(records).getByText(/copied automatically and not reviewed by a person/)).toBeVisible()
+  expect(within(records).getByText(/verified federal water system ID/)).toBeVisible()
+  expect(within(records).getByText(/A short list is not evidence/)).toBeVisible()
+  expect(within(records).getByText(/not proof the system has no report/)).toBeVisible()
   expect(screen.getByRole('link', { name: 'Arkansas Attorney General' })).toHaveAttribute('href', 'https://arkansasag.gov/file-a-complaint/')
 })
 it('keeps the decorative wave off History, where the cards carry dense text', async () => {

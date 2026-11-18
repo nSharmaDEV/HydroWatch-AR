@@ -1,12 +1,13 @@
 // One on-demand ADH annual-report lookup for a single supplier.
 //
-// This finds and links a document. It never reads one: no PDF text extraction,
-// no summary, no findings. Those stay with `npm run ccr:sync`, whose output is
-// reviewed in a diff before it ships. Identity comes from `pickCandidate`
+// Lookup finds and links a document; the separate read path extracts its tables
+// using bounded asynchronous tools. Device-local readings are not a shipped
+// human review. Identity comes from `pickCandidate`
 // unchanged, so an ambiguous or missing match is reported as such and never
 // guessed. A failed check returns a non-storing state: "we could not check" is
 // never recorded as "no report" and never as an all-clear.
-import { REPORT_YEAR, nameTokens, normalizeCounty, pickCandidate, popplerTools, reportUrl, searchAdh, splitPages, titleYear, validateSummary, type PdfTools, type Summarize, type Target } from '../scripts/ccr-sync-lib.js'
+import { REPORT_YEAR, nameTokens, normalizeCounty, pickCandidate, reportUrl, searchAdh, splitPages, titleYear, validateSummary, type PdfTools, type Summarize, type Target } from '../scripts/ccr-sync-lib.js'
+import { asyncPopplerTools } from './pdf-tools.js'
 import { readByRules } from '../scripts/ccr-rules-lib.js'
 import type { AnnualReportIssue } from '../src/annual-reports.js'
 
@@ -48,7 +49,7 @@ export async function checkAnnualReport(system: CheckableSystem, doFetch: typeof
   return { state: 'unreviewed', year: REPORT_YEAR, url, checkedAt }
 }
 
-export interface ReadDeps { summarize?: Summarize; model?: string; pdfTools?: PdfTools }
+export interface ReadDeps { summarize?: Summarize; model?: string; pdfTools?: PdfTools | typeof asyncPopplerTools }
 
 const longDate = (iso: string): { en: string; es: string } => {
   const d = new Date(`${iso}T12:00:00`)
@@ -70,7 +71,7 @@ const found = (checkedAt: string, en: string, es: string) => {
  */
 export async function readAnnualReport(system: CheckableSystem, deps: ReadDeps = {}, doFetch: typeof fetch = fetch, checkedAt = todayInArkansas()): Promise<ReportCheck> {
   const fetcher = timed(doFetch, 60_000)
-  const tools = deps.pdfTools ?? popplerTools
+  const tools = deps.pdfTools ?? asyncPopplerTools
   const name = nameTokens(system.name)[0]
   if (!name) return { state: 'incomplete' }
   let candidates
@@ -87,7 +88,7 @@ export async function readAnnualReport(system: CheckableSystem, deps: ReadDeps =
   } catch { return { state: 'incomplete' } }
   if (pdf.subarray(0, 5).toString('latin1') !== '%PDF-') return { state: 'incomplete' }
   let text: string, pageCount: number
-  try { text = tools.text(pdf); pageCount = tools.pages(pdf) } catch { return { state: 'incomplete' } }
+  try { text = await tools.text(pdf); pageCount = await tools.pages(pdf) } catch { return { state: 'incomplete' } }
   const pages = splitPages(text)
   const unread = (en: string, es: string): ReportCheck => ({ state: 'unreviewed', year: REPORT_YEAR, url, checkedAt, note: found(checkedAt, en, es) })
   if (!pageCount || pages.length !== pageCount) return unread('WAVE could not match its text to the document.', 'WAVE no pudo hacer coincidir su texto con el documento.')

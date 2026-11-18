@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Language } from './domain'
 import type { AnnualReport, AnnualReportIssue } from './annual-reports'
 
@@ -15,7 +15,7 @@ export interface StoredCheck {
   summarizedOn?: string; readOn?: string; model?: string; issues?: readonly AnnualReportIssue[]
 }
 export type CheckStatus = 'idle' | 'checking' | 'checked' | 'ambiguous' | 'incomplete'
-export interface ReportCheckState { report?: AnnualReport; status: CheckStatus; check: () => void }
+export interface ReportCheckState { report?: AnnualReport; checkedOn?: string; status: CheckStatus; check: () => void }
 
 /** Device-local results, keyed by place. Shared with the water-system check. */
 export function readChecks<T>(key: string): Record<string, T> {
@@ -69,19 +69,28 @@ export function deviceReport(record: StoredCheck): AnnualReport {
 export function useReportCheck(placeId: string, enabled: boolean): ReportCheckState {
   const [record, setRecord] = useState<StoredCheck>()
   const [status, setStatus] = useState<CheckStatus>('idle')
+  const inFlight = useRef(false)
+  const generation = useRef(0)
   useEffect(() => {
     setRecord(enabled ? storedChecks()[placeId] : undefined)
     setStatus('idle')
+    generation.current++
+    return () => { generation.current++ }
   }, [placeId, enabled])
   const check = useCallback(async () => {
+    if (!enabled || inFlight.current) return
+    inFlight.current = true
+    const token = generation.current
     setStatus('checking')
     try {
       const response = await fetch('/api/annual-report/check', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ placeId }), signal: AbortSignal.timeout(40_000),
       })
+      if (token !== generation.current) return
       if (!response.ok) { setStatus('incomplete'); return }
       const result = await response.json() as StoredCheck & { state: StoredCheck['state'] | 'ambiguous' | 'incomplete' }
+      if (token !== generation.current) return
       // Only a completed search is recorded. A failure must never read as
       // "no report found", and never as an all-clear.
       if (result.state === 'aiSummarized' || result.state === 'autoRead' || result.state === 'unreviewed' || result.state === 'unavailable') {
@@ -91,9 +100,11 @@ export function useReportCheck(placeId: string, enabled: boolean): ReportCheckSt
           ...(result.summarizedOn ? { summarizedOn: result.summarizedOn } : {}), ...(result.readOn ? { readOn: result.readOn } : {}), ...(result.model ? { model: result.model } : {}),
           ...(result.issues ? { issues: result.issues } : {}),
         }
+        if (saved.state === 'unavailable' && storedChecks()[placeId]?.state !== 'unavailable' && storedChecks()[placeId]) { setStatus('incomplete'); return }
         saveCheck(placeId, saved); setRecord(saved); setStatus('checked')
       } else setStatus(result.state === 'ambiguous' ? 'ambiguous' : 'incomplete')
-    } catch { setStatus('incomplete') }
-  }, [placeId])
-  return { report: enabled && record ? deviceReport(record) : undefined, status, check }
+    } catch { if (token === generation.current) setStatus('incomplete') }
+    finally { inFlight.current = false }
+  }, [placeId, enabled])
+  return { report: enabled && record ? deviceReport(record) : undefined, checkedOn: record?.checkedAt, status, check }
 }

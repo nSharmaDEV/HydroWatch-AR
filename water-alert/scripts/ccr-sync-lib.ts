@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import * as cheerio from 'cheerio'
 import type { AnnualReport, AnnualReportIssue } from '../src/annual-reports'
+import { readByRules } from './ccr-rules-lib'
 
 export const REPORT_YEAR = 2025
 export const ADH_SEARCH_URL = 'https://health.arkansas.gov/eng/CCRSearch.aspx'
@@ -208,12 +209,16 @@ export async function searchAdh(query: { id?: string; name?: string }, doFetch: 
   const first = await doFetch(ADH_SEARCH_URL)
   if (!first.ok) throw new Error(`ADH search page ${first.status}`)
   const cookie = first.headers.getSetCookie?.().map(c => c.split(';')[0]).join('; ') ?? ''
-  const form = new URLSearchParams({ ...parseHiddenFields(await first.text()), 'ctl00$MainContent$lstSection': String(REPORT_YEAR), 'ctl00$MainContent$btnSearch': 'Search' })
+  const hidden = parseHiddenFields(await first.text())
+  if (!Object.hasOwn(hidden, '__VIEWSTATE')) throw new Error('ADH search form not recognized')
+  const form = new URLSearchParams({ ...hidden, 'ctl00$MainContent$lstSection': String(REPORT_YEAR), 'ctl00$MainContent$btnSearch': 'Search' })
   if (query.id) form.set('ctl00$MainContent$txtID', query.id)
   if (query.name) form.set('ctl00$MainContent$txtName', query.name)
   const result = await doFetch(ADH_SEARCH_URL, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', ...(cookie ? { cookie } : {}) }, body: form.toString() })
   if (!result.ok) throw new Error(`ADH search ${result.status}`)
-  return parseSearchResults(await result.text())
+  const html = await result.text()
+  if (!Object.hasOwn(parseHiddenFields(html), '__VIEWSTATE')) throw new Error('ADH search response not recognized')
+  return parseSearchResults(html)
 }
 
 const longDate = (iso: string): Text => {
@@ -228,7 +233,7 @@ const NOT_PUBLISHED: Record<Exclude<Verdict, { ok: true }>['reason'], Text> = {
 }
 
 export interface SyncDeps { fetch: typeof fetch; summarize?: Summarize; pdfTools: PdfTools; today: string; model: string }
-export interface SyncLog { id: string; name: string; reason: Target['reason']; pws?: string; outcome: 'aiSummarized' | 'unreviewed' | 'unavailable' | 'skipped'; detail?: string; url?: string; sha256?: string; bytes?: number; pages?: number }
+export interface SyncLog { id: string; name: string; reason: Target['reason']; pws?: string; outcome: 'autoRead' | 'aiSummarized' | 'unreviewed' | 'unavailable' | 'skipped'; failure?: 'retrievalFailed' | 'ambiguous' | 'extractionFailed' | 'aiFailed' | 'unsearchable'; detail?: string; url?: string; sha256?: string; bytes?: number; pages?: number }
 export interface SyncResult { report?: AnnualReport; log: SyncLog; pdf?: Buffer; text?: string }
 
 /**
@@ -241,11 +246,11 @@ export async function syncOne(target: Target, deps: SyncDeps): Promise<SyncResul
   const skip = (detail: string, extra: Partial<SyncLog> = {}): SyncResult => ({ log: { ...base, ...extra, outcome: 'skipped', detail } })
   let candidates: Candidate[]
   const query = target.pws ? { id: target.pws } : { name: nameTokens(target.name)[0] }
-  if (!query.id && !query.name) return skip('no searchable name words')
-  try { candidates = await searchAdh(query, deps.fetch) } catch (error) { return skip(`search failed: ${(error as Error).message}`) }
+  if (!query.id && !query.name) return skip('no searchable name words', { failure: 'unsearchable' })
+  try { candidates = await searchAdh(query, deps.fetch) } catch (error) { return skip(`search failed: ${(error as Error).message}`, { failure: 'retrievalFailed' }) }
   const pick = pickCandidate(target, candidates)
-  if (!pick.ok) {
-    if (pick.reason === 'ambiguous') return skip(`ambiguous search result for “${query.id ?? query.name}”`)
+  if (pick.ok === false) {
+    if (pick.reason === 'ambiguous') return skip(`ambiguous search result for “${query.id ?? query.name}”`, { failure: 'ambiguous' })
     const where = target.pws ? `PWS ${target.pws}` : `“${query.name}” in ${normalizeCounty(target.county)} County`
     return { report: { year: REPORT_YEAR, state: 'unavailable', ...(target.pws ? { sourceUrl: directoryUrl(target.pws) } : {}), note: {
       en: `Checked ${checked.en}: no matching 2025 PDF found in ADH’s annual-report search for ${where}. No report findings or safety conclusion can be inferred.`,
@@ -257,25 +262,32 @@ export async function syncOne(target: Target, deps: SyncDeps): Promise<SyncResul
   let pdf: Buffer
   try {
     const response = await deps.fetch(url)
-    if (!response.ok) return skip(`PDF ${response.status}`, { pws, url })
+    if (!response.ok) return skip(`PDF ${response.status}`, { pws, url, failure: 'retrievalFailed' })
     pdf = Buffer.from(await response.arrayBuffer())
-  } catch (error) { return skip(`PDF download failed: ${(error as Error).message}`, { pws, url }) }
-  if (pdf.subarray(0, 5).toString('latin1') !== '%PDF-') return skip('response is not a PDF', { pws, url })
-  const evidence = { pws, url, sha256: createHash('sha256').update(pdf).digest('hex'), bytes: pdf.length, pages: deps.pdfTools.pages(pdf) }
-  const text = deps.pdfTools.text(pdf)
-  const pages = splitPages(text)
+  } catch (error) { return skip(`PDF download failed: ${(error as Error).message}`, { pws, url, failure: 'retrievalFailed' }) }
+  if (pdf.subarray(0, 5).toString('latin1') !== '%PDF-') return skip('response is not a PDF', { pws, url, failure: 'retrievalFailed' })
+  const evidence = { pws, url, sha256: createHash('sha256').update(pdf).digest('hex'), bytes: pdf.length, pages: 0 }
+  let text = ''
   const notPublished = (reason: keyof typeof NOT_PUBLISHED, detail: string): SyncResult => ({ pdf, text, report: { year: REPORT_YEAR, state: 'unreviewed', url, note: {
     en: `Checked ${checked.en}: ADH’s 2025 PDF was found, but no summary is shown because ${NOT_PUBLISHED[reason].en}. Open the original PDF.`,
     es: `Revisado el ${checked.es}: se encontró el PDF de 2025 de ADH, pero no se muestra un resumen porque ${NOT_PUBLISHED[reason].es}. Abra el PDF original.`,
   } }, log: { ...base, ...evidence, outcome: 'unreviewed', detail: `${reason}: ${detail}` } })
+  try { evidence.pages = deps.pdfTools.pages(pdf); text = deps.pdfTools.text(pdf) } catch (error) {
+    const result = notPublished('checksFailed', `extraction failed: ${(error as Error).message}`)
+    result.log.failure = 'extractionFailed'
+    return result
+  }
+  const pages = splitPages(text)
   if (!evidence.pages || pages.length !== evidence.pages) return notPublished('checksFailed', `text pages ${pages.length} vs PDF pages ${evidence.pages}`)
   const printed = titleYear(pages[0])
   if (printed !== REPORT_YEAR) return notPublished('yearMismatch', `title year ${printed ?? 'not found'}`)
-  if (!deps.summarize) return skip('dry run: AI step not run', evidence)
+  const rules = readByRules(text, evidence.pages)
+  if (rules.ok === true) return { pdf, text, report: { year: REPORT_YEAR, state: 'autoRead', url, readOn: deps.today, issues: rules.issues }, log: { ...base, ...evidence, outcome: 'autoRead', detail: `${rules.issues.length} issue(s); fixed rules, not human-reviewed` } }
+  if (!deps.summarize) return notPublished('checksFailed', `rules declined: ${rules.reason}; AI not enabled`)
   let ai: AiSummary
-  try { ai = await deps.summarize(pdf) } catch (error) { return skip(`AI failed: ${(error as Error).message}`, evidence) }
+  try { ai = await deps.summarize(pdf) } catch (error) { return skip(`AI failed: ${(error as Error).message}`, { ...evidence, failure: 'aiFailed' }) }
   const verdict = validateSummary(ai, pages)
-  if (!verdict.ok) return notPublished(verdict.reason, verdict.detail)
+  if (verdict.ok === false) return notPublished(verdict.reason, verdict.detail)
   return { pdf, text, report: { year: REPORT_YEAR, state: 'aiSummarized', url, summarizedOn: deps.today, model: deps.model, issues: verdict.issues }, log: { ...base, ...evidence, outcome: 'aiSummarized', detail: `${verdict.issues.length} issue(s)` } }
 }
 
@@ -283,7 +295,8 @@ export function renderGeneratedModule(reports: Reports) {
   const sorted = Object.fromEntries(Object.entries(reports).sort(([a], [b]) => a.localeCompare(b)))
   return `// GENERATED by \`npm run ccr:sync\` (scripts/ccr-sync.ts). Do not hand-edit:
 // hand-reviewed records belong in annual-reports.ts / observed-supplier-reports.ts.
-// Run log: docs/research/adh-ccr-2025/ai-sync-log.json.
+// Dated outcomes and source evidence: data/ccr-sync/ (or the selected --cache).
+// States distinguish fixed-rule readings from AI summaries; neither is a human review.
 import type { AnnualReport } from './annual-reports'
 
 export const AI_ANNUAL_REPORTS: Readonly<Record<string, readonly AnnualReport[]>> = ${JSON.stringify(sorted, null, 2)}

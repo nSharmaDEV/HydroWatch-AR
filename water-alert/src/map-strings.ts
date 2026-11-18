@@ -14,6 +14,7 @@ export const mapEn = {
   mapCount: 'verified reference points shown', mapView: 'Open supplier details', mapZoomIn: 'Zoom in', mapZoomOut: 'Zoom out', mapReset: 'Reset map',
   mapCurrentRecord: 'Current advisory', mapObservedRecord: 'Previously observed advisory',
   mapObservationHistory: 'Observation history', mapObservation: 'Observation', mapRecord: 'record', mapRecords: 'records',
+  advisorySource: 'Advisory source', pointSource: 'Map point source', pointSourceLink: 'View map point source', pointLimit: 'Approximate reference point, not an affected area or current service boundary.', sourceDetails: 'Source details', sourceLinks: 'Source links', aboutPoint: 'About this map point', closePoint: 'Close map point information',
 }
 export const mapEs: typeof mapEn = {
   heading: 'Mapa de avisos', allPlaces: 'Todos los lugares', status: 'Estado', allStatuses: 'Todos los estados', results: 'Resultados de proveedores', suppliers: 'proveedores', back: 'Volver a resultados', close: 'Cerrar detalles del proveedor', locationUnavailable: 'Ubicación no disponible', boundary: 'Los marcadores indican ubicaciones de proveedores, no límites de las áreas afectadas.', pan: 'Arrastre el mapa o enfóquelo y use las flechas para moverlo.', view: 'Vista', legend: 'Leyenda',
@@ -31,4 +32,5 @@ export const mapEs: typeof mapEn = {
   mapCount: 'puntos de referencia verificados mostrados', mapView: 'Abrir detalles del proveedor', mapZoomIn: 'Acercar', mapZoomOut: 'Alejar', mapReset: 'Restablecer mapa',
   mapCurrentRecord: 'Aviso actual', mapObservedRecord: 'Aviso observado anteriormente',
   mapObservationHistory: 'Historial de observaciones', mapObservation: 'Observación', mapRecord: 'registro', mapRecords: 'registros',
+  advisorySource: 'Fuente del aviso', pointSource: 'Fuente del punto del mapa', pointSourceLink: 'Ver fuente del punto del mapa', pointLimit: 'Punto de referencia aproximado, no un área afectada ni un límite de servicio actual.', sourceDetails: 'Detalles de las fuentes', sourceLinks: 'Enlaces a las fuentes', aboutPoint: 'Acerca de este punto del mapa', closePoint: 'Cerrar información del punto del mapa',
 }

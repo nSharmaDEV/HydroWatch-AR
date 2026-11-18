@@ -2,6 +2,7 @@ import type { Language } from './domain'
 import type { HelpDraft, IssueType } from './help-requests'
 import { generateMessage, recommendedRoute } from './help-requests'
 import { answerFingerprint } from './help-outputs'
+import { hasSelectedReport, reportQuestions } from './report-questions'
 
 /** A different concern starts a fresh account; locations and supplied identity remain useful. */
 export function categoryPatch(d: HelpDraft, issue: IssueType): Partial<HelpDraft> {
@@ -13,6 +14,9 @@ export function categoryPatch(d: HelpDraft, issue: IssueType): Partial<HelpDraft
 /** Legacy saved email is treated as resident-edited, never guessed safe to replace. */
 export function updateDraft(previous: HelpDraft, patch: Partial<HelpDraft>, language: Language): HelpDraft {
   const next = { ...previous, ...patch }
+  if (patch.facts && !hasSelectedReport(previous) && hasSelectedReport(next) && next.wording?.response.reportVerify === undefined) {
+    next.wording = { report: next.wording?.report ?? {}, response: { ...next.wording?.response, reportVerify: reportQuestions[0][language === 'es' ? 2 : 1] } }
+  }
   const regenerated = patch.generatedFrom !== undefined
   next.subjectEdited = regenerated ? false : patch.subject !== undefined ? true : previous.subjectEdited ?? !!previous.subject
   next.bodyEdited = regenerated ? false : patch.body !== undefined ? true : previous.bodyEdited ?? !!previous.body

@@ -57,35 +57,47 @@ main:has(.advisory-map-page:not([hidden])) { max-width: 1440px; padding: 18px 32
 .map-freshness { margin-top: 20px; color: #526678; font-size: .78rem; }
 .map-freshness .date-row { display: block; font-size: inherit; }
 .map-freshness .date-row dd { text-align: left; }
-.map-back { color: #066d73; padding: 8px 0; min-height: 44px; font-weight: 600; text-align: left; font-size: .88rem; }
-.map-detail-content { font-size: .88rem; overflow-wrap: anywhere; }
-.map-detail-content h2 { font-size: 1.05rem; margin: 12px 0 4px; }
-.map-detail-content h3 { font-size: .88rem; margin-bottom: 4px; }
-.map-detail-content p { margin-bottom: 12px; }
-.map-detail-county { color: #526678; }
-.map-detail-status { display: flex; align-items: center; gap: 8px; font-weight: 650; }
-.map-detail-status.active { color: #a42332; }
-.map-detail-content .date-row { display: block; font-size: .8rem; margin-bottom: 8px; }
-.map-detail-content .date-row dd { text-align: left; }
-.map-advisory-summary { margin: 14px 0 4px; padding: 12px; border: 1px solid #dce3e9; border-radius: 8px; background: #f7fafb; }
-.map-summary-heading, .map-record-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px 12px; }
-.map-summary-heading { margin-bottom: 8px; }
-.map-summary-heading h3, .map-record-heading h4 { margin: 0; font-size: .88rem; line-height: 1.35; }
-.map-record-state { flex: 0 1 auto; font-size: .72rem; line-height: 1.35; color: #526678; text-align: right; }
-.map-record-state.lifted { color: #465769; }
-.map-record-state.unconfirmed { color: #8a5a10; }
-.map-record-state.current { color: #06686e; }
-.map-fact-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .8rem; line-height: 1.4; }
-.map-fact-table th { width: 42%; padding: 5px 8px 5px 0; text-align: left; vertical-align: top; color: #526678; font-weight: 500; }
-.map-fact-table td { padding: 5px 0; vertical-align: top; overflow-wrap: anywhere; }
-.map-fact-table tr + tr { border-top: 1px solid #e3e9ee; }
-.map-observation-history { margin-top: 14px; }
-.map-observation-history > summary { font-size: .85rem; }
-.map-observation-history[open] > summary { margin-bottom: 10px; }
-.map-detail-record { border-top: 1px solid #dce3e9; margin-top: 18px; padding-top: 16px; }
-.map-observation-history .map-detail-record { margin-top: 14px; padding-top: 12px; }
-.map-observation-history .map-record-heading { margin-bottom: 6px; }
-.map-detail-record blockquote { margin: 12px 0; border-left: 2px solid #8aa6af; padding-left: 12px; }
+.map-back { display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; min-height: 44px; margin: -8px 0 4px -8px; padding: 8px 12px 8px 8px; border: 0; background: transparent; border-radius: 7px; color: #066d73; font: inherit; font-size: .9375rem; font-weight: 600; line-height: 1.3; text-align: left; }
+.map-back svg { display: block; flex: 0 0 18px; width: 18px; height: 18px; margin: 0; }
+.map-back:hover { background: #eef6f6; }
+/* Supplier details reuse the Places heading, finding box and notice record (styles.css). */
+.map-detail-content { position: relative; overflow-wrap: anywhere; }
+.map-detail-content .supplier-heading { margin: 0 0 16px; padding: 0; border: 0; }
+.map-detail-content .supplier-title-row { justify-content: space-between; min-height: 44px; }
+.map-detail-content .supplier-title-row h2 { font-size: 1.3125rem; }
+.map-detail-content .supplier-heading > p { margin: 6px 0 0; font-size: .9375rem; }
+.map-point-info-panel { position: absolute; right: 0; top: 56px; z-index: 2; width: min(340px, 100%); padding: 16px; border: 1px solid #93a4b5; border-radius: 12px; background: #fff; color: #263e4b; box-shadow: 0 8px 24px #16334726; font-size: .9rem; line-height: 1.5; }
+.map-point-info-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.map-point-info-heading h3 { font-size: 1rem; margin: 0; }
+.map-point-info-close { display: grid; place-items: center; min-width: 44px; min-height: 44px; margin: -10px -10px -10px 0; color: #526572; }
+.map-point-info-panel p { margin: 8px 0; }
+.map-detail-content .map-finding { display: block; padding: 18px 20px; margin: 0 0 16px; }
+.map-detail-content .map-finding .finding-copy { display: grid; gap: 8px; width: 100%; text-align: left; }
+.map-finding .status-label { display: flex; align-items: center; justify-content: flex-start; gap: 10px; margin: 0; font-size: 1.25rem; line-height: 1.35; color: var(--navy); text-align: left; }
+.map-finding .map-status-dot { width: 12px; height: 12px; margin: 0; flex: 0 0 12px; }
+@media (max-width: 760px) { .map-finding .status-label { font-size: 1.25rem; } }
+.map-finding .status-explanation { margin: 0; }
+.map-detail-content .map-finding-check { margin: 0; padding: 0; border: 0; }
+.map-finding-check .date-row { display: block; margin: 0; font-size: .9375rem; color: var(--muted); text-align: left; }
+.map-finding-check .date-row dt, .map-finding-check .date-row dd { display: inline; }
+.map-finding-check .date-row dt::after { content: ': '; }
+.map-finding-check .date-row dd { margin: 0; color: var(--navy); font-weight: 600; }
+.unavailable .map-finding, .stale .map-finding { background: #eef3f6; }
+.map-detail-content .map-check-actions { grid-template-columns: minmax(0, 1fr); margin: 0; }
+.map-detail-content .map-check-actions > .official-source-action { margin: 0; width: 100%; min-height: 48px; background: #fff; color: #066d73; border-color: var(--teal); font-weight: 700; text-decoration: none; }
+.map-detail-content > .historical-note { margin: 0 0 12px; font-size: .9375rem; }
+.map-notice .alert-status { margin-top: 4px; }
+.map-observation-history[open] > summary { margin-bottom: 0; }
+.map-detail-record .supplier-alert-notice h4 { font-size: 1rem; margin: 0; font-weight: 750; color: var(--navy); }
+.map-record-dates { margin: 0 0 8px; }
+.map-record-dates .date-row { display: block; margin: 0 0 8px; font-size: .875rem; }
+.map-record-dates .date-row dt { color: var(--muted); }
+.map-record-dates .date-row dd { text-align: left; }
+.map-detail-record blockquote { margin: 12px 0; border-left: 3px solid var(--teal); padding-left: 12px; }
+.map-detail-record .source-link { margin-bottom: 8px; }
+.map-detail-notes { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 12px; }
+.map-detail-notes .quiet-note { font-size: .875rem; margin: 0 0 8px; }
+.map-detail-notes .source-link { min-height: 44px; }
 .map-boundary-note { margin: 10px 0 2px; font-size: .8rem; color: #102e43; }
 .map-safety-note { margin: 0; font-size: .75rem; color: #526678; }
 .map-detail-sheet { border: 0; padding: 0; color: #102e43; }
@@ -116,5 +128,6 @@ main:has(.advisory-map-page:not([hidden])) { max-width: 1440px; padding: 18px 32
   .map-count { font-size: .7rem; right: 4px; }
   .map-detail-sheet { position: fixed; inset: auto 0 0; margin: 0; width: 100%; max-width: none; max-height: 82dvh; border-radius: 16px 16px 0 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: env(safe-area-inset-bottom); }
   .map-detail-sheet .map-detail-content { padding: 0 20px 24px; }
+  .map-detail-sheet .map-point-info-panel { right: 20px; width: calc(100% - 40px); }
   .map-detail-sheet button, .map-detail-sheet a { scroll-margin-bottom: 20px; }
 }

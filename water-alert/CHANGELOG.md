@@ -8,6 +8,167 @@ the current WAVE-only project tree.
 
 ## [Unreleased] — 2026-10-13
 
+### 2026-11-18 — Problem notes kept internal for emails
+
+- Remove **Notes about individual problems** (and **Notes about these records** for providers with no recorded problem) from the provider card, along with its record-specific “What these records do not show” list. Source quotes, conflict text and record limits remain in the evidence data that Help emails already use; general coverage limits stay in **Settings → Sources and coverage limits**. The inline conflict note now reads “The report and resolution record differ.” (ES: “El informe y el registro de resolución no coinciden.”) without pointing to the removed section. Unused notes styles removed.
+- Local checks only; not deployed. Updated provider/annual-report tests plus evidence-email tests pass (5 files, 44 tests); all 8 official-evidence browser tests pass (desktop/phone, EN/ES); `npm run build` succeeds. The full unit suite reports 35 failing files in Help step wording, Home and source-water/supplier-report areas outside this change (no clean baseline in the current uncommitted tree).
+
+### 2026-11-18 — No divider beneath problem filters
+
+- Remove the first problem-group summary’s inherited top border so no divider appears immediately beneath **Current Problems** or **All recorded problems**. Keep button borders, keyboard-focus outlines and separators between problem groups.
+- Local checks: all 8 official-evidence browser tests passed across desktop/mobile and English/Spanish, including new computed-border and keyboard-focus assertions. Inspected rendered captures; scoped whitespace check passed. Nothing deployed.
+
+### 2026-11-18 — More compact unavailable supplier card
+
+- Remove the standalone “Previously observed notice · current status unverified” line from supplier status cards in both languages, letting provider information and subsequent sections move up. Keep the main unavailable-status explanation and historical-record detail labels unchanged.
+- Local checks: the retained-failed-source regression passes; the full journey suite reports 14 passed / 3 failed on Home searchbox queries and map-history wording outside this change (no clean baseline comparison). Synthetic desktop English and mobile Spanish browser checks confirm the sections follow the action row, with no horizontal overflow; mobile still scrolls. Nothing deployed.
+
+### 2026-11-18 — Per-problem notes moved into the open problem list
+
+- On the provider card, **Notes about individual problems** no longer sits as a third full-width row under **Current Problems** and **All recorded problems**. It is now the last row inside the problems panel, so it appears only when a filter is open and reads as the end of the list it describes (thin top rule, smaller label). The notes follow the open filter: current-only when **Current Problems** is open, all recorded problems otherwise. Wording, source quotes, conflict and resolution notes, record-specific limits and the EN/ES copy are unchanged. Providers with no recorded problem keep **Notes about these records** on the card, since there is no list to close.
+- Local checks: the four suites covering this card pass (`provider-disclosure`, `provider-clear-sources`, `annual-report`, `annual-report-coverage`: 30/30), with `tests/provider-disclosure.test.tsx` rewritten to assert the notes close the open problem list instead of ending the card. `tests/e2e/official-evidence.spec.ts` gained assertions that the notes are no longer a direct child of the card, carry the EN/ES label, sit below the type groups and keep a 44px target; 8/8 passed in EN/ES at 1440×900 and 390×844. Production build passed with the existing large-chunk warning.
+- Not clean, and not caused by this change: a full `npm test` in this working tree reports 135 failed / 1032 passed across 32 files. Only `supplier-parity` queries the evidence card, and it fails on **None in these records**, a string removed by the earlier evidence-cleanup work in this tree; the rest are help, request-workspace and annual-report-summary suites this change does not touch, and no failing assertion mentions the notes. These pre-existing failures were not investigated further or fixed here, and no comparison against a clean baseline was run. Nothing deployed, sent or submitted.
+
+### 2026-11-18 — Rules-first, resumable annual-report collection
+
+- Make local `ccr:sync` use the existing fixed-rule reader before optional AI. Supported documents become `autoRead`, never human-reviewed; unsupported readings retain an unresolved original-PDF link. Preserve exact supplier/year/page checks, AI evidence validation and human-review precedence. Retrieval, ambiguity and extraction failures stay distinct from a successful search without a matching report. The shared search helper rejects unrecognized HTTP-200 form/results pages instead of manufacturing a missing-report outcome.
+- Stage source hashes, PDFs/text, per-supplier checkpoints, candidate records and a dated 658-system outcome matrix under ignored `data/ccr-sync/` by default. `--write` explicitly imports generated records; `--ai` separately enables paid fallback. Add the ten-system `--validation` selection, EPA-ID selection, same-day resume, explicit failed-attempt retry, paced bounded HTTP retries and an outage stop after three consecutive retrieval failures. Update the [research runbook](docs/research/adh-ccr-2025/README.md#automatic-sync-npm-run-ccrsync).
+- Local checks on Node 24: 65 saved-PDF, orchestration, on-demand report-check and offline CLI tests passed; collector type check, production build and scoped diff whitespace checks passed (existing bundle-size warning). A broader suite was terminated without a clean result and showed failures in Help/Home/report UI and database/API checks; no clean baseline comparison was run. An isolated compiled-API rerun still fails on union narrowing in the already-modified `server/annual-report-check.ts` (lines 39/81); that file was not changed in this batch. Live validation blocked on ADH connection timeouts: two retrieval failures were checkpointed before the command timed out. No app report records changed. The statewide run, scraper comparison, contacts/map work and live-document/app validation are not complete. Nothing deployed, sent or submitted; no paid AI invoked.
+
+### 2026-11-18 — Fuller Home hero proportions at normal zoom
+
+- The Home hero matches the fuller 110%-zoom composition at 100%: a 1210px measure (was 1100px) with 24px side padding, a larger two-line headline (up to 64px), lede (up to 21px), search field (larger text, 56px search button), **Browse all places** button (50px) and action cards (more padding, 52px icons, up to 24px titles and 17.5px text), with a 20px gap between the cards. Sizes scale with `clamp()`; no CSS zoom or transforms. On Home only, the header row widens to the same measure so the logo and language switch line up with the hero; navigation sizes are unchanged. Colors, icons, corners, card treatments and the bottom waves are unchanged; layouts under 1024px still stack.
+- Local checks: new `tests/e2e/home-hero-proportions.spec.ts` (EN/ES at 1440×780 and 1470×830 laptop viewports: wider measure, larger sizes, two-line English headline, logo aligned, hero fully visible; stacking without horizontal overflow at 375, 768 and 1023px) failed first, then 16/16 passed with the updated alignment spec. In other Home specs, `home-water.spec.ts` card-gap expectation updated to 20px; its hero test, `home-viewport.spec.ts` sidebar color checks and `home-active-fit.spec.ts` at 1440×780 (a Places-page layout) still fail. None of these use rules changed here, so they were not counted as regressions from this change, and no comparison against the previous version was run. Build and diff whitespace check passed. Nothing deployed.
+
+### 2026-11-18 — Home search aligned with the help card
+
+- On two-column Home layouts (1024px and wider), the search box now starts level with the top of **Get help with a water issue**, with **Browse all places** under it. When the headline runs to three lines (Spanish), the map card bottom-aligns so the two cards keep their 18px gap. Narrower layouts are unchanged.
+- Local checks: new `tests/e2e/home-hero-alignment.spec.ts` (EN/ES at 1100, 1440 and 1920px) failed first by 22–54px, then passed; production build and the diff whitespace check passed. Nothing deployed.
+
+### 2026-11-18 — Provider evidence cleanup and "No problems found" badge
+
+- Remove **Source details** from the provider card. Each source row now states how its records were read (for example **Reviewed by a person**) and their freshness (**Data dated** for EPA extracts, **Checked** for WAVE's last check), including after a failed refresh. General method and coverage notes moved to a new **Settings → Sources and coverage limits → Official records on provider pages** panel (EN/ES). **Notes about individual problems** stays as the last part of the card for exact wording, conflicts and record-specific limits.
+- Show a neutral **No problems found** badge when records were read and reviewed with nothing identified; unread or unretrieved records still show no badge.
+- Add the chevron to **Current Problems**. From six visible problems, every type is a collapsed group. **Show N more / Show less** is now a filled button at the bottom right of its group.
+- Remove the top rule from the card's unverified-status note under **Check now / View official source**. An info-button version of **Check now** was tried and reverted at the user's request; the card's action row is unchanged.
+- Local checks: 198 of 199 focused tests passed across 25 files; the one failure (Home landing-page searchbox) is in the historical baseline. 14 isolated EN/ES desktop/phone browser journeys, production build (existing large-chunk warning) and the diff whitespace check passed. Not run: full suite, or the broader Home/journey/card-formatting/places-compact browser specs against the restored card. Nothing deployed or sent; the local server was not touched.
+
+### 2026-11-17 — Responsive problem disclosures and nonblocking PDF tools
+
+- Move Ask to each issue heading with a dotted leader, including narrow screens. Tighten spacing and remove the extra action/filter/first-issue separators and repeated open-record paragraph. Start problem content hidden; active filters toggle closed with the existing slide and reduced-motion support. Render types with one or two incidents inline; keep larger types collapsed with chevrons. Omit problem badges, controls and empty-result text when no issues were identified, without hiding source failures.
+- Replace synchronous HTTP-server PDF extraction with asynchronous, bounded Poppler processes (10-second tool timeout, closed stdin). A hung `pdfinfo` process had blocked the local status API; stopping that child restored service. Reloaded the fix locally with scheduled checks and push disabled. Add `WATER_ALERT_BACKGROUND_ENABLED=false` for this inspection mode; explicit API actions remain available.
+- Local checks: 167 focused tests, 14 isolated EN/ES desktop/phone browser journeys, production build and diff whitespace checks passed. Inspected desktop and Spanish phone layouts; checked header alignment, zero-problem suppression, animated/reduced-motion toggles, Ask and saved edits. Real saved-PDF extraction returned two pages, and the reloaded proxied status API returned HTTP 200 in 0.03 seconds. Existing bundle-size warning, full-suite comparison and Node 24 verification remain open; expanded content still scrolls. Nothing deployed or sent.
+
+### 2026-11-17 — Collapsed problem types and dated open-record filter
+
+- Rename **Present problems** to **Current Problems** and replace its fixed unavailable message with the agreed open-record filter: valid start/no end or explicit ongoing status, excluding recorded resolutions, closed statuses and end fields. Qualify matches with recorded-status wording and the actual EPA extract date or annual-report identity; this never changes advisory status or establishes present safety. Keep unavailable evidence distinct from zero matches.
+- Group both problem filters by type, initially collapsed with counts; sort distinct incidents newest first by full reported date without merging repeated titles. Shorten familiar issue headings, move source links underneath and preserve agency wording once in the details. Retain per-type Show more beside Ask, grouped-source notes, automatic refresh and protected Help/email snapshots.
+- Reuse Water system dotted leaders for source headers and its responsive label/value grid for source details. Remove the redundant warning block and repeated category subtitle.
+- Local checks: 146 focused tests, 14 isolated EN/ES desktop/phone browser journeys and production build passed (existing large-chunk warning). Inspected collapsed groups, expanded treatment issues and responsive source details; keyboard, per-type expansion, Ask, saved edits, enlarged text and phone email-footer checks passed. Browser previews use isolated synthetic records, not live counts. Expanded content still scrolls. Full-suite comparison and supported Node 24 verification remain open; nothing deployed or sent.
+
+### 2026-11-17 — Inline additional-problems button
+
+- Replace the extra-problems disclosure link with a secondary **Show N more / Show less** button beside the third issue's **Ask about this** control. Reuse its button styling, keep keyboard/expanded-state support and remove the extra disclosure divider so only the issue separator remains. Preserve English/Spanish behavior; button text wraps within the shared row on narrow screens.
+- Local checks: 21 focused tests, eight isolated EN/ES desktop/phone browser journeys and production build passed (existing large-chunk warning). Browser assertions verify button alignment, no extra disclosure border and keyboard expansion/collapse; inspected the rendered Spanish phone layout. Nothing deployed or sent.
+
+### 2026-11-17 — Original issue formatting and clearer source summaries
+
+- Restore the original numbered problem headings, dotted leaders, page links, calendar/file/wrench labels, reported problem/action columns and secondary Ask controls. Add **Present problems** and **All recorded problems**; current status remains explicitly unavailable because annual and periodic EPA records cannot establish today's ongoing problems. Keep documented resolution and material conflicting accounts visible; move detailed wording and uncertainty into grouped source notes.
+- Replace per-record cards with short annual-report/EPA summaries showing actual review methods, extract dates and WAVE check dates. Correct public EPA facility links to `echo.epa.gov`; verified the exact Leisure Hills system page and downloaded/read its matching 2025 ADH PDF, including page 2. Preserve automatic refresh, cached evidence and saved Help/email snapshots.
+- Local checks: 143 focused tests across 18 files, 14 isolated EN/ES desktop/phone browser journeys and production build passed (existing large-chunk warning). Inspected rendered desktop issues and phone Spanish source summaries; keyboard, present-status explanation, Ask, saved edits, enlarged text and phone email-footer checks passed. Expanded records still scroll. Full-suite comparison and supported Node 24 verification remain open; nothing deployed or sent.
+
+### 2026-11-17 — Reuse the original report card
+
+- Consolidate annual-report and EPA source rows into the original annual-report card, with its existing teal issue disclosure and plus/minus controls. Keep source dates, methods and lookup limits under **Source details**; omit the issue control for empty results instead of adding a second empty-state card. Preserve inline issue formatting, automatic refresh and saved-draft protections.
+- Local checks: 139 focused unit/component tests, 14 isolated English/Spanish desktop/phone browser journeys and production build passed (existing large-chunk warning). Inspected populated, expanded and empty-state screenshots; keyboard disclosure, Ask, saved edits, enlarged text and phone email-footer checks passed. Expanded issues and long provider details still scroll. Full-suite comparison and supported Node 24 verification remain open; nothing deployed or sent.
+
+### 2026-11-17 — Inline past issues and automatic provider refresh
+
+- Restore full inline issue formatting under **Past issues**: numbered titles/source links, reported dates, what was reported, corrective action, separate resolution status and Ask. Show three before a further disclosure; stack text columns on phones. Keep detailed source wording/conflicts under disclosures and use concise EN/ES labels without hiding automated-reading limitations.
+- Opening **Provider information** refreshes supported annual reports, exact-system EPA entries and directory facts automatically. Keep saved data visible, show source check/failure states, deduplicate pending requests and ignore late supplier responses. Retain historical evidence on failed/empty checks; include new report years consistently in Provider information and Help without replacing same-year shipped reviews or saved drafts/emails.
+- Local checks: 136 focused unit/component tests, ten isolated EN/ES desktop/phone journeys and production build passed (existing large-chunk warning); `git diff --check` passed. Inspected rendered desktop English and phone Spanish inline issues. Expanded inline issues intentionally require scrolling. The full-suite comparison and supported Node 24 recheck remain open; no deployment or messages sent.
+
+### 2026-11-17 — Shared official-record evidence and protected Help drafts
+
+- Extend Provider information in place with distinct historical findings, focused finding/record views, source/retrieval limits and keyboard Back-focus restoration. Add bounded, on-demand, exact-PWS EPA ECHO retrieval alongside ADH annual reports; keep full inspection/notice/order document gaps explicit. No general crawling or automatic records requests.
+- Share conservative grouping, actions, explicit dated resolutions and conflicting accounts with Help and concise EN/ES email bullets/citations. Prioritize the selected Ask finding, preserve upstream separation, and distinguish reported dates from publication dates and automated readings from verified quotations. Historical evidence never changes live advisory status.
+- Preserve saved evidence and manual email edits on resume. Preview material evidence updates, confirm snapshot replacement and separately confirm email regeneration; retain custom questions, recipients and files. Refuse unmatched/malformed source rows, disclose bounded/truncated responses, isolate sample lookups, ignore late results from another supplier and retain history after a no-row lookup.
+- Keep the phone review footer above navigation for the long supplier/subject fixture, without shrinking text: remove the duplicated supplier heading, align the subject label and tighten surrounding spacing. Add explicit EN/ES footer-position assertions.
+- Local checks: 100 focused unit/component tests and 10 isolated desktop/phone EN/ES browser journeys passed, covering Ask, citations/resolution, Back focus, resume/manual edits, enlarged text and review-footer placement. Production build passed with the existing large-chunk warning. The full-suite run stalled and was stopped without a comparison result; no full-suite pass is claimed. Screenshot review confirms long expanded provider/detail content still requires scrolling at ordinary phone sizes and does not meet the viewport-fit gate. Checks used Node 23.5.0; the supported Node 24 recheck remains open. Nothing deployed or sent in this continuation.
+
+### 2026-11-17 — Direct ADH questions without reporting assumptions
+
+- Ask ADH to review observations and advise whether an inspection or sampling is appropriate. Ask which monitoring or reporting requirements were missed and subsequently completed, rather than assuming missing paperwork. Update English and Spanish generated wording; preserve custom questions and manually edited emails.
+- Local checks: 56 focused tests and the production build passed (existing large-chunk warning). No deployment or messages sent; the full suite was not rerun.
+
+### 2026-11-17 — Concise, specific customer emails
+
+- Replace repetitive report paragraphs with dated finding-specific bullets that acknowledge reported actions, ask what remains unconfirmed and cite the source. Combine the immediate concern and request in the opening; consolidate status, corrective-action dates, records and resident instructions in one closing, with a next-update fallback and sources after the sign-off.
+- Preserve historical/printed-status qualifications, English/Spanish, ADH role limits, custom questions, unknown or additionally annotated saved evidence and manually edited subjects/messages. Keep billing periods and other supplied details; no UI flow changes.
+- Local checks: 87 focused unit/component tests and six synthetic desktop/phone browser journeys passed; build passed with the existing large-chunk warning. This is not a full-suite pass: legacy UI tests still fail. No deployment or messages sent.
+
+### 2026-11-17 — Automatic report context and compact review
+
+- Keep six Help input screens: remove the report-selection controls and separate report-question step. Include available exact-supplier historical findings and applicable corrective-action, resolution, records and next-step questions automatically. Preserve source/date/method disclosures, ADH role limits, saved evidence and manual email edits; ask about a relationship only with a personal concern, without asserting causation.
+- Place Review answers beside the progress label, style the separate answer view with existing form typography and aligned edit actions, and retain contact cards without the extra contact-section heading. Keep primary actions above mobile navigation; long email text scrolls within its editor and next-step instructions initially collapse on mobile.
+- Align the supplier-detail Back control and active-advisory box spacing without changing advisory wording or provenance.
+- Local checks: 59 focused unit/component tests and eight synthetic desktop/phone browser cases passed, including English/Spanish Help, resume/manual-edit preservation and supplier-detail alignment. The broader suite is not claimed green; earlier full runs retain failures. No deployment, messages or production-delivery verification.
+
+### 2026-11-17 — Map supplier details use the Places layout
+
+- Rebuild the Advisory map supplier panel and mobile sheet from the Places card pieces: title-case supplier name with the shared info icon, county and full agency name, the tinted status box (label and colour still match the map legend, including “Outdated information”), last successful check inside the box, one outline “View official source” button and the Places “Boil-water notice” record (calendar icons, two-column facts, status bar). Agency wording stays exact; a missing or unknown lift is shown as “Unconfirmed”, never lifted.
+- Keep observation history as a divider disclosure with first/last observed dates, unknown-lift note, quoted guidance and ADH link. Move map-point provenance into the info pop-up and a quiet note with its source link; remove the separate “Source details” section and the old map-only table styles. English/Spanish preserved.
+- Share the notice fact markup (`alertFact`) between Places history and the map. Updated map detail and location-coverage unit tests. Local checks only: targeted unit tests, type check, production build and a visual check at desktop and mobile widths in English and Spanish. Not deployed.
+- Follow-up layout fixes: “Back to results” is now an aligned icon-and-text link at body size with less space above the supplier name, and the map status box no longer inherits the Places flex layout (full-width, left-aligned content with even 18px/20px padding and an 8px gap; extra gap below the official-source button removed). Local visual check only. Not deployed.
+
+### 2026-11-17 — Native report-question step and email-first review
+
+- Move optional report questions to their own conditional step using the existing icon tiles, progress and navigation; retain English/Spanish, keyboard selection and saved progress. Keep immediate request defaults independent of selected report questions.
+- Open Review directly to the email. Move the three answer groups into a separate “Review answers” view, preserve edit destinations/manual email edits, and collapse contact guidance on mobile. Bound long message fields with accessible scrolling so the normal desktop/phone layouts retain their primary actions.
+- Compose historical findings beside their selected clarification questions, followed by selected shared records questions, one historical qualification and an optional non-causal relationship question. Preserve dated evidence, source notes and recipient-role limits. Local implementation only; no deployment or messages sent.
+- Local checks: 56 focused unit/component tests and six synthetic desktop/phone browser journeys passed, including English/Spanish, keyboard confirmation, resume/deselection, and footer clearance above mobile navigation. Build passed with the large-chunk warning; the broader test suite remains non-green (including old flow/wording expectations and API compilation errors), not a full-suite pass.
+
+### 2026-11-17 — Confirm detected report context in Help
+
+- Connect exact-supplier device-local AI/table-read report findings to Help, matching shipped-report precedence in Places. Automated findings start unchecked; unread report URLs are not evidence. Older drafts gain optional findings without replacing saved snapshots, opt-outs or manual email edits.
+- Carry confirmed historical interpretations into email with year, dates, original source/page and a quiet method-specific source note, without presenting interpretations as agency quotations or current conditions. Offer a deselectable verification request with ADH-appropriate wording; preserve required human-reviewed no-action findings.
+- Keep all three review-summary groups and separate edit actions, explain empty report context, and reuse the existing form styling with visible native finding checkboxes. Preserve English/Spanish and explicit manual contact controls.
+- Local checks: 30 focused unit/component tests and six synthetic desktop/phone browser journeys passed, including English/Spanish selection, save/resume and deselection. Build passed with the large-chunk warning. The broader unit run had 83 failures across 27 files (including older flow/wording expectations and API compilation errors); it is not a clean full-suite result. No deployment, messages or production delivery verification.
+
+### 2026-11-17 — Request start action styling
+
+- Locally style “Start another request” as a secondary button in History, with keyboard focus and responsive sizing. Not deployed.
+- Position the detail view’s start action directly beneath the Details card rather than below both columns.
+- For drafts with a start action, place it in the status card and expand Continue draft beneath Details; other status actions remain in place.
+- Increase the expanded Continue draft button’s label size and explicitly set its text color to white.
+- Restyle Continue draft as a content-sized pill matching the Browse all places button.
+- Expand the pill to fill the space below Details, with a larger centered label.
+
+### 2026-11-17 — Streamlined request detail header
+
+- Locally move the request title into its status card, remove the separate detail header and refresh button, and tighten spacing for the collapsed desktop view. The list retains its refresh control; longer content can still scroll. Not deployed.
+
+### 2026-11-16 — Guided report questions and review
+
+- Locally carry the exact reviewed finding, including an older report when available, into the existing help form. Offer optional report questions and a review summary with historical-context cautions; preserve editable messages and the existing manual send and attachment paths. Not deployed.
+
+### 2026-11-16 — Compact request history
+
+- Locally place the request message and details side by side on wider screens, with a stacked layout on smaller screens. Expanded or lengthy records can still scroll. Not deployed.
+
+### 2026-11-16 — Report context in guided help
+
+- Locally add a reviewed-report finding selector to the existing help form, with source links and labels for automatically included no-action findings. Explicitly selected historical findings remain in generated context across issue categories; no connection or current status is inferred. This is an initial part of the guided request work, not deployed.
+
+### 2026-11-16 — Supplier map detail layout
+
+- Locally reorganized supplier details around the advisory, history and grouped source links, with responsive columns and an accessible map-point information disclosure in English and Spanish. Not deployed.
+
+### 2026-11-16 — Map location and source clarity
+
+- Added nine exact-name Arkansas GIS historical polygon reference points for observed suppliers, with source links and review dates. Unmatched suppliers remain listed without guessed locations.
+- Supplier map details now distinguish the ADH advisory source from each reviewed map point's source, type and limitations, in English and Spanish. Local implementation only; not deployed.
+
 ### 2026-11-16 — Clearer secondary actions
 
 - Locally replace link-like action controls with labeled Lucide icons and compact buttons across places, settings, search, help, and history, while keeping official source links distinct. Not deployed.

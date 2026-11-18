@@ -355,15 +355,62 @@ All rows are requested year 2025 only and remain dated document evidence.
 
 ### Automatic sync (`npm run ccr:sync`)
 
-Added 2026-11-08, local only; not yet run against the live ADH site. It targets
-suppliers with no entry plus the not-reviewed ones above (never hand-reviewed
-records), repeats steps 1–4 of the method automatically with exact identity
-rules, and asks Claude to summarize every page. A summary is kept only as the
-separate `aiSummarized` state, labelled “AI summary” in the app, when the printed
-title year is 2025, the AI reports no uncertainty or contradiction, and every
-cited page, date and short verbatim quote is found in the extracted PDF text.
-Otherwise the PDF link is shown as “Not yet reviewed”; a successful search with
-no exact match is “No report found”. Search, download or AI failures and
-ambiguous identities write nothing. Output: `src/ai-annual-reports.ts`, new
-`pdfs/`/`text/` snapshots, and `ai-sync-log.json` (per-run evidence). No
-scheduler, deployment or notification is involved.
+Updated 2026-11-18. This local collector includes all 658 community systems in
+the bundled EPA directory, plus catalog/observed suppliers; it never replaces
+human-reviewed reports. EPA `AR…` IDs select systems but are **not** treated as
+ADH internal PWS numbers. Exact identity, requested/printed year 2025 and physical
+page-count checks still apply. The fixed-rule reader runs first, without a key,
+and labels supported readings `autoRead`, not human-reviewed. If it declines,
+the original document remains unresolved. Optional `--ai` enables the existing
+paid summarizer only as a fallback; the uncertainty, contradiction, page, quote
+and date validation still applies. Do not enable it without separate approval.
+An unrecognized search form or result page (even HTTP 200) is a retrieval
+failure, not evidence of a missing report.
+
+From `water-alert/`, using Node 24 and local `pdfinfo`/`pdftotext`:
+
+```sh
+npm run ccr:sync -- --validation
+npm run ccr:sync
+npm run ccr:sync -- --only=AR0000124
+npm run ccr:sync -- --validation --retry-failed
+```
+
+The first command selects the approved ten-system validation batch, **not** the
+final scope. The second selects statewide targets. By default all output is
+staged under ignored `data/ccr-sync/`: hash-named binary `pdfs/`, extracted
+`text/`, `checkpoint.json`, `coverage.json` and `candidate-reports.ts`. No app
+records change. After evidence review, `--write` explicitly imports generated
+records to `src/ai-annual-reports.ts`; human reviews still take precedence.
+`--cache=/absolute/path` selects another evidence directory (use one writer per
+directory). `--dry-run` searches/downloads and runs fixed checks without writing,
+and cannot be combined with `--write` or `--ai`. `--ai` requires
+`ANTHROPIC_API_KEY`; `CCR_MODEL` optionally selects its model. No key is needed
+for the default path.
+
+Each completed supplier is saved before the next begins. Same-day, same-target,
+same-mode runs resume automatically; changed dates/identities/modes are checked
+again, while `--retry-failed` retries failed attempts. Requests are sequential,
+at least one second apart, with 30-second request timeouts and at most two
+transient-error retries. `Retry-After` is honored; long cooldowns do not trigger
+more requests. Three consecutive retrieval failures stop collection with a
+nonzero exit status, preserving completed work and leaving the rest unattempted.
+
+Coverage emits one row for every directory system and separates original dated
+human reviews, automated readings, unresolved documents, successful searches
+without exact matches, ambiguity, retrieval/extraction failure and unattempted
+systems. An attempt is not proof of report availability or safety. Existing
+undated unavailable/unreviewed records do not acquire a new check date. These
+are historical document outcomes, never current advisory status or notifications.
+
+**2026-11-18 execution limit:** the ten-system validation was attempted, but
+ADH connections timed out from both Node 24 and `curl`. Two completed attempts
+(Bella Vista POA and Jonesboro) were checkpointed as `retrievalFailed`; the
+120-second command limit interrupted the rest. The local 658-row matrix showed
+40 existing human-reviewed systems, one previously unreviewed, two retrieval
+failures and 615 unattempted. No PDFs or app records were added. Statewide
+collection/import, original-document validation, contact/map reconciliation,
+representative app journeys and the Crawlee/Docling comparison remain open.
+A different scraping framework is not evidence that an unreachable source can
+be accessed. Recover source access, then rerun the validation with
+`--retry-failed` before scaling up. No deployment, paid AI or notifications ran.

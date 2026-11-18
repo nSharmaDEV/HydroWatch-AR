@@ -195,10 +195,10 @@ test('Home hero spans the width under the standard header, with cards in its rig
   expect(desktopSubmit.height).toBeGreaterThanOrEqual(48)
   expect(desktopSubmit.x + desktopSubmit.width).toBeGreaterThan(search.x + search.width - 16)
   await expect(submitButton.locator('svg')).toHaveCount(1)
-  // Cards sit inside the hero, right of the search column, stacked 18px apart.
+  // Cards sit inside the hero, right of the search column, stacked 20px apart.
   expect(mapCard.x).toBeGreaterThan(search.x + search.width)
   expect(helpCard.x).toBeCloseTo(mapCard.x, 0)
-  expect(helpCard.y - (mapCard.y + mapCard.height)).toBeCloseTo(18, 0)
+  expect(helpCard.y - (mapCard.y + mapCard.height)).toBeCloseTo(20, 0)
   expect(helpCard.y + helpCard.height).toBeLessThan(hero.y + hero.height)
   // "Browse all places" clears the strip's highest possible crest (~13% down its box).
   const water = (await page.locator('.wave-hero-water').boundingBox())!

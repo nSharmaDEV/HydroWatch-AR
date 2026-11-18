@@ -22,7 +22,7 @@ test('selected requests and observations become complete connected prose in both
   const text = generateMessage(d, 'en').body
   expect(text).toContain('I observed an unusual color, an unusual smell, and particles in the water.')
   expect(text).toContain('Could you please:\n1. Investigate the reported concern\n2. Clarify applicable water-use instructions')
-  expect(text).toContain('I’m a Sample Creek Water customer. I’m writing about the quality of my tap water.')
+  expect(text).toContain('I’m a Sample Creek Water customer. I observed an unusual color')
   expect(text).toContain('I observed this occasionally.')
   // Letter order: who → what happened → numbered requests → sign-off; no imposed deadline.
   const order = ['Hello Sample Creek Water team,', 'I’m a Sample Creek Water customer', 'I observed an unusual color', 'Could you please:', 'Thank you.']
@@ -30,7 +30,7 @@ test('selected requests and observations become complete connected prose in both
   expect(order.every(s => text.includes(s))).toBe(true)
   const spanish = generateMessage({ ...d, wording: { report: { first: 'Un color inusual', second: 'Un olor inusual' }, response: { first: 'Investigar la inquietud reportada' } } }, 'es').body
   expect(spanish).toContain('Observé un color inusual y un olor inusual.')
-  expect(spanish).toContain('Les pido, por favor:\n1. Investigar la inquietud reportada')
+  expect(spanish).toContain('Les pido, por favor, investigar la inquietud reportada.')
   expect(spanish).not.toContain('5 días hábiles')
   expect(spanish).toContain('Gracias.')
   expect(spanish).toContain('Lo observé ocasionalmente.')
@@ -64,7 +64,9 @@ test('manual fields are protected independently; removed facts and files disappe
 
 test('confirmed dates, locations, contact and requests agree in email and report without invented outcomes', () => {
   const d = { ...blankRequest(samplePlaces[0]), locations: ['123 Example St', '456 Sample St'], answers: { began: '2026-10-01', ongoing: 'No', ended: '2026-10-03', contacted: 'Yes', contactDate: '2026-10-02', contactMethod: 'Phone', contactResponse: 'They recorded my concern.', frequency: 'Constant' }, wording: { report: { first: 'No water' }, response: { first: 'Share an update' } } }
-  for (const text of [generateMessage(d, 'en').body, generateReport(d, 'en')]) for (const confirmed of ['October 1, 2026', 'October 3, 2026', 'October 2, 2026', '123 Example St', '456 Sample St', 'They recorded my concern.', '1. Share an update']) expect(text).toContain(confirmed)
+  for (const text of [generateMessage(d, 'en').body, generateReport(d, 'en')]) for (const confirmed of ['October 1, 2026', 'October 3, 2026', 'October 2, 2026', '123 Example St', '456 Sample St', 'They recorded my concern.']) expect(text).toContain(confirmed)
+  expect(generateReport(d, 'en')).toContain('1. Share an update')
+  expect(generateMessage(d, 'en').body).toContain('Could you please share an update?')
   const email = generateMessage(d, 'en').body
   expect(email).toContain('I’m a Sample Creek Water customer at 123 Example St.')
   expect(email).toContain('I also experienced this at 456 Sample St.')
@@ -76,7 +78,7 @@ test('ADH request is addressed to the agency and does not ask it to restore supp
   const d = { ...blankRequest(samplePlaces[0]), recipientRoutes: ['adh' as const], wording: { report: { first: 'No water' }, response: { first: 'Restore service' } } }
   const text = generateMessage(d, 'en').body
   expect(text).toMatch(/^Hello Arkansas Department of Health,/)
-  expect(text).toContain('Could you please:\n1. Advise on how to pursue restoration of service with the provider')
+  expect(text).toContain('Could you advise how to seek an explanation and restoration plan from the provider')
   expect(text).not.toMatch(/Restore service|restore service/)
   expect(generateMessage({ ...d, recipientRoutes: ['provider', 'adh'] }, 'en').body).toMatch(/^Hello,\n/)
 })
@@ -86,7 +88,7 @@ test('Spanish service observations are resident sentences rather than form fragm
   const text = generateMessage(d, 'es').body
   expect(text).toContain('No tengo agua.')
   expect(text).toContain('Tengo menos presión de lo habitual.')
-  expect(text).toContain('Les pido, por favor:\n1. Restablecer el servicio: investigar el problema de servicio reportado e indicar los próximos pasos para restablecerlo\n2. Compartir una actualización')
+  expect(text).toContain('¿Qué está causando esto, qué medidas se prevén y cuándo puedo esperar un servicio constante?')
 })
 
 test('facts are supporting context, not a second first-person letter or email headings', () => {

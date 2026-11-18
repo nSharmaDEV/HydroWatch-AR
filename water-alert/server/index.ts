@@ -36,8 +36,8 @@ if (existsSync(dist)) {
   app.get('/', (_req, res) => { res.sendFile(`${dist}index.html`) })
 }
 const server = app.listen(config.port, config.host, () => {
-  console.log(`Water Alert API running on port ${config.port}; checks every 5 minutes; push ${config.push ? 'configured, device delivery unverified' : 'disabled'}`)
-  const stop = startChecking(async () => { await runner.check(); await drain() }, () => console.error('Automatic check/delivery failed; inspect local service health'))
-  const retry = setInterval(() => { void drain().catch(() => console.error('Push queue unavailable')) }, 60_000)
+  console.log(`Water Alert API running on port ${config.port}; background ${config.backgroundEnabled ? 'checks every 5 minutes' : 'disabled'}; push ${config.push ? 'configured, device delivery unverified' : 'disabled'}`)
+  const stop = config.backgroundEnabled ? startChecking(async () => { await runner.check(); await drain() }, () => console.error('Automatic check/delivery failed; inspect local service health')) : () => {}
+  const retry = config.backgroundEnabled ? setInterval(() => { void drain().catch(() => console.error('Push queue unavailable')) }, 60_000) : undefined
   for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => { stop(); clearInterval(retry); server.close(() => process.exit(0)) })
 })

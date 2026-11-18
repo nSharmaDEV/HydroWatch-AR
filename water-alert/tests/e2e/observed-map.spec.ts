@@ -40,7 +40,8 @@ test('map and results share filters and selection without leaving the workspace'
   await marker.focus()
   await page.keyboard.press('Enter')
   const details = phone ? page.getByRole('dialog') : page.getByRole('region', { name: place.name })
-  await expect(details.getByText(notice.area, { exact: true })).toBeVisible()
+  // The latest record is shown first; the same notice also sits in the closed observation history.
+  await expect(details.getByText(notice.area, { exact: true }).first()).toBeVisible()
   if (phone) {
     await page.screenshot({ path: info.outputPath('advisory-details-phone.png'), fullPage: true })
     expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden')
@@ -59,7 +60,7 @@ test('map and results share filters and selection without leaving the workspace'
   await expect(results.getByText('Location unavailable')).toBeVisible()
   await expect(results.getByRole('list')).toHaveCount(1)
   await results.getByRole('button', { name: /Synthetic unmapped/ }).click()
-  await expect((phone ? page.getByRole('dialog') : page.getByRole('region', { name: unmapped.name })).getByRole('heading', { name: unmapped.name })).toBeVisible()
+  await expect((phone ? page.getByRole('dialog') : page.getByRole('region', { name: unmapped.name })).getByRole('heading', { level: 2, name: new RegExp(unmapped.name, 'i') })).toBeVisible()
   await page.getByRole('button', { name: /Back to results/ }).click()
   if (phone) {
     const row = results.getByRole('button', { name: /Synthetic unmapped/ })

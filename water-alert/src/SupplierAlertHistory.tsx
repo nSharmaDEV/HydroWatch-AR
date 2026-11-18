@@ -11,6 +11,9 @@ import { InfoButton } from './InfoButton'
 const archivedDate = (iso: string, language: Language) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString(language === 'es' ? 'es-US' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 const calendar = <Icon name="calendar" size={16} />
+/** One fact in a Places-style notice record; agency text keeps its English language tag. */
+export const alertFact = (label: string, value: string | null | undefined, fallback: string, date = false) =>
+  <div className="alert-fact" key={label}><dt>{date ? calendar : null}{label}</dt><dd lang={value?.trim() ? 'en' : undefined}>{value?.trim() || fallback}</dd></div>
 
 export function SupplierAlertHistory({ place, archive, source, now, t, language, action }: { place: Place; archive: Notice[]; source?: SourceSnapshot; now: number; t: Strings; language: Language; action?: ReactNode; onViewNotice?: (id: string) => void }) {
   const [open, setOpen] = useState(false)
@@ -29,7 +32,7 @@ export function SupplierAlertHistory({ place, archive, source, now, t, language,
   const saved = [...new Map(evidence.filter(matches).map(n => [n.id, n])).values()]
   const records = supplierHistory(place.id, saved)
   const status = statusFor(place.id, source?.agency === agency ? source : undefined, now)
-  const field = (label: string, value?: string | null, date = false) => <div className="alert-fact"><dt>{date ? calendar : null}{label}</dt><dd lang={value?.trim() ? 'en' : undefined}>{value?.trim() || (es ? `No proporcionado por ${agency}` : `Not provided by ${agency}`)}</dd></div>
+  const field = (label: string, value?: string | null, date = false) => alertFact(label, value, es ? `No proporcionado por ${agency}` : `Not provided by ${agency}`, date)
   return <>
     <div className="supplier-actions"><button className="alert-toggle check-toggle text-button disclosure-toggle" aria-expanded={open} aria-controls={id} onClick={() => setOpen(v => !v)}>{title}<span aria-hidden="true" className="disclosure-icon" /></button>{action}</div>
     <section ref={motion.ref} id={id} hidden={!motion.present} inert={!open} aria-hidden={!open || undefined} className="supplier-alert-history" aria-label={title}>

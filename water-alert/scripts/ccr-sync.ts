@@ -1,31 +1,23 @@
-// `npm run ccr:sync` — local only. Finds suppliers without a 2025 annual-report
-// record (plus not-reviewed ones), searches ADH's public CCR site, downloads the
-// exact-PWS PDF, asks Claude to summarize all pages and keeps the result only if
-// the deterministic checks in ccr-sync-lib.ts pass. Writes:
-//   src/ai-annual-reports.ts                       (generated records)
-//   docs/research/adh-ccr-2025/pdfs|text/<pws>.*   (dated source snapshots)
-//   docs/research/adh-ccr-2025/ai-sync-log.json    (per-run log)
-// Usage: npm run ccr:sync [-- --dry-run] [-- --only=ADH:…]
-// Needs ANTHROPIC_API_KEY (except --dry-run). Optional CCR_MODEL.
-// Never deploys, commits or notifies; review the diff before committing.
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { createHash } from 'node:crypto'
+// Local rules-first collector. Stages ignored source artifacts + resumable
+// outcomes by default. --write explicitly imports generated records, never
+// human reviews. --ai additionally opts in to paid API use; no key is needed
+// otherwise. Never deploys, commits, notifies or modifies live observations.
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { HUMAN_ANNUAL_REPORTS, mergeAnnualReports, type AnnualReport } from '../src/annual-reports'
 import { AI_ANNUAL_REPORTS } from '../src/ai-annual-reports'
 import { PLACE_CATALOG } from '../src/place-catalog'
 import { DIRECTORY } from '../src/water-system-directory'
-import { claudeSummarizer, findTargets, popplerTools, pwsFromUrl, renderGeneratedModule, syncOne, type SyncLog, type SystemPlace } from './ccr-sync-lib'
+import { claudeSummarizer, findTargets, popplerTools, pwsFromUrl, renderGeneratedModule, syncOne, REPORT_YEAR, type SystemPlace } from './ccr-sync-lib'
+import { coverageAudit, parseBatchArgs, politeFetch, runBatch, type Checkpoint } from './ccr-batch-lib'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const archive = path.join(root, 'docs/research/adh-ccr-2025')
-const args = process.argv.slice(2)
-const dryRun = args.includes('--dry-run')
-const only = args.find(a => a.startsWith('--only='))?.slice('--only='.length)
+const args = parseBatchArgs(process.argv.slice(2))
+const cache = path.resolve(args.cache ?? path.join(root, 'data/ccr-sync'))
 const model = process.env.CCR_MODEL || 'claude-opus-5-5'
 const apiKey = process.env.ANTHROPIC_API_KEY
-if (!dryRun && !apiKey) { console.error('ANTHROPIC_API_KEY is not set. Use --dry-run to search/download without the AI step.'); process.exit(1) }
+if (args.ai && !apiKey) throw new Error('--ai requires ANTHROPIC_API_KEY; omit --ai for free fixed-rule reading.')
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
 
 const livePath = path.join(root, 'data/live/observations.json')
@@ -41,34 +33,56 @@ const catalog = PLACE_CATALOG.map(e => e.place as SystemPlace)
 const directorySystems: SystemPlace[] = DIRECTORY.systems.map(s => ({ id: s.placeId, name: s.name, county: s.county, kind: 'system' }))
 const knownPws = Object.fromEntries(PLACE_CATALOG.flatMap(e => { const pws = e.place.kind === 'system' ? pwsFromUrl(e.url) : undefined; return pws ? [[e.place.id, pws]] : [] }))
 const current = mergeAnnualReports(HUMAN_ANNUAL_REPORTS, AI_ANNUAL_REPORTS)
-const targets = findTargets([...catalog, ...directorySystems, ...live], current, knownPws).filter(t => !only || t.id === only)
-console.log(`${targets.length} supplier(s) to check${dryRun ? ' (dry run: no AI, nothing written)' : ''}.`)
+const validation = new Set(['AR0000465', 'AR0000124', 'AR0000209', 'AR0000189', 'AR0000272', 'AR0000039', 'AR0000466', 'AR0000222', 'AR0000484', 'AR0000446'])
+const selected = new Set(DIRECTORY.systems.filter(s => args.validation ? validation.has(s.pwsid) : !args.only || s.placeId === args.only || s.pwsid === args.only).map(s => s.placeId))
+const targets = findTargets([...catalog, ...directorySystems, ...live], current, knownPws).filter(t => args.validation || args.only ? selected.has(t.id) || t.id === args.only : true)
+if (args.only && !targets.length) throw new Error('No eligible target matches --only (human-reviewed records are protected).')
+console.log(`${targets.length} supplier(s) selected${args.dryRun ? ' (dry run: no AI, nothing written)' : '; same-day completed checkpoints resume automatically'}.`)
 
-const summarize = dryRun ? undefined : claudeSummarizer({ apiKey: apiKey!, model })
+const summarize = args.ai ? claudeSummarizer({ apiKey: apiKey!, model }) : undefined
+const fetcher = politeFetch({ fetch, delayMs: 1000, retries: 2 })
 const generated: Record<string, readonly AnnualReport[]> = { ...AI_ANNUAL_REPORTS }
-const logs: SyncLog[] = []
-for (const target of targets) {
-  const result = await syncOne(target, { fetch, summarize, pdfTools: popplerTools, today, model })
-  logs.push(result.log)
-  console.log(`${result.log.outcome.padEnd(12)} ${target.name}${result.log.pws ? ` (PWS ${result.log.pws})` : ''}${result.log.detail ? ` — ${result.log.detail}` : ''}`)
-  if (dryRun) continue
-  if (result.pdf && result.log.pws) {
-    // Keep earlier snapshots: a changed PDF at the same URL gets a dated name.
-    const existing = path.join(archive, 'pdfs', `${result.log.pws}.pdf`)
-    const same = existsSync(existing) && createHash('sha256').update(readFileSync(existing)).digest('hex') === result.log.sha256
-    const stem = !existsSync(existing) || same ? result.log.pws : `${result.log.pws}-${today}`
-    mkdirSync(path.join(archive, 'pdfs'), { recursive: true }); mkdirSync(path.join(archive, 'text'), { recursive: true })
-    if (!same) writeFileSync(path.join(archive, 'pdfs', `${stem}.pdf`), result.pdf)
-    if (!same || !existsSync(path.join(archive, 'text', `${stem}.txt`))) writeFileSync(path.join(archive, 'text', `${stem}.txt`), result.text ?? '')
-  }
-  if (result.report) generated[target.id] = [result.report]
+const checkpointPath = path.join(cache, 'checkpoint.json')
+const checkpoint: Checkpoint = !args.dryRun && existsSync(checkpointPath) ? JSON.parse(readFileSync(checkpointPath, 'utf8')) : {}
+// One collector per cache directory. A separate cache can benchmark another tool.
+const atomicWrite = (file: string, text: string | Uint8Array) => {
+  mkdirSync(path.dirname(file), { recursive: true })
+  const temporary = `${file}.${process.pid}.tmp`
+  writeFileSync(temporary, text)
+  renameSync(temporary, file)
 }
-
-if (!dryRun) {
-  writeFileSync(path.join(root, 'src/ai-annual-reports.ts'), renderGeneratedModule(generated))
-  const logPath = path.join(archive, 'ai-sync-log.json')
-  const runs = existsSync(logPath) ? JSON.parse(readFileSync(logPath, 'utf8')) : []
-  runs.push({ runOn: today, model, requestedYear: 2025, results: logs })
-  writeFileSync(logPath, `${JSON.stringify(runs, null, 2)}\n`)
-  console.log('Wrote src/ai-annual-reports.ts and ai-sync-log.json. Review the diff; nothing was committed or deployed.')
+const stage = () => {
+  for (const [id, entry] of Object.entries(checkpoint)) if (entry.report) generated[id] = [entry.report]
+  const rows = coverageAudit(DIRECTORY.systems, current, checkpoint)
+  const counts = rows.reduce<Record<string, number>>((out, row) => { out[row.outcome] = (out[row.outcome] ?? 0) + 1; return out }, {})
+  atomicWrite(path.join(cache, 'coverage.json'), `${JSON.stringify({ generatedOn: today, directoryCheckedOn: DIRECTORY.checkedOn, requestedYear: REPORT_YEAR, counts, systems: rows }, null, 2)}\n`)
+  atomicWrite(path.join(cache, 'candidate-reports.ts'), renderGeneratedModule(generated))
+  return counts
+}
+const batch = await runBatch(targets, checkpoint, {
+  today, mode: args.ai ? `ai:${model}` : 'rules', retryFailed: args.retryFailed,
+  run: async target => {
+    const result = await syncOne(target, { fetch: fetcher, summarize, pdfTools: popplerTools, today, model })
+    console.log(`${result.log.outcome.padEnd(12)} ${target.name}${result.log.pws ? ` (PWS ${result.log.pws})` : ''} — ${result.log.detail ?? ''}`)
+    return result
+  },
+  persist: async (state, result) => {
+    if (args.dryRun) return
+    if (result.pdf && result.log.sha256) {
+      const stem = `${result.log.pws}-${result.log.sha256}`
+      atomicWrite(path.join(cache, 'pdfs', `${stem}.pdf`), result.pdf)
+      if (result.text) atomicWrite(path.join(cache, 'text', `${stem}.txt`), result.text)
+    }
+    atomicWrite(checkpointPath, `${JSON.stringify(state, null, 2)}\n`)
+    stage()
+  },
+})
+if (!args.dryRun) {
+  console.log('Directory outcomes:', stage())
+  if (args.write) atomicWrite(path.join(root, 'src/ai-annual-reports.ts'), renderGeneratedModule(generated))
+  console.log(`Staged evidence and coverage: ${cache}. ${args.write ? 'Imported generated records.' : 'App records unchanged; review before --write.'} Nothing committed or deployed.`)
+}
+if (batch.halted) {
+  console.error('Stopped after three consecutive retrieval failures. Remaining suppliers were not checked. Resume with --retry-failed after source access recovers.')
+  process.exitCode = 1
 }

@@ -72,7 +72,6 @@ export function StatusCard({ place, source, archive = [], now, t, language = 'en
       }) : <p className="status-explanation">{status.state === 'unavailable' ? reason === 'never' ? t.uncheckedExplanation : explanation : t.noNoticeExplanation}</p>}
     </div></div>
     <div className="card-check-actions">{!sample && onRefresh ? <button className="secondary check-now-action" disabled={checking} onClick={onRefresh}>{checking ? t.refreshing : t.checkNow} <Icon name="refresh-cw" size={16} /></button> : null}<a className="official-source-action official-list" href={SOURCES.ADH} target="_blank" rel="noreferrer">{t.officialSource} <Icon name="external-link" size={16} /></a></div>
-    {status.state === 'unavailable' && status.records.length ? <p className="historical-note">{t.unverified}</p> : null}
     <Sections className={preview ? 'preview-details' : 'supplier-card-sections'}>
     {preview ? <summary>{language === 'es' ? 'Detalles' : 'Details'}<span className="disclosure-icon" aria-hidden="true" /></summary> : null}
     <SupplierInformation key={`profile:${place.id}`} place={place} language={language} sample={sample} onView={onView} onAsk={onAsk} />

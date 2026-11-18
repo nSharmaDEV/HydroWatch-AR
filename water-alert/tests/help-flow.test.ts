@@ -1,8 +1,23 @@
 import { expect, test } from 'vitest'
-import { factPatch, helpPath, helpStep, initialFacts, savedFacts, stepLabel } from '../src/help-flow'
+import { factPatch, helpPath, helpStep, initialFacts, relevantFacts, savedFacts, stepLabel } from '../src/help-flow'
 import { blankRequest } from '../src/help-requests'
+import { confirmedSections } from '../src/help-outputs'
 import { samplePlaces } from '../src/sample'
 import { LEISURE_HILLS_ID } from '../src/annual-reports'
+
+test('explicitly selected report context survives issue changes and appears in the message', () => {
+  const place = { id: LEISURE_HILLS_ID, name: 'LEISURE HILLS MOBILE HOME PARK', county: 'Benton', kind: 'system' as const }
+  const facts = initialFacts(place, [], false, false, 'en').map(f => f.id === '2025:0' ? { ...f, included: true } : f)
+  for (const issue of ['service', 'billing', 'other', 'legal'] as const) {
+    const draft = { ...blankRequest(place), issue, facts }
+    expect(relevantFacts(draft).some(f => f.id === '2025:0' && f.included)).toBe(true)
+    const output = confirmedSections(draft, 'en')
+    expect(output.facts.some(f => f.id === '2025:0')).toBe(true)
+    expect(output.references).toContain(facts.find(f => f.id === '2025:0')!.sources[0].url)
+    expect(output.records).toContain('historical')
+    expect(output.facts.some(f => f.id === '2025:1')).toBe(false)
+  }
+})
 
 test('every issue uses four one-card steps; records are skipped and legacy drafts resume on the screen holding their answers', () => {
   const draft = blankRequest(samplePlaces[0])

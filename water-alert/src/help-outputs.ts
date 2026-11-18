@@ -1,7 +1,10 @@
-import { recipientRoutes, selectedRecipients, type HelpDraft } from './help-requests.js'
+import { isReportFactId, recipientRoutes, selectedRecipients, type HelpDraft } from './help-requests.js'
 import { ISSUE_LABELS } from './help-questions.js'
 import { readableDate, supplierDisplayName } from './help-format.js'
 import { requiredReportEvidence } from './recovery-evidence.js'
+import { hasPersonalConcern, hasSelectedReport } from './report-questions.js'
+import { reportSourceNote } from './help-report-source.js'
+import { reportEmail } from './help-report-email.js'
 
 /** The single plain request offered by default for low pressure. */
 export const LOW_PRESSURE_REQUEST = ['Check the cause of the low pressure and share when to expect an update', 'Revisar la causa de la baja presión y compartir cuándo esperar una actualización']
@@ -41,18 +44,19 @@ export function confirmedSections(d: HelpDraft, language: 'en' | 'es') {
   const contact = a.contacted === 'Yes' ? [sentence(`${say('I contacted the provider', 'Me comuniqué con el proveedor')}${method ? ` ${say('by', 'por')} ${method}` : ''}${contactDate ? ` ${say('around', 'aproximadamente el')} ${contactDate}` : ''}${say(' about this', ' sobre esto')}`), a.contactResponse?.trim() ? sentence(a.contactResponse) : ''].filter(Boolean).join(' ') : a.contacted === 'No' ? say('I have not contacted the provider about this.', 'No he contactado al proveedor sobre esto.') : ''
    const agencyOnly = recipientRoutes(d).includes('adh') && !recipientRoutes(d).includes('provider')
    const attorneyOnly = recipientRoutes(d).includes('ag') && !recipientRoutes(d).includes('provider')
-   const selectedRequests = Object.entries(d.wording?.response ?? {}).filter(([, text]) => text.trim())
+   const selectedRequests = Object.entries(d.wording?.response ?? {}).filter(([key, text]) => text.trim() && (!key.startsWith('report') || hasSelectedReport(d)) && (key !== 'reportRelationship' || hasPersonalConcern(d)))
     // One numbered item per request; only recognized stock requests are expanded.
     const explanation = selectedRequests.some(([, text]) => ['Explain what is happening', 'Explicar qué está pasando'].includes(text))
     const update = selectedRequests.some(([, text]) => ['Share an update', 'Compartir una actualización'].includes(text))
     const interruptionRequests = interruptions && explanation && update
      const requestItems = selectedRequests.flatMap(([key, text]) => {
-       // Free-written details/questions are resident wording, not stock instructions.
+        // Free-written details/questions are resident wording, not stock instructions.
+         if (agencyOnly && key === 'reportVerify' && ['Verify this reading of the report and share supporting records', 'Verificar esta lectura del informe y compartir los documentos de respaldo'].includes(text)) return [say('Verify this reading of the report against records available to ADH and advise how I can obtain supporting documentation', 'Verificar esta lectura del informe con los registros disponibles para ADH e indicarme cómo obtener los documentos de respaldo')]
         if (key === 'details' || key.endsWith('other')) return [text.trim()]
         if (attorneyOnly && d.issue === 'billing' && ['Review the charge', 'Revisar el cargo'].includes(text)) return [say('Advise me how to seek review and correction of the charge if it is incorrect', 'Orientarme sobre cómo solicitar la revisión y corrección del cargo si es incorrecto')]
         if (attorneyOnly && d.issue === 'billing' && ['Explain the bill', 'Explicar la factura'].includes(text)) return [say('Advise me how to obtain an explanation of the bill and how the amount was calculated', 'Orientarme sobre cómo obtener una explicación de la factura y del cálculo del importe')]
        if (agencyOnly && ['Restore service', 'Restablecer el servicio'].includes(text)) return [say('Advise on how to pursue restoration of service with the provider', 'Orientar sobre cómo solicitar al proveedor el restablecimiento del servicio')]
-        if (agencyOnly && ['Investigate the reported concern', 'Investigar la inquietud reportada'].includes(text)) return [say('Review the reported concern and advise on appropriate next steps within ADH’s role', 'Revisar la inquietud reportada y orientar sobre los próximos pasos dentro de las funciones de ADH')]
+        if (agencyOnly && ['Investigate the reported concern', 'Investigar la inquietud reportada'].includes(text)) return [say('Review these observations and advise whether an inspection or sampling is appropriate', 'Revisar estas observaciones y orientar sobre si corresponde una inspección o un muestreo')]
         if (agencyOnly && service && LOW_PRESSURE_REQUEST.includes(text)) return [say('Advise how to seek a review of the low pressure and when to expect an update', 'Orientarme sobre cómo solicitar una revisión de la baja presión y cuándo esperar una actualización')]
         if (agencyOnly && d.issue === 'report' && ['Tell me whether this has been resolved', 'Decirme si esto ya se resolvió'].includes(text)) return [say('Advise how to find out whether this has been resolved', 'Orientarme sobre cómo averiguar si esto ya se resolvió')]
         if (agencyOnly && d.issue === 'report' && ['Send me a copy of any notice about it', 'Enviarme una copia de cualquier aviso al respecto'].includes(text)) return [say('Advise how to obtain any notice and available supporting documentation', 'Orientarme sobre cómo obtener cualquier aviso y la documentación de respaldo disponible')]
@@ -70,15 +74,16 @@ export function confirmedSections(d: HelpDraft, language: 'en' | 'es') {
   const requiredReportKeys = new Set(requiredReportEvidence(d.place, false).map(row => row.key))
   const facts = (d.facts ?? []).filter(f => requiredReportKeys.has(f.id)
     ? Boolean(f.text.trim())
-    : !['billing','other','legal'].includes(d.issue) && f.included && Boolean(f.text.trim()) && (d.issue !== 'service' || f.kind !== 'historical'))
+    : f.included && Boolean(f.text.trim()) && (f.kind === 'historical' && isReportFactId(f.id) || !['billing','other','legal'].includes(d.issue) && (d.issue !== 'service' || f.kind !== 'historical')))
   const sourceNumbers = new Map<string, number[]>()
   facts.forEach((f, i) => new Set(f.sources.map(s => s.url)).forEach(url => sourceNumbers.set(url, [...(sourceNumbers.get(url) ?? []), i + 1])))
   if (!d.facts && d.context.trim()) (d.sources ?? []).forEach(s => { if (!sourceNumbers.has(s.url)) sourceNumbers.set(s.url, []) })
    const references = [...sourceNumbers].map(([url, numbers]) => {
      const labels = [...new Set(facts.flatMap(f => f.sources.filter(s => s.url === url).map(s => s.label)).filter(Boolean))]
-     return `${numbers.length ? `[${numbers.join(', ')}] ` : ''}${labels.length ? `${labels.join('; ')}: ` : ''}${url}`
+      const notes = [...new Set(facts.filter(f => f.sources.some(s => s.url === url)).map(f => reportSourceNote(f.record?.evidence?.federal && /^https:\/\/(?:echodata|echo)\.epa\.gov\//.test(url) ? 'structuredRecord' : f.record?.sourceMethod, language)).filter(Boolean))]
+      return `${numbers.length ? `[${numbers.join(', ')}] ` : ''}${labels.length ? `${labels.join('; ')}: ` : ''}${url}${notes.length ? `\n${say('Source note', 'Nota de fuente')}: ${notes.join(' ')}` : ''}`
    }).join('\n')
-    const records = facts.map((f, i) => {
+    const recordItems = facts.map((f, i) => {
       // Retained source prose can describe what was active when saved, not now.
        let text = f.text.trim()
        const legacyNotice = f.kind === 'saved' && !f.record ? text.match(/I['’]m writing about an active advisory issued ([^ ]+) for ([^.]+)\.?/i) : null
@@ -107,8 +112,9 @@ export function confirmedSections(d: HelpDraft, language: 'en' | 'es') {
            return `${context} ${sourceProse}${metadata ? ` ${metadata}` : ''}${status} [${i + 1}]`
        }
         return `${context} ${sentence(text.replace(/^The /, 'the ').replace(/^El /, 'el '))}${f.kind === 'saved' && !/current status has not been verified|current status is unverified|estado actual no se ha verificado/.test(text) ? say(' Its current status has not been verified.', ' Su estado actual no se ha verificado.') : ''} [${i + 1}]`
-   }).join('\n\n')
-  return { timing, observations, frequency, location, billing, contact, requests, plainRequest, requestItems, facts, references, records, description: sentence(d.description), signature: [d.residentName?.trim(), d.replyContact?.trim(), d.replyEmail?.trim(), d.replyPhone?.trim()].filter(Boolean).join('\n') }
+   })
+  const records = recordItems.join('\n\n')
+  return { timing, observations, frequency, location, billing, contact, requests, plainRequest, requestItems, facts, references, records, recordItems, description: sentence(d.description), signature: [d.residentName?.trim(), d.replyContact?.trim(), d.replyEmail?.trim(), d.replyPhone?.trim()].filter(Boolean).join('\n') }
 }
 export function answerFingerprint(d: HelpDraft) {
   const text = JSON.stringify([d.issue, d.place.id, d.description, d.dates, Object.entries(d.answers ?? {}).sort(), d.locations ?? [], d.wording ?? {}, d.facts ?? d.context, recipientRoutes(d), d.residentName ?? '', d.replyContact ?? '', d.attachments.map(a => [a.id,a.name,a.type]), d.priorContact ?? null, ...(d.replyEmail || d.replyPhone ? [d.replyEmail ?? '', d.replyPhone ?? ''] : [])])
@@ -139,7 +145,9 @@ export function letterOpening(d: HelpDraft, language: 'en' | 'es') {
  * dated records → optional reply contact → sign-off → source links.
  */
 export function emailOutput(d: HelpDraft, language: 'en' | 'es', appendix = '') {
-  const es = language === 'es', s = confirmedSections(d, language), a = d.answers ?? {}, say = (en: string, spanish: string) => es ? spanish : en
+  const coveredReportRequests = ['Tell me whether this has been resolved', 'Decirme si esto ya se resolvió', 'Send me a copy of any notice about it', 'Enviarme una copia de cualquier aviso al respecto']
+  const immediate = { ...d, wording: { report: d.wording?.report ?? {}, response: Object.fromEntries(Object.entries(d.wording?.response ?? {}).filter(([key, text]) => !key.startsWith('report') && !(hasSelectedReport(d) && key !== 'details' && !key.endsWith('other') && coveredReportRequests.includes(text)))) } }
+  const es = language === 'es', s = confirmedSections(immediate, language), a = d.answers ?? {}, say = (en: string, spanish: string) => es ? spanish : en
   const detail = (value: string | undefined, en: string, spanish: string) => value?.trim() ? sentence(`${say(en, spanish)} ${value.trim()}`) : ''
   const report = Object.values(d.wording?.report ?? {}), intermittent = (d.issue === 'service' || d.issue === 'advisory' && a.advisoryService === 'Yes') && report.some(v => ['Service keeps stopping', 'Service stops and starts', 'El servicio se interrumpe repetidamente'].includes(v))
   const specific = intermittent ? say('Intermittent water service', 'Interrupciones del servicio de agua') : d.issue === 'service' && report.includes('No water') ? 'Loss of water service' : d.issue === 'service' && report.includes('No hay agua') ? 'Falta de servicio de agua' : d.issue === 'service' && report.includes('Lower pressure than usual') ? 'Lower water pressure than usual' : d.issue === 'service' && report.includes('Menos presión de lo habitual') ? 'Presión de agua más baja de lo habitual' : ''
@@ -157,21 +165,28 @@ export function emailOutput(d: HelpDraft, language: 'en' | 'es', appendix = '') 
    const prior = p ? es ? `Me comuniqué con ${p.name} sobre esto el ${readableDate(p.on, language) ?? p.on}${p.reference ? ` (referencia ${p.reference})` : ''}.` : `I contacted ${p.name} about this on ${readableDate(p.on, language) ?? p.on}${p.reference ? ` (reference ${p.reference})` : ''}.` : ''
   const tried = sentence(a.tried ?? '')
   const earlier = [prior, s.contact, tried].filter(Boolean).join('\n\n')
-  const selected = Object.entries(d.wording?.response ?? {}).filter(([, text]) => text.trim())
+  const selected = Object.entries(immediate.wording.response).filter(([, text]) => text.trim())
   const isStock = (text: string, en: string, spanish: string) => text === en || text === spanish
   const onlyStock = selected.every(([key]) => key !== 'details' && !key.endsWith('other')) && !a.response?.trim()
   const serviceDefaults = d.issue === 'service' && onlyStock && selected.length === 3 && selected.some(([, v]) => isStock(v, 'Restore service', 'Restablecer el servicio')) && selected.some(([, v]) => isStock(v, 'Share an update', 'Compartir una actualización')) && selected.some(([, v]) => LOW_PRESSURE_REQUEST.includes(v))
   const billingDefaults = d.issue === 'billing' && recipientRoutes(d).includes('provider') && onlyStock && selected.length === 2 && selected.some(([, v]) => isStock(v, 'Review the charge', 'Revisar el cargo')) && selected.some(([, v]) => isStock(v, 'Explain the bill', 'Explicar la factura'))
   const singleStock = ['Explain the next step', 'Explicar el próximo paso', 'Investigate the reported concern', 'Investigar la inquietud reportada', 'Review the charge', 'Revisar el cargo', 'Explain the bill', 'Explicar la factura', 'Share an update', 'Compartir una actualización', 'Clarify the instructions', 'Aclarar las instrucciones'].includes(selected[0]?.[1] ?? '')
   const single = onlyStock && singleStock && s.requestItems.length === 1 && !s.plainRequest ? s.requestItems[0] : ''
-  const asks = serviceDefaults ? agencyOnlyForEmail(d) ? say('Could you advise me how to pursue restoration with the provider, seek a review of the low pressure, and find out when to expect an update?', '¿Podrían orientarme sobre cómo solicitar al proveedor el restablecimiento del servicio, una revisión de la baja presión y cuándo esperar una actualización?') : say('Could you investigate the reported service problem and low pressure, explain the next steps toward restoring service, and let me know when I can expect an update?', '¿Podrían investigar el problema de servicio y la baja presión reportados, explicar los próximos pasos para restablecer el servicio y avisarme cuándo puedo esperar una actualización?') : billingDefaults ? say('Could you review the charge, explain how the questioned amount was calculated and whether it is correct, and correct it if it is incorrect?', '¿Podrían revisar el cargo, explicar cómo se calculó el importe cuestionado y si es correcto, y corregirlo si es incorrecto?') : s.plainRequest ?? (single ? `${say('Could you please', 'Les pido, por favor,')} ${single.charAt(0).toLocaleLowerCase()}${single.slice(1).replace(/[.!?]+$/, '')}${es ? '.' : '?'}` : s.requests ? `${say('Could you please:', 'Les pido, por favor:')}\n${s.requests}` : '')
-  const recordText = [s.records || (!d.facts ? d.context.trim() : ''), appendix.trim()].filter(Boolean).join('\n\n')
+   const serviceAction = d.issue === 'service' && selected.some(([, text]) => ['Restore service', 'Restablecer el servicio'].includes(text)) && selected.every(([, text]) => ['Restore service', 'Restablecer el servicio', 'Share an update', 'Compartir una actualización', 'Explain what is happening', 'Explicar qué está pasando'].includes(text)) && onlyStock
+   const asks = serviceAction ? agencyOnlyForEmail(d)
+     ? say('Could you advise how to seek an explanation and restoration plan from the provider, and when to expect an update?', '¿Podrían orientarme sobre cómo solicitar al proveedor una explicación y un plan de restablecimiento, y cuándo esperar una actualización?')
+     : say('What is causing this, what action is planned, and when should I expect consistent service?', '¿Qué está causando esto, qué medidas se prevén y cuándo puedo esperar un servicio constante?')
+     : serviceDefaults ? agencyOnlyForEmail(d) ? say('Could you advise me how to pursue restoration with the provider, seek a review of the low pressure, and find out when to expect an update?', '¿Podrían orientarme sobre cómo solicitar al proveedor el restablecimiento del servicio, una revisión de la baja presión y cuándo esperar una actualización?') : say('Could you investigate the reported service problem and low pressure, explain the next steps toward restoring service, and let me know when I can expect an update?', '¿Podrían investigar el problema de servicio y la baja presión reportados, explicar los próximos pasos para restablecer el servicio y avisarme cuándo puedo esperar una actualización?') : billingDefaults ? say('Could you review the charge, explain how the questioned amount was calculated and whether it is correct, and correct it if it is incorrect?', '¿Podrían revisar el cargo, explicar cómo se calculó el importe cuestionado y si es correcto, y corregirlo si es incorrecto?') : s.plainRequest ?? (single ? `${say('Could you please', 'Les pido, por favor,')} ${single.charAt(0).toLocaleLowerCase()}${single.slice(1).replace(/[.!?]+$/, '')}${es ? '.' : '?'}` : s.requests ? `${say('Could you please:', 'Les pido, por favor:')}\n${s.requests}` : '')
+  const annual = reportEmail(d, s.facts, language)
+  const otherRecords = s.recordItems.filter((_, index) => !annual || s.facts[index].kind !== 'historical' || !isReportFactId(s.facts[index].id)).join('\n\n')
+  const recordText = [otherRecords || (!d.facts ? d.context.trim() : ''), annual, appendix.trim()].filter(Boolean).join('\n\n')
   const records = recordText
   const contact = [d.replyContact?.trim(), d.replyEmail?.trim(), d.replyPhone?.trim()].filter(Boolean).join('; ')
   const reply = contact ? say(`You can reach me at ${contact}.`, `Pueden comunicarse conmigo en ${contact}.`) : ''
   const name = d.residentName?.trim()
   const signoff = name ? `${say('Thank you,', 'Gracias,')}\n${name}` : say('Thank you.', 'Gracias.')
-   const body = [greeting, `${who} ${opener}`, happened, earlier, asks, records, reply, signoff, s.references].filter(Boolean).join('\n\n')
+    const opening = [who, d.issue === 'billing' ? opener : '', happened || (d.issue === 'billing' ? '' : opener), asks].filter(Boolean).join(' ')
+    const body = [greeting, opening, earlier, records, reply, signoff, s.references ? `${say('Sources', 'Fuentes')}\n${s.references}` : ''].filter(Boolean).join('\n\n')
   const concern: Record<HelpDraft['issue'], [string, string]> = {
     billing: ['Question about my water bill', 'Pregunta sobre mi factura de agua'],
     service: ['Problem with my water service', 'Problema con mi servicio de agua'],

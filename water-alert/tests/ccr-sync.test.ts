@@ -10,7 +10,7 @@ const pdf = (pws: string) => readFileSync(new URL(`pdfs/${pws}.pdf`, archive))
 const hasPoppler = (() => { try { execFileSync('pdfinfo', ['-v'], { stdio: 'ignore' }); return true } catch { return false } })()
 
 const searchPage = '<form><input type="hidden" name="__VIEWSTATE" value="vs"><input type="hidden" name="__EVENTVALIDATION" value="ev"></form>'
-const resultsPage = (rows: [string, string, string][]) => `<table>${rows.map(([name, pws, county]) => `<tr><td><a href="d.aspx?P=${pws}&amp;YEAR=2025">${name}</a></td><td>${pws}</td><td>${county}</td><td>2025</td></tr>`).join('')}</table>`
+const resultsPage = (rows: [string, string, string][]) => `${searchPage}<table>${rows.map(([name, pws, county]) => `<tr><td><a href="d.aspx?P=${pws}&amp;YEAR=2025">${name}</a></td><td>${pws}</td><td>${county}</td><td>2025</td></tr>`).join('')}</table>`
 
 /** Offline ADH: search form, a results table and the saved public PDFs. */
 function fakeAdh(rows: [string, string, string][]) {
@@ -30,6 +30,12 @@ function fakeAdh(rows: [string, string, string][]) {
 }
 
 const banks: Target = { id: 'ADH:banks', name: 'BANKS WATERWORKS', county: 'BRADLEY', reason: 'missing' }
+
+it.each(['GET', 'POST'])('treats a 200-status error page at %s as retrieval failure, never report not found', async method => {
+  const result = await syncOne(banks, deps(async (_input, init) => new Response((init?.method ?? 'GET') === method ? '<html><h1>Service unavailable</h1></html>' : searchPage)))
+  expect(result.report).toBeUndefined()
+  expect(result.log.failure).toBe('retrievalFailed')
+})
 const banksIssue = {
   category: 'publicNotice', heading: { en: 'Public notice', es: 'Aviso público' },
   title: { en: 'Failed to conduct a public notice regarding a total coliform monitoring violation within the mandated timeframe', es: 'No se realizó el aviso público sobre una infracción de monitoreo de coliformes totales dentro del plazo obligatorio' },
@@ -39,6 +45,9 @@ const banksIssue = {
 }
 const banksSummary: AiSummary = { reportYear: 2025, confident: true, uncertainties: [], contradictions: [], issues: [banksIssue] }
 const deps = (doFetch: typeof fetch, summarize?: Summarize) => ({ fetch: doFetch, summarize, pdfTools: popplerTools, today: '2026-11-08', model: 'test-model' })
+// An unsupported contaminant row forces the rules to decline; AI still has to
+// pass the real page/quote/date validator. No rules bypass exists in production.
+const aiDeps = (doFetch: typeof fetch, summarize?: Summarize) => ({ ...deps(doFetch, summarize), pdfTools: { ...popplerTools, text: (pdf: Buffer) => popplerTools.text(pdf).replace('\f', '\nY 1 ppm\f') } })
 
 describe('target selection', () => {
   it('targets missing and not-reviewed suppliers, never human-reviewed ones or lakes', () => {
@@ -118,10 +127,36 @@ describe('summary checks', () => {
 })
 
 describe.skipIf(!hasPoppler)('syncOne on saved ADH PDFs with a mocked AI', () => {
+  it('reads supported reports without an AI key or call, never as human-reviewed', async () => {
+    const { doFetch } = fakeAdh([['Banks', '068', 'BRADLEY']])
+    const summarize = vi.fn(async () => banksSummary)
+    const result = await syncOne(banks, deps(doFetch, summarize))
+    expect(result.report).toMatchObject({ state: 'autoRead', readOn: '2026-11-08', issues: [{ category: 'publicNotice', page: 2 }] })
+    expect(result.log.outcome).toBe('autoRead')
+    expect(summarize).not.toHaveBeenCalled()
+    expect((await syncOne(banks, deps(doFetch))).report?.state).toBe('autoRead')
+  })
+
+  it('keeps unsupported documents linked and unresolved when AI is not authorized', async () => {
+    const { doFetch } = fakeAdh([['Banks', '068', 'BRADLEY']])
+    const result = await syncOne(banks, aiDeps(doFetch))
+    expect(result.report).toMatchObject({ state: 'unreviewed' })
+    expect(result.log).toMatchObject({ outcome: 'unreviewed', detail: expect.stringContaining('marked Y') })
+    expect(result.pdf).toBeDefined()
+  })
+
+  it('retains the source and logs extraction failure without stopping the batch', async () => {
+    const { doFetch } = fakeAdh([['Banks', '068', 'BRADLEY']])
+    const result = await syncOne(banks, { ...deps(doFetch), pdfTools: { text: () => { throw new Error('parser timeout') }, pages: () => 3 } })
+    expect(result.report).toMatchObject({ state: 'unreviewed' })
+    expect(result.log).toMatchObject({ outcome: 'unreviewed', failure: 'extractionFailed', detail: expect.stringContaining('parser timeout') })
+    expect(result.pdf).toBeDefined()
+  })
+
   it('publishes a checked AI summary for an exact match', async () => {
     const { doFetch, posts } = fakeAdh([['Banks', '068', 'BRADLEY']])
     const summarize = vi.fn(async () => banksSummary)
-    const result = await syncOne(banks, deps(doFetch, summarize))
+    const result = await syncOne(banks, aiDeps(doFetch, summarize))
     expect(posts[0].get('ctl00$MainContent$txtName')).toBe('BANKS')
     expect(posts[0].get('ctl00$MainContent$lstSection')).toBe('2025')
     expect(posts[0].get('__VIEWSTATE')).toBe('vs')
@@ -132,7 +167,7 @@ describe.skipIf(!hasPoppler)('syncOne on saved ADH PDFs with a mocked AI', () =>
 
   it('keeps the PDF link but no summary when the AI quote is not in the PDF', async () => {
     const { doFetch } = fakeAdh([['Banks', '068', 'BRADLEY']])
-    const result = await syncOne(banks, deps(doFetch, async () => ({ ...banksSummary, issues: [{ ...banksIssue, evidence: 'Failed to monitor nitrate during the second quarter' }] })))
+    const result = await syncOne(banks, aiDeps(doFetch, async () => ({ ...banksSummary, issues: [{ ...banksIssue, evidence: 'Failed to monitor nitrate during the second quarter' }] })))
     expect(result.report).toMatchObject({ state: 'unreviewed', url: 'https://health.arkansas.gov/eng/d.aspx?P=068&YEAR=2025' })
     expect(result.report?.note?.en).toMatch(/did not pass WAVE’s checks/)
     expect(result.report?.note?.es).toMatch(/no pasó las verificaciones/)
@@ -161,7 +196,7 @@ describe.skipIf(!hasPoppler)('syncOne on saved ADH PDFs with a mocked AI', () =>
     expect(failed.report).toBeUndefined()
     expect(failed.log.outcome).toBe('skipped')
     const { doFetch } = fakeAdh([['Banks', '068', 'BRADLEY']])
-    const aiDown = await syncOne(banks, deps(doFetch, async () => { throw new Error('rate limited') }))
+    const aiDown = await syncOne(banks, aiDeps(doFetch, async () => { throw new Error('rate limited') }))
     expect(aiDown.report).toBeUndefined()
     expect(aiDown.log).toMatchObject({ outcome: 'skipped', detail: 'AI failed: rate limited' })
     const two = fakeAdh([['Banks', '068', 'BRADLEY'], ['Banks', '070', 'BRADLEY']])
@@ -172,7 +207,7 @@ describe.skipIf(!hasPoppler)('syncOne on saved ADH PDFs with a mocked AI', () =>
 
   it('renders a module the app can import', async () => {
     const { doFetch } = fakeAdh([['Banks', '068', 'BRADLEY']])
-    const { report } = await syncOne(banks, deps(doFetch, async () => banksSummary))
+    const { report } = await syncOne(banks, aiDeps(doFetch, async () => banksSummary))
     const source = renderGeneratedModule({ [banks.id]: [report!] })
     expect(source).toMatch(/^\/\/ GENERATED by `npm run ccr:sync`/)
     expect(source).toContain('"state": "aiSummarized"')

@@ -50,17 +50,20 @@ for (const language of ['en', 'es'] as const) {
     expect(screen.getByText(formatted)).toBeVisible()
     expect(screen.getByText(language === 'en' ? 'Community system' : 'Sistema comunitario')).toBeVisible()
     expect(screen.queryByText('Roubidoux Formation Aquifer')).toBeNull()
-    const reportCard = document.querySelector('.provider-card.annual-report') as HTMLElement
-    expect(reportCard.querySelector('.provider-card-facts')).toBeNull()
-    const report = within(reportCard)
+    // No findings in these records is stated as exactly that, never as an all-clear.
+    const findings = within(document.querySelector('.evidence-findings') as HTMLElement)
+    expect(findings.getByText(language === 'en' ? 'None in these records' : 'Ninguno en estos registros')).toBeVisible()
+    expect(findings.getByText(language === 'en' ? /does not mean the water is safe/ : /no significa que el agua sea segura/)).toBeVisible()
+    const records = within(document.querySelector('.evidence-records') as HTMLElement)
+    const pdf = `https://health.arkansas.gov/eng/d.aspx?P=${expected[suppliers.findIndex(entry => entry.place.id === place.id)][0]}&YEAR=2025`
+    expect(records.getByRole('link', { name: language === 'en' ? 'Open' : 'Abrir' })).toHaveAttribute('href', pdf)
     if (place.name.startsWith('SPRINGDALE')) {
-      expect(report.getByText(language === 'en' ? 'Not yet reviewed' : 'Aún no revisado')).toBeVisible()
-      expect(report.queryByText(language === 'en' ? 'No violations reported' : 'No se reportaron infracciones')).toBeNull()
+      // The printed year conflicts with the requested year: a record limitation, not a finding.
+      expect(records.getByText(language === 'en' ? 'Located, not read' : 'Localizado, no leído')).toBeVisible()
       expect(screen.getByText(/2024.*2025/)).toBeVisible()
     } else {
-      expect(report.getByText(language === 'en' ? 'No violations reported' : 'No se reportaron infracciones')).toBeVisible()
+      expect(records.getByText(language === 'en' ? 'Reviewed by a person' : 'Revisado por una persona')).toBeVisible()
     }
-    expect(report.getByRole('link', { name: /View original report|Ver informe original/ })).toHaveAttribute('href', `https://health.arkansas.gov/eng/d.aspx?P=${expected[suppliers.findIndex(entry => entry.place.id === place.id)][0]}&YEAR=2025`)
   })
 
   for (const state of ['active', 'none', 'unavailable'] as const) {

@@ -6,7 +6,7 @@ import { reportMessage } from './recovery-evidence'
 import { factPatch, helpPath, helpStep, initialFacts, savedFacts, relevantFacts } from './help-flow'
 import { GuidedHelp } from './GuidedHelp'
 import { defaultRequests } from './ConfirmedWording'
-import { reportQuestion } from './report-findings'
+import { evidenceQuestion } from './help-evidence'
 import { blankRequest, generateMessage, type AttachmentStep, type HelpDraft, type HelpRequest, type HelpStep } from './help-requests'
 import { downloadText, helpApi, listRequests, saveRequest } from './help-client'
 import './requests.css'
@@ -17,7 +17,7 @@ import { exportedText } from './help-exports'
 import { useContentMotion } from './interface-motion'
 import { contacted } from './help-outcomes'
 import { attachmentSize, attachmentTag } from './attachment-display'
-interface Props { /** A hand-checked report finding key to ask about ("Ask about this"). */ ask?: string; place: Place; places?: Place[]; notice?: Notice; notices?: Notice[]; language: Language; sample: boolean; requestId?: string; currentAdvisory?: boolean; registerLeave?: (handler: (() => Promise<boolean>) | null) => void; onBack: () => void; onHistory: (id: string) => void }
+interface Props { /** An evidence finding key to ask about ("Ask about this finding"). */ ask?: string; place: Place; places?: Place[]; notice?: Notice; notices?: Notice[]; language: Language; sample: boolean; requestId?: string; currentAdvisory?: boolean; registerLeave?: (handler: (() => Promise<boolean>) | null) => void; onBack: () => void; onHistory: (id: string) => void }
 export function RequestWorkspace(props: Props) {
   return <div className="request-workspace">{props.sample ? <Workspace {...props} delivery={false} deviceOnly={false} /> : <HelpAccount language={props.language}>{s => <Workspace {...props} delivery={s.delivery} deviceOnly={!s.user} />}</HelpAccount>}</div>
 }
@@ -48,9 +48,9 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
       const old = requestId ? records.find(r => r.id === requestId) : ask ? undefined : records.find(r => r.draft.place.id === place.id && r.status === 'open' && !contacted(r.draft) && (!r.messages.length || r.revision > Math.max(...r.messages.map(m => m.draftRevision))))
       if (requestId && !old) throw new Error('Request unavailable')
       const recordsForPlace = notices ?? (notice ? [notice] : [])
-      const question = ask && !sample ? reportQuestion(place, ask, language) : undefined
-      const facts = initialFacts(place, recordsForPlace, currentAdvisory, sample, language).map(f => question && f.id === ask ? { ...f, included: true } : f)
-      const value = old ? updateDraft(old.draft, factPatch(savedFacts(old.draft, sample, language)), language) : { ...blankRequest(place), ...factPatch(facts), flowStep: 'choose' as const, ...(question ? { issue: 'report' as const, route: 'provider' as const, recipientRoutes: ['provider' as const], description: question } : currentAdvisory ? { issue: 'advisory' as const } : {}) }
+      const question = ask && !sample ? evidenceQuestion(place, ask, language, sample) : undefined
+      const facts = initialFacts(place, recordsForPlace, currentAdvisory, sample, language, question ? ask : undefined)
+      const value = old ? updateDraft(old.draft, factPatch(savedFacts(old.draft, sample, language)), language) : { ...blankRequest(place), ...factPatch(facts), flowStep: 'choose' as const, ...(question && facts.some(f => f.id === ask) ? { description: question, issue: 'report' as const, route: 'provider' as const, recipientRoutes: ['provider' as const] } : currentAdvisory ? { issue: 'advisory' as const } : {}) }
       const unchanged = old && JSON.stringify(value) === JSON.stringify(old.draft)
       current.current = value; revision.current = old?.revision ?? 0; savedSnapshot.current = unchanged ? value : null; savedRecord.current = old ?? null; setDraft(value); setSaving(unchanged ? 'saved' : 'saving')
       if (!unchanged) void persist().catch(() => {})
@@ -84,7 +84,7 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
     let patch: Partial<HelpDraft> = { flowStep: value, stage: value === 'confirm' ? 3 : value === 'review' || value === 'send' ? 2 : 1 }
     if (value === 'review' || value === 'send') { const { sources, context, evidence } = factPatch(relevantFacts(draft)); patch = { ...patch, sources, context, evidence } }
     // The usual requests for this issue start ticked the first time; the resident can untick them.
-    if (value === 'request' && helpStep(draft) !== 'anything' && helpStep(draft) !== 'response' && !Object.keys(draft.wording?.response ?? {}).length) patch = { ...patch, wording: { report: draft.wording?.report ?? {}, response: { ...defaultRequests(draft.issue, language, Object.values(draft.wording?.report ?? {}).filter(t => t.trim())), details: '' } } }
+    if (value === 'request' && helpStep(draft) !== 'anything' && helpStep(draft) !== 'response' && !Object.keys(draft.wording?.response ?? {}).some(key => !key.startsWith('report'))) patch = { ...patch, wording: { report: draft.wording?.report ?? {}, response: { ...defaultRequests(draft.issue, language, Object.values(draft.wording?.report ?? {}).filter(t => t.trim())), details: '', ...draft.wording?.response } } }
     const path = helpPath(draft)
     changeStep(() => {
       // Moving between steps is not an edit: keep a confirmed send so Back and forward cannot send twice.
@@ -131,7 +131,7 @@ function Workspace({ ask, place, places = [], notice, notices, language, sample,
   const actionExtras = <><button type="button" className="request-action-add" aria-label={say('Add a photo or video', 'Añadir una foto o video')} disabled={readingFiles} onClick={() => fileInput.current?.click()}>＋</button><input hidden ref={fileInput} type="file" accept=".png,.jpg,.jpeg,.mp4,.webm" multiple disabled={readingFiles} aria-label={say('Photos and videos', 'Fotos y videos')} onChange={e => void files(e.currentTarget, actionGroup)} />{readingFiles ? <p role="status">{say('Reading files…', 'Leyendo archivos…')}</p> : null}{rows(actionGroup)}</>
   const status = <p role="status" className={`request-save-status${saving === 'saved' ? ' sr-only' : ''}`}>{saving === 'saved' ? sample || deviceOnly ? say('Saved on this device', 'Guardado en este dispositivo') : say('Saved', 'Guardado') : saving === 'error' ? say("Couldn't save", 'No se pudo guardar') : say('Saving…', 'Guardando…')}</p>
   return <section ref={stepContent} className="request-workspace request-guided-workspace">
-      <GuidedHelp status={status} onHistory={() => void leave(() => onHistory(draft.id))} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} actionExtras={actionExtras} edit={edit} changeFacts={facts => edit(factPatch(facts))} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
+      <GuidedHelp status={status} onHistory={() => void leave(() => onHistory(draft.id))} places={places} draft={draft} place={place} language={language} sample={sample} deviceOnly={deviceOnly} delivery={delivery} sending={sending} saveFailed={saving === 'error' || sent} heading={heading} extras={extras} actionExtras={actionExtras} edit={edit} changeFacts={facts => edit({ ...factPatch(facts), subject: draft.subject, body: draft.body })} go={value => void stage(value)} send={() => void send()} regenerate={() => { if (window.confirm(say('Replace the email subject and message, including your manual edits, with the latest answers? Attachments and recipients are kept.', '¿Reemplazar el asunto y mensaje, incluidos tus cambios manuales, con las respuestas actuales? Se conservan archivos y destinatarios.'))) edit(messageFromIssue(draft)) }} />
     {sent ? <p role="status">{say('Message accepted by the email processor, not confirmed delivered or resolved. Open History for updates.', 'Mensaje aceptado por el procesador, no confirma entrega ni solución. Abre Historial para ver actualizaciones.')}</p> : null}
     {error ? <p role="alert">{error}</p> : null}
     {saving === 'error' ? <div className="request-actions"><button className="secondary" onClick={() => { queue.current = Promise.resolve(); void persist().catch(() => {}) }}>{say('Retry save', 'Reintentar guardar')}</button><button className="action-chip" onClick={() => downloadText(`${sample ? 'sample-' : ''}unsaved-water-request.txt`, exportedText(`${draft.description}\n${draft.dates}\n\n${draft.subject}\n\n${draft.body}`, language, sample))}><Icon name="download" size={16} />{say('Download unsaved text', 'Descargar texto sin guardar')}</button></div> : null}

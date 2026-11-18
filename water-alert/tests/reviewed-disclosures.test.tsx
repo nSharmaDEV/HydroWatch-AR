@@ -38,15 +38,19 @@ it.each(['en', 'es'] as const)('combines %s water sources and provider facts wit
   await userEvent.setup().click(toggle)
   const panel = document.getElementById(toggle.getAttribute('aria-controls')!)!
   expect(panel).toBeVisible()
-  // Two reference cards (report, water system); no nested disclosures.
-  expect(panel.querySelectorAll('.provider-cards>.provider-card')).toHaveLength(2)
+  // Three reference cards (findings, records, water system); no nested disclosures.
+  expect(panel.querySelectorAll('.provider-cards>.provider-card')).toHaveLength(3)
   expect(panel.querySelector('details')).toBeNull()
+  expect(panel.querySelector('dialog')).toBeNull()
   expect(within(panel).queryByRole('button', { name: /More details|Más detalles/ })).toBeNull()
-  expect(within(panel).getByRole('link', { name: language === 'en' ? /View original report/ : /Ver informe original/ })).toBeVisible()
+  expect(within(panel).getAllByRole('link', { name: language === 'en' ? 'Open' : 'Abrir' })[0]).toBeVisible()
   const system = panel.querySelector('.provider-system-card') as HTMLElement
   expect(within(system.querySelector('.provider-card-heading') as HTMLElement).getByRole('link', { name: /ADH profile|Perfil de ADH/ })).toBeVisible()
   expect(within(panel).getAllByRole('link', { name: /ADH profile|Perfil de ADH/ })).toHaveLength(1)
-  expect(system.querySelectorAll('.provider-card-facts>div')).toHaveLength(6)
+  // Seven facts: the six directory facts plus the verified federal PWS ID.
+  expect(system.querySelectorAll('.provider-card-facts>div')).toHaveLength(7)
+  expect(system.querySelector('.provider-system-id dd')).toHaveTextContent('747')
+  expect(system.querySelector('.provider-federal-id dd')).toHaveTextContent('AR0000747')
   expect(within(system).getByText('WELL #1')).toHaveAttribute('lang', 'en')
   expect(panel).not.toHaveTextContent(language === 'en' ? 'Not live readings' : 'No son mediciones en vivo')
   await userEvent.setup().click(toggle)

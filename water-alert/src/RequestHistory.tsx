@@ -159,7 +159,7 @@ function History({ language, sample, requestId, onResume, onStart, email, delive
         {collapsible ? <details className="history-closed" open={closedOpen} onToggle={e => setClosedOpen((e.currentTarget as HTMLDetailsElement).open)}><summary>{heading}<Icon name="chevron-down" size={18} /></summary>{list}</details> : <>{heading}{list}</>}
       </section>
     })}
-    {onStart ? <div className="history-list-start"><button className="text-button history-start" onClick={onStart}>{say('Start another request', 'Empezar otra solicitud')}<Icon name="arrow-right" size={16} /></button></div> : null}
+    {onStart ? <div className="history-list-start"><button className="history-start" onClick={onStart}>{say('Start another request', 'Empezar otra solicitud')}<Icon name="arrow-right" size={16} /></button></div> : null}
     {footer}
   </>
 
@@ -243,26 +243,21 @@ function History({ language, sample, requestId, onResume, onStart, email, delive
     const messageLabel = sentMessage ? say('Sent through WAVE', 'Enviado por WAVE') : state.contact ? say('The draft you prepared', 'El borrador que preparaste') : say('Draft — not sent', 'Borrador — sin enviar')
 
     return <article className="history-detail" aria-labelledby={`${ids}-title`}>
-      <div className="history-topbar">
-        {records.length > 1 ? <button className="history-back" onClick={() => open(undefined)}><Icon name="chevron-left" size={18} />{say('All requests', 'Todas las solicitudes')}</button> : <span />}
-        {refresh(say('Refresh', 'Actualizar'))}
-      </div>
-      <header className="history-head">
-        <p className="history-eyebrow">{say('Your request', 'Tu solicitud')}</p>
-        <h1 id={`${ids}-title`}>{subjectOf(r)}</h1>
-        <p className="history-meta">{supplierDisplayName(r.draft.place.name)} · {category(r)} · {saved(r)}</p>
-      </header>
+      {records.length > 1 ? <div className="history-topbar"><button className="history-back" onClick={() => open(undefined)}><Icon name="chevron-left" size={18} />{say('All requests', 'Todas las solicitudes')}</button></div> : null}
 
       {/* a. Status: the state row and the stages describe the same thing, so they share one card. */}
       <section className="history-card history-card--status">
+        <h1 className="history-request-title" id={`${ids}-title`}>{subjectOf(r)}</h1>
         <div className={`history-strip tone-${state.tone}`} role="region" aria-labelledby={`${ids}-strip`}>
           <span className="history-strip-icon" aria-hidden="true"><Icon name={STRIP_ICON[state.kind]} size={22} /></span>
           <div className="history-strip-text"><h2 id={`${ids}-strip`}>{state.title}</h2><p>{state.detail}</p></div>
-          {primaryButton(r, state)}
+          {state.action === 'continue' && onStart ? <button className="history-start" onClick={onStart}>{say('Start another request', 'Empezar otra solicitud')}<Icon name="arrow-right" size={16} /></button> : primaryButton(r, state)}
         </div>
         <ProgressTracker request={r} language={language} />
       </section>
 
+      <div className="history-content-grid">
+      <div className="history-content-column">
       {/* b. Your message */}
       <h2 className="history-label" id={`${ids}-message`}>{say('Your message', 'Tu mensaje')}</h2>
       <section className="history-card history-card--message" aria-labelledby={`${ids}-message`}>
@@ -283,8 +278,10 @@ function History({ language, sample, requestId, onResume, onStart, email, delive
           {isLong(body) ? <button type="button" className="history-message-toggle" aria-expanded={messageOpen} aria-controls={bodyId} onClick={() => setMessageOpen(v => !v)}>{messageOpen ? say('Show less', 'Mostrar menos') : say('Show full message', 'Mostrar el mensaje completo')}<Icon name="chevron-down" size={18} className={messageOpen ? 'is-flipped' : undefined} /></button> : null}
         </> : <p className="history-message-empty">{say('No message written yet.', 'Aún no has escrito el mensaje.')}</p>}
       </section>
+      </div>
 
       {/* c. Details: how to reach them, what has happened, and the quieter actions. */}
+      <div className="history-content-column history-details-column">
       <h2 className="history-label" id={`${ids}-details`}>{say('Details', 'Detalles')}</h2>
       <section className="history-card history-card--details" aria-labelledby={`${ids}-details`}>
         <div className="history-detail-cols">
@@ -317,12 +314,14 @@ function History({ language, sample, requestId, onResume, onStart, email, delive
           <button className="history-quiet history-delete" disabled={busy} onClick={() => remove(r, unsent && !r.messages.length)}><Icon name="trash-2" size={16} />{unsent && !r.messages.length ? say('Delete draft', 'Borrar borrador') : say('Delete request', 'Borrar solicitud')}</button>
         </div>
       </section>
+      {state.action === 'continue' && onStart ? <div className="history-detail-start">{primaryButton(r, state)}</div> : onStart ? <div className="history-detail-start"><button className="history-start" onClick={onStart}>{say('Start another request', 'Empezar otra solicitud')}<Icon name="arrow-right" size={16} /></button></div> : null}
+      </div>
+      </div>
 
       <div className="history-actions">
         {state.group === 'closed'
           ? closed ? <button className="secondary" disabled={busy} onClick={() => startRecord(r, 'reopened')}>{say('Reopen', 'Reabrir')}</button> : null
           : state.contact || r.draft.outcomes?.length ? <button className="secondary" disabled={busy} onClick={() => startRecord(r, 'resolved')}>{say('Mark as resolved', 'Marcar como resuelto')}</button> : null}
-        {onStart ? <button className="text-button history-start" onClick={onStart}>{say('Start another request', 'Empezar otra solicitud')}<Icon name="arrow-right" size={16} /></button> : null}
       </div>
 
       {recordDialog(r, state)}

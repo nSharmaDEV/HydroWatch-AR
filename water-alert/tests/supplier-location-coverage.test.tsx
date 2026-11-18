@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import { expect, it } from 'vitest'
 import { ObservedSupplierMap } from '../src/ObservedSupplierMap'
 import { MapSources } from '../src/MapSources'
+import { MapSupplierDetails } from '../src/MapSupplierDetails'
 import { SUPPLIER_LOCATIONS } from '../src/supplier-locations'
 import { SOURCES, type Notice } from '../src/domain'
 import { en } from '../src/strings'
@@ -21,6 +22,24 @@ const names = [
   'TUCKERMAN WATERWORKS', 'USCOE OC - LITTLE FIR', 'WALDRON WATERWORKS', 'WEST STONE COUNTY WATER ASSN',
 ]
 const placeId = (name: string) => `ADH:${createHash('sha256').update(JSON.stringify(['system', name.toLowerCase()])).digest('hex')}`
+
+it('shows advisory and location provenance separately in supplier details', () => {
+  render(<MapSupplierDetails place={{ id: placeId('FOREMAN WATERWORKS'), name: 'FOREMAN WATERWORKS', county: 'LITTLE RIVER', kind: 'system' }} archive={[]} now={0} t={en} language="en" label="Status unavailable" state="unavailable" />)
+  // Advisory provenance sits with the status; map-point provenance is a separate note.
+  expect(screen.getByText(en.noSuccessfulCheck).closest('.supplier-finding')).not.toBeNull()
+  expect(screen.getByRole('link', { name: en.officialSource })).toHaveAttribute('href', SOURCES.ADH)
+  expect(screen.getByText(/Historical public-water-system polygon reference point/).closest('.map-detail-notes')).not.toBeNull()
+  expect(screen.getByRole('link', { name: 'View map point source' })).toHaveAttribute('href', expect.stringContaining('objectIds=184'))
+})
+
+it('maps newly observed exact-name GIS matches with source provenance', () => {
+  for (const name of ['FOREMAN WATERWORKS', 'HOPE WATER LIGHT COMM', 'KIBLER WATER SYSTEM', 'SEVIER CO WATER ASSOCIATION', 'RAVENDEN WATERWORKS', 'LITTLE RIVER WATER ASSOCIATION', 'NORTH HOWARD RURAL WATER ASSOCIATION', 'BURDETTE WATERWORKS', 'HEAFER-BLACK OAK WATER ASSOC']) {
+    const point = SUPPLIER_LOCATIONS.find(p => p.placeId === placeId(name))
+    expect(point?.sourceName).toBe(name)
+    expect(point?.pointMeaning).toBe('historical-polygon-centroid')
+    expect(point?.sourceUrl).toContain('gis.arkansas.gov')
+  }
+})
 
 it('has an exact-ID reference point for every supplier in the reviewed observed-history inventory', () => {
   const mapped = new Set(SUPPLIER_LOCATIONS.map(p => p.placeId))

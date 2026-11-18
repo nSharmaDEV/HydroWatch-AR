@@ -41,16 +41,16 @@ function validate(d: HelpDraft) {
   if (d.locations !== undefined && (!Array.isArray(d.locations) || d.locations.length > 10 || d.locations.some(s => typeof s !== 'string' || !s.trim() || s.length > 200 || /[\r\n\x00-\x1f]/.test(s)) || new Set(d.locations).size !== d.locations.length)) throw new Error('Invalid locations')
   if (d.addressSelection !== undefined && !isAddressResult(d.addressSelection)) throw new Error('Invalid address selection')
   if (d.addressManual !== undefined && typeof d.addressManual !== 'boolean') throw new Error('Invalid address flag')
-  if (d.flowStep !== undefined && !['choose', 'noticed', 'request', 'anything', 'billing', 'timing', 'experience', 'details', 'where', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
+  if (d.flowStep !== undefined && !['choose', 'noticed', 'request', 'reportQuestions', 'anything', 'billing', 'timing', 'experience', 'details', 'where', 'response', 'records', 'review', 'send', 'confirm'].includes(d.flowStep)) throw new Error('Invalid progress')
   if (d.recipientRoutes !== undefined && (!Array.isArray(d.recipientRoutes) || d.recipientRoutes.length > 4 || new Set(d.recipientRoutes).size !== d.recipientRoutes.length || d.recipientRoutes.some(r => !['provider', 'adh', 'ag', 'legal'].includes(r)))) throw new Error('Invalid recipients')
   let wording: HelpDraft['wording']
   if (d.wording !== undefined) {
     wording = { report: {}, response: {} }
     for (const section of ['report', 'response'] as const) {
       const value = d.wording?.[section]
-      if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).length > 8) throw new Error('Invalid wording')
+      if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).length > 12) throw new Error('Invalid wording')
       for (const [key, text] of Object.entries(value)) {
-        if (!['first', 'second', 'third', 'other', 'servicefirst', 'servicesecond', 'servicethird', 'serviceother'].includes(key) || typeof text !== 'string' || text.length > 1000) throw new Error('Invalid wording')
+        if (!['first', 'second', 'third', 'fourth', 'details', 'other', 'servicefirst', 'servicesecond', 'servicethird', 'serviceother', 'reportAddressed', 'reportRelationship', 'reportInformation', 'reportNext'].includes(key) || typeof text !== 'string' || text.length > 1000) throw new Error('Invalid wording')
         wording[section][key] = text
       }
     }
@@ -78,9 +78,19 @@ function validate(d: HelpDraft) {
       if (!r || typeof r !== 'object' || Array.isArray(r) || typeof r.verified !== 'boolean') throw new Error('Invalid fact record')
       for (const key of ['agency', 'date', 'problem', 'area', 'status'] as const) if (typeof r[key] !== 'string' || r[key].length > (key === 'problem' ? 8000 : 1000)) throw new Error('Invalid fact record')
       if (r.year !== undefined && (typeof r.year !== 'string' || !/^\d{4}$/.test(r.year))) throw new Error('Invalid fact record year')
+      // `structuredRecord` joins the existing methods: fields copied from a
+      // published record. Older drafts carry only the first three.
+      if (r.sourceMethod !== undefined && !['reviewed', 'aiSummarized', 'autoRead', 'structuredRecord'].includes(r.sourceMethod)) throw new Error('Invalid fact source method')
+      let evidence: typeof r.evidence
+      if (r.evidence !== undefined) {
+        const e = r.evidence
+        if (!e || typeof e !== 'object' || Array.isArray(e) || typeof e.federal !== 'boolean' || ['period', 'action', 'resolution', 'conflicts'].some(key => typeof e[key as keyof typeof e] !== 'string' || (e[key as keyof typeof e] as string).length > 2000)) throw new Error('Invalid fact evidence')
+        evidence = { period: e.period, action: e.action, resolution: e.resolution, conflicts: e.conflicts, federal: e.federal }
+      }
       recordSize += r.agency.length + r.date.length + r.problem.length + r.area.length + r.status.length
+      recordSize += evidence ? JSON.stringify(evidence).length : 0
       if (recordSize > 16000) throw new Error('Facts exceed limit')
-      record = { agency: r.agency, date: r.date, problem: r.problem, area: r.area, status: r.status, verified: r.verified, ...(r.year ? { year: r.year } : {}) }
+      record = { agency: r.agency, date: r.date, problem: r.problem, area: r.area, status: r.status, verified: r.verified, ...(r.year ? { year: r.year } : {}), ...(r.sourceMethod ? { sourceMethod: r.sourceMethod } : {}), ...(evidence ? { evidence } : {}) }
     }
     return { id: f.id, text: f.text, kind: f.kind, included: f.included, sources: f.sources.map(sourceValue), ...(record ? { record } : {}) }
   })

@@ -57,9 +57,10 @@ export function ReviewFiles({ files, language }: { files: HelpAttachment[]; lang
 /** Plain next steps; WAVE does not promise delivery or a reply. */
 export function ReviewNextSteps({ language }: { language: Language }) {
   const id = useId()
+  const [open, setOpen] = useState(() => typeof matchMedia !== 'function' || matchMedia('(min-width: 761px)').matches)
   const steps = [['nextSend', 'nextSendText'], ['nextLog', 'nextLogText'], ['nextFollow', 'nextFollowText']] as const
-  return <section className="review-next" aria-labelledby={id}>
-    <h2 id={id} className="review-card-title">{reviewLabel('nextTitle', language)}</h2>
+  return <details className="review-next" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
+    <summary id={id} className="review-card-title"><span>{reviewLabel('nextTitle', language)}</span><Icon name="chevron-down" size={16} /></summary>
     <ol>{steps.map(([head, text], i) => <li key={head}><span className="review-next-number" aria-hidden="true">{i + 1}</span><span><strong>{reviewLabel(head, language)}</strong><span>{reviewLabel(text, language)}</span></span></li>)}</ol>
-  </section>
+  </details>
 }

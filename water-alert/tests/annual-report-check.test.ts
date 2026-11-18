@@ -11,7 +11,7 @@ import { SourceRunner } from '../server/sources'
 import { PushStore } from '../server/push'
 
 const searchPage = '<form><input type="hidden" name="__VIEWSTATE" value="vs"><input type="hidden" name="__EVENTVALIDATION" value="ev"></form>'
-const resultsPage = (rows: [string, string, string][]) => `<table>${rows.map(([name, pws, county]) => `<tr><td><a href="d.aspx?P=${pws}&amp;YEAR=2025">${name}</a></td><td>${pws}</td><td>${county}</td><td>2025</td></tr>`).join('')}</table>`
+const resultsPage = (rows: [string, string, string][]) => `${searchPage}<table>${rows.map(([name, pws, county]) => `<tr><td><a href="d.aspx?P=${pws}&amp;YEAR=2025">${name}</a></td><td>${pws}</td><td>${county}</td><td>2025</td></tr>`).join('')}</table>`
 const samplePdf = new TextEncoder().encode('%PDF-1.4 fake body for signature checks only')
 
 /** Offline ADH: the search form, a results table, then a document response. */

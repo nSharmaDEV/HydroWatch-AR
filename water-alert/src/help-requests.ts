@@ -9,8 +9,17 @@ export type IssueType = 'service' | 'quality' | 'billing' | 'legal' | 'advisory'
 export type AttachmentStep = 'noticed' | 'request' | 'response'
 export interface HelpAttachment { id: string; name: string; type: string; data: string; step?: AttachmentStep }
 export interface HelpSource { recordId: string; url: string; label: string }
-export type HelpStep = 'choose' | 'noticed' | 'request' | 'anything' | 'billing' | 'timing' | 'experience' | 'details' | 'where' | 'response' | 'records' | 'review' | 'send' | 'confirm'
-export interface HelpFactRecord { agency: string; date: string; problem: string; area: string; status: string; verified: boolean; year?: string }
+export type HelpStep = 'choose' | 'noticed' | 'request' | 'reportQuestions' | 'anything' | 'billing' | 'timing' | 'experience' | 'details' | 'where' | 'response' | 'records' | 'review' | 'send' | 'confirm'
+/** Bounded, language-specific document snapshot; never re-read from a mutable cache. */
+export interface HelpEvidenceSnapshot { period: string; action: string; resolution: string; conflicts: string; federal: boolean }
+export interface HelpFactRecord { agency: string; date: string; problem: string; area: string; status: string; verified: boolean; year?: string; sourceMethod?: 'reviewed' | 'aiSummarized' | 'autoRead' | 'structuredRecord'; evidence?: HelpEvidenceSnapshot }
+/**
+ * A fact drawn from an official document record. `year:index` is the
+ * long-standing annual-report key and still identifies the same finding;
+ * `echo:` keys belong to findings that exist only in federal records. Both are
+ * dated document evidence, never current status.
+ */
+export const isReportFactId = (id: string) => /^\d{4}:\d+$/.test(id) || /^echo:[A-Za-z0-9][A-Za-z0-9:._/-]*$/.test(id)
 export interface HelpFact { id: string; text: string; kind: 'active' | 'saved' | 'historical'; included: boolean; sources: HelpSource[]; record?: HelpFactRecord }
 export interface HelpDraft {
   subjectEdited?: boolean; bodyEdited?: boolean;
@@ -54,7 +63,7 @@ export function hasAddress(d: HelpDraft) {
   const label = d.locations?.[0]?.trim()
   return !!label && (d.addressManual === true || d.addressSelection?.label === label)
 }
-export function hasReport(d: HelpDraft) { return !!(d.description.trim() || Object.values(d.wording?.report ?? {}).some(v => v.trim())) }
+export function hasReport(d: HelpDraft) { return !!(d.description.trim() || Object.values(d.wording?.report ?? {}).some(v => v.trim()) || d.issue === 'report' && d.facts?.some(f => f.kind === 'historical' && f.included && isReportFactId(f.id))) }
 export function generateMessage(d: HelpDraft, language: 'en' | 'es', appendix = '') {
   return emailOutput(d, language, appendix)
 }

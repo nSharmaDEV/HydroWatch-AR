@@ -17,6 +17,12 @@ Open **http://localhost:5178**. Vite proxies `/api` to the Express service at
 under ignored `data/live/`; hosted operation uses PostgreSQL. Sample mode is
 fictional and separate from live records.
 
+For local inspection without scheduled feed checks or queue maintenance, run
+`WATER_ALERT_BACKGROUND_ENABLED=false WATER_ALERT_PUSH_ENABLED=false npm run dev`.
+Background work otherwise defaults to enabled; explicit API actions remain available.
+Server-side PDF extraction runs asynchronously, with a 10-second timeout per tool,
+so a stalled parser cannot block the status API.
+
 No `.env` is required for default local operation. Keep production credentials
 out of local demos. See [`.env.example`](.env.example) and the deployment guides
 before configuring optional hosting or push. The frontend deliberately does not
@@ -184,9 +190,9 @@ is not an explicit lift. Failed, unknown and stale data never show an all-clear.
 
 `src/supplier-locations.ts` covers **all 31 suppliers in the local observed-history
 inventory reviewed October 21, 2026**. It also retains the previously reviewed
-Fayetteville point (32 catalog entries total); points appear only when their
-exact supplier IDs have saved observations. This is not all Arkansas suppliers
-or automatic coverage of suppliers observed in the future.
+Fayetteville point and nine exact-name GIS matches reviewed November 16, 2026
+(41 catalog entries). Observed suppliers and catalog suppliers with reviewed points
+can appear. This is not all Arkansas suppliers or automatic future coverage.
 
 For the 31 observed suppliers, 26 exact-name matches use historical centroids from
 the [Arkansas GIS public-water-systems layer](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Utilities/FeatureServer/15).
@@ -199,7 +205,8 @@ published property location, and the government Little Fir campground location.
 Their provider/Recreation.gov coordinates are linked to the corresponding ADH
 directory entries, not geocoded from a contact mailing address.
 
-Each catalog entry records the exact WAVE supplier ID, source name/URL, review
+Supplier details distinguish the ADH advisory source from the map point source,
+including point type, review date and limitations. Each catalog entry records the exact WAVE supplier ID, source name/URL, review
 date and point meaning; non-exact-name/site matches include identity-evidence
 links and a review note. The heading's info shortcut opens the existing **Sources
 and coverage limits** page, whose expandable map sources show point types and links
@@ -236,8 +243,8 @@ not verify production feeds or device delivery. Nothing deployed or sent.
 
 ## Advisory help
 
-Help uses six input screens followed by Review (since November 10, 2026;
-the four-screen flow of November 9 is replaced). The form card is 720px wide,
+Help uses six input screens, with available report findings and questions added automatically,
+followed by Review (the four-screen flow of November 9 is replaced). The form card is 720px wide,
 centered, and its height follows its content. Earlier screens show "Step N of 6 · name"
 above a segmented progress bar; Review is labeled as the final step. There is no top Back or Open History link: the
 footer holds an icon-only Open History button at the left and Back (hidden on the
@@ -383,22 +390,91 @@ one summary card (problem, what you noticed, where, the step you stopped at, las
 save) with **Continue draft**, which resumes on that step, and a quieter **Delete
 draft**. Empty "Original issue" sections are hidden.
 
-### Annual-report findings on Home and "Ask about this"
+### Historical findings and official records
 
-`src/report-findings.ts` reads the newest annual report for an exact supplier ID.
-When the selected annual report lists findings, the supplier card shows a yellow,
-dated findings chip with a document icon in **Provider information**, rather
-than a separate report callout. Open that section, then **View N issues** to see
-the findings. The expanded report retains its historical, not-current-safety
-context. Hand-checked findings get **Ask about this**, which starts a new Help draft
-of type "Question about a water report": the question quotes the finding with
-its year, page and printed dates; the finding is included as a dated historical
-record with its PDF page link; the usual requests are "Tell me whether this has
-been resolved" and "Send me a copy of any notice about it". It goes to the
-supplier, with ADH as the next office. AI-summarized findings appear in the list
-with their label but are never quoted or offered as a question. Suppliers whose
-report is not reviewed are never described as having no issues. Samples and
-lakes never show live report data.
+**Provider information** keeps the existing supplier details and contacts, with
+a historical-findings badge and one card using the original annual-report layout.
+When records were read and reviewed and no problems were identified, the badge reads
+**No problems found** in the neutral style, qualified for screen readers as dated
+records, not current water status; unread or unretrieved records show no badge.
+Annual-report and EPA source rows use the Water system card's dotted leaders and
+source links. Each row states how its records were read (for example **Reviewed by a
+person** or **Read from the document's tables**) and how fresh they are (**Data dated**
+for EPA extracts, **Checked** for WAVE's last check), above **Current Problems · N**
+and **All recorded problems · N**, both with chevrons. Current Problems is a dated
+open-record filter: a valid start date with no end date, or an explicit ongoing
+status, excluding documented resolutions/closed statuses and records with an end
+field. Unknown dates alone do not qualify. It does not establish that an issue
+continues today. Unread/unavailable records do not produce a reassuring zero. With no
+identified issues, problem controls and empty-result text are omitted; source
+availability and failures remain visible.
+
+Problem content starts hidden; either filter opens it, and pressing the active
+filter closes it using the existing reduced-motion-aware slide. With fewer than six
+visible problems, types with one or two incidents appear inline and larger types
+start collapsed; from six problems on, every type is a collapsed group with its count
+and chevron. Within each type, issues sort by full reported date, newest first.
+**Ask about this** sits at the right of each concise issue heading, joined by a
+dotted leader. Source/page links precede preserved agency wording, reported dates
+and problem/action columns. The first three in each larger group appear before a
+filled **Show N more / Show less** button at the bottom right of the group; mobile
+stacks the text columns. Similar titles do not merge separate incidents, and
+ambiguous monitoring/reporting stays its own type. Documented resolutions remain
+visible, with material conflicting accounts flagged. **Notes about individual
+problems** (the last part of the card) holds exact wording, missing-resolution
+evidence, detailed conflicts and record-specific limits. General method and coverage
+notes—EPA entries are structured records rather than full inspection reports,
+orders or notices, copied automatically; how unretrieved reports can be requested;
+why a short list is not evidence of few problems—are in **Settings → Sources and
+coverage limits → Official records on provider pages**. These records never change
+advisory status or establish present safety or cause.
+
+Opening **Provider information** automatically checks the supported ADH annual
+report, EPA entries and ADH directory facts. Saved information appears immediately;
+each source shows checking/failure and its last successful check date. Reopening
+checks again, without duplicating pending requests. Failures retain saved evidence;
+an empty EPA response also retains earlier records and is not an all-clear. New
+report years join the history; same-year shipped human reviews are preserved.
+These updates never rewrite saved Help evidence or email text.
+
+The existing ADH annual-report lookup is joined by EPA ECHO retrieval
+(`POST /api/echo-records`, exact reviewed-directory place ID). The API contacts
+only EPA's detailed-facility-report service for the verified federal PWS ID,
+rejects redirects and unmatched/missing row IDs, and bounds time, bytes, rows and
+linked actions. A malformed/incomplete response is not an empty result. Records
+are saved on this device, not in advisory storage or notifications; a no-row
+lookup does not erase previously retrieved historical records. There is no
+general crawler, resident-document ingestion or automatic records request.
+ECHO's structured entries are not the full inspection, notice or order documents;
+source notes explain these gaps and whom a resident can ask manually. Public EPA
+links use `https://echo.epa.gov/detailed-facility-report?fid=…&sys=SDWIS`;
+the JSON retrieval service remains on `echodata.epa.gov`. Existing saved email
+snapshots are not silently rewritten to change their citations.
+
+`src/provider-evidence.ts` and `src/evidence-grouping.ts` share distinct issues
+with Help. Matching references take precedence; otherwise exact-system,
+requirement and period agreement is required, with ambiguous candidates left
+apart. Upstream findings stay separate. Printed “Current”, “Archived”,
+“Addressed”, resumed monitoring and missing records do not establish resolution.
+An explicit dated resolution remains beside conflicting source accounts.
+
+**Ask about this finding** starts the existing six-input-screen Help flow with
+that issue prioritized and its question prefilled. Only hand-checked annual
+wording is quoted by this action; automated interpretations carry a disclosure.
+Available findings enter automatically within the draft's 60-fact and text/
+metadata limits; a long provider record can therefore exceed a single email's
+capacity. Email bullets use saved grouped evidence, acknowledge documented
+corrections, consolidate citations and use recipient-appropriate requests in
+English/Spanish. Custom questions and manually edited messages remain protected.
+
+Resuming a draft does not append newly found records. Review reports materially
+changed/added evidence available on this device; **Use updated evidence** asks
+before replacing the snapshot, preserving the email, questions, files and
+recipients. Regenerating the email is a separate confirmed action. Cache loss is
+not evidence that a historical outcome disappeared. Samples and lakes never
+load live supplier evidence. These changes are locally verified, not deployed;
+full source-document access and ordinary-viewport fit for long provider panels
+remain release-review gates.
 
 ### Report alerts (push)
 
@@ -503,21 +579,49 @@ and sample mode exposes no real supplier contacts. A large attachment button sho
 reading/ready status, filenames and removal within the existing upload limits.
 Exact-supplier agency facts stay separate from residents' experience, with source
 links beside each record. Multiple published problems remain distinct.
-Dated historical report findings with no action listed are required in the email
-across issue categories; other historical findings are not included by default. Neither is a current
-safety or compensation finding. Required findings stay historical, including on
+Dated historical report findings available for the exact supplier are included automatically
+across issue categories, including human-reviewed and AI-assisted/table-read findings.
+They are not current safety or compensation findings. They stay historical on
 resume; saved advisory facts are labeled as not currently verified.
+There is no report-finding selector or extra report-question screen.
+An unread report link alone is not a finding. Shipped reports take precedence over
+device-local lookups, matching Places. Automated interpretations enter first-person
+email prose with the report year, recorded dates and original source/page when known,
+not as source quotations. A quiet source note distinguishes AI assistance from
+automatic table reading. ADH wording asks about records available to ADH, not provider-only actions.
+Saved snapshots and manually edited subject/message fields are preserved;
+legacy unchecked report findings become included on resume. Manual email edits remain
+the resident's final control over the wording.
 Bounded previews are not exhaustive; check the linked original source.
 
-Review places the editable email on the left and contact panels on the right above
-760px; smaller layouts stack email above contacts. To, Subject and Message
+Help retains six input steps before Review. Generated email combines the customer,
+location, immediate concern and requested action in a short opening, followed by
+one dated bullet per historical finding. Known monitoring, sampling, licensing and
+public-notice entries get specific questions; reported resumption is acknowledged,
+not treated as proof that every requirement was completed. Unknown or additionally
+annotated saved evidence retains its wording rather than being forced into a stock summary.
+One closing asks for current status, outstanding corrective steps and completion dates,
+supporting records, resident instructions and the next update if no date is available.
+It contains one historical qualification and asks about a relationship only when a
+personal concern exists, without inferring causation. Numbered citations stay beside
+findings; consolidated source links and interpretation notes appear after the sign-off.
+Previously saved custom questions and manually edited email fields are preserved.
+
+Review opens directly to the editable email, with contact panels on the right above
+760px. “Review answers”, beside the progress label, opens a separate view retaining Your experience, Report context
+and Your requests, with edit actions and an explicit empty report-context state.
+“Back to email” returns without replacing manual edits. The answer view summarizes
+form answers, not subsequent manual email edits. Contact cards remain visible below the email
+on smaller layouts, without an extra contact-section heading; next-step instructions
+use a disclosure, initially closed on mobile. To, Subject and Message
 are distinct rows. The recipient selector, native text editors and Cited sources
 popup remain available. There is no answers table, Included records section or
 Downloads and tools section. Source evidence is retained rather than deleted when
 these controls are absent. Optional name/reply contact and attachment filenames
 remain on Your details. File limits and the manual-attachment requirement are
-explained beside the uploader. All layouts use natural page scrolling for longer
-content, including English/Spanish guidance, errors, enlarged text and long emails.
+explained beside the uploader. Long emails scroll within the editable message field
+to keep primary actions accessible at normal viewport sizes. Longer answer views,
+expanded instructions, errors and enlarged text retain accessible page scrolling.
 Recommendation stars and contact explanations stay inside the recipient selector.
 The citation popup retains full attribution alongside record details.
 Only directory contacts are offered; an

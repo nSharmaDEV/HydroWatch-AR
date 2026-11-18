@@ -16,6 +16,14 @@ const seed = (...records: HelpRequest[]) => localStorage.setItem(SAMPLE_HELP_KEY
 const daysAgo = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return localDate(d) }
 
 describe('History renders by count', () => {
+  test('message and details share the responsive detail layout', async () => {
+    seed(record(draft()))
+    render(<RequestHistory language="en" sample onResume={() => {}} />)
+    const message = await screen.findByRole('region', { name: 'Your message' })
+    const details = screen.getByRole('region', { name: 'Details' })
+    expect(message.closest('.history-content-grid')).not.toBeNull()
+    expect(details.closest('.history-content-grid')).toBe(message.closest('.history-content-grid'))
+  })
   test('no requests shows one line and a way into Help', async () => {
     const start = vi.fn(), user = userEvent.setup()
     render(<RequestHistory language="en" sample onResume={() => {}} onStart={start} />)
@@ -32,9 +40,10 @@ describe('History renders by count', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     render(<RequestHistory language="en" sample onResume={resume} onStart={start} />)
     expect(await screen.findByRole('heading', { level: 1, name: one.draft.subject })).toBeVisible()
-    expect(screen.getByText('Your request')).toHaveClass('history-eyebrow')
-    const meta = document.querySelector('.history-meta')!
-    expect(meta).toHaveTextContent(/^Bentonville Water Utilities · Service problem · Saved Nov 12, 2026, 4:55\sPM$/)
+    expect(screen.getByRole('heading', { level: 1, name: one.draft.subject }).closest('.history-card--status')).not.toBeNull()
+    expect(screen.queryByText('Your request')).toBeNull()
+    expect(document.querySelector('.history-meta')).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Refresh$/ })).toBeNull()
     expect(screen.queryByRole('heading', { name: /Needs you|In progress/ })).toBeNull()
     expect(screen.queryByRole('button', { name: 'All requests' })).toBeNull()
     expect(document.querySelector('.history-row')).toBeNull()
@@ -43,7 +52,8 @@ describe('History renders by count', () => {
     expect(strip).toHaveClass('tone-teal')
     expect(strip).toHaveTextContent('You haven’t contacted them yet.')
     expect(document.querySelectorAll('.history-detail .primary')).toHaveLength(1)
-    await user.click(within(strip).getByRole('button', { name: 'Continue draft' }))
+    expect(within(strip).getByRole('button', { name: 'Start another request' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Continue draft' }))
     expect(resume).toHaveBeenCalledWith(one)
     // Stepper uses the four fixed labels.
     expect(within(screen.getByRole('list', { name: 'Your progress' })).getAllByRole('listitem').map(li => li.querySelector('b')!.firstChild!.textContent)).toEqual(['Prepared', 'Contacted', 'Follow up', 'Closed'])
@@ -169,7 +179,7 @@ describe('Next-action strip', () => {
     expect(screen.getByRole('button', { name: 'Empezar otra solicitud' })).toBeVisible()
     const segundaRow = screen.getByRole('button', { name: 'Segunda' }).closest('li') as HTMLElement
     fireEvent.click(segundaRow.querySelector('.history-row-meta')!)
-    expect(screen.getByText('Tu solicitud')).toBeVisible()
+    expect(screen.getByRole('heading', { level: 1, name: 'Segunda' }).closest('.history-card--status')).not.toBeNull()
     expect(screen.getByRole('region', { name: 'Listo para enviar' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Mostrar el mensaje completo' })).toBeVisible()
     expect(screen.getByRole('heading', { name: 'Tu mensaje' })).toBeVisible()
